@@ -1,0 +1,2 @@
+Composed, domain-specific components live in subfolders here (e.g. features/tools/ResourceCard.tsx).
+One reusable card across tools/learning/collections — not one per content type (Bible §24).

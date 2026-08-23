@@ -1,0 +1,1 @@
+One typed module per third-party service (auth, resend, search). Swapping a provider touches one file.

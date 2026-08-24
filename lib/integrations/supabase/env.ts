@@ -1,7 +1,7 @@
 /**
  * Supabase environment access.
  *
- * Only the URL and the anon key are readable from here. The service-role
+ * Only the URL and the publishable key are readable from here. The secret
  * key is deliberately absent: it must never reach client code, and no MVP
  * feature needs it — RLS is the security boundary (Bible §34).
  */
@@ -19,6 +19,9 @@ export function supabaseUrl(): string {
   return required("NEXT_PUBLIC_SUPABASE_URL", process.env.NEXT_PUBLIC_SUPABASE_URL);
 }
 
-export function supabaseAnonKey(): string {
-  return required("NEXT_PUBLIC_SUPABASE_ANON_KEY", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+export function supabasePublishableKey(): string {
+  return required(
+    "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+  );
 }

@@ -1,1 +1,0 @@
-One typed query module per table (tools.ts, bookmarks.ts, ...). No component calls supabase.from() directly.

@@ -31,4 +31,4 @@ jobs:
           # Build-time placeholders. Real values live in Vercel env vars —
           # CI only needs the build to resolve, never to reach Supabase.
           NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_placeholder

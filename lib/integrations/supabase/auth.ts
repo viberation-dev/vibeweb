@@ -52,3 +52,43 @@ export async function signOut(client: Client): Promise<AuthResult> {
   const { error } = await client.auth.signOut();
   return error ? { ok: false, message: error.message } : { ok: true };
 }
+
+/** OAuth providers wired up for MVP. Adding one is a change here plus Supabase config. */
+export type OAuthProvider = "github" | "google";
+
+export type OAuthRedirect = { ok: true; url: string } | { ok: false; message: string };
+
+/**
+ * Begins the OAuth handshake and hands back the provider URL to redirect to.
+ *
+ * skipBrowserRedirect is set because this runs in a Server Action — there is
+ * no browser here to redirect itself. We take the URL and issue the redirect
+ * from the server instead.
+ */
+export async function signInWithOAuth(
+  client: Client,
+  provider: OAuthProvider,
+  redirectTo: string,
+): Promise<OAuthRedirect> {
+  const { data, error } = await client.auth.signInWithOAuth({
+    provider,
+    options: { redirectTo, skipBrowserRedirect: true },
+  });
+
+  if (error) {
+    return { ok: false, message: toMessage(error.message) };
+  }
+  if (!data.url) {
+    return { ok: false, message: "The provider did not return a sign-in URL." };
+  }
+  return { ok: true, url: data.url };
+}
+
+/** Exchanges the ?code= from the OAuth callback for a session cookie. */
+export async function exchangeCodeForSession(
+  client: Client,
+  code: string,
+): Promise<AuthResult> {
+  const { error } = await client.auth.exchangeCodeForSession(code);
+  return error ? { ok: false, message: toMessage(error.message) } : { ok: true };
+}

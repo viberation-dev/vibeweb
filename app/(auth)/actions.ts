@@ -5,12 +5,18 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import {
+  signInWithOAuth,
   signInWithPassword,
   signOut as adapterSignOut,
   signUpWithPassword,
 } from "@/lib/integrations/supabase/auth";
 import { createClient } from "@/lib/integrations/supabase/server";
-import { safeRedirect, signInSchema, signUpSchema } from "@/lib/validation/auth";
+import {
+  oauthProviderSchema,
+  safeRedirect,
+  signInSchema,
+  signUpSchema,
+} from "@/lib/validation/auth";
 
 export type AuthFormState = { error?: string; notice?: string };
 
@@ -90,4 +96,33 @@ export async function signOutAction(): Promise<void> {
   await adapterSignOut(supabase);
   revalidatePath("/", "layout");
   redirect("/");
+}
+
+/**
+ * Starts an OAuth sign-in. The provider arrives from the submit button's
+ * value, so it is validated rather than trusted — this ends up in a redirect,
+ * and an unvalidated value has no business steering that.
+ */
+export async function signInWithProviderAction(formData: FormData): Promise<void> {
+  const parsed = oauthProviderSchema.safeParse(formData.get("provider"));
+
+  if (!parsed.success) {
+    redirect("/login?error=unknown-provider");
+  }
+
+  const next = safeRedirect(formData.get("redirectTo")?.toString());
+  const origin = await currentOrigin();
+  const supabase = await createClient();
+
+  const result = await signInWithOAuth(
+    supabase,
+    parsed.data,
+    `${origin}/auth/callback?next=${encodeURIComponent(next)}`,
+  );
+
+  if (!result.ok) {
+    redirect("/login?error=oauth-failed");
+  }
+
+  redirect(result.url);
 }

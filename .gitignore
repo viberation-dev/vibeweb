@@ -43,3 +43,6 @@ next-env.d.ts
 
 # supabase cli scratch state
 supabase/.temp/
+
+# playwright-mcp scratch output
+.playwright-mcp/

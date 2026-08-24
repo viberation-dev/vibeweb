@@ -34,6 +34,11 @@ export const signUpSchema = z.object({
   password: passwordSchema,
 });
 
+/** Providers we actually support. Anything else is rejected before it reaches a redirect. */
+export const oauthProviderSchema = z.enum(["github", "google"]);
+
+export type OAuthProviderInput = z.infer<typeof oauthProviderSchema>;
+
 export type SignInInput = z.infer<typeof signInSchema>;
 export type SignUpInput = z.infer<typeof signUpSchema>;
 

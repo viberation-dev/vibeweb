@@ -53,7 +53,12 @@ export default async function BookmarksPage() {
       {grouped.length ? (
         grouped.map(([folder, entries]) => (
           <section key={folder} className="mt-8">
-            <div className="flex flex-wrap items-center justify-between gap-2">
+            {/*
+              Not justify-between: that threw the rename control to the far
+              right edge of the page, where it read as unrelated to the
+              heading it renames. It belongs next to the folder name.
+            */}
+            <div className="flex flex-wrap items-center gap-3">
               <h2 className="font-heading text-lg font-medium">{folder}</h2>
               {/* Unfiled is the absence of a folder, so there is nothing to rename. */}
               {folder === UNFILED ? null : <RenameFolderForm folder={folder} />}

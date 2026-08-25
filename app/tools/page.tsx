@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 
+import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import { DirectoryFilters } from "@/components/features/tools/DirectoryFilters";
 import { DirectoryPager } from "@/components/features/tools/DirectoryPager";
 import { createClient } from "@/lib/integrations/supabase/server";
+import { listBookmarks } from "@/lib/queries/bookmarks";
 import { listTags } from "@/lib/queries/tags";
 import { listTools } from "@/lib/queries/tools";
 import { toToolCategory, toolCategoryLabel } from "@/lib/tool-categories";
 import { toToolSort } from "@/lib/tool-sorts";
-import { toPageNumber } from "@/lib/tools-url";
+import { toolsHref, toPageNumber } from "@/lib/tools-url";
 
 export const metadata: Metadata = {
   title: "Tools — Viberation",
@@ -30,10 +32,19 @@ export default async function ToolsPage({ searchParams }: Props) {
   const page = toPageNumber(params.page);
 
   const supabase = await createClient();
-  const [{ tools, total, pageCount }, tags] = await Promise.all([
+  const { data: auth } = await supabase.auth.getUser();
+
+  const [{ tools, total, pageCount }, tags, bookmarks] = await Promise.all([
     listTools(supabase, { category, tag, sort, page }),
     listTags(supabase),
+    // Signed-out visitors still see Save buttons; pressing one sends them to
+    // sign in. Only which ones read as saved needs a user.
+    auth.user ? listBookmarks(supabase, auth.user.id, "tool") : [],
   ]);
+
+  const bookmarkedIds = new Set(bookmarks.map((bookmark) => bookmark.target_id));
+  // Come back to this exact filtered page after a signed-out visitor logs in.
+  const returnTo = toolsHref({ category, tag, sort, page });
 
   return (
     <main className="mx-auto w-full max-w-6xl p-6">
@@ -48,7 +59,7 @@ export default async function ToolsPage({ searchParams }: Props) {
 
       {tools.length ? (
         <>
-          <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-8 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {tools.map((tool) => (
               <li key={tool.id}>
                 <ResourceCard
@@ -57,6 +68,14 @@ export default async function ToolsPage({ searchParams }: Props) {
                   eyebrow={toolCategoryLabel(tool.category)}
                   description={tool.tagline}
                   badges={tool.pricing_tier ? [tool.pricing_tier] : undefined}
+                  action={
+                    <BookmarkButton
+                      targetType="tool"
+                      targetId={tool.id}
+                      bookmarked={bookmarkedIds.has(tool.id)}
+                      returnTo={returnTo}
+                    />
+                  }
                 />
               </li>
             ))}

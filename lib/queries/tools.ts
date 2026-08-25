@@ -138,3 +138,25 @@ export async function incrementToolViews(client: Client, slug: string): Promise<
     console.error(`incrementToolViews(${slug}): ${error.message}`);
   }
 }
+
+/**
+ * Tools by id, for hydrating polymorphic references (bookmarks, history,
+ * collection items) that carry only a target_id.
+ *
+ * Returned in no particular order — the caller already knows the order it
+ * cares about, and re-sorting here would throw that away. Ids that no longer
+ * exist are simply absent, which is how a deleted tool stops showing up in
+ * someone's bookmarks.
+ */
+export async function getToolsByIds(client: Client, ids: string[]): Promise<Tool[]> {
+  if (ids.length === 0) {
+    return [];
+  }
+
+  const { data, error } = await client.from("tools").select("*").in("id", ids);
+
+  if (error) {
+    throw new Error(`getToolsByIds: ${error.message}`);
+  }
+  return data;
+}

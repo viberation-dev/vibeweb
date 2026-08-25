@@ -31,6 +31,17 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        /*
+         * Grammarly, ColorZilla and friends add their own attributes to
+         * <body> before React hydrates, so React reports a mismatch that no
+         * change to this app can fix. This suppresses that false alarm.
+         *
+         * It applies to this element only — one level deep, attributes and
+         * text — so a real hydration bug anywhere inside still surfaces. Our
+         * own body attribute is a static className, so there is nothing here
+         * worth warning about anyway.
+         */
+        suppressHydrationWarning
       >
         <header className="flex items-center justify-between border-b px-6 py-3">
           <nav className="flex items-center gap-6">

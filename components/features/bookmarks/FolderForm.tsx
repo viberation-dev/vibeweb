@@ -30,7 +30,13 @@ export function FolderForm({ bookmarkId, folderName, folders }: Props) {
         name="folder_name"
         list={listId}
         defaultValue={folderName ?? ""}
-        placeholder="Unfiled"
+        /*
+         * "Unfiled" as placeholder text read as a value that was already set,
+         * so the box looked like a label rather than something to type into —
+         * the first person to use this could not find how to make a folder.
+         * The placeholder now says what to do with it.
+         */
+        placeholder="Add to folder…"
         maxLength={60}
         className="h-8 max-w-48"
       />

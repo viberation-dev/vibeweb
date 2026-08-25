@@ -7,6 +7,7 @@ import { createClient } from "@/lib/integrations/supabase/server";
 import { listTags } from "@/lib/queries/tags";
 import { listTools } from "@/lib/queries/tools";
 import { toToolCategory, toolCategoryLabel } from "@/lib/tool-categories";
+import { toToolSort } from "@/lib/tool-sorts";
 import { toPageNumber } from "@/lib/tools-url";
 
 export const metadata: Metadata = {
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
 };
 
 type Props = {
-  searchParams: Promise<{ category?: string; tag?: string; page?: string }>;
+  searchParams: Promise<{ category?: string; tag?: string; sort?: string; page?: string }>;
 };
 
 export default async function ToolsPage({ searchParams }: Props) {
@@ -25,11 +26,12 @@ export default async function ToolsPage({ searchParams }: Props) {
   // hand-edited URL should still show the directory, not an error.
   const category = toToolCategory(params.category);
   const tag = params.tag?.trim() || undefined;
+  const sort = toToolSort(params.sort);
   const page = toPageNumber(params.page);
 
   const supabase = await createClient();
   const [{ tools, total, pageCount }, tags] = await Promise.all([
-    listTools(supabase, { category, tag, page }),
+    listTools(supabase, { category, tag, sort, page }),
     listTags(supabase),
   ]);
 
@@ -41,7 +43,7 @@ export default async function ToolsPage({ searchParams }: Props) {
       </p>
 
       <div className="mt-6">
-        <DirectoryFilters category={category} tag={tag} tags={tags} />
+        <DirectoryFilters category={category} tag={tag} sort={sort} tags={tags} />
       </div>
 
       {tools.length ? (
@@ -65,6 +67,7 @@ export default async function ToolsPage({ searchParams }: Props) {
             total={total}
             category={category}
             tag={tag}
+            sort={sort}
           />
         </>
       ) : (

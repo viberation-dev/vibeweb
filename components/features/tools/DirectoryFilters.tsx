@@ -2,12 +2,14 @@ import Link from "next/link";
 
 import type { Tag } from "@/lib/queries/tags";
 import { TOOL_CATEGORIES, type ToolCategory } from "@/lib/tool-categories";
+import { DEFAULT_TOOL_SORT, TOOL_SORTS, type ToolSort } from "@/lib/tool-sorts";
 import { toolsHref } from "@/lib/tools-url";
 import { cn } from "@/lib/utils";
 
 type Props = {
   category?: ToolCategory;
   tag?: string;
+  sort?: ToolSort;
   tags: Tag[];
 };
 
@@ -22,15 +24,18 @@ const chipActive = "border-transparent bg-primary text-primary-foreground hover:
  * URL, so it is shareable, back-button-correct and works without JS. Each
  * chip keeps the *other* axis intact, and clicking an active chip clears it.
  *
- * No chip ever carries `page`, so changing a filter resets to page 1 — which
- * is the only sane destination when the result set just changed under you.
+ * No chip ever carries `page`, so changing a filter or the sort resets to
+ * page 1 — the only sane destination when the result set just changed under
+ * you. Sort chips do carry the active filters, and vice versa.
  */
-export function DirectoryFilters({ category, tag, tags }: Props) {
+export function DirectoryFilters({ category, tag, sort, tags }: Props) {
+  const activeSort = sort ?? DEFAULT_TOOL_SORT;
+
   return (
     <div className="flex flex-col gap-4">
       <nav aria-label="Tool categories" className="flex flex-wrap gap-2">
         <Link
-          href={toolsHref({ tag })}
+          href={toolsHref({ tag, sort })}
           aria-current={category ? undefined : "page"}
           className={cn(chip, !category && chipActive)}
         >
@@ -41,7 +46,7 @@ export function DirectoryFilters({ category, tag, tags }: Props) {
           return (
             <Link
               key={value}
-              href={toolsHref({ category: active ? undefined : value, tag })}
+              href={toolsHref({ category: active ? undefined : value, tag, sort })}
               aria-current={active ? "page" : undefined}
               className={cn(chip, active && chipActive)}
             >
@@ -59,7 +64,7 @@ export function DirectoryFilters({ category, tag, tags }: Props) {
             return (
               <Link
                 key={t.id}
-                href={toolsHref({ category, tag: active ? undefined : t.slug })}
+                href={toolsHref({ category, tag: active ? undefined : t.slug, sort })}
                 aria-current={active ? "page" : undefined}
                 className={cn(chip, "text-xs", active && chipActive)}
               >
@@ -69,6 +74,32 @@ export function DirectoryFilters({ category, tag, tags }: Props) {
           })}
         </div>
       ) : null}
+
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-sm text-muted-foreground">Sort</span>
+        {TOOL_SORTS.map(({ value, label }) => {
+          const active = activeSort === value;
+          return (
+            <Link
+              key={value}
+              /*
+               * The default sort is expressed by *omitting* ?sort=, so the
+               * plain /tools URL stays canonical instead of gaining a param
+               * that means what no param already meant.
+               */
+              href={toolsHref({
+                category,
+                tag,
+                sort: value === DEFAULT_TOOL_SORT ? undefined : value,
+              })}
+              aria-current={active ? "page" : undefined}
+              className={cn(chip, "text-xs", active && chipActive)}
+            >
+              {label}
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }

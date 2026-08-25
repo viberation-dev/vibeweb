@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { ToolCategory } from "@/lib/tool-categories";
+import { DEFAULT_TOOL_SORT, toolSortOrder, type ToolSort } from "@/lib/tool-sorts";
 import type { Database, Tables } from "@/types/supabase";
 
 export type Tool = Tables<"tools">;
@@ -12,6 +13,7 @@ export type ToolFilters = {
   category?: ToolCategory;
   /** Tag *slug*, not id — it is what appears in the URL. */
   tag?: string;
+  sort?: ToolSort;
   /** 1-based. Values past the end return an empty page, not an error. */
   page?: number;
   pageSize?: number;
@@ -29,8 +31,8 @@ export type ToolPage = {
 };
 
 /**
- * One page of the directory, newest first, optionally narrowed by category
- * and/or tag.
+ * One page of the directory, optionally narrowed by category and/or tag and
+ * ordered by any of the TOOL_SORTS options.
  *
  * RLS on `tools` is public-read (migration 03), so this works signed out.
  */
@@ -39,12 +41,18 @@ export async function listTools(client: Client, filters: ToolFilters = {}): Prom
   const page = Math.max(1, filters.page ?? 1);
   const from = (page - 1) * pageSize;
 
+  const order = toolSortOrder(filters.sort ?? DEFAULT_TOOL_SORT);
+
   let query = client
     .from("tools")
     // count: "exact" rides along on the same request, so the pager costs no
     // extra round trip.
     .select("*", { count: "exact" })
-    .order("created_at", { ascending: false })
+    .order(order.column, { ascending: order.ascending })
+    // Every sort column can tie — two tools added in the same seed, two with
+    // 0 views. Postgres gives no stable order for ties, so rows could repeat
+    // or vanish across pages. Breaking ties on the unique slug pins them.
+    .order("slug", { ascending: true })
     .range(from, from + pageSize - 1);
 
   if (filters.category) {
@@ -113,21 +121,6 @@ export async function getToolTags(client: Client, toolId: string): Promise<Tag[]
   return data.map((row) => row.tags).sort((a, b) => a.name.localeCompare(b.name));
 }
 
-/*
- * scripts/gen-types.mjs does not emit the Functions block yet, so
- * Database["public"]["Functions"] is empty and .rpc() cannot be typed from
- * the generated types. Narrowing the call here keeps the cast to one line
- * and off the call sites. Delete it once the generator learns functions —
- * that is the real fix, not a wider cast.
- *
- * The double assertion is forced, not lazy: with an empty Functions block
- * .rpc()'s FnName parameter resolves to `never`, so no direct cast overlaps.
- */
-type IncrementToolViews = (
-  fn: "increment_tool_views",
-  args: { tool_slug: string },
-) => Promise<{ error: { message: string } | null }>;
-
 /**
  * Bump a tool's view counter.
  *
@@ -139,9 +132,7 @@ type IncrementToolViews = (
  * page the visitor actually asked for.
  */
 export async function incrementToolViews(client: Client, slug: string): Promise<void> {
-  const { error } = await (client.rpc as unknown as IncrementToolViews)("increment_tool_views", {
-    tool_slug: slug,
-  });
+  const { error } = await client.rpc("increment_tool_views", { tool_slug: slug });
 
   if (error) {
     console.error(`incrementToolViews(${slug}): ${error.message}`);

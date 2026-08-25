@@ -9,6 +9,7 @@ type Props = {
   total: number;
   category?: string;
   tag?: string;
+  sort?: string;
 };
 
 const step =
@@ -21,7 +22,7 @@ const step =
  * correct under the back button. At the ends the step renders as a disabled
  * span rather than a link to nowhere.
  */
-export function DirectoryPager({ page, pageCount, total, category, tag }: Props) {
+export function DirectoryPager({ page, pageCount, total, category, tag, sort }: Props) {
   if (pageCount <= 1) {
     return null;
   }
@@ -36,7 +37,7 @@ export function DirectoryPager({ page, pageCount, total, category, tag }: Props)
           ← Previous
         </span>
       ) : (
-        <Link href={toolsHref({ category, tag, page: page - 1 })} rel="prev" className={step}>
+        <Link href={toolsHref({ category, tag, sort, page: page - 1 })} rel="prev" className={step}>
           ← Previous
         </Link>
       )}
@@ -51,7 +52,7 @@ export function DirectoryPager({ page, pageCount, total, category, tag }: Props)
           Next →
         </span>
       ) : (
-        <Link href={toolsHref({ category, tag, page: page + 1 })} rel="next" className={step}>
+        <Link href={toolsHref({ category, tag, sort, page: page + 1 })} rel="next" className={step}>
           Next →
         </Link>
       )}

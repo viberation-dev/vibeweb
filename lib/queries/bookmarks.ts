@@ -47,6 +47,44 @@ export async function listBookmarks(
   return data;
 }
 
+/**
+ * The table each target kind lives in.
+ *
+ * Bookmarks carry (target_type, target_id) with no foreign key — one FK
+ * cannot span five tables — so migration 05 leaves target integrity to app
+ * code. This map is that check's only moving part: add a target kind to the
+ * Postgres enum and TypeScript demands its table here.
+ */
+const TARGET_TABLES: Record<
+  Enums<"target_kind">,
+  "tools" | "content" | "prompts" | "collections" | "wizards"
+> = {
+  tool: "tools",
+  content: "content",
+  prompt: "prompts",
+  collection: "collections",
+  wizard: "wizards",
+};
+
+/**
+ * True when the row a bookmark would point at actually exists.
+ *
+ * RLS applies, so this is also what stops someone bookmarking a draft or
+ * another user's private row: invisible reads as non-existent.
+ */
+export async function targetExists(client: Client, target: BookmarkTarget): Promise<boolean> {
+  const { data, error } = await client
+    .from(TARGET_TABLES[target.targetType])
+    .select("id")
+    .eq("id", target.targetId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`targetExists(${target.targetType}/${target.targetId}): ${error.message}`);
+  }
+  return data !== null;
+}
+
 /** True when the user has already bookmarked this target. */
 export async function isBookmarked(
   client: Client,
@@ -77,6 +115,13 @@ export async function addBookmark(
   target: BookmarkTarget,
   folderName: string | null = null,
 ): Promise<void> {
+  // No FK can enforce a polymorphic target, so this is the integrity check
+  // migration 05 defers to app code. Cheap, and it turns a dangling bookmark
+  // into a failed insert rather than a row that renders as nothing forever.
+  if (!(await targetExists(client, target))) {
+    throw new Error(`addBookmark: no ${target.targetType} with id ${target.targetId}`);
+  }
+
   const { error } = await client.from("bookmarks").upsert(
     {
       user_id: userId,

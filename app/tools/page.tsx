@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import { DirectoryFilters } from "@/components/features/tools/DirectoryFilters";
+import { DirectoryPager } from "@/components/features/tools/DirectoryPager";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { listTags } from "@/lib/queries/tags";
 import { listTools } from "@/lib/queries/tools";
 import { toToolCategory, toolCategoryLabel } from "@/lib/tool-categories";
+import { toPageNumber } from "@/lib/tools-url";
 
 export const metadata: Metadata = {
   title: "Tools — Viberation",
@@ -14,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 type Props = {
-  searchParams: Promise<{ category?: string; tag?: string }>;
+  searchParams: Promise<{ category?: string; tag?: string; page?: string }>;
 };
 
 export default async function ToolsPage({ searchParams }: Props) {
@@ -23,10 +25,11 @@ export default async function ToolsPage({ searchParams }: Props) {
   // hand-edited URL should still show the directory, not an error.
   const category = toToolCategory(params.category);
   const tag = params.tag?.trim() || undefined;
+  const page = toPageNumber(params.page);
 
   const supabase = await createClient();
-  const [tools, tags] = await Promise.all([
-    listTools(supabase, { category, tag }),
+  const [{ tools, total, pageCount }, tags] = await Promise.all([
+    listTools(supabase, { category, tag, page }),
     listTags(supabase),
   ]);
 
@@ -42,22 +45,33 @@ export default async function ToolsPage({ searchParams }: Props) {
       </div>
 
       {tools.length ? (
-        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {tools.map((tool) => (
-            <li key={tool.id}>
-              <ResourceCard
-                href={`/tools/${tool.slug}`}
-                title={tool.name}
-                eyebrow={toolCategoryLabel(tool.category)}
-                description={tool.tagline}
-                badges={tool.pricing_tier ? [tool.pricing_tier] : undefined}
-              />
-            </li>
-          ))}
-        </ul>
+        <>
+          <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {tools.map((tool) => (
+              <li key={tool.id}>
+                <ResourceCard
+                  href={`/tools/${tool.slug}`}
+                  title={tool.name}
+                  eyebrow={toolCategoryLabel(tool.category)}
+                  description={tool.tagline}
+                  badges={tool.pricing_tier ? [tool.pricing_tier] : undefined}
+                />
+              </li>
+            ))}
+          </ul>
+          <DirectoryPager
+            page={page}
+            pageCount={pageCount}
+            total={total}
+            category={category}
+            tag={tag}
+          />
+        </>
       ) : (
         <p className="mt-8 text-muted-foreground">
-          Nothing matches that filter yet. Try clearing the tag or picking another category.
+          {page > 1
+            ? "That page is past the end of the results. Try going back to the first page."
+            : "Nothing matches that filter yet. Try clearing the tag or picking another category."}
         </p>
       )}
     </main>

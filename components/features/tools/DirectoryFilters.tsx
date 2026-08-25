@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import type { Tag } from "@/lib/queries/tags";
 import { TOOL_CATEGORIES, type ToolCategory } from "@/lib/tool-categories";
+import { toolsHref } from "@/lib/tools-url";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -9,17 +10,6 @@ type Props = {
   tag?: string;
   tags: Tag[];
 };
-
-/** Builds `/tools?...`, dropping empty params so the base URL stays clean. */
-function toolsHref(params: { category?: string; tag?: string }): string {
-  const search = new URLSearchParams();
-
-  if (params.category) search.set("category", params.category);
-  if (params.tag) search.set("tag", params.tag);
-
-  const query = search.toString();
-  return query ? `/tools?${query}` : "/tools";
-}
 
 const chip =
   "rounded-full border px-3 py-1 text-sm transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
@@ -31,6 +21,9 @@ const chipActive = "border-transparent bg-primary text-primary-foreground hover:
  * Plain links, no client component: the filter state lives entirely in the
  * URL, so it is shareable, back-button-correct and works without JS. Each
  * chip keeps the *other* axis intact, and clicking an active chip clears it.
+ *
+ * No chip ever carries `page`, so changing a filter resets to page 1 — which
+ * is the only sane destination when the result set just changed under you.
  */
 export function DirectoryFilters({ category, tag, tags }: Props) {
   return (

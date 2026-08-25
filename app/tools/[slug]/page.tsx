@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { after } from "next/server";
 
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/integrations/supabase/server";
-import { getToolBySlug, getToolTags } from "@/lib/queries/tools";
+import { getToolBySlug, getToolTags, incrementToolViews } from "@/lib/queries/tools";
 import { toolCategoryLabel } from "@/lib/tool-categories";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -34,6 +35,18 @@ export default async function ToolPage({ params }: Props) {
   }
 
   const tags = await getToolTags(supabase, tool.id);
+
+  /*
+   * after() runs once the response has been sent, so the counter never adds
+   * latency to the page the visitor is waiting on, and a slow or failed
+   * write cannot break the render.
+   *
+   * ponytail: this counts prefetches and crawlers as views. Fine for a
+   * directory popularity signal; if view_count ever drives something that
+   * matters, dedupe it against history_items (VIB-51) instead of guessing
+   * at bot filtering here.
+   */
+  after(() => incrementToolViews(supabase, tool.slug));
 
   return (
     <main className="mx-auto w-full max-w-3xl p-6">

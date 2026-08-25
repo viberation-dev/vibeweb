@@ -1,0 +1,65 @@
+import type { Metadata } from "next";
+
+import { ResourceCard } from "@/components/features/resource/ResourceCard";
+import { DirectoryFilters } from "@/components/features/tools/DirectoryFilters";
+import { createClient } from "@/lib/integrations/supabase/server";
+import { listTags } from "@/lib/queries/tags";
+import { listTools } from "@/lib/queries/tools";
+import { toToolCategory, toolCategoryLabel } from "@/lib/tool-categories";
+
+export const metadata: Metadata = {
+  title: "Tools — Viberation",
+  description:
+    "A curated directory of AI tools for vibe coders — models, agents, IDEs, CLIs, MCP servers and more.",
+};
+
+type Props = {
+  searchParams: Promise<{ category?: string; tag?: string }>;
+};
+
+export default async function ToolsPage({ searchParams }: Props) {
+  const params = await searchParams;
+  // Unknown category values are dropped rather than 404'd: a stale or
+  // hand-edited URL should still show the directory, not an error.
+  const category = toToolCategory(params.category);
+  const tag = params.tag?.trim() || undefined;
+
+  const supabase = await createClient();
+  const [tools, tags] = await Promise.all([
+    listTools(supabase, { category, tag }),
+    listTags(supabase),
+  ]);
+
+  return (
+    <main className="mx-auto w-full max-w-6xl p-6">
+      <h1 className="font-heading text-2xl font-semibold">Tools</h1>
+      <p className="mt-1 text-muted-foreground">
+        Curated AI tools for vibe coders, grouped by what they actually are.
+      </p>
+
+      <div className="mt-6">
+        <DirectoryFilters category={category} tag={tag} tags={tags} />
+      </div>
+
+      {tools.length ? (
+        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {tools.map((tool) => (
+            <li key={tool.id}>
+              <ResourceCard
+                href={`/tools/${tool.slug}`}
+                title={tool.name}
+                eyebrow={toolCategoryLabel(tool.category)}
+                description={tool.tagline}
+                badges={tool.pricing_tier ? [tool.pricing_tier] : undefined}
+              />
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-8 text-muted-foreground">
+          Nothing matches that filter yet. Try clearing the tag or picking another category.
+        </p>
+      )}
+    </main>
+  );
+}

@@ -26,6 +26,8 @@ jobs:
 
       - run: npm run typecheck
 
+      - run: npm test
+
       - run: npm run build
         env:
           # Build-time placeholders. Real values live in Vercel env vars —

@@ -35,6 +35,9 @@ export async function AuthStatus() {
 
   return (
     <div className="flex items-center gap-3">
+      <Link href="/bookmarks" className="text-sm text-muted-foreground hover:text-foreground">
+        Bookmarks
+      </Link>
       <Link href="/profile" className="text-sm underline underline-offset-4">
         {profile.username ?? profile.email ?? "Profile"}
       </Link>

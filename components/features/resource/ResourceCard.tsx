@@ -1,7 +1,15 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export type ResourceCardProps = {
   /** Where the whole card links to. */
@@ -12,6 +20,8 @@ export type ResourceCardProps = {
   description?: string | null;
   /** Short pills under the description: tags, pricing tier, role level. */
   badges?: string[];
+  /** Controls in a footer — a bookmark toggle, a folder picker. */
+  action?: ReactNode;
 };
 
 /**
@@ -21,7 +31,14 @@ export type ResourceCardProps = {
  * render through this, so the grid stays visually identical across the site
  * and there is one place to change how a listed item looks (§34).
  */
-export function ResourceCard({ href, title, eyebrow, description, badges }: ResourceCardProps) {
+export function ResourceCard({
+  href,
+  title,
+  eyebrow,
+  description,
+  badges,
+  action,
+}: ResourceCardProps) {
   return (
     <Card className="relative h-full transition-colors hover:bg-muted/40 focus-within:ring-2 focus-within:ring-ring">
       <CardHeader>
@@ -49,6 +66,15 @@ export function ResourceCard({ href, title, eyebrow, description, badges }: Reso
             </Badge>
           ))}
         </CardContent>
+      ) : null}
+      {action ? (
+        /*
+          z-10 lifts the footer above the link's covering ::after — without it
+          the card-wide click target would swallow every control in here.
+        */
+        <CardFooter className="relative z-10 flex flex-wrap items-center justify-between gap-2">
+          {action}
+        </CardFooter>
       ) : null}
     </Card>
   );

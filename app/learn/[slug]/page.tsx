@@ -1,0 +1,104 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+
+import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
+import { Badge } from "@/components/ui/badge";
+import { createClient } from "@/lib/integrations/supabase/server";
+import { contentTypeLabel, learnHref } from "@/lib/learn";
+import { isBookmarked } from "@/lib/queries/bookmarks";
+import { getContentBySlug, getContentTags } from "@/lib/queries/content";
+
+type Props = { params: Promise<{ slug: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const item = await getContentBySlug(supabase, slug);
+
+  if (!item) {
+    return { title: "Not found — Viberation" };
+  }
+  return { title: `${item.title} — Viberation` };
+}
+
+/**
+ * One route for every content type.
+ *
+ * `help_article` and `role_guide` render here alongside the editorial types
+ * — migration 03's `content` table is the documentation system, so there is
+ * no second set of routes or templates to keep in sync (§34).
+ */
+export default async function ContentPage({ params }: Props) {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const item = await getContentBySlug(supabase, slug);
+
+  if (!item) {
+    notFound();
+  }
+
+  const tags = await getContentTags(supabase, item.id);
+
+  /*
+   * Signed-out visitors still see the button — pressing it sends them to
+   * sign in and back. Only the saved/unsaved state needs a user.
+   */
+  const { data: auth } = await supabase.auth.getUser();
+  const bookmarked = auth.user
+    ? await isBookmarked(supabase, auth.user.id, { targetType: "content", targetId: item.id })
+    : false;
+
+  return (
+    <main className="mx-auto w-full max-w-3xl p-6">
+      <Link href="/learn" className="text-sm text-muted-foreground hover:underline">
+        ← All of Learn
+      </Link>
+
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <Link href={learnHref({ type: item.type })}>
+          <Badge variant="secondary">{contentTypeLabel(item.type)}</Badge>
+        </Link>
+        {item.role_level ? (
+          <Link href={learnHref({ level: item.role_level })}>
+            <Badge variant="outline">{item.role_level}</Badge>
+          </Link>
+        ) : null}
+        {/* Only role_guide rows carry an audience; it is null on everything else. */}
+        {item.audience ? <Badge variant="outline">{item.audience}</Badge> : null}
+      </div>
+
+      <h1 className="mt-3 font-heading text-3xl font-semibold">{item.title}</h1>
+
+      {item.body ? (
+        /*
+         * ponytail: bodies render as preformatted text, not Markdown — no
+         * parser, no sanitiser, no new dependency, and nothing an author can
+         * type becomes HTML. Swap in a Markdown renderer when authored
+         * content actually needs headings and links, and sanitise it then.
+         */
+        <div className="mt-6 leading-relaxed whitespace-pre-line">{item.body}</div>
+      ) : null}
+
+      <div className="mt-8 flex flex-wrap items-center gap-3 border-t pt-6">
+        <BookmarkButton
+          targetType="content"
+          targetId={item.id}
+          bookmarked={bookmarked}
+          returnTo={`/learn/${item.slug}`}
+        />
+      </div>
+
+      {tags.length ? (
+        <div className="mt-6 flex flex-wrap items-center gap-2">
+          <span className="text-sm text-muted-foreground">Tagged</span>
+          {tags.map((tag) => (
+            <Link key={tag.id} href={`/tools?tag=${tag.slug}`}>
+              <Badge variant="outline">{tag.name}</Badge>
+            </Link>
+          ))}
+        </div>
+      ) : null}
+    </main>
+  );
+}

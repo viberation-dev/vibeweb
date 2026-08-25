@@ -7,13 +7,33 @@ import { FolderForm, RenameFolderForm } from "@/components/features/bookmarks/Fo
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import { bookmarkFolders, groupBookmarksByFolder, UNFILED } from "@/lib/bookmarks";
 import { createClient } from "@/lib/integrations/supabase/server";
+import { contentTypeLabel } from "@/lib/learn";
 import { listBookmarks } from "@/lib/queries/bookmarks";
+import { getContentByIds } from "@/lib/queries/content";
 import { getToolsByIds } from "@/lib/queries/tools";
 import { toolCategoryLabel } from "@/lib/tool-categories";
+import type { Enums } from "@/types/supabase";
 
 export const metadata: Metadata = {
   title: "Bookmarks — Viberation",
   description: "Everything you have saved, organised into folders.",
+};
+
+/**
+ * A saved thing, flattened to what a card needs.
+ *
+ * Bookmarks are polymorphic, so this page hydrates each target kind from its
+ * own table and then stops caring which table a row came from. Adding the
+ * next bookmarkable kind is one more branch in `hydrate`, not another
+ * rendering path.
+ */
+type SavedItem = {
+  targetType: Enums<"target_kind">;
+  href: string;
+  title: string;
+  eyebrow: string;
+  description: string | null;
+  badges?: string[];
 };
 
 export default async function BookmarksPage() {
@@ -26,20 +46,45 @@ export default async function BookmarksPage() {
     redirect("/login?redirectTo=/bookmarks");
   }
 
-  /*
-   * Tools only for now — they are the one bookmarkable thing that exists.
-   * Learn articles and collections join this page by hydrating their own ids
-   * the same way, once those slices land.
-   */
-  const bookmarks = await listBookmarks(supabase, data.user.id, "tool");
-  const tools = await getToolsByIds(
-    supabase,
-    bookmarks.map((bookmark) => bookmark.target_id),
-  );
+  const bookmarks = await listBookmarks(supabase, data.user.id);
+  const idsOf = (kind: Enums<"target_kind">) =>
+    bookmarks.filter((bookmark) => bookmark.target_type === kind).map((b) => b.target_id);
 
-  const toolsById = new Map(tools.map((tool) => [tool.id, tool]));
+  const [tools, content] = await Promise.all([
+    getToolsByIds(supabase, idsOf("tool")),
+    getContentByIds(supabase, idsOf("content")),
+  ]);
+
+  /*
+   * Target ids are uuids, so one map across kinds cannot collide. Kinds with
+   * no UI yet (prompts, collections, wizards) are simply absent from it, and
+   * groupBookmarksByFolder drops bookmarks whose target it cannot find —
+   * the same path a deleted tool takes.
+   */
+  const saved = new Map<string, SavedItem>();
+  for (const tool of tools) {
+    saved.set(tool.id, {
+      targetType: "tool",
+      href: `/tools/${tool.slug}`,
+      title: tool.name,
+      eyebrow: toolCategoryLabel(tool.category),
+      description: tool.tagline,
+      badges: tool.pricing_tier ? [tool.pricing_tier] : undefined,
+    });
+  }
+  for (const item of content) {
+    saved.set(item.id, {
+      targetType: "content",
+      href: `/learn/${item.slug}`,
+      title: item.title,
+      eyebrow: contentTypeLabel(item.type),
+      description: null,
+      badges: item.role_level ? [item.role_level] : undefined,
+    });
+  }
+
   const folders = bookmarkFolders(bookmarks);
-  const grouped = groupBookmarksByFolder(bookmarks, toolsById);
+  const grouped = groupBookmarksByFolder(bookmarks, saved);
 
   return (
     <main className="mx-auto w-full max-w-6xl p-6">
@@ -64,14 +109,14 @@ export default async function BookmarksPage() {
               {folder === UNFILED ? null : <RenameFolderForm folder={folder} />}
             </div>
             <ul className="mt-3 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {entries.map(({ bookmark, target: tool }) => (
+              {entries.map(({ bookmark, target }) => (
                 <li key={bookmark.id}>
                   <ResourceCard
-                    href={`/tools/${tool.slug}`}
-                    title={tool.name}
-                    eyebrow={toolCategoryLabel(tool.category)}
-                    description={tool.tagline}
-                    badges={tool.pricing_tier ? [tool.pricing_tier] : undefined}
+                    href={target.href}
+                    title={target.title}
+                    eyebrow={target.eyebrow}
+                    description={target.description}
+                    badges={target.badges}
                     action={
                       <>
                         <FolderForm
@@ -80,8 +125,8 @@ export default async function BookmarksPage() {
                           folders={folders}
                         />
                         <BookmarkButton
-                          targetType="tool"
-                          targetId={tool.id}
+                          targetType={target.targetType}
+                          targetId={bookmark.target_id}
                           bookmarked
                           returnTo="/bookmarks"
                         />
@@ -98,6 +143,10 @@ export default async function BookmarksPage() {
           Browse the{" "}
           <Link href="/tools" className="underline">
             tools directory
+          </Link>{" "}
+          or{" "}
+          <Link href="/learn" className="underline">
+            Learn
           </Link>{" "}
           and hit Save on anything worth coming back to.
         </p>

@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
 
 import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
+import { DirectoryPager } from "@/components/features/resource/DirectoryPager";
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import { DirectoryFilters } from "@/components/features/tools/DirectoryFilters";
-import { DirectoryPager } from "@/components/features/tools/DirectoryPager";
 import { createClient } from "@/lib/integrations/supabase/server";
+import { toPageNumber } from "@/lib/pagination";
 import { listBookmarks } from "@/lib/queries/bookmarks";
 import { listTags } from "@/lib/queries/tags";
 import { listTools } from "@/lib/queries/tools";
 import { toToolCategory, toolCategoryLabel } from "@/lib/tool-categories";
 import { toToolSort } from "@/lib/tool-sorts";
-import { toolsHref, toPageNumber } from "@/lib/tools-url";
+import { toolsHref } from "@/lib/tools-url";
 
 export const metadata: Metadata = {
   title: "Tools — Viberation",
@@ -84,9 +85,8 @@ export default async function ToolsPage({ searchParams }: Props) {
             page={page}
             pageCount={pageCount}
             total={total}
-            category={category}
-            tag={tag}
-            sort={sort}
+            itemLabel="tools"
+            href={(next) => toolsHref({ category, tag, sort, page: next })}
           />
         </>
       ) : (

@@ -1,4 +1,4 @@
-// Generated from the live Viberation schema (migrations 01-09).
+// Generated from the live Viberation schema (migrations 01-11).
 //
 // Produced by Supabase's own type generator, not the old scripts/gen-types.mjs
 // stopgap. Regenerate with the Supabase CLI:
@@ -127,6 +127,7 @@ export type Database = {
           created_at: string
           id: string
           role_level: Database["public"]["Enums"]["role_level"] | null
+          search_vector: unknown | null
           slug: string
           title: string
           type: Database["public"]["Enums"]["content_type"]
@@ -382,6 +383,7 @@ export type Database = {
           name: string
           outbound_url: string
           pricing_tier: string | null
+          search_vector: unknown | null
           slug: string
           tagline: string | null
           updated_at: string
@@ -539,6 +541,10 @@ export type Database = {
     Functions: {
       increment_tool_views: { Args: { tool_slug: string }; Returns: undefined }
       is_staff: { Args: never; Returns: boolean }
+      search_all: {
+        Args: { q: string; result_limit?: number }
+        Returns: { kind: string; id: string; rank: number }[]
+      }
     }
     Enums: {
       app_role: "member" | "admin" | "super_admin"

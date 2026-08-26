@@ -1,4 +1,4 @@
-import { contentTypeLabel } from "@/lib/learn";
+import { contentPreview, contentTypeLabel } from "@/lib/learn";
 import type { Content } from "@/lib/queries/content";
 import type { Tool } from "@/lib/queries/tools";
 import { toolCategoryLabel } from "@/lib/tool-categories";
@@ -45,17 +45,9 @@ export function contentView(item: Content): ResourceView {
     href: `/learn/${item.slug}`,
     title: item.title,
     eyebrow: contentTypeLabel(item.type),
-    // `content` has no tagline column, so the preview is the opening of the
-    // body rather than a second stored field.
-    description: excerpt(item.body),
+    // `content` has no tagline column, so the preview is drawn from the body
+    // rather than a second stored field.
+    description: contentPreview(item.type, item.body),
     badges: item.role_level ? [item.role_level] : undefined,
   };
-}
-
-/** First paragraph of a body, trimmed to a card-sized preview. */
-export function excerpt(body: string | null): string | null {
-  if (!body) return null;
-
-  const first = body.trim().split("\n\n")[0].replace(/\s+/g, " ");
-  return first.length > 160 ? `${first.slice(0, 157).trimEnd()}…` : first;
 }

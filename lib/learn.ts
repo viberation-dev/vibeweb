@@ -66,3 +66,23 @@ export function learnHref(params: { type?: string; level?: LevelParam; page?: nu
   const query = search.toString();
   return query ? `/learn?${query}` : "/learn";
 }
+
+/**
+ * The one-line preview a card shows under the title.
+ *
+ * Prose gets its opening paragraph with whitespace collapsed. A cheatsheet
+ * gets only its first *line*: its "first paragraph" is the whole reference
+ * table, and collapsing that runs the columns together into a wall of words
+ * — "git status what is actually changed right now git diff what changed…".
+ * One line of a cheatsheet still reads as a sentence.
+ */
+export function contentPreview(type: ContentType, body: string | null): string | null {
+  if (!body) return null;
+
+  const trimmed = body.trim();
+  const source = type === "cheatsheet" ? trimmed.split("\n")[0] : trimmed.split("\n\n")[0];
+  const collapsed = source.replace(/\s+/g, " ").trim();
+
+  if (!collapsed) return null;
+  return collapsed.length > 160 ? `${collapsed.slice(0, 157).trimEnd()}…` : collapsed;
+}

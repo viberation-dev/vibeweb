@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { after } from "next/server";
 
 import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,7 @@ import { createClient } from "@/lib/integrations/supabase/server";
 import { contentTypeLabel, learnHref } from "@/lib/learn";
 import { isBookmarked } from "@/lib/queries/bookmarks";
 import { getContentBySlug, getContentTags } from "@/lib/queries/content";
+import { recordVisit } from "@/lib/queries/history";
 import { cn } from "@/lib/utils";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -59,6 +61,16 @@ export default async function ContentPage({ params }: Props) {
       ? isBookmarked(supabase, auth.user.id, { targetType: "content", targetId: item.id })
       : Promise.resolve(false),
   ]);
+
+  /*
+   * after() runs once the response has been sent, so the history write never
+   * adds latency to the page the reader is waiting on (the pattern the tool
+   * detail view counter established).
+   */
+  if (auth.user) {
+    const userId = auth.user.id;
+    after(() => recordVisit(supabase, userId, { targetType: "content", targetId: item.id }));
+  }
 
   return (
     <main className="mx-auto w-full max-w-3xl p-6">
@@ -115,7 +127,7 @@ export default async function ContentPage({ params }: Props) {
         <div className="mt-6 flex flex-wrap items-center gap-2">
           <span className="text-sm text-muted-foreground">Tagged</span>
           {tags.map((tag) => (
-            <Link key={tag.id} href={`/tools?tag=${tag.slug}`}>
+            <Link key={tag.id} href={`/tags/${tag.slug}`}>
               <Badge variant="outline">{tag.name}</Badge>
             </Link>
           ))}

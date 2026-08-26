@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { isBookmarked } from "@/lib/queries/bookmarks";
+import { recordVisit } from "@/lib/queries/history";
 import { getToolBySlug, getToolTags, incrementToolViews } from "@/lib/queries/tools";
 import { toolCategoryLabel } from "@/lib/tool-categories";
 
@@ -67,7 +68,12 @@ export default async function ToolPage({ params }: Props) {
    * matters, dedupe it against history_items (VIB-51) instead of guessing
    * at bot filtering here.
    */
-  after(() => incrementToolViews(supabase, tool.slug));
+  after(async () => {
+    await incrementToolViews(supabase, tool.slug);
+    if (auth.user) {
+      await recordVisit(supabase, auth.user.id, { targetType: "tool", targetId: tool.id });
+    }
+  });
 
   return (
     <main className="mx-auto w-full max-w-3xl p-6">
@@ -115,7 +121,7 @@ export default async function ToolPage({ params }: Props) {
         <div className="mt-8 flex flex-wrap items-center gap-2 border-t pt-6">
           <span className="text-sm text-muted-foreground">Tagged</span>
           {tags.map((tag) => (
-            <Link key={tag.id} href={`/tools?tag=${tag.slug}`}>
+            <Link key={tag.id} href={`/tags/${tag.slug}`}>
               <Badge variant="outline">{tag.name}</Badge>
             </Link>
           ))}

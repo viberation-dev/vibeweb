@@ -28,9 +28,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    /*
+      The font variables go on <html>, not <body>: globals.css applies
+      font-sans to <html>, and a custom property declared on <body> is not
+      visible to its own parent. Declared on <body> they resolved to nothing
+      and every page fell back to the browser default serif.
+    */
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className="antialiased"
         /*
          * Grammarly, ColorZilla and friends add their own attributes to
          * <body> before React hydrates, so React reports a mismatch that no

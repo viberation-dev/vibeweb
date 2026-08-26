@@ -1,103 +1,197 @@
-import Image from "next/image";
+import Link from "next/link";
 
-export default function Home() {
+import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
+import { ResourceCard } from "@/components/features/resource/ResourceCard";
+import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { createClient } from "@/lib/integrations/supabase/server";
+import { LEARN_TYPE_VALUES } from "@/lib/learn";
+import { listBookmarks } from "@/lib/queries/bookmarks";
+import { listFeaturedCollections } from "@/lib/queries/collections";
+import { listContent } from "@/lib/queries/content";
+import { getProfile } from "@/lib/queries/profiles";
+import { listTools } from "@/lib/queries/tools";
+import { contentView, toolView, type ResourceView } from "@/lib/resource-view";
+
+/**
+ * Home / discovery feed (§31 Part 2).
+ *
+ * Sections, top to bottom: hero or greeting · onboarding nudge · featured
+ * collections · latest content (role-adaptive) · most-viewed tools.
+ *
+ * ponytail: the flagship-wizard promo §31 lists last is deliberately absent —
+ * no wizard exists until VIB-42…46. Adding the section then is the whole
+ * change; a promo linking to a route that 404s is worse than no promo.
+ */
+export default async function HomePage() {
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+
+  // The signed-in tier drives the "latest content" section, so it is needed
+  // before those queries run.
+  const profile = auth.user ? await getProfile(supabase, auth.user.id) : null;
+
+  const [collections, { items: latest }, { tools }, bookmarks] = await Promise.all([
+    listFeaturedCollections(supabase),
+    listContent(supabase, {
+      types: LEARN_TYPE_VALUES,
+      // Signed out this is undefined, which means no tier filter — a visitor
+      // sees everything rather than an arbitrary default tier's slice.
+      roleLevel: profile?.role_level,
+      pageSize: 3,
+    }),
+    listTools(supabase, { sort: "popular", pageSize: 6 }),
+    auth.user ? listBookmarks(supabase, auth.user.id) : [],
+  ]);
+
+  const bookmarkedIds = new Set(bookmarks.map((bookmark) => bookmark.target_id));
+  const greeting = profile?.username ?? auth.user?.email?.split("@")[0];
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <main className="mx-auto w-full max-w-6xl p-6">
+      {auth.user ? (
+        <section>
+          <h1 className="font-heading text-3xl font-semibold">
+            Welcome back{greeting ? `, ${greeting}` : ""}.
+          </h1>
+          <p className="mt-2 text-muted-foreground">
+            Picking up where the directory and your saved things left off.
+          </p>
+        </section>
+      ) : (
+        <section className="py-6">
+          <h1 className="font-heading text-4xl font-semibold tracking-tight">
+            The tools that actually get your project shipped.
+          </h1>
+          <p className="mt-3 max-w-2xl text-lg text-muted-foreground">
+            A curated directory of AI tools for vibe coders, with guides written for the level you
+            are actually at — not the one the docs assume.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href="/tools" className={buttonVariants({ size: "lg" })}>
+              Browse the directory
+            </Link>
+            <Link href="/learn" className={buttonVariants({ size: "lg", variant: "outline" })}>
+              Start learning
+            </Link>
+          </div>
+        </section>
+      )}
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      {/* Only for someone who has not been through it — never for visitors. */}
+      {profile && !profile.onboarding_completed ? (
+        <section className="mt-8 rounded-xl border bg-muted/40 p-5">
+          <h2 className="font-heading text-lg font-medium">Set yourself up in under a minute</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Tell us the level you are at and we will tune what you see across the site.
+          </p>
+          <Link href="/onboarding" className={buttonVariants({ className: "mt-4" })}>
+            Get started
+          </Link>
+        </section>
+      ) : null}
+
+      {collections.length ? (
+        <FeedSection title="Featured collections" href="/collections" linkLabel="All collections">
+          <ul className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {collections.map((collection) => (
+              <li key={collection.id}>
+                <Card className="relative h-full transition-colors hover:bg-muted/40 focus-within:ring-2 focus-within:ring-ring">
+                  <CardHeader>
+                    <Badge variant="secondary" className="w-fit">
+                      Collection
+                    </Badge>
+                    <CardTitle>
+                      <Link
+                        href={`/collections/${collection.slug}`}
+                        className="after:absolute after:inset-0 outline-none"
+                      >
+                        {collection.title}
+                      </Link>
+                    </CardTitle>
+                    {collection.description ? (
+                      <CardDescription>{collection.description}</CardDescription>
+                    ) : null}
+                  </CardHeader>
+                </Card>
+              </li>
+            ))}
+          </ul>
+        </FeedSection>
+      ) : null}
+
+      {latest.length ? (
+        <FeedSection
+          title={profile ? `Written for ${profile.role_level}s` : "Latest from Learn"}
+          href="/learn"
+          linkLabel="All of Learn"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+          <CardGrid views={latest.map(contentView)} bookmarkedIds={bookmarkedIds} />
+        </FeedSection>
+      ) : null}
+
+      {tools.length ? (
+        <FeedSection title="Most viewed tools" href="/tools" linkLabel="All tools">
+          <CardGrid views={tools.map(toolView)} bookmarkedIds={bookmarkedIds} />
+        </FeedSection>
+      ) : null}
+    </main>
+  );
+}
+
+function FeedSection({
+  title,
+  href,
+  linkLabel,
+  children,
+}: {
+  title: string;
+  href: string;
+  linkLabel: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="mt-12">
+      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="font-heading text-xl font-medium">{title}</h2>
+        <Link href={href} className="text-sm text-muted-foreground hover:underline">
+          {linkLabel} →
+        </Link>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function CardGrid({
+  views,
+  bookmarkedIds,
+}: {
+  views: ResourceView[];
+  bookmarkedIds: Set<string>;
+}) {
+  return (
+    <ul className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {views.map((view) => (
+        <li key={`${view.targetType}:${view.id}`}>
+          <ResourceCard
+            href={view.href}
+            title={view.title}
+            eyebrow={view.eyebrow}
+            description={view.description}
+            badges={view.badges}
+            action={
+              <BookmarkButton
+                targetType={view.targetType}
+                targetId={view.id}
+                bookmarked={bookmarkedIds.has(view.id)}
+                returnTo="/"
+              />
+            }
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        </li>
+      ))}
+    </ul>
   );
 }

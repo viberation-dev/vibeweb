@@ -1,4 +1,4 @@
--- Viberation — seed data: tools directory (VIB-27) + Learn content (VIB-32, VIB-35)
+-- Viberation — seed data: tools (VIB-27) + Learn content (VIB-32, VIB-35) + collections (VIB-41)
 --
 -- Not a migration: seed rows are content, not schema, and re-running this
 -- file must be safe. Every statement is idempotent on the natural key
@@ -386,3 +386,73 @@ from (values
 join content c on c.slug = m.content_slug
 join tags    g on g.slug = m.tag_slug
 on conflict do nothing;
+
+-- ---------------------------------------------------------------------------
+-- Curated collections (VIB-41)
+--
+-- `is_featured` drives the home feed's featured row. The starter set is what
+-- onboarding's reveal hands a new member, so it is the one collection that
+-- must always exist — keep it featured and keep it first.
+
+insert into collections (title, slug, description, is_featured) values
+  ('Your starter set', 'starter-set',
+   'The short list worth knowing before anything else: one model, one place to work, and somewhere to put what you build.',
+   true),
+  ('Ship your first web project', 'ship-your-first-web-project',
+   'Everything needed to get a real URL in front of a real person, in the order you need it.',
+   true),
+  ('Set up your local AI stack', 'local-ai-stack',
+   'The editor, the CLI agent and the extensions that turn a plain project folder into something an agent can work in.',
+   true),
+  ('Free tier only', 'free-tier-only',
+   'Tools with a genuinely usable free tier, for building something before you spend anything.',
+   false)
+on conflict (slug) do update set
+  title       = excluded.title,
+  description = excluded.description,
+  is_featured = excluded.is_featured;
+
+-- Membership is polymorphic (target_type + target_id) with no foreign key, so
+-- these joins resolve slugs to ids at seed time and silently skip anything not
+-- present — a collection referencing a tool that was never seeded simply comes
+-- out shorter rather than failing the whole file.
+delete from collection_items
+where collection_id in (
+  select id from collections
+  where slug in ('starter-set','ship-your-first-web-project','local-ai-stack','free-tier-only')
+);
+
+insert into collection_items (collection_id, target_type, target_id, sort_order)
+select c.id, 'tool', t.id, m.sort_order
+from (values
+  ('starter-set',                 'claude',        10),
+  ('starter-set',                 'cursor',        20),
+  ('starter-set',                 'vercel',        30),
+  ('ship-your-first-web-project', 'nextjs',        10),
+  ('ship-your-first-web-project', 'shadcn-ui',     20),
+  ('ship-your-first-web-project', 'supabase',      30),
+  ('ship-your-first-web-project', 'vercel',        40),
+  ('local-ai-stack',              'claude-code',   10),
+  ('local-ai-stack',              'vs-code',       20),
+  ('local-ai-stack',              'agent-skills',  30),
+  ('local-ai-stack',              'playwright-mcp',40),
+  ('free-tier-only',              'vs-code',       10),
+  ('free-tier-only',              'supabase',      20),
+  ('free-tier-only',              'vercel',        30),
+  ('free-tier-only',              'resend',        40)
+) as m(collection_slug, tool_slug, sort_order)
+join collections c on c.slug = m.collection_slug
+join tools       t on t.slug = m.tool_slug;
+
+-- Collections mix kinds: the guide that explains a set belongs in the set.
+insert into collection_items (collection_id, target_type, target_id, sort_order)
+select c.id, 'content', k.id, m.sort_order
+from (values
+  ('starter-set',                 'what-vibe-coding-is',        50),
+  ('starter-set',                 'choosing-your-first-setup',  60),
+  ('ship-your-first-web-project', 'git-commands-worth-memorising', 50),
+  ('local-ai-stack',              'why-ai-forgets-context',     50),
+  ('local-ai-stack',              'prompts-for-better-code',    60)
+) as m(collection_slug, content_slug, sort_order)
+join collections c on c.slug = m.collection_slug
+join content     k on k.slug = m.content_slug;

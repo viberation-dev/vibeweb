@@ -12,10 +12,13 @@ type Client = SupabaseClient<Database>;
  * `app_role` is deliberately absent. Migration 02's guard_app_role() trigger
  * is what actually prevents privilege escalation; keeping the field out of
  * this type is defence in depth, so a careless caller cannot even express it.
+ *
+ * `onboarding_completed` belongs here: it is the user's own flag, written
+ * once by the onboarding flow, and RLS scopes the write to their own row.
  */
 export type ProfilePreferences = Pick<
   TablesUpdate<"profiles">,
-  "username" | "role_level" | "layout_mode"
+  "username" | "role_level" | "layout_mode" | "onboarding_completed"
 >;
 
 /**

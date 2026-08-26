@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 
 import { AuthStatus } from "@/components/features/auth/AuthStatus";
+import { SearchInput } from "@/components/features/search/SearchInput";
 
 import "./globals.css";
 
@@ -70,7 +71,11 @@ export default function RootLayout({
               Wizards
             </Link>
           </nav>
-          <AuthStatus />
+          <div className="flex items-center gap-4">
+            {/* §31 puts search in the top nav on every page, not just /search. */}
+            <SearchInput compact className="hidden sm:flex" />
+            <AuthStatus />
+          </div>
         </header>
         {children}
       </body>

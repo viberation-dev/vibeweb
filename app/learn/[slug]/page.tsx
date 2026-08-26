@@ -8,6 +8,7 @@ import { createClient } from "@/lib/integrations/supabase/server";
 import { contentTypeLabel, learnHref } from "@/lib/learn";
 import { isBookmarked } from "@/lib/queries/bookmarks";
 import { getContentBySlug, getContentTags } from "@/lib/queries/content";
+import { cn } from "@/lib/utils";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -76,8 +77,19 @@ export default async function ContentPage({ params }: Props) {
          * parser, no sanitiser, no new dependency, and nothing an author can
          * type becomes HTML. Swap in a Markdown renderer when authored
          * content actually needs headings and links, and sanitise it then.
+         *
+         * pre-wrap, not pre-line: pre-line collapses runs of spaces, which
+         * is exactly what a cheatsheet uses to line its columns up. And
+         * columns only line up in a fixed-width font, so cheatsheets get one.
          */
-        <div className="mt-6 leading-relaxed whitespace-pre-line">{item.body}</div>
+        <div
+          className={cn(
+            "mt-6 whitespace-pre-wrap",
+            item.type === "cheatsheet" ? "font-mono text-sm leading-6" : "leading-relaxed",
+          )}
+        >
+          {item.body}
+        </div>
       ) : null}
 
       <div className="mt-8 flex flex-wrap items-center gap-3 border-t pt-6">

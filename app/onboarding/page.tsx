@@ -18,6 +18,7 @@ import {
 import { listFeaturedCollections, type Collection } from "@/lib/queries/collections";
 import { listTags, type Tag } from "@/lib/queries/tags";
 import { listTools, type Tool } from "@/lib/queries/tools";
+import { listWizards, type Wizard } from "@/lib/queries/wizards";
 import { toolView } from "@/lib/resource-view";
 import { ROLE_LEVELS, toRoleLevel, type RoleLevel } from "@/lib/role-level";
 import { cn } from "@/lib/utils";
@@ -63,7 +64,7 @@ export default async function OnboardingPage({ searchParams }: Props) {
   const tags = step >= 2 ? await listTags(supabase) : [];
   const focusTag = tags.find((tag) => tag.slug === focus);
 
-  const [starterTools, starterCollections] =
+  const [starterTools, starterCollections, wizards] =
     step === 3
       ? await Promise.all([
           // Narrowed to the focus when there is one. If that tag has fewer
@@ -73,8 +74,9 @@ export default async function OnboardingPage({ searchParams }: Props) {
             (page) => page.tools,
           ),
           listFeaturedCollections(supabase, 1),
+          listWizards(supabase),
         ])
-      : [[], []];
+      : [[], [], []];
 
   const heading = ONBOARDING_STEPS.find((s) => s.step === step)!.title;
 
@@ -105,6 +107,7 @@ export default async function OnboardingPage({ searchParams }: Props) {
           focusTag={focusTag}
           tools={starterTools}
           collection={starterCollections[0]}
+          wizard={wizards[0]}
         />
       ) : null}
     </main>
@@ -199,11 +202,13 @@ function StepReveal({
   focusTag,
   tools,
   collection,
+  wizard,
 }: {
   level: RoleLevel;
   focusTag?: Tag;
   tools: Tool[];
   collection?: Collection;
+  wizard?: Wizard;
 }) {
   return (
     <>
@@ -255,16 +260,36 @@ function StepReveal({
         </section>
       ) : null}
 
+      {wizard ? (
+        <section className="mt-8">
+          <h2 className="font-heading text-lg font-medium">Or start building right now</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {wizard.steps.length} guided steps that end with a real URL you can send someone.
+          </p>
+        </section>
+      ) : null}
+
       {/*
-        ponytail: §31 puts the flagship-wizard CTA here as the primary action.
-        No wizard exists until VIB-42…46, so finishing goes to the feed for
-        now — pointing this at the runner is the whole change once it ships.
+        §31: the flagship wizard is the primary action here, with the feed as
+        the secondary. Both submit the same form, so the level is saved either
+        way — the only difference is where you land.
       */}
-      <form action={finishOnboardingAction} className="mt-10">
+      <form action={finishOnboardingAction} className="mt-6 flex flex-wrap items-center gap-3">
         <input type="hidden" name="role_level" value={level} />
-        <Button type="submit" size="lg">
-          Finish and take me in
-        </Button>
+        {wizard ? (
+          <>
+            <Button type="submit" name="next" value={`/wizards/${wizard.slug}`} size="lg">
+              Start {wizard.title}
+            </Button>
+            <Button type="submit" name="next" value="/" size="lg" variant="outline">
+              Just take me to the feed
+            </Button>
+          </>
+        ) : (
+          <Button type="submit" size="lg">
+            Finish and take me in
+          </Button>
+        )}
       </form>
       <p className="mt-3 text-sm text-muted-foreground">
         Finishing saves your level. Change it any time from{" "}

@@ -33,22 +33,32 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ContentPage({ params }: Props) {
   const { slug } = await params;
   const supabase = await createClient();
-  const item = await getContentBySlug(supabase, slug);
+
+  /*
+   * Two waves, not four. The row and the session do not depend on each other,
+   * and neither do the tags and the saved state — issuing them serially cost
+   * two extra Supabase round trips per view, which is the whole page budget
+   * when the database is a continent away (VIB-56).
+   */
+  const [item, { data: auth }] = await Promise.all([
+    getContentBySlug(supabase, slug),
+    supabase.auth.getUser(),
+  ]);
 
   if (!item) {
     notFound();
   }
 
-  const tags = await getContentTags(supabase, item.id);
-
   /*
    * Signed-out visitors still see the button — pressing it sends them to
    * sign in and back. Only the saved/unsaved state needs a user.
    */
-  const { data: auth } = await supabase.auth.getUser();
-  const bookmarked = auth.user
-    ? await isBookmarked(supabase, auth.user.id, { targetType: "content", targetId: item.id })
-    : false;
+  const [tags, bookmarked] = await Promise.all([
+    getContentTags(supabase, item.id),
+    auth.user
+      ? isBookmarked(supabase, auth.user.id, { targetType: "content", targetId: item.id })
+      : Promise.resolve(false),
+  ]);
 
   return (
     <main className="mx-auto w-full max-w-3xl p-6">

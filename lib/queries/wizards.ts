@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { getToolsByIds, type Tool } from "@/lib/queries/tools";
+import type { Tool } from "@/lib/queries/tools";
 import {
   checklistStateSchema,
   wizardStepsSchema,
@@ -71,22 +71,24 @@ export async function getWizardBySlug(client: Client, slug: string): Promise<Wiz
   return data ? parseWizard(data) : null;
 }
 
-/** The tools a wizard recommends, alphabetical (VIB-46). */
+/**
+ * The tools a wizard recommends, alphabetical (VIB-46).
+ *
+ * One round trip, not two: the join table and `tools` are fetched together
+ * through an embedded select, the same shape getToolTags and getContentTags
+ * already use. Reading the ids first and then the rows doubled the cost of
+ * the panel for nothing.
+ */
 export async function getWizardTools(client: Client, wizardId: string): Promise<Tool[]> {
   const { data, error } = await client
     .from("wizard_recommended_tools")
-    .select("tool_id")
+    .select("tools!inner(*)")
     .eq("wizard_id", wizardId);
 
   if (error) {
     throw new Error(`getWizardTools(${wizardId}): ${error.message}`);
   }
-
-  const tools = await getToolsByIds(
-    client,
-    data.map((row) => row.tool_id),
-  );
-  return tools.sort((a, b) => a.name.localeCompare(b.name));
+  return data.map((row) => row.tools).sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export type ProgressSnapshot = {

@@ -30,22 +30,32 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ToolPage({ params }: Props) {
   const { slug } = await params;
   const supabase = await createClient();
-  const tool = await getToolBySlug(supabase, slug);
+
+  /*
+   * Two waves, not four. The row and the session do not depend on each other,
+   * and neither do the tags and the saved state — issuing them serially cost
+   * two extra Supabase round trips per view, which is the whole page budget
+   * when the database is a continent away (VIB-56).
+   */
+  const [tool, { data: auth }] = await Promise.all([
+    getToolBySlug(supabase, slug),
+    supabase.auth.getUser(),
+  ]);
 
   if (!tool) {
     notFound();
   }
 
-  const tags = await getToolTags(supabase, tool.id);
-
   /*
    * Signed-out visitors still see the button — pressing it sends them to
    * sign in and back. Only the saved/unsaved state needs a user.
    */
-  const { data: auth } = await supabase.auth.getUser();
-  const bookmarked = auth.user
-    ? await isBookmarked(supabase, auth.user.id, { targetType: "tool", targetId: tool.id })
-    : false;
+  const [tags, bookmarked] = await Promise.all([
+    getToolTags(supabase, tool.id),
+    auth.user
+      ? isBookmarked(supabase, auth.user.id, { targetType: "tool", targetId: tool.id })
+      : Promise.resolve(false),
+  ]);
 
   /*
    * after() runs once the response has been sent, so the counter never adds

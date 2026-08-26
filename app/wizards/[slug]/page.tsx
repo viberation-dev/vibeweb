@@ -41,7 +41,17 @@ export default async function WizardRunnerPage({ params, searchParams }: Props) 
   const { step: stepParam } = await searchParams;
 
   const supabase = await createClient();
-  const wizard = await getWizardBySlug(supabase, slug);
+
+  /*
+   * Two waves, not four. This page was the worst offender in the app: wizard
+   * → session → progress → tools, each waiting on the last, and the tools
+   * lookup was itself two round trips. Only progress genuinely depends on
+   * anything earlier (it needs the user and the wizard id) — VIB-56.
+   */
+  const [wizard, { data: auth }] = await Promise.all([
+    getWizardBySlug(supabase, slug),
+    supabase.auth.getUser(),
+  ]);
 
   // Drafts are filtered out by RLS for anyone but staff, so this covers both
   // "no such wizard" and "not yours to see".
@@ -49,15 +59,16 @@ export default async function WizardRunnerPage({ params, searchParams }: Props) 
     notFound();
   }
 
-  const { data: auth } = await supabase.auth.getUser();
-  const progress = auth.user ? await getWizardProgress(supabase, auth.user.id, wizard.id) : null;
+  const [progress, tools] = await Promise.all([
+    auth.user ? getWizardProgress(supabase, auth.user.id, wizard.id) : Promise.resolve(null),
+    getWizardTools(supabase, wizard.id),
+  ]);
 
   const stepIndex = resolveStepIndex(stepParam, progress?.stepIndex ?? null, wizard.steps.length);
   const step = wizard.steps[stepIndex];
 
   const checklistState = progress?.checklistState ?? {};
   const summary = summariseProgress(wizard.steps, checklistState);
-  const tools = await getWizardTools(supabase, wizard.id);
 
   const isLastStep = stepIndex === wizard.steps.length - 1;
 

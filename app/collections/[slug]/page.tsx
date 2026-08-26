@@ -28,24 +28,35 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function CollectionPage({ params }: Props) {
   const { slug } = await params;
   const supabase = await createClient();
-  const collection = await getCollectionBySlug(supabase, slug);
+
+  /*
+   * Two waves, not four. The row and the session do not depend on each other,
+   * and neither do the tags and the saved state — issuing them serially cost
+   * two extra Supabase round trips per view, which is the whole page budget
+   * when the database is a continent away (VIB-56).
+   */
+  const [collection, { data: auth }] = await Promise.all([
+    getCollectionBySlug(supabase, slug),
+    supabase.auth.getUser(),
+  ]);
 
   if (!collection) {
     notFound();
   }
-
-  const entries = await getCollectionEntries(supabase, collection.id);
-  const views = entries.map((entry) =>
-    entry.kind === "tool" ? toolView(entry.tool) : contentView(entry.content),
-  );
 
   /*
    * Signed-out visitors still see Save buttons; pressing one sends them to
    * sign in. Only which ones read as saved needs a user. Both kinds are
    * fetched because a collection mixes tools and articles in one list.
    */
-  const { data: auth } = await supabase.auth.getUser();
-  const bookmarks = auth.user ? await listBookmarks(supabase, auth.user.id) : [];
+  const [entries, bookmarks] = await Promise.all([
+    getCollectionEntries(supabase, collection.id),
+    auth.user ? listBookmarks(supabase, auth.user.id) : Promise.resolve([]),
+  ]);
+
+  const views = entries.map((entry) =>
+    entry.kind === "tool" ? toolView(entry.tool) : contentView(entry.content),
+  );
   const bookmarkedIds = new Set(bookmarks.map((bookmark) => bookmark.target_id));
 
   const returnTo = `/collections/${collection.slug}`;

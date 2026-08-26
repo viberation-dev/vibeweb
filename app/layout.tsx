@@ -60,6 +60,12 @@ export default function RootLayout({
             <Link href="/learn" className="text-sm text-muted-foreground hover:text-foreground">
               Learn
             </Link>
+            <Link
+              href="/collections"
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
+              Collections
+            </Link>
           </nav>
           <AuthStatus />
         </header>

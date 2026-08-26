@@ -7,7 +7,7 @@ import { supabasePublishableKey, supabaseUrl } from "./env";
  * Route prefixes that require a signed-in user. Everything else is public —
  * the directory and Learn content are readable by visitors by design.
  */
-const PROTECTED_PREFIXES = ["/profile", "/bookmarks"] as const;
+const PROTECTED_PREFIXES = ["/profile", "/bookmarks", "/onboarding"] as const;
 
 function isProtected(pathname: string): boolean {
   return PROTECTED_PREFIXES.some(

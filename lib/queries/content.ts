@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import type { ContentType, RoleLevel } from "@/lib/learn";
+import type { ContentType } from "@/lib/learn";
+import { roleLevelFilter, type RoleLevel } from "@/lib/role-level";
 import type { Database, Enums, Tables } from "@/types/supabase";
 
 export type Content = Tables<"content">;
@@ -65,7 +66,7 @@ export async function listContent(
   }
 
   if (filters.roleLevel) {
-    query = query.or(`role_level.is.null,role_level.eq.${filters.roleLevel}`);
+    query = query.or(roleLevelFilter(filters.roleLevel));
   }
 
   if (filters.audience) {

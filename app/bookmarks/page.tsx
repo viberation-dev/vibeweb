@@ -7,33 +7,15 @@ import { FolderForm, RenameFolderForm } from "@/components/features/bookmarks/Fo
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import { bookmarkFolders, groupBookmarksByFolder, UNFILED } from "@/lib/bookmarks";
 import { createClient } from "@/lib/integrations/supabase/server";
-import { contentTypeLabel } from "@/lib/learn";
 import { listBookmarks } from "@/lib/queries/bookmarks";
 import { getContentByIds } from "@/lib/queries/content";
 import { getToolsByIds } from "@/lib/queries/tools";
-import { toolCategoryLabel } from "@/lib/tool-categories";
+import { contentView, toolView, type ResourceView } from "@/lib/resource-view";
 import type { Enums } from "@/types/supabase";
 
 export const metadata: Metadata = {
   title: "Bookmarks — Viberation",
   description: "Everything you have saved, organised into folders.",
-};
-
-/**
- * A saved thing, flattened to what a card needs.
- *
- * Bookmarks are polymorphic, so this page hydrates each target kind from its
- * own table and then stops caring which table a row came from. Adding the
- * next bookmarkable kind is one more branch in `hydrate`, not another
- * rendering path.
- */
-type SavedItem = {
-  targetType: Enums<"target_kind">;
-  href: string;
-  title: string;
-  eyebrow: string;
-  description: string | null;
-  badges?: string[];
 };
 
 export default async function BookmarksPage() {
@@ -61,26 +43,9 @@ export default async function BookmarksPage() {
    * groupBookmarksByFolder drops bookmarks whose target it cannot find —
    * the same path a deleted tool takes.
    */
-  const saved = new Map<string, SavedItem>();
-  for (const tool of tools) {
-    saved.set(tool.id, {
-      targetType: "tool",
-      href: `/tools/${tool.slug}`,
-      title: tool.name,
-      eyebrow: toolCategoryLabel(tool.category),
-      description: tool.tagline,
-      badges: tool.pricing_tier ? [tool.pricing_tier] : undefined,
-    });
-  }
-  for (const item of content) {
-    saved.set(item.id, {
-      targetType: "content",
-      href: `/learn/${item.slug}`,
-      title: item.title,
-      eyebrow: contentTypeLabel(item.type),
-      description: null,
-      badges: item.role_level ? [item.role_level] : undefined,
-    });
+  const saved = new Map<string, ResourceView>();
+  for (const view of [...tools.map(toolView), ...content.map(contentView)]) {
+    saved.set(view.id, view);
   }
 
   const folders = bookmarkFolders(bookmarks);

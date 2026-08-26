@@ -5,18 +5,13 @@ import { LearnFilters } from "@/components/features/learn/LearnFilters";
 import { DirectoryPager } from "@/components/features/resource/DirectoryPager";
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import { createClient } from "@/lib/integrations/supabase/server";
-import {
-  contentTypeLabel,
-  LEARN_TYPE_VALUES,
-  learnHref,
-  resolveRoleLevel,
-  toContentType,
-  toLevelParam,
-} from "@/lib/learn";
+import { LEARN_TYPE_VALUES, learnHref, toContentType } from "@/lib/learn";
 import { toPageNumber } from "@/lib/pagination";
 import { listBookmarks } from "@/lib/queries/bookmarks";
 import { listContent } from "@/lib/queries/content";
 import { getProfile } from "@/lib/queries/profiles";
+import { contentView } from "@/lib/resource-view";
+import { resolveRoleLevel, toLevelParam } from "@/lib/role-level";
 
 export const metadata: Metadata = {
   title: "Learn — Viberation",
@@ -78,21 +73,19 @@ export default async function LearnPage({ searchParams }: Props) {
       {items.length ? (
         <>
           <ul className="mt-8 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {items.map((item) => (
-              <li key={item.id}>
+            {items.map(contentView).map((view) => (
+              <li key={view.id}>
                 <ResourceCard
-                  href={`/learn/${item.slug}`}
-                  title={item.title}
-                  eyebrow={contentTypeLabel(item.type)}
-                  // `content` has no tagline column, so the card preview is
-                  // the opening of the body rather than a second stored field.
-                  description={excerpt(item.body)}
-                  badges={item.role_level ? [item.role_level] : undefined}
+                  href={view.href}
+                  title={view.title}
+                  eyebrow={view.eyebrow}
+                  description={view.description}
+                  badges={view.badges}
                   action={
                     <BookmarkButton
-                      targetType="content"
-                      targetId={item.id}
-                      bookmarked={bookmarkedIds.has(item.id)}
+                      targetType={view.targetType}
+                      targetId={view.id}
+                      bookmarked={bookmarkedIds.has(view.id)}
                       returnTo={returnTo}
                     />
                   }
@@ -117,12 +110,4 @@ export default async function LearnPage({ searchParams }: Props) {
       )}
     </main>
   );
-}
-
-/** First paragraph of the body, trimmed to a card-sized preview. */
-function excerpt(body: string | null): string | null {
-  if (!body) return null;
-
-  const first = body.trim().split("\n\n")[0].replace(/\s+/g, " ");
-  return first.length > 160 ? `${first.slice(0, 157).trimEnd()}…` : first;
 }

@@ -1,14 +1,7 @@
 import Link from "next/link";
 
-import {
-  ALL_LEVELS,
-  LEARN_TYPES,
-  learnHref,
-  ROLE_LEVELS,
-  type ContentType,
-  type LevelParam,
-  type RoleLevel,
-} from "@/lib/learn";
+import { LEARN_TYPES, learnHref, type ContentType } from "@/lib/learn";
+import { ALL_LEVELS, ROLE_LEVELS, type LevelParam, type RoleLevel } from "@/lib/role-level";
 import { cn } from "@/lib/utils";
 
 type Props = {

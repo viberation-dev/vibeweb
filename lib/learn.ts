@@ -1,7 +1,7 @@
+import type { LevelParam } from "@/lib/role-level";
 import type { Enums } from "@/types/supabase";
 
 export type ContentType = Enums<"content_type">;
-export type RoleLevel = Enums<"role_level">;
 
 /**
  * Display label for every content type.
@@ -49,43 +49,6 @@ export function contentTypeLabel(value: ContentType): string {
   return TYPE_LABELS[value];
 }
 
-export const ROLE_LEVELS = [
-  { value: "beginner", label: "Beginner" },
-  { value: "intermediate", label: "Intermediate" },
-  { value: "expert", label: "Expert" },
-] as const satisfies ReadonlyArray<{ value: RoleLevel; label: string }>;
-
-/** `?level=all` — the explicit "ignore my tier, show everything" choice. */
-export const ALL_LEVELS = "all";
-
-export type LevelParam = RoleLevel | typeof ALL_LEVELS;
-
-/** Narrows an untrusted `?level=` value to a real choice, or undefined. */
-export function toLevelParam(value: string | undefined): LevelParam | undefined {
-  if (value === ALL_LEVELS) return ALL_LEVELS;
-  return ROLE_LEVELS.some((l) => l.value === value) ? (value as RoleLevel) : undefined;
-}
-
-/**
- * The tier the listing actually filters on.
- *
- * Three distinct states, which is why this is a function and not a `??`:
- *   - no param        → fall back to the signed-in user's tier (null signed out)
- *   - `?level=all`    → no tier filter, even when signed in
- *   - `?level=expert` → that tier, overriding the profile
- *
- * `undefined` means "no filter" — content with a null `role_level` is meant
- * for everyone and is never excluded by any of these.
- */
-export function resolveRoleLevel(
-  param: LevelParam | undefined,
-  profileLevel: RoleLevel | null,
-): RoleLevel | undefined {
-  if (param === ALL_LEVELS) return undefined;
-  if (param) return param;
-  return profileLevel ?? undefined;
-}
-
 /**
  * Builds `/learn?...` URLs.
  *
@@ -93,7 +56,7 @@ export function resolveRoleLevel(
  * chips and the pager. Empty params are dropped and `page` is omitted at
  * page 1, so the canonical URL for the unfiltered first page stays `/learn`.
  */
-export function learnHref(params: { type?: string; level?: string; page?: number }): string {
+export function learnHref(params: { type?: string; level?: LevelParam; page?: number }): string {
   const search = new URLSearchParams();
 
   if (params.type) search.set("type", params.type);
@@ -102,4 +65,24 @@ export function learnHref(params: { type?: string; level?: string; page?: number
 
   const query = search.toString();
   return query ? `/learn?${query}` : "/learn";
+}
+
+/**
+ * The one-line preview a card shows under the title.
+ *
+ * Prose gets its opening paragraph with whitespace collapsed. A cheatsheet
+ * gets only its first *line*: its "first paragraph" is the whole reference
+ * table, and collapsing that runs the columns together into a wall of words
+ * — "git status what is actually changed right now git diff what changed…".
+ * One line of a cheatsheet still reads as a sentence.
+ */
+export function contentPreview(type: ContentType, body: string | null): string | null {
+  if (!body) return null;
+
+  const trimmed = body.trim();
+  const source = type === "cheatsheet" ? trimmed.split("\n")[0] : trimmed.split("\n\n")[0];
+  const collapsed = source.replace(/\s+/g, " ").trim();
+
+  if (!collapsed) return null;
+  return collapsed.length > 160 ? `${collapsed.slice(0, 157).trimEnd()}…` : collapsed;
 }

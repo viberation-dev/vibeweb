@@ -66,6 +66,9 @@ export default function RootLayout({
             >
               Collections
             </Link>
+            <Link href="/wizards" className="text-sm text-muted-foreground hover:text-foreground">
+              Wizards
+            </Link>
           </nav>
           <AuthStatus />
         </header>

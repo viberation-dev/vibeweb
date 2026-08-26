@@ -27,6 +27,7 @@ export async function finishOnboardingAction(formData: FormData): Promise<void> 
    */
   const parsed = onboardingFinishSchema.safeParse({
     role_level: formData.get("role_level") ?? DEFAULT_ROLE_LEVEL,
+    next: formData.get("next") ?? undefined,
   });
 
   if (!parsed.success) {
@@ -53,5 +54,5 @@ export async function finishOnboardingAction(formData: FormData): Promise<void> 
   // The tier changes what Learn and the home feed show, so every cached
   // render is now stale.
   revalidatePath("/", "layout");
-  redirect("/");
+  redirect(parsed.data.next ?? "/");
 }

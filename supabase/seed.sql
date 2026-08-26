@@ -1,4 +1,4 @@
--- Viberation — seed data: tools (VIB-27) + Learn content (VIB-32, VIB-35) + collections (VIB-41)
+-- Viberation — seed data: tools (VIB-27) + Learn content (VIB-32, VIB-35) + collections (VIB-41) + flagship wizard (VIB-43)
 --
 -- Not a migration: seed rows are content, not schema, and re-running this
 -- file must be safe. Every statement is idempotent on the natural key
@@ -456,3 +456,176 @@ from (values
 ) as m(collection_slug, content_slug, sort_order)
 join collections c on c.slug = m.collection_slug
 join content     k on k.slug = m.content_slug;
+
+-- ---------------------------------------------------------------------------
+-- Flagship wizard: Ship your first web project (VIB-43)
+--
+-- Four steps, Idea to Launch. `steps` is jsonb because migration 04 keeps the
+-- lean MVP shape; lib/validation/wizard.ts is what actually enforces it, so
+-- edits here must keep every task id unique across the whole wizard —
+-- checklist_state is one flat object keyed by those ids.
+
+insert into wizards (title, slug, kind, reusable, role_level, status, steps) values
+(
+  'Ship your first web project',
+  'ship-your-first-web-project',
+  'wizard',
+  false,
+  'beginner',
+  'published',
+  '[
+    {
+      "key": "idea",
+      "title": "Idea",
+      "intro": "The hardest part of a first project is choosing one small enough to finish.",
+      "blocks": [
+        {
+          "kind": "text",
+          "body": "Pick something with one screen and one job. A page that lists your favourite recipes. A countdown to a date that matters. A form that emails you.\n\nThe test is whether you can describe it in one sentence without the word and. If you need and, it is two projects, and you will finish neither."
+        },
+        {
+          "kind": "callout",
+          "tone": "warning",
+          "body": "Do not start with the thing you actually want to build. Start with the boring version of it, ship that, then make it interesting. Shipping is the skill you are practising here, not design."
+        },
+        {
+          "kind": "prompt",
+          "label": "Paste this into your AI tool to pressure-test the idea",
+          "prompt": "I want to build this as my first web project: [describe it in one sentence].\n\nBefore any code, tell me:\n1. Is this one screen or several? If several, what is the smallest one-screen version?\n2. What data does it need to store, if any?\n3. What is the single thing that would make this take a week instead of an evening?\n\nBe blunt. I would rather cut scope now than abandon this on Thursday."
+        },
+        {
+          "kind": "checklist",
+          "tasks": [
+            { "id": "idea-sentence", "label": "Written the idea as one sentence, with no and in it" },
+            { "id": "idea-scope", "label": "Cut it down to a single screen" },
+            { "id": "idea-done", "label": "Decided what done looks like, so I can tell when I am finished" }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "stack",
+      "title": "Stack",
+      "intro": "Pick tools that get out of the way. You can change any of this later.",
+      "blocks": [
+        {
+          "kind": "text",
+          "body": "For a first project the stack matters far less than picking one and stopping. Next.js for the app, Tailwind for styling, Vercel to host it. Add a database only if your idea actually stores something."
+        },
+        {
+          "kind": "code",
+          "language": "bash",
+          "code": "npx create-next-app@latest my-project",
+          "expected": "A series of questions, then a my-project folder with node_modules installed. Answer yes to TypeScript, yes to Tailwind, yes to App Router."
+        },
+        {
+          "kind": "code",
+          "language": "bash",
+          "code": "cd my-project\nnpm run dev",
+          "expected": "Local: http://localhost:3000 — open it and you should see the Next.js starter page."
+        },
+        {
+          "kind": "callout",
+          "tone": "tip",
+          "body": "If localhost:3000 shows the starter page, the hard part of setup is already behind you. Everything from here is editing files and refreshing."
+        },
+        {
+          "kind": "checklist",
+          "tasks": [
+            { "id": "stack-created", "label": "Created the project with create-next-app" },
+            { "id": "stack-running", "label": "Seen the starter page at localhost:3000" },
+            { "id": "stack-edited", "label": "Changed some text in app/page.tsx and watched it update" }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "deploy",
+      "title": "Deploy",
+      "intro": "Deploy on day one, while there is nothing to lose. Do not save it for the end.",
+      "blocks": [
+        {
+          "kind": "text",
+          "body": "Deploying early means every change after this is a small, safe step instead of one terrifying leap at the end. It also means you have a real URL to send someone the moment it is worth sending."
+        },
+        {
+          "kind": "code",
+          "language": "bash",
+          "code": "git init\ngit add -A\ngit commit -m \"first commit\"",
+          "expected": "create mode ... lines for each file, and a commit hash. If git complains about your name or email, set them with git config and run the commit again."
+        },
+        {
+          "kind": "text",
+          "body": "Now make an empty repository on GitHub, then connect it and push. GitHub shows you the exact two commands on the page right after you create it."
+        },
+        {
+          "kind": "text",
+          "body": "With the code on GitHub, go to vercel.com, choose Add New Project, and pick the repository. Accept every default and press Deploy. When it finishes you have a live URL."
+        },
+        {
+          "kind": "callout",
+          "tone": "tip",
+          "body": "From now on, every push to your main branch deploys automatically. That is the whole workflow — there is no separate deploy step to remember."
+        },
+        {
+          "kind": "checklist",
+          "tasks": [
+            { "id": "deploy-git", "label": "Made the first commit" },
+            { "id": "deploy-github", "label": "Pushed the repository to GitHub" },
+            { "id": "deploy-vercel", "label": "Deployed on Vercel and opened the live URL" },
+            { "id": "deploy-second", "label": "Pushed a second change and watched it deploy itself" }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "launch",
+      "title": "Launch",
+      "intro": "The last mile: make it yours, then tell one person.",
+      "blocks": [
+        {
+          "kind": "text",
+          "body": "Nothing here is technically hard. It is the part everyone skips, and it is the difference between a folder on your laptop and something that exists."
+        },
+        {
+          "kind": "prompt",
+          "label": "Ask for a pre-launch review",
+          "prompt": "Here is my first web project: [paste your URL].\n\nLook at it as a stranger would and tell me:\n1. Within five seconds, is it obvious what this does?\n2. Anything visibly broken or half-finished?\n3. The single highest-value thing I could fix in under thirty minutes?\n\nDo not suggest new features. I am trying to finish, not start again."
+        },
+        {
+          "kind": "checklist",
+          "tasks": [
+            { "id": "launch-title", "label": "Set the page title and description so it is not Create Next App" },
+            { "id": "launch-mobile", "label": "Opened it on a phone and fixed anything obviously broken" },
+            { "id": "launch-placeholder", "label": "Removed every piece of leftover starter content" },
+            { "id": "launch-share", "label": "Sent the URL to one actual human being" }
+          ]
+        },
+        {
+          "kind": "callout",
+          "tone": "info",
+          "body": "That last task is the one that counts. A project nobody has seen is still a draft. Once someone has opened it, you have shipped, and the next one is meaningfully easier."
+        }
+      ]
+    }
+  ]'::jsonb
+)
+on conflict (slug) do update set
+  title      = excluded.title,
+  kind       = excluded.kind,
+  role_level = excluded.role_level,
+  status     = excluded.status,
+  steps      = excluded.steps,
+  updated_at = now();
+
+-- Recommended tools panel (VIB-46). Resolved by slug so a tool that was never
+-- seeded is simply skipped rather than failing the file.
+delete from wizard_recommended_tools
+where wizard_id in (select id from wizards where slug = 'ship-your-first-web-project');
+
+insert into wizard_recommended_tools (wizard_id, tool_id)
+select w.id, t.id
+from wizards w
+join tools t on t.slug in ('nextjs', 'shadcn-ui', 'vercel', 'supabase', 'claude-code')
+where w.slug = 'ship-your-first-web-project'
+on conflict do nothing;

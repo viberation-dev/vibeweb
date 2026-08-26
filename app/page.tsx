@@ -12,17 +12,15 @@ import { listFeaturedCollections } from "@/lib/queries/collections";
 import { listContent } from "@/lib/queries/content";
 import { getProfile } from "@/lib/queries/profiles";
 import { listTools } from "@/lib/queries/tools";
+import { listWizards } from "@/lib/queries/wizards";
 import { contentView, toolView, type ResourceView } from "@/lib/resource-view";
 
 /**
  * Home / discovery feed (§31 Part 2).
  *
  * Sections, top to bottom: hero or greeting · onboarding nudge · featured
- * collections · latest content (role-adaptive) · most-viewed tools.
- *
- * ponytail: the flagship-wizard promo §31 lists last is deliberately absent —
- * no wizard exists until VIB-42…46. Adding the section then is the whole
- * change; a promo linking to a route that 404s is worse than no promo.
+ * collections · latest content (role-adaptive) · most-viewed tools · the
+ * flagship wizard promo.
  */
 export default async function HomePage() {
   const supabase = await createClient();
@@ -32,7 +30,7 @@ export default async function HomePage() {
   // before those queries run.
   const profile = auth.user ? await getProfile(supabase, auth.user.id) : null;
 
-  const [collections, { items: latest }, { tools }, bookmarks] = await Promise.all([
+  const [collections, { items: latest }, { tools }, bookmarks, wizards] = await Promise.all([
     listFeaturedCollections(supabase),
     listContent(supabase, {
       types: LEARN_TYPE_VALUES,
@@ -43,7 +41,12 @@ export default async function HomePage() {
     }),
     listTools(supabase, { sort: "popular", pageSize: 6 }),
     auth.user ? listBookmarks(supabase, auth.user.id) : [],
+    listWizards(supabase),
   ]);
+
+  // §31 puts the flagship promo last. Nothing renders it when no wizard is
+  // published, so the section cannot point at a route that 404s.
+  const flagship = wizards[0];
 
   const bookmarkedIds = new Set(bookmarks.map((bookmark) => bookmark.target_id));
   const greeting = profile?.username ?? auth.user?.email?.split("@")[0];
@@ -135,6 +138,22 @@ export default async function HomePage() {
         <FeedSection title="Most viewed tools" href="/tools" linkLabel="All tools">
           <CardGrid views={tools.map(toolView)} bookmarkedIds={bookmarkedIds} />
         </FeedSection>
+      ) : null}
+
+      {flagship ? (
+        <section className="mt-12 rounded-xl border bg-muted/40 p-6">
+          <Badge variant="secondary" className="w-fit">
+            Guided build
+          </Badge>
+          <h2 className="mt-2 font-heading text-xl font-medium">{flagship.title}</h2>
+          <p className="mt-1 max-w-2xl text-muted-foreground">
+            {flagship.steps.length} steps, ending with something real on the internet:{" "}
+            {flagship.steps.map((step) => step.title).join(" → ")}.
+          </p>
+          <Link href={`/wizards/${flagship.slug}`} className={buttonVariants({ className: "mt-4" })}>
+            Start the build
+          </Link>
+        </section>
       ) : null}
     </main>
   );

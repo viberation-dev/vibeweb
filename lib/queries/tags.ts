@@ -15,3 +15,13 @@ export async function listTags(client: Client): Promise<Tag[]> {
   }
   return data;
 }
+
+/** One tag by its URL slug. Null when it does not exist. */
+export async function getTagBySlug(client: Client, slug: string): Promise<Tag | null> {
+  const { data, error } = await client.from("tags").select("*").eq("slug", slug).maybeSingle();
+
+  if (error) {
+    throw new Error(`getTagBySlug(${slug}): ${error.message}`);
+  }
+  return data;
+}

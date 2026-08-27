@@ -38,6 +38,9 @@ export async function AuthStatus() {
       <Link href="/bookmarks" className="text-sm text-muted-foreground hover:text-foreground">
         Bookmarks
       </Link>
+      <Link href="/history" className="text-sm text-muted-foreground hover:text-foreground">
+        History
+      </Link>
       <Link href="/profile" className="text-sm underline underline-offset-4">
         {profile.username ?? profile.email ?? "Profile"}
       </Link>

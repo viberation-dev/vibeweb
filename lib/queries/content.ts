@@ -19,6 +19,8 @@ export type ContentFilters = {
   roleLevel?: RoleLevel;
   /** Only meaningful for `role_guide` rows; null on everything else. */
   audience?: Enums<"docs_audience">;
+  /** Tag *slug*, not id — it is what appears in the URL. */
+  tag?: string;
   /** 1-based. Values past the end return an empty page, not an error. */
   page?: number;
   pageSize?: number;
@@ -73,6 +75,13 @@ export async function listContent(
     query = query.eq("audience", filters.audience);
   }
 
+  if (filters.tag) {
+    // ponytail: a second round trip rather than a PostgREST embedded !inner
+    // join, which the generated types infer badly — same trade listTools
+    // makes for the same reason.
+    query = query.in("id", await contentIdsWithTag(client, filters.tag));
+  }
+
   const { data, count, error } = await query;
 
   if (error) {
@@ -90,6 +99,19 @@ export async function listContent(
 
   const total = count ?? 0;
   return { items: data, total, page, pageCount: Math.max(1, Math.ceil(total / pageSize)) };
+}
+
+/** Ids of every content row carrying `tagSlug`. Empty array when the tag is unknown. */
+async function contentIdsWithTag(client: Client, tagSlug: string): Promise<string[]> {
+  const { data, error } = await client
+    .from("content_tags")
+    .select("content_id, tags!inner(slug)")
+    .eq("tags.slug", tagSlug);
+
+  if (error) {
+    throw new Error(`contentIdsWithTag(${tagSlug}): ${error.message}`);
+  }
+  return data.map((row) => row.content_id);
 }
 
 /** One content row by its URL slug. Null when it does not exist. */

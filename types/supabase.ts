@@ -1,4 +1,4 @@
-// Generated from the live Viberation schema (migrations 01-11).
+// Generated from the live Viberation schema (migrations 01-12).
 //
 // Produced by Supabase's own type generator, not the old scripts/gen-types.mjs
 // stopgap. Regenerate with the Supabase CLI:
@@ -340,6 +340,32 @@ export type Database = {
           slug?: string
         }
         Relationships: []
+      }
+      tool_clicks: {
+        Row: {
+          clicked_at: string
+          id: string
+          tool_id: string
+        }
+        Insert: {
+          clicked_at?: string
+          id?: string
+          tool_id: string
+        }
+        Update: {
+          clicked_at?: string
+          id?: string
+          tool_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_clicks_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "tools"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tool_tags: {
         Row: {

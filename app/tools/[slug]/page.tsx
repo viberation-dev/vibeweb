@@ -7,6 +7,7 @@ import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/integrations/supabase/server";
+import { safeOutboundUrl } from "@/lib/outbound";
 import { isBookmarked } from "@/lib/queries/bookmarks";
 import { recordVisit } from "@/lib/queries/history";
 import { getToolBySlug, getToolTags, incrementToolViews } from "@/lib/queries/tools";
@@ -96,12 +97,11 @@ export default async function ToolPage({ params }: Props) {
       ) : null}
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
-        {tool.outbound_url ? (
+        {safeOutboundUrl(tool.outbound_url) ? (
           <a
-            // ponytail: links straight out for now. The tracked /go/[slug]
-            // redirect is its own launch-prep slice; swapping the href there is
-            // the whole change.
-            href={tool.outbound_url}
+            // Through /go, never straight out — §06: the click has to be
+            // logged before the visitor leaves, and a plain href cannot be.
+            href={`/go/${tool.slug}`}
             target="_blank"
             rel="noopener noreferrer sponsored"
             className={buttonVariants({ size: "lg" })}

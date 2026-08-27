@@ -15,6 +15,12 @@ Next.js/React is component + hook based, not class-based — these are OOP princ
   - `types/` — generated Supabase types + hand-written domain types
 - **Adapter pattern for third-party services:** every external service (Supabase Auth OAuth, Resend, the eventual `tsvector → Typesense` search swap) lives behind one typed module in `lib/integrations/[service].ts`. Swapping a provider later should touch one file, not every call site.
 
+## Routing / account IA
+
+Account routes are **top-level**: `/profile`, `/bookmarks`, `/history`. There is no `/account/*` namespace and no account-tabs shell — Bible §31 was amended to match the shipped routes (2026-08-27), not the other way round. `/profile` deliberately merges overview + preferences into one page and one form.
+
+Don't "fix" this by moving the routes under `/account/`. If the approved header design later wants an account tab strip, that's a nav concern for the header component — it does not require re-nesting the routes.
+
 ## Security
 
 - **RLS is the actual security boundary**, not the API layer — it's already built into migrations 02/03/05. Don't add app-code checks as a substitute for RLS; add them as defense in depth if you want, but RLS is what actually protects the data.

@@ -38,9 +38,12 @@ export type ContentPage = {
 };
 
 /**
- * One page of editorial content, newest first.
+ * One page of published editorial content, newest first.
  *
- * RLS on `content` is public-read (migration 03), so this works signed out.
+ * RLS on `content` (migration 14) hides drafts from everyone but staff, so
+ * this works signed out. The status filter here is for the index's intent,
+ * not security — mirroring listWizards(): a staff member browsing Learn wants
+ * the published list, and reaches a draft by its own URL to preview it.
  */
 export async function listContent(
   client: Client,
@@ -60,6 +63,7 @@ export async function listContent(
     // no stable order for ties — rows would repeat or vanish across pages.
     // Breaking the tie on the unique slug pins them.
     .order("slug", { ascending: true })
+    .eq("status", "published")
     .range(from, from + pageSize - 1);
 
   if (filters.types) {
@@ -114,7 +118,14 @@ async function contentIdsWithTag(client: Client, tagSlug: string): Promise<strin
   return data.map((row) => row.content_id);
 }
 
-/** One content row by its URL slug. Null when it does not exist. */
+/**
+ * One content row by its URL slug. Null when it does not exist.
+ *
+ * A draft returns null for everyone except staff — that is RLS filtering the
+ * row out, not a check in this function. Do not add one: the policy is the
+ * boundary (§34). Staff previewing a draft at its own URL is the intended
+ * behaviour, exactly as with getWizardBySlug().
+ */
 export async function getContentBySlug(client: Client, slug: string): Promise<Content | null> {
   const { data, error } = await client.from("content").select("*").eq("slug", slug).maybeSingle();
 

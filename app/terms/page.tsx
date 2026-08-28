@@ -19,10 +19,10 @@ export const metadata: Metadata = {
  * carries both rel="sponsored" and a visible line next to the link when a
  * tool is flagged, and this is the full explanation both point at.
  *
- * TODO(ali): section 12, governing law. Left blank deliberately — the
- * jurisdiction depends on where the business is established, which is a
- * business fact, not an engineering one. Inventing one would be worse than an
- * obviously missing one.
+ * Governing law is Pakistan, where the business is currently established
+ * (confirmed by Ali, 2026-08-29). If it moves to Canada, section 12 and the
+ * last-updated date in lib/legal.ts both change — the clause names a country,
+ * not a placeholder, so this is a real edit rather than a find-and-replace.
  */
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -184,11 +184,15 @@ export default function TermsPage() {
 
       <Section title="12. Governing law">
         <p className="text-muted-foreground">
-          {/*
-            TODO(ali): fill in the governing jurisdiction. This section is
-            deliberately incomplete rather than guessed — see the file header.
-          */}
-          To be confirmed.
+          These terms are governed by the laws of Pakistan, and the courts of Pakistan
+          have jurisdiction over any dispute arising out of them or your use of
+          Viberation.
+        </p>
+        <p className="text-muted-foreground">
+          Viberation is available worldwide, and if you use it from somewhere else you
+          are responsible for complying with your own local laws. Nothing in these terms
+          removes consumer-protection rights you have where you live that cannot be
+          given up by agreement.
         </p>
       </Section>
 

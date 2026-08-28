@@ -17,4 +17,4 @@
 export const LEGAL_CONTACT_EMAIL = "hello@viberation.dev";
 
 /** Shown on both pages. Bump when the wording changes. */
-export const LEGAL_LAST_UPDATED = "28 August 2026";
+export const LEGAL_LAST_UPDATED = "29 August 2026";

@@ -7,7 +7,7 @@ import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/integrations/supabase/server";
-import { safeOutboundUrl } from "@/lib/outbound";
+import { outboundRel, safeOutboundUrl } from "@/lib/outbound";
 import { isBookmarked } from "@/lib/queries/bookmarks";
 import { recordVisit } from "@/lib/queries/history";
 import { getToolBySlug, getToolTags, incrementToolViews } from "@/lib/queries/tools";
@@ -103,7 +103,7 @@ export default async function ToolPage({ params }: Props) {
             // logged before the visitor leaves, and a plain href cannot be.
             href={`/go/${tool.slug}`}
             target="_blank"
-            rel="noopener noreferrer sponsored"
+            rel={outboundRel(tool.is_affiliate)}
             className={buttonVariants({ size: "lg" })}
           >
             Visit {tool.name}
@@ -116,6 +116,28 @@ export default async function ToolPage({ params }: Props) {
           returnTo={`/tools/${tool.slug}`}
         />
       </div>
+
+      {/*
+        The disclosure sits next to the link it describes, not only on
+        /terms (VIB-57). FTC guidance is that a material connection should be
+        disclosed clearly and close to the link, where someone decides whether
+        to click — a separate legal page is the backstop, not the disclosure.
+
+        Shown only when the tool actually is an affiliate link. Saying "we may
+        earn a commission" under a link that earns nothing is its own kind of
+        inaccurate, and it would train readers to ignore the line on the links
+        where it counts.
+      */}
+      {tool.is_affiliate && safeOutboundUrl(tool.outbound_url) ? (
+        <p className="mt-3 text-sm text-muted-foreground">
+          We may earn a commission if you sign up through this link, at no extra cost to
+          you. It never affects whether or how a tool is listed —{" "}
+          <Link className="underline underline-offset-4" href="/terms#affiliate-disclosure">
+            how this works
+          </Link>
+          .
+        </p>
+      ) : null}
 
       {tags.length ? (
         <div className="mt-8 flex flex-wrap items-center gap-2 border-t pt-6">

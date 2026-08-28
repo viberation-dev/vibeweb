@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { safeOutboundUrl } from "./outbound.ts";
+import { outboundRel, safeOutboundUrl } from "./outbound.ts";
 
 test("passes ordinary http(s) destinations through", () => {
   assert.equal(safeOutboundUrl("https://cursor.com"), "https://cursor.com/");
@@ -24,4 +24,16 @@ test("rejects schemes that execute in the visitor's context", () => {
 test("rejects relative values rather than resolving them against the site", () => {
   assert.equal(safeOutboundUrl("/tools"), null);
   assert.equal(safeOutboundUrl("cursor.com"), null);
+});
+
+test("sponsored is claimed only for links that actually are", () => {
+  assert.equal(outboundRel(true), "noopener noreferrer sponsored");
+  assert.equal(outboundRel(false), "noopener noreferrer");
+});
+
+test("every outbound link keeps its security rel regardless", () => {
+  for (const rel of [outboundRel(true), outboundRel(false)]) {
+    assert.ok(rel.includes("noopener"));
+    assert.ok(rel.includes("noreferrer"));
+  }
 });

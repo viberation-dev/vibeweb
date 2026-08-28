@@ -37,7 +37,7 @@ export default function RootLayout({
     */
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body
-        className="antialiased"
+        className="flex min-h-screen flex-col antialiased"
         /*
          * Grammarly, ColorZilla and friends add their own attributes to
          * <body> before React hydrates, so React reports a mismatch that no
@@ -77,7 +77,27 @@ export default function RootLayout({
             <AuthStatus />
           </div>
         </header>
-        {children}
+        <div className="flex-1">{children}</div>
+        {/*
+          Affiliate disclosure gets its own link rather than hiding inside
+          "Terms" (VIB-57). /go/[slug] sends visitors to monetized destinations,
+          and the FTC expects that relationship to be findable — a reader should
+          not have to guess that it lives under a terms-of-service link.
+        */}
+        <footer className="border-t px-6 py-6">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+            <span>&copy; {new Date().getFullYear()} Viberation</span>
+            <Link href="/privacy" className="hover:text-foreground">
+              Privacy
+            </Link>
+            <Link href="/terms" className="hover:text-foreground">
+              Terms
+            </Link>
+            <Link href="/terms#affiliate-disclosure" className="hover:text-foreground">
+              Affiliate disclosure
+            </Link>
+          </div>
+        </footer>
       </body>
     </html>
   );

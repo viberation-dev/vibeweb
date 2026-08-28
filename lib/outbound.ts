@@ -29,3 +29,19 @@ export function safeOutboundUrl(raw: string | null | undefined): string | null {
   }
   return parsed.toString();
 }
+
+/**
+ * The `rel` for an outbound tool link.
+ *
+ * `sponsored` is a factual claim to search engines that the link is paid, so
+ * it belongs only on links that actually are. Applying it to every outbound
+ * link — as this page did until VIB-57 — mislabels the whole directory, and
+ * a signal that means "paid" on all 26 links means nothing on any of them.
+ *
+ * Pairs with the visible disclosure on the tool page: same `is_affiliate`
+ * flag drives both, so the machine-readable and human-readable halves can
+ * never disagree.
+ */
+export function outboundRel(isAffiliate: boolean): string {
+  return isAffiliate ? "noopener noreferrer sponsored" : "noopener noreferrer";
+}

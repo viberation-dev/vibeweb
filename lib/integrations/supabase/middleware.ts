@@ -6,8 +6,19 @@ import { supabasePublishableKey, supabaseUrl } from "./env";
 /**
  * Route prefixes that require a signed-in user. Everything else is public —
  * the directory and Learn content are readable by visitors by design.
+ *
+ * /admin needs more than this: it is staff-only, and `app_role` lives in
+ * `profiles`, which middleware would have to make a second query to read on
+ * every request. So this handles the signed-out half at the edge and
+ * requireStaff() in lib/staff.ts does the staff half on the page itself.
  */
-const PROTECTED_PREFIXES = ["/profile", "/bookmarks", "/history", "/onboarding"] as const;
+const PROTECTED_PREFIXES = [
+  "/profile",
+  "/bookmarks",
+  "/history",
+  "/onboarding",
+  "/admin",
+] as const;
 
 function isProtected(pathname: string): boolean {
   return PROTECTED_PREFIXES.some(

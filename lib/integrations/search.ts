@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { getCollectionsByIds, type Collection } from "@/lib/queries/collections";
 import { getContentByIds, type Content } from "@/lib/queries/content";
 import { getToolsByIds, type Tool } from "@/lib/queries/tools";
 import { normaliseQuery, SEARCH_LIMIT } from "@/lib/search-query";
@@ -27,7 +28,8 @@ export { normaliseQuery, SEARCH_LIMIT };
 
 export type SearchHit =
   | { kind: "tool"; rank: number; tool: Tool }
-  | { kind: "content"; rank: number; content: Content };
+  | { kind: "content"; rank: number; content: Content }
+  | { kind: "collection"; rank: number; collection: Collection };
 
 /** Results the UI can page through later; `total` is what came back now. */
 export type SearchResults = {
@@ -37,12 +39,12 @@ export type SearchResults = {
 };
 
 /**
- * Ranked search across tools and Learn content.
+ * Ranked search across tools, Learn content and collections.
  *
- * Two waves: the ranking function returns (kind, id, rank), then both kinds
- * are hydrated in parallel. The union has to stay narrow because tools and
- * content are different shapes, and hydrating through the existing query
- * functions keeps one definition of what a tool row is.
+ * Two waves: the ranking function returns (kind, id, rank), then every kind
+ * is hydrated in parallel. The union has to stay narrow because the three
+ * tables are different shapes, and hydrating through the existing query
+ * functions keeps one definition of what a row of each kind is.
  *
  * Rows that vanish between the two waves are dropped rather than rendered
  * as holes — the same treatment collections and bookmarks give a deleted
@@ -73,13 +75,15 @@ export async function search(
   const rows = data ?? [];
   const idsOf = (kind: string) => rows.filter((row) => row.kind === kind).map((row) => row.id);
 
-  const [tools, content] = await Promise.all([
+  const [tools, content, collections] = await Promise.all([
     getToolsByIds(client, idsOf("tool")),
     getContentByIds(client, idsOf("content")),
+    getCollectionsByIds(client, idsOf("collection")),
   ]);
 
   const toolsById = new Map(tools.map((tool) => [tool.id, tool]));
   const contentById = new Map(content.map((row) => [row.id, row]));
+  const collectionsById = new Map(collections.map((row) => [row.id, row]));
 
   // The database already ordered by rank; preserve that order exactly.
   const hits: SearchHit[] = [];
@@ -90,6 +94,9 @@ export async function search(
     } else if (row.kind === "content") {
       const item = contentById.get(row.id);
       if (item) hits.push({ kind: "content", rank: row.rank, content: item });
+    } else if (row.kind === "collection") {
+      const collection = collectionsById.get(row.id);
+      if (collection) hits.push({ kind: "collection", rank: row.rank, collection });
     }
   }
 

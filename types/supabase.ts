@@ -97,6 +97,7 @@ export type Database = {
           description: string | null
           id: string
           is_featured: boolean
+          search_vector: unknown | null
           slug: string
           title: string
         }

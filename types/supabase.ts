@@ -1,4 +1,7 @@
-// Generated from the live Viberation schema (migrations 01-12).
+// Generated from the live Viberation schema.
+//
+// No migration count here on purpose — it goes stale on the next merge.
+// `ls supabase/migrations/` is the answer.
 //
 // Produced by Supabase's own type generator, not the old scripts/gen-types.mjs
 // stopgap. Regenerate with the Supabase CLI:

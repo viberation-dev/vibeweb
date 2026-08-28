@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
+import { CollectionCard } from "@/components/features/collections/CollectionCard";
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import { SearchInput } from "@/components/features/search/SearchInput";
 import { search } from "@/lib/integrations/search";
@@ -11,7 +12,7 @@ import { contentView, toolView } from "@/lib/resource-view";
 
 export const metadata: Metadata = {
   title: "Search — Viberation",
-  description: "Search the tool directory and everything in Learn.",
+  description: "Search the tool directory, Learn, and curated collections.",
 };
 
 type Props = {
@@ -41,17 +42,13 @@ export default async function SearchPage({ searchParams }: Props) {
   const bookmarks = auth.user ? await listBookmarks(supabase, auth.user.id) : [];
   const bookmarkedIds = new Set(bookmarks.map((bookmark) => bookmark.target_id));
 
-  const views = results.hits.map((hit) =>
-    hit.kind === "tool" ? toolView(hit.tool) : contentView(hit.content),
-  );
-
   const returnTo = results.query ? `/search?q=${encodeURIComponent(results.query)}` : "/search";
 
   return (
     <main className="mx-auto w-full max-w-6xl p-6">
       <h1 className="font-heading text-2xl font-semibold">Search</h1>
       <p className="mt-1 text-muted-foreground">
-        Across the tool directory and everything in Learn.
+        Across the tool directory, Learn, and curated collections — including their tags.
       </p>
 
       <SearchInput defaultValue={results.query} className="mt-6 max-w-xl" />
@@ -64,27 +61,43 @@ export default async function SearchPage({ searchParams }: Props) {
         </p>
       ) : null}
 
-      {views.length ? (
+      {results.hits.length ? (
         <ul className="mt-6 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {views.map((view) => (
-            <li key={`${view.targetType}:${view.id}`}>
-              <ResourceCard
-                href={view.href}
-                title={view.title}
-                eyebrow={view.eyebrow}
-                description={view.description}
-                badges={view.badges}
-                action={
-                  <BookmarkButton
-                    targetType={view.targetType}
-                    targetId={view.id}
-                    bookmarked={bookmarkedIds.has(view.id)}
-                    returnTo={returnTo}
-                  />
-                }
-              />
-            </li>
-          ))}
+          {results.hits.map((hit) => {
+            /*
+             * Collections render as themselves rather than through
+             * ResourceCard — a result should look like the thing it points
+             * at, and a collection is a container with no bookmark toggle.
+             */
+            if (hit.kind === "collection") {
+              return (
+                <li key={`collection:${hit.collection.id}`}>
+                  <CollectionCard collection={hit.collection} eyebrow="Collection" />
+                </li>
+              );
+            }
+
+            const view = hit.kind === "tool" ? toolView(hit.tool) : contentView(hit.content);
+            return (
+              <li key={`${view.targetType}:${view.id}`}>
+                <ResourceCard
+                  href={view.href}
+                  title={view.title}
+                  eyebrow={view.eyebrow}
+                  description={view.description}
+                  badges={view.badges}
+                  action={
+                    <BookmarkButton
+                      targetType={view.targetType}
+                      targetId={view.id}
+                      bookmarked={bookmarkedIds.has(view.id)}
+                      returnTo={returnTo}
+                    />
+                  }
+                />
+              </li>
+            );
+          })}
         </ul>
       ) : (
         <div className="mt-8 text-muted-foreground">

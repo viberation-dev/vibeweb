@@ -143,3 +143,26 @@ export async function countCollectionItems(
   }
   return counts;
 }
+
+/**
+ * Collections by id, for hydrating search hits.
+ *
+ * Returned in no particular order — the caller already knows the order it
+ * cares about (search returns them ranked). Ids that no longer exist are
+ * simply absent.
+ */
+export async function getCollectionsByIds(
+  client: Client,
+  ids: string[],
+): Promise<Collection[]> {
+  if (ids.length === 0) {
+    return [];
+  }
+
+  const { data, error } = await client.from("collections").select("*").in("id", ids);
+
+  if (error) {
+    throw new Error(`getCollectionsByIds: ${error.message}`);
+  }
+  return data;
+}

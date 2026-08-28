@@ -135,6 +135,7 @@ export type Database = {
           role_level: Database["public"]["Enums"]["role_level"] | null
           search_vector: unknown
           slug: string
+          status: Database["public"]["Enums"]["content_status"]
           title: string
           type: Database["public"]["Enums"]["content_type"]
           updated_at: string
@@ -147,6 +148,7 @@ export type Database = {
           role_level?: Database["public"]["Enums"]["role_level"] | null
           search_vector?: unknown
           slug: string
+          status?: Database["public"]["Enums"]["content_status"]
           title: string
           type: Database["public"]["Enums"]["content_type"]
           updated_at?: string
@@ -159,6 +161,7 @@ export type Database = {
           role_level?: Database["public"]["Enums"]["role_level"] | null
           search_vector?: unknown
           slug?: string
+          status?: Database["public"]["Enums"]["content_status"]
           title?: string
           type?: Database["public"]["Enums"]["content_type"]
           updated_at?: string
@@ -588,6 +591,7 @@ export type Database = {
     }
     Enums: {
       app_role: "member" | "admin" | "super_admin"
+      content_status: "draft" | "published"
       content_type:
         | "article"
         | "guide"
@@ -744,6 +748,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["member", "admin", "super_admin"],
+      content_status: ["draft", "published"],
       content_type: [
         "article",
         "guide",

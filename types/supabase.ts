@@ -97,7 +97,7 @@ export type Database = {
           description: string | null
           id: string
           is_featured: boolean
-          search_vector: unknown | null
+          search_vector: unknown
           slug: string
           title: string
         }
@@ -107,6 +107,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_featured?: boolean
+          search_vector?: unknown
           slug: string
           title: string
         }
@@ -116,6 +117,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_featured?: boolean
+          search_vector?: unknown
           slug?: string
           title?: string
         }
@@ -128,7 +130,7 @@ export type Database = {
           created_at: string
           id: string
           role_level: Database["public"]["Enums"]["role_level"] | null
-          search_vector: unknown | null
+          search_vector: unknown
           slug: string
           title: string
           type: Database["public"]["Enums"]["content_type"]
@@ -140,6 +142,7 @@ export type Database = {
           created_at?: string
           id?: string
           role_level?: Database["public"]["Enums"]["role_level"] | null
+          search_vector?: unknown
           slug: string
           title: string
           type: Database["public"]["Enums"]["content_type"]
@@ -151,6 +154,7 @@ export type Database = {
           created_at?: string
           id?: string
           role_level?: Database["public"]["Enums"]["role_level"] | null
+          search_vector?: unknown
           slug?: string
           title?: string
           type?: Database["public"]["Enums"]["content_type"]
@@ -384,7 +388,7 @@ export type Database = {
           name: string
           outbound_url: string
           pricing_tier: string | null
-          search_vector: unknown | null
+          search_vector: unknown
           slug: string
           tagline: string | null
           updated_at: string
@@ -401,6 +405,7 @@ export type Database = {
           name: string
           outbound_url?: string
           pricing_tier?: string | null
+          search_vector?: unknown
           slug: string
           tagline?: string | null
           updated_at?: string
@@ -417,6 +422,7 @@ export type Database = {
           name?: string
           outbound_url?: string
           pricing_tier?: string | null
+          search_vector?: unknown
           slug?: string
           tagline?: string | null
           updated_at?: string
@@ -544,7 +550,11 @@ export type Database = {
       is_staff: { Args: never; Returns: boolean }
       search_all: {
         Args: { q: string; result_limit?: number }
-        Returns: { kind: string; id: string; rank: number }[]
+        Returns: {
+          id: string
+          kind: string
+          rank: number
+        }[]
       }
     }
     Enums: {

@@ -192,7 +192,10 @@ on conflict do nothing;
 -- and belong in the Learn hub. Internal engineering docs are NOT content
 -- rows — they live in the repo and the Notion Bible (§34).
 
-insert into content (type, title, slug, body, role_level, audience) values
+-- `status` is explicit because migration 20260828172354 defaults it to
+-- 'draft'. Seeded articles are meant to be live, and a seed that silently
+-- produces an empty /learn on a fresh project looks like a broken seed.
+insert into content (type, title, slug, body, role_level, audience, status) values
   ('guide', 'What vibe coding actually is', 'what-vibe-coding-is',
    'Vibe coding is building software by describing what you want to an AI model and steering the result, rather than typing every line yourself.
 
@@ -205,7 +208,7 @@ The three habits that separate people who ship from people who get stuck:
 2. Read what you get back. You do not have to be able to write it from scratch, but you do have to be able to tell whether it does what you asked.
 
 3. Keep a way to undo. Version control is not optional the moment you let something else edit your files.',
-   'beginner', null),
+   'beginner', null, 'published'),
 
   ('guide', 'Choosing your first AI coding setup', 'choosing-your-first-setup',
    'You need three things, and you probably already have one of them.
@@ -217,7 +220,7 @@ A place to work. Either an AI-native editor, or a CLI agent that edits files in 
 Somewhere to put it. A git repository, and a host that deploys from it. Do this on day one, before you have anything worth losing.
 
 The mistake to avoid is collecting tools. One editor, one model, one host, and something actually finished beats a bookmark folder of things you tried once.',
-   'beginner', null),
+   'beginner', null, 'published'),
 
   ('article', 'Why your AI keeps forgetting what you told it', 'why-ai-forgets-context',
    'Models have a context window — a fixed budget of text they can consider at once. Everything competes for it: your instructions, the files you opened, the errors you pasted, and the whole conversation so far.
@@ -231,7 +234,7 @@ Put durable rules in a file the tool reads every session, not in a message. A CL
 Start a fresh session per task. A long session is not a memory, it is a liability.
 
 Point at specific files rather than asking it to search. Every wasted read costs budget you wanted for the actual work.',
-   'intermediate', null),
+   'intermediate', null, 'published'),
 
   ('article', 'Reviewing code you did not write', 'reviewing-code-you-did-not-write',
    'You are going to merge a lot of code you did not type. Reviewing it is a different skill from writing it, and it is the one that actually keeps a vibe-coded project alive past week three.
@@ -243,7 +246,7 @@ Check the edges the model was never told about. Empty inputs, a user who is sign
 Ask what else calls this. A change that fixes one caller and breaks two others still passes the test you were looking at.
 
 Be suspicious of new dependencies. A package added to save five lines of work is five lines of work plus a supply chain.',
-   'intermediate', null),
+   'intermediate', null, 'published'),
 
   ('cheatsheet', 'Prompts that get better code back', 'prompts-for-better-code',
    'Give it the constraint, not just the goal.
@@ -264,7 +267,7 @@ Make it show you, not tell you.
   "Run the tests and paste the output" beats "make sure the tests pass".
 
 When it goes wrong, give it the error text verbatim. A paraphrased error is a different error.',
-   null, null),
+   null, null, 'published'),
 
   ('cheatsheet', 'Git commands worth memorising', 'git-commands-worth-memorising',
    'git status                 what is actually changed right now
@@ -284,7 +287,7 @@ git revert <commit>        undo a commit by making a new one, which is safe on s
 The one to be careful with:
 
 git reset --hard           discards uncommitted work permanently. There is no undo.',
-   'beginner', null),
+   'beginner', null, 'published'),
 
   ('article', 'Row level security is the security boundary', 'rls-is-the-boundary',
    'If your database rows are protected by a check in your application code, they are not protected. Anything holding a key can talk to the database directly, and your code is not in that path.
@@ -300,7 +303,7 @@ Personal data — bookmarks, history, saved progress — is readable and writabl
 Counters and aggregates are written by a security definer function, because the table itself is not user-writable.
 
 Application checks are still worth having as defence in depth. They are just not the thing standing between a stranger and your data.',
-   'expert', null),
+   'expert', null, 'published'),
 
   ('course_link', 'Git and GitHub for absolute beginners', 'course-git-for-beginners',
    'A free, video-based introduction to version control that assumes no prior terminal experience.
@@ -310,7 +313,7 @@ Worth doing before you let any AI agent edit your files, because the entire safe
 Covers repositories, commits, branches, pull requests, and resolving your first merge conflict.
 
 Search for "Git and GitHub for Beginners" on freeCodeCamp — it is a full crash course and costs nothing.',
-   'beginner', null),
+   'beginner', null, 'published'),
 
   ('course_link', 'Full stack fundamentals without the framework churn', 'course-fullstack-fundamentals',
    'A longer course on how web applications actually fit together: requests, responses, databases, authentication and deployment.
@@ -318,7 +321,7 @@ Search for "Git and GitHub for Beginners" on freeCodeCamp — it is a full crash
 The value here is not the specific stack it teaches. It is that once you know what a session cookie is and why a database query can be slow, AI-generated code stops being a black box you either accept or reject on vibes.
 
 The Odin Project and Full Stack Open are both free and both good. Pick one and finish it.',
-   'intermediate', null),
+   'intermediate', null, 'published'),
 
   ('help_article', 'Creating your Viberation account', 'help-creating-your-account',
    'You can browse the tool directory and everything in Learn without an account. You need one to save things.
@@ -328,7 +331,7 @@ To sign up, use Sign up in the top right. You can either use an email address an
 If you sign up with email, we send you a confirmation link. Open it to finish creating the account — until you do, signing in will not work.
 
 If you already signed up with Google or GitHub and later try email with the same address, sign in with the original method instead. They are the same account.',
-   null, 'enduser'),
+   null, 'enduser', 'published'),
 
   ('help_article', 'Saving and organising bookmarks', 'help-saving-bookmarks',
    'Anything with a Save button can be bookmarked — tools in the directory, and articles and guides in Learn.
@@ -340,7 +343,7 @@ Everything you save appears on your Bookmarks page.
 Folders are just names you type. Type a new name on any bookmark to create that folder, or pick one you have used before to move it there. Bookmarks with no folder collect under Unfiled at the bottom.
 
 Renaming a folder moves everything in it at once. To remove a bookmark, press Saved on it again.',
-   null, 'enduser'),
+   null, 'enduser', 'published'),
 
   ('help_article', 'Setting your skill level', 'help-setting-your-level',
    'Your level tells us which guides to put in front of you. It is set on your Profile page, and you can change it whenever you like.
@@ -348,7 +351,7 @@ Renaming a folder moves everything in it at once. To remove a bookmark, press Sa
 Beginner, intermediate and expert are about how much you want explained, not about how good you are.
 
 On the Learn page we show content written for your level, plus everything written for all levels. Use the level chips to look at another level, or All levels to see everything at once. That choice is per-visit and does not change your profile.',
-   null, 'enduser'),
+   null, 'enduser', 'published'),
 
   ('help_article', 'What the tool categories mean', 'help-tool-categories',
    'The directory groups tools by what a thing actually is, not by what you might use it for.
@@ -360,13 +363,14 @@ IDEs are editors. CLIs are terminal tools. Skills, MCP servers and plugins all e
 Frameworks, templates and workflows are starting points for a project. Tools and utilities are everything else that helps.
 
 If you are looking for something by subject rather than by kind — frontend, database, free tier — use the tags instead. A tool has one category and as many tags as it needs.',
-   null, 'enduser')
+   null, 'enduser', 'published')
 on conflict (slug) do update set
   type       = excluded.type,
   title      = excluded.title,
   body       = excluded.body,
   role_level = excluded.role_level,
   audience   = excluded.audience,
+  status     = excluded.status,
   updated_at = now();
 
 insert into content_tags (content_id, tag_id)

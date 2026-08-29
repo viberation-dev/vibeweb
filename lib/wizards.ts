@@ -8,9 +8,22 @@ import type { ChecklistState, WizardSteps } from "@/lib/validation/wizard";
  * database or a browser.
  */
 
-/** Builds `/wizards/[slug]?step=` URLs. Step 1 is the bare path. */
+/**
+ * Builds `/wizards/[slug]?step=` URLs for navigation *within* the runner —
+ * the step chips and the Previous/Next buttons.
+ *
+ * Always emits `?step=`, including for step 1. It used to return the bare
+ * path for index 0, which made step 1 unreachable: with no `?step=`,
+ * resolveStepIndex() falls back to saved progress, so anyone who had reached
+ * step 4 was sent straight back to step 4 by the "1. Idea" chip and by
+ * Previous on step 2. Steps 2+ worked, which is why it survived review.
+ *
+ * The bare path still means "resume where I left off" — that is what the home
+ * page, the wizard index and onboarding link to. Those build the URL inline
+ * and are deliberately not routed through here.
+ */
 export function wizardHref(slug: string, stepIndex = 0): string {
-  return stepIndex > 0 ? `/wizards/${slug}?step=${stepIndex + 1}` : `/wizards/${slug}`;
+  return `/wizards/${slug}?step=${stepIndex + 1}`;
 }
 
 /**

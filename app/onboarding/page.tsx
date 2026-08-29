@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/integrations/supabase/server";
+import { getCurrentProfile } from "@/lib/queries/profiles";
 import {
   DEFAULT_ROLE_LEVEL,
   ONBOARDING_STEPS,
@@ -52,11 +53,25 @@ export default async function OnboardingPage({ searchParams }: Props) {
   const step = resolveStep(params.step, level);
 
   const supabase = await createClient();
-  const { data: auth } = await supabase.auth.getUser();
+  const profile = await getCurrentProfile(supabase);
 
-  if (!auth.user) {
+  if (!profile) {
     // The middleware gates this route; this is the belt to its braces.
     redirect("/login?redirectTo=/onboarding");
+  }
+
+  /*
+   * §31: onboarding "runs once, post-signup". The signup paths send people
+   * here, and sign-in deliberately does not — but an existing member who
+   * clicks a provider button on /signup would otherwise be walked through it
+   * again. Anyone already finished goes to the feed instead.
+   *
+   * Abandoning the flow does not set the flag, so the home page keeps showing
+   * its onboarding nudge (§31 home §3) until it is genuinely completed. That
+   * nudge, not a repeated redirect, is the way back in.
+   */
+  if (profile.onboarding_completed) {
+    redirect("/");
   }
 
   // Only the step being rendered fetches anything. resolveStep guarantees a

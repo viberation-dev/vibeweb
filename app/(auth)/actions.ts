@@ -74,7 +74,11 @@ export async function signUpAction(
     supabase,
     parsed.data.email,
     parsed.data.password,
-    `${origin}/auth/confirm`,
+    // §31: onboarding "runs once, post-signup", so the confirmation link
+    // lands there rather than on the home feed. /auth/confirm passes `next`
+    // through safeRedirect, and /onboarding sends anyone who has already
+    // finished straight back to "/" — so this cannot re-run the flow.
+    `${origin}/auth/confirm?next=${encodeURIComponent("/onboarding")}`,
   );
 
   if (!result.ok) {

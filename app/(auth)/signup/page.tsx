@@ -21,7 +21,13 @@ export default function SignUpPage() {
         <CardDescription>Start building your library of AI tools.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <OAuthButtons />
+        {/*
+          Signing up goes to onboarding; signing in does not. The distinction
+          is already encoded in which page you are on, so this needs no
+          "is this their first session" flag on the profile (§31: onboarding
+          runs once, post-signup).
+        */}
+        <OAuthButtons redirectTo="/onboarding" />
 
         <div className="flex items-center gap-3">
           <span className="bg-border h-px flex-1" />

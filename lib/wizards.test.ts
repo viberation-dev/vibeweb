@@ -31,10 +31,18 @@ const STEPS = [
   },
 ] as unknown as WizardSteps;
 
-test("hrefs keep step 1 as the bare path", () => {
-  assert.equal(wizardHref("ship-it", 0), "/wizards/ship-it");
-  assert.equal(wizardHref("ship-it"), "/wizards/ship-it");
+test("every runner href names its step, including step 1", () => {
+  // Regression: step 1 used to be the bare path, which resolveStepIndex reads
+  // as "resume", so a returner on step 4 could never navigate back to step 1.
+  assert.equal(wizardHref("ship-it", 0), "/wizards/ship-it?step=1");
+  assert.equal(wizardHref("ship-it"), "/wizards/ship-it?step=1");
   assert.equal(wizardHref("ship-it", 2), "/wizards/ship-it?step=3");
+});
+
+test("an explicit step beats saved progress, so step 1 stays reachable", () => {
+  assert.equal(resolveStepIndex("1", 3, 4), 0);
+  // ...while the bare path (no param) still resumes.
+  assert.equal(resolveStepIndex(undefined, 3, 4), 3);
 });
 
 test("?step= is 1-based on the way in, 0-based on the way out", () => {

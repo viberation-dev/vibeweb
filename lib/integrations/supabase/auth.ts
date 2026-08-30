@@ -53,6 +53,38 @@ export async function signOut(client: Client): Promise<AuthResult> {
   return error ? { ok: false, message: error.message } : { ok: true };
 }
 
+/**
+ * Sends the recovery email. Supabase returns success whether or not the
+ * address has an account, which is what lets the caller give one answer to
+ * everyone — see forgotPasswordAction.
+ */
+export async function resetPasswordForEmail(
+  client: Client,
+  email: string,
+  redirectTo: string,
+): Promise<AuthResult> {
+  const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo });
+  return error ? { ok: false, message: toMessage(error.message) } : { ok: true };
+}
+
+/** Sets a new password for whoever the current session belongs to. */
+export async function updatePassword(client: Client, password: string): Promise<AuthResult> {
+  const { error } = await client.auth.updateUser({ password });
+  return error ? { ok: false, message: toMessage(error.message) } : { ok: true };
+}
+
+/**
+ * Ends every session except this one.
+ *
+ * Called after a password reset because the usual reason for resetting is that
+ * someone else may have had the old password. Leaving their sessions alive
+ * would make the reset cosmetic.
+ */
+export async function signOutOtherSessions(client: Client): Promise<AuthResult> {
+  const { error } = await client.auth.signOut({ scope: "others" });
+  return error ? { ok: false, message: error.message } : { ok: true };
+}
+
 /** OAuth providers wired up for MVP. Adding one is a change here plus Supabase config. */
 export type OAuthProvider = "github" | "google";
 

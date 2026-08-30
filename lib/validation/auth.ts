@@ -34,6 +34,23 @@ export const signUpSchema = z.object({
   password: passwordSchema,
 });
 
+export const forgotPasswordSchema = z.object({ email: emailSchema });
+
+/**
+ * The confirm field is UX, not security — it catches a typo in a password the
+ * person cannot see rather than defending anything. It is still checked here
+ * because the browser half can be bypassed like any other.
+ */
+export const resetPasswordSchema = z
+  .object({
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, "Confirm your new password."),
+  })
+  .refine((values) => values.password === values.confirmPassword, {
+    message: "Those passwords do not match.",
+    path: ["confirmPassword"],
+  });
+
 /** Providers we actually support. Anything else is rejected before it reaches a redirect. */
 export const oauthProviderSchema = z.enum(["github", "google"]);
 
@@ -41,6 +58,7 @@ export type OAuthProviderInput = z.infer<typeof oauthProviderSchema>;
 
 export type SignInInput = z.infer<typeof signInSchema>;
 export type SignUpInput = z.infer<typeof signUpSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 
 /**
  * Only allow relative, single-slash paths as post-login redirects. Anything

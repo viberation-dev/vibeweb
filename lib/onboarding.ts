@@ -6,8 +6,11 @@ import type { RoleLevel } from "@/lib/role-level";
  * the back button works, a half-finished flow survives a refresh, and each
  * step is server-rendered like every other page here.
  *
- * Nothing is written to the profile until the final step is submitted. A
- * visitor who abandons at step 2 has changed nothing.
+ * The tier is written as step 1 is submitted; completion is written only by
+ * the final submit (VIB-67). Those are different facts: a stated preference
+ * is worth keeping the moment it is stated, while "has finished onboarding"
+ * governs whether the home nudge keeps offering the way back in. Someone who
+ * abandons at step 2 keeps their tier and still gets the nudge.
  */
 
 export const ONBOARDING_STEPS = [

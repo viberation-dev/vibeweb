@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { onboardingFinishSchema } from "./onboarding.ts";
+import { onboardingFinishSchema, onboardingLevelSchema } from "./onboarding.ts";
 
 const ok = (next: string | undefined) =>
   onboardingFinishSchema.safeParse({ role_level: "beginner", next }).success;
@@ -30,4 +30,32 @@ test("other internal paths are rejected too", () => {
 
 test("an unknown role level is rejected", () => {
   assert.equal(onboardingFinishSchema.safeParse({ role_level: "wizard" }).success, false);
+});
+
+const level = (value: unknown) => onboardingLevelSchema.safeParse({ role_level: value }).success;
+
+test("step 1 accepts the three real tiers", () => {
+  assert.ok(level("beginner"));
+  assert.ok(level("intermediate"));
+  assert.ok(level("expert"));
+});
+
+test("step 1 rejects anything outside the Postgres enum", () => {
+  // This value reaches a profiles UPDATE, so a tampered radio must not get
+  // as far as the database rejecting it.
+  assert.equal(level("admin"), false);
+  assert.equal(level("Beginner"), false);
+  assert.equal(level(""), false);
+  assert.equal(level(undefined), false);
+});
+
+test("step 1 does not accept a next destination", () => {
+  // Only the finish step redirects anywhere chosen by the form. Step 1 always
+  // goes to step 2, so there is no open-redirect surface to guard here.
+  const parsed = onboardingLevelSchema.safeParse({
+    role_level: "expert",
+    next: "//evil.example",
+  });
+  assert.ok(parsed.success);
+  assert.equal("next" in parsed.data, false);
 });

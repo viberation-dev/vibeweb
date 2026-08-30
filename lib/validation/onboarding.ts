@@ -7,8 +7,23 @@ import { z } from "zod";
  * `onboarding_completed` are set by the action itself, never accepted from
  * the form. The enum mirrors the Postgres enum from migration 01.
  */
+const roleLevelSchema = z.enum(["beginner", "intermediate", "expert"]);
+
+/**
+ * Step 1's answer, saved as soon as it is given rather than held in the URL
+ * until the end (VIB-67).
+ *
+ * The tier is a stated preference and worth keeping the moment someone states
+ * it. Completion is a separate fact and stays with the final submit, so an
+ * abandoned run still leaves `onboarding_completed` false and the home nudge
+ * still offers the way back in.
+ */
+export const onboardingLevelSchema = z.object({
+  role_level: roleLevelSchema,
+});
+
 export const onboardingFinishSchema = z.object({
-  role_level: z.enum(["beginner", "intermediate", "expert"]),
+  role_level: roleLevelSchema,
   /**
    * Where to land after finishing.
    *
@@ -24,3 +39,4 @@ export const onboardingFinishSchema = z.object({
 });
 
 export type OnboardingFinishInput = z.infer<typeof onboardingFinishSchema>;
+export type OnboardingLevelInput = z.infer<typeof onboardingLevelSchema>;

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { finishOnboardingAction } from "@/app/onboarding/actions";
+import { chooseLevelAction, finishOnboardingAction } from "@/app/onboarding/actions";
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -41,10 +41,14 @@ const LEVEL_BLURBS: Record<RoleLevel, string> = {
 /**
  * Three-step onboarding (§31, VIB-39).
  *
- * Every step is a real URL and every transition is a plain link or GET form,
- * so the back button works, a refresh keeps your answers, and none of it
- * needs JavaScript. Nothing touches the profile until the final submit —
- * abandoning at step 2 changes nothing.
+ * Every step is a real URL and every transition is a plain link or form, so
+ * the back button works, a refresh keeps your answers, and none of it needs
+ * JavaScript.
+ *
+ * Step 1 saves the chosen tier as it goes past (VIB-67); the reveal's exits
+ * are tool cards people are meant to click, so holding the answer in the URL
+ * until the end meant success looked identical to abandonment. Completion is
+ * still only written by the final submit.
  */
 export default async function OnboardingPage({ searchParams }: Props) {
   const params = await searchParams;
@@ -138,11 +142,11 @@ function StepLevel() {
       </p>
 
       {/*
-        A GET form, so choosing a level just navigates to the next step with
-        the answer in the URL. Nothing is saved yet.
+        Posts to a Server Action that saves the tier and then redirects to
+        step 2 as a plain URL, so the back button and refresh behave exactly
+        as they did when this was a GET form (VIB-67).
       */}
-      <form method="get" action="/onboarding" className="mt-6 flex flex-col gap-3">
-        <input type="hidden" name="step" value="2" />
+      <form action={chooseLevelAction} className="mt-6 flex flex-col gap-3">
         {ROLE_LEVELS.map(({ value, label }) => (
           <label
             key={value}
@@ -150,7 +154,7 @@ function StepLevel() {
           >
             <input
               type="radio"
-              name="level"
+              name="role_level"
               value={value}
               defaultChecked={value === DEFAULT_ROLE_LEVEL}
               className="mt-1"
@@ -286,8 +290,9 @@ function StepReveal({
 
       {/*
         §31: the flagship wizard is the primary action here, with the feed as
-        the secondary. Both submit the same form, so the level is saved either
-        way — the only difference is where you land.
+        the secondary. The level is already saved by now (VIB-67); what these
+        record is that onboarding is finished, so the home nudge stops. Both
+        submit the same form and differ only in where you land.
       */}
       <form action={finishOnboardingAction} className="mt-6 flex flex-wrap items-center gap-3">
         <input type="hidden" name="role_level" value={level} />
@@ -307,7 +312,7 @@ function StepReveal({
         )}
       </form>
       <p className="mt-3 text-sm text-muted-foreground">
-        Finishing saves your level. Change it any time from{" "}
+        Your level is saved. Change it any time from{" "}
         <Link href="/profile" className="underline">
           your profile
         </Link>

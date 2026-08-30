@@ -15,7 +15,17 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;
   const tokenHash = searchParams.get("token_hash");
   const type = searchParams.get("type") as EmailOtpType | null;
-  const next = safeRedirect(searchParams.get("next"));
+
+  /*
+   * A recovery token only exists so someone can set a new password, so that is
+   * where it lands unless the link says otherwise. The destination lives in a
+   * Supabase email template, which is edited in a dashboard and not covered by
+   * anything in this repo — defaulting on the type here means a template that
+   * omits `next` still works instead of dropping the user on the home page
+   * holding a recovery session and no way to use it.
+   */
+  const fallback = type === "recovery" ? "/reset-password" : "/";
+  const next = safeRedirect(searchParams.get("next"), fallback);
 
   if (!tokenHash || !type) {
     return NextResponse.redirect(`${origin}/login?error=invalid-link`);

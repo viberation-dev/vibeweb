@@ -5,14 +5,19 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import {
+  resetPasswordForEmail,
   signInWithOAuth,
   signInWithPassword,
   signOut as adapterSignOut,
+  signOutOtherSessions,
   signUpWithPassword,
+  updatePassword,
 } from "@/lib/integrations/supabase/auth";
 import { createClient } from "@/lib/integrations/supabase/server";
 import {
+  forgotPasswordSchema,
   oauthProviderSchema,
+  resetPasswordSchema,
   safeRedirect,
   signInSchema,
   signUpSchema,
@@ -93,6 +98,78 @@ export async function signUpAction(
   return {
     notice: "Check your inbox — we have sent you a link to confirm your email address.",
   };
+}
+
+export async function forgotPasswordAction(
+  _previous: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  const parsed = forgotPasswordSchema.safeParse({ email: formData.get("email") });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message };
+  }
+
+  const supabase = await createClient();
+  const origin = await currentOrigin();
+
+  /*
+   * The recovery link lands on /auth/confirm, which exchanges the token for a
+   * session and forwards to /reset-password.
+   *
+   * Both hops are named here rather than in the email template, which matters
+   * for two reasons: `origin` is this deployment, so a preview's recovery mail
+   * points back at the preview instead of production, and the destination
+   * lives with the code that owns it. The template just appends the token to
+   * `{{ .RedirectTo }}` — which is why the query string below is load-bearing
+   * and not decoration (VIB-66).
+   */
+  const result = await resetPasswordForEmail(
+    supabase,
+    parsed.data.email,
+    `${origin}/auth/confirm?next=${encodeURIComponent("/reset-password")}`,
+  );
+
+  if (!result.ok) {
+    return { error: result.message };
+  }
+
+  /*
+   * Same answer whether or not that address has an account, matching signup.
+   * A form that says "no account with that email" is an account-existence
+   * oracle, and this one would be readable by anyone.
+   */
+  return {
+    notice: "If that address has an account, we have sent it a link to reset the password.",
+  };
+}
+
+export async function resetPasswordAction(
+  _previous: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  const parsed = resetPasswordSchema.safeParse({
+    password: formData.get("password"),
+    confirmPassword: formData.get("confirmPassword"),
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message };
+  }
+
+  const supabase = await createClient();
+  const result = await updatePassword(supabase, parsed.data.password);
+
+  if (!result.ok) {
+    return { error: result.message };
+  }
+
+  // Best effort: the password is already changed, so a failure here should not
+  // present as a failed reset. It only means older sessions outlive it.
+  await signOutOtherSessions(supabase);
+
+  revalidatePath("/", "layout");
+  redirect("/login?notice=password-updated");
 }
 
 export async function signOutAction(): Promise<void> {

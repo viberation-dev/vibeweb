@@ -77,6 +77,14 @@ export function AuthForm({ mode, action, redirectTo }: Props) {
         {pending ? copy.pending : copy.submit}
       </Button>
 
+      {mode === "signin" ? (
+        <p className="text-center text-sm">
+          <Link href="/forgot-password" className="underline underline-offset-4">
+            Forgot your password?
+          </Link>
+        </p>
+      ) : null}
+
       <p className="text-muted-foreground text-center text-sm">
         {copy.switchText}{" "}
         <Link href={copy.switchHref} className="underline underline-offset-4">

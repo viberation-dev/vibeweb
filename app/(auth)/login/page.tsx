@@ -23,14 +23,20 @@ const ERROR_MESSAGES: Record<string, string> = {
   "expired-link": "That confirmation link has expired. Request a new one by signing up again.",
 };
 
+/** Confirmations the auth flows redirect back with. */
+const NOTICE_MESSAGES: Record<string, string> = {
+  "password-updated": "Your password has been updated. Sign in with it below.",
+};
+
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ redirectTo?: string; error?: string }>;
+  searchParams: Promise<{ redirectTo?: string; error?: string; notice?: string }>;
 }) {
-  const { redirectTo, error } = await searchParams;
+  const { redirectTo, error, notice } = await searchParams;
   const safeTarget = safeRedirect(redirectTo);
   const errorMessage = error ? ERROR_MESSAGES[error] : undefined;
+  const noticeMessage = notice ? NOTICE_MESSAGES[notice] : undefined;
 
   return (
     <Card className="w-full max-w-sm">
@@ -42,6 +48,12 @@ export default async function LoginPage({
         {errorMessage ? (
           <p role="alert" className="text-destructive text-sm">
             {errorMessage}
+          </p>
+        ) : null}
+
+        {noticeMessage ? (
+          <p role="status" className="text-sm">
+            {noticeMessage}
           </p>
         ) : null}
 

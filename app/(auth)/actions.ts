@@ -115,14 +115,19 @@ export async function forgotPasswordAction(
 
   /*
    * The recovery link lands on /auth/confirm, which exchanges the token for a
-   * session and then forwards to /reset-password. That second hop is written
-   * into the Supabase "Reset password" template as `next=/reset-password`,
-   * not passed from here — changing it means changing the template.
+   * session and forwards to /reset-password.
+   *
+   * Both hops are named here rather than in the email template, which matters
+   * for two reasons: `origin` is this deployment, so a preview's recovery mail
+   * points back at the preview instead of production, and the destination
+   * lives with the code that owns it. The template just appends the token to
+   * `{{ .RedirectTo }}` — which is why the query string below is load-bearing
+   * and not decoration (VIB-66).
    */
   const result = await resetPasswordForEmail(
     supabase,
     parsed.data.email,
-    `${origin}/auth/confirm`,
+    `${origin}/auth/confirm?next=${encodeURIComponent("/reset-password")}`,
   );
 
   if (!result.ok) {

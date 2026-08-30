@@ -588,6 +588,13 @@ export type Database = {
           rank: number
         }[]
       }
+      set_app_role: {
+        Args: {
+          new_role: Database["public"]["Enums"]["app_role"]
+          target_user: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "member" | "admin" | "super_admin"

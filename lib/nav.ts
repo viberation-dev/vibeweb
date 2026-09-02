@@ -17,6 +17,8 @@ import { toolsHref } from "./tools-url.ts";
 export type NavItem = {
   href: string;
   label: string;
+  /** Which phase it lands in — "1.5", "2", "sep". Shown after the label. */
+  note?: string;
   /** Renders dimmed and unclickable — signals direction, links nowhere. */
   disabled?: boolean;
 };
@@ -44,7 +46,7 @@ export const SIDEBAR_GROUPS: ReadonlyArray<{ label?: string; items: readonly Nav
     ],
   },
   {
-    label: "Directory",
+    label: "Directory · 13",
     items: TOOL_CATEGORIES.map((category) => ({
       href: toolsHref({ category: category.value }),
       label: category.label,
@@ -54,29 +56,28 @@ export const SIDEBAR_GROUPS: ReadonlyArray<{ label?: string; items: readonly Nav
     label: "Learn",
     items: [
       /*
-       * The handoff calls the first item "Walkthroughs", but no such content
-       * type exists — the listable types are guide/article/cheatsheet/
-       * course_link/help_article. Linking real destinations under the real
-       * label rather than inventing a taxonomy to match the doc; the pillar
-       * naming question belongs to the Learn hub issue.
+       * "Walkthroughs" is the mockup's label; there is no content type by
+       * that name, so it points at guides — the closest real type. Whether
+       * the taxonomy should gain a walkthrough pillar belongs to the Learn
+       * hub issue.
        */
-      { href: "/learn?type=guide", label: "Guides" },
+      { href: "/learn?type=guide", label: "Walkthroughs" },
       { href: "/learn?type=article", label: "Articles" },
       // Grouped under Learn but routed top-level, on purpose (§27 vs §31).
       { href: "/wizards", label: "Wizards" },
       { href: "/collections", label: "Collections" },
-      { href: "#", label: "Setups", disabled: true },
-      { href: "#", label: "Paths", disabled: true },
+      { href: "#", label: "Setups", note: "1.5", disabled: true },
+      { href: "#", label: "Paths", note: "1.5", disabled: true },
     ],
   },
   {
     label: "Later",
     items: [
-      { href: "#", label: "Prompts", disabled: true },
-      { href: "#", label: "Jobs", disabled: true },
-      { href: "#", label: "Communities", disabled: true },
-      { href: "#", label: "Channels", disabled: true },
-      { href: "#", label: "Top profiles", disabled: true },
+      { href: "#", label: "Prompts", note: "sep", disabled: true },
+      { href: "#", label: "Jobs", note: "1.5", disabled: true },
+      { href: "#", label: "Communities", note: "2", disabled: true },
+      { href: "#", label: "Channels", note: "2", disabled: true },
+      { href: "#", label: "Top profiles", note: "2", disabled: true },
     ],
   },
 ];

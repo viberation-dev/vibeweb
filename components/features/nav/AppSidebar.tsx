@@ -1,9 +1,16 @@
 "use client";
 
+import { BookmarkIcon, HomeIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 
 import { isActiveNavItem, SIDEBAR_GROUPS } from "@/lib/nav";
+
+/** The mockup gives only the top group icons; the rest are plain text. */
+const ICONS: Record<string, typeof HomeIcon> = {
+  "/": HomeIcon,
+  "/account/bookmarks": BookmarkIcon,
+};
 
 /**
  * The signed-in app shell's left rail (VIB-76, handoff §2).
@@ -67,6 +74,7 @@ function NavGroups() {
                     className="text-muted-foreground/50 block cursor-default rounded-md px-3 py-1.5 text-sm"
                   >
                     {item.label}
+                    {item.note ? <span className="ml-1 text-xs">·{item.note}</span> : null}
                   </span>
                 ) : (
                   <Link
@@ -80,6 +88,10 @@ function NavGroups() {
                         : "text-muted-foreground hover:bg-accent/50 hover:text-foreground block rounded-md px-3 py-1.5 text-sm"
                     }
                   >
+                    {(() => {
+                      const Icon = ICONS[item.href];
+                      return Icon ? <Icon aria-hidden className="mr-2 inline size-4 align-text-bottom" /> : null;
+                    })()}
                     {item.label}
                   </Link>
                 )}

@@ -56,11 +56,17 @@ export function contentTypeLabel(value: ContentType): string {
  * chips and the pager. Empty params are dropped and `page` is omitted at
  * page 1, so the canonical URL for the unfiltered first page stays `/learn`.
  */
-export function learnHref(params: { type?: string; level?: LevelParam; page?: number }): string {
+export function learnHref(params: {
+  type?: string;
+  level?: LevelParam;
+  sort?: LearnSort;
+  page?: number;
+}): string {
   const search = new URLSearchParams();
 
   if (params.type) search.set("type", params.type);
   if (params.level) search.set("level", params.level);
+  if (params.sort) search.set("sort", params.sort);
   if (params.page && params.page > 1) search.set("page", String(params.page));
 
   const query = search.toString();
@@ -85,4 +91,55 @@ export function contentPreview(type: ContentType, body: string | null): string |
 
   if (!collapsed) return null;
   return collapsed.length > 160 ? `${collapsed.slice(0, 157).trimEnd()}…` : collapsed;
+}
+
+/**
+ * Sort options for the Learn index.
+ *
+ * `column` and `ascending` are fed straight to the query's .order(), so
+ * adding an option here is the whole change — the query layer never learns a
+ * new branch. Same shape as TOOL_SORTS, for the same reason.
+ */
+export const LEARN_SORTS = [
+  { value: "latest", label: "Latest", column: "created_at", ascending: false },
+  { value: "title", label: "A–Z", column: "title", ascending: true },
+] as const satisfies ReadonlyArray<{
+  value: string;
+  label: string;
+  column: "created_at" | "title";
+  ascending: boolean;
+}>;
+
+export type LearnSort = (typeof LEARN_SORTS)[number]["value"];
+
+/** The sort applied when the URL says nothing. */
+export const DEFAULT_LEARN_SORT: LearnSort = "latest";
+
+/** Narrows an untrusted `?sort=` value to a real option, or undefined. */
+export function toLearnSort(value: string | undefined): LearnSort | undefined {
+  return LEARN_SORTS.some((s) => s.value === value) ? (value as LearnSort) : undefined;
+}
+
+export function learnSortOrder(sort: LearnSort) {
+  // The `satisfies` above guarantees a match, so this cannot be undefined.
+  return LEARN_SORTS.find((s) => s.value === sort)!;
+}
+
+/** Words a minute, for the card's "5 min" meta. Ordinary prose, read online. */
+const WORDS_PER_MINUTE = 200;
+
+/**
+ * Rough minutes to read one piece, from its body.
+ *
+ * The mockup's card meta reads "5 min · Alex R.". There is no author column
+ * on `content`, so the byline half is not built; the minutes half is derived
+ * here rather than stored, which keeps it honest when a body is edited and
+ * costs no schema change.
+ *
+ * Null for an empty body — a card with no preview text should not claim to
+ * take a minute to read.
+ */
+export function readingMinutes(body: string | null): number | null {
+  const words = body?.trim().split(/\s+/).filter(Boolean).length ?? 0;
+  return words ? Math.max(1, Math.round(words / WORDS_PER_MINUTE)) : null;
 }

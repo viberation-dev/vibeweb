@@ -5,7 +5,7 @@ import { LearnFilters } from "@/components/features/learn/LearnFilters";
 import { DirectoryPager } from "@/components/features/resource/DirectoryPager";
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import { createClient } from "@/lib/integrations/supabase/server";
-import { LEARN_TYPE_VALUES, learnHref, toContentType } from "@/lib/learn";
+import { LEARN_TYPE_VALUES, learnHref, toContentType, toLearnSort } from "@/lib/learn";
 import { toPageNumber } from "@/lib/pagination";
 import { listBookmarks } from "@/lib/queries/bookmarks";
 import { listContent } from "@/lib/queries/content";
@@ -20,15 +20,17 @@ export const metadata: Metadata = {
 };
 
 type Props = {
-  searchParams: Promise<{ type?: string; level?: string; page?: string }>;
+  searchParams: Promise<{ type?: string; level?: string; sort?: string; page?: string }>;
 };
 
+/** Learn hub (VIB-85, mockup screen 10). */
 export default async function LearnPage({ searchParams }: Props) {
   const params = await searchParams;
   // Unknown values are dropped rather than 404'd: a stale or hand-edited URL
   // should still show the hub, not an error.
   const type = toContentType(params.type);
   const level = toLevelParam(params.level);
+  const sort = toLearnSort(params.sort);
   const page = toPageNumber(params.page);
 
   const supabase = await createClient();
@@ -43,6 +45,7 @@ export default async function LearnPage({ searchParams }: Props) {
     listContent(supabase, {
       types: type ? [type] : LEARN_TYPE_VALUES,
       roleLevel: effectiveLevel,
+      sort,
       page,
     }),
     // Signed-out visitors still see Save buttons; pressing one sends them to
@@ -52,12 +55,17 @@ export default async function LearnPage({ searchParams }: Props) {
 
   const bookmarkedIds = new Set(bookmarks.map((bookmark) => bookmark.target_id));
   // Come back to this exact filtered page after a signed-out visitor logs in.
-  const returnTo = learnHref({ type, level, page });
+  const returnTo = learnHref({ type, level, sort, page });
 
   return (
     <main className="mx-auto w-full max-w-6xl p-6">
-      <h1 className="font-heading text-2xl font-semibold">Learn</h1>
-      <p className="mt-1 text-muted-foreground">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h1 className="font-heading text-2xl font-semibold">Learn</h1>
+        <span className="text-muted-foreground text-xs">
+          Role-adaptive · beginner content stays separate
+        </span>
+      </div>
+      <p className="text-muted-foreground mt-1">
         Guides, articles and cheatsheets for getting things actually shipped.
       </p>
 
@@ -67,20 +75,33 @@ export default async function LearnPage({ searchParams }: Props) {
           level={level}
           effectiveLevel={effectiveLevel}
           hasProfileLevel={Boolean(profile?.role_level)}
+          sort={sort}
         />
       </div>
 
       {items.length ? (
         <>
-          <ul className="mt-8 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {/*
+            Two columns, matching the mockup — Learn cards carry a preview
+            paragraph and read wider than a tool tile.
+
+            motion-lift / motion-reveal are opt-in here because this screen
+            and the marketing homepage are the only two that get motion
+            (handoff §4). Both are pure CSS, so the grid stays a server
+            component.
+          */}
+          <ul className="mt-6 grid items-start gap-4 sm:grid-cols-2">
             {items.map(contentView).map((view) => (
               <li key={view.id}>
                 <ResourceCard
+                  className="motion-lift motion-reveal"
                   href={view.href}
                   title={view.title}
                   eyebrow={view.eyebrow}
                   description={view.description}
                   badges={view.badges}
+                  difficulty={view.difficulty}
+                  meta={view.meta}
                   action={
                     <BookmarkButton
                       targetType={view.targetType}
@@ -98,7 +119,7 @@ export default async function LearnPage({ searchParams }: Props) {
             pageCount={pageCount}
             total={total}
             itemLabel="pieces"
-            href={(next) => learnHref({ type, level, page: next })}
+            href={(next) => learnHref({ type, level, sort, page: next })}
           />
         </>
       ) : (

@@ -86,6 +86,8 @@ export default async function SearchPage({ searchParams }: Props) {
                   eyebrow={view.eyebrow}
                   description={view.description}
                   badges={view.badges}
+                  difficulty={view.difficulty}
+                  meta={view.meta}
                   action={
                     <BookmarkButton
                       targetType={view.targetType}

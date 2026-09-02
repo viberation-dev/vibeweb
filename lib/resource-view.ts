@@ -1,6 +1,7 @@
-import { contentPreview, contentTypeLabel } from "@/lib/learn";
+import { contentPreview, contentTypeLabel, readingMinutes } from "@/lib/learn";
 import type { Content } from "@/lib/queries/content";
 import type { Tool } from "@/lib/queries/tools";
+import type { RoleLevel } from "@/lib/role-level";
 import { toolCategoryLabel } from "@/lib/tool-categories";
 import type { Enums } from "@/types/supabase";
 
@@ -24,6 +25,10 @@ export type ResourceView = {
   eyebrow: string;
   description: string | null;
   badges?: string[];
+  /** Content only — tools have no skill tier. Rendered as a DifficultyBadge. */
+  difficulty?: RoleLevel;
+  /** Quiet card meta. Reading time for content; tools have none. */
+  meta?: string;
 };
 
 export function toolView(tool: Tool): ResourceView {
@@ -39,6 +44,8 @@ export function toolView(tool: Tool): ResourceView {
 }
 
 export function contentView(item: Content): ResourceView {
+  const minutes = readingMinutes(item.body);
+
   return {
     targetType: "content",
     id: item.id,
@@ -48,6 +55,10 @@ export function contentView(item: Content): ResourceView {
     // `content` has no tagline column, so the preview is drawn from the body
     // rather than a second stored field.
     description: contentPreview(item.type, item.body),
-    badges: item.role_level ? [item.role_level] : undefined,
+    // The tier is a DifficultyBadge, not a `badges` string: it is its own
+    // design-system surface with a fixed hue per level, and a raw lowercase
+    // "expert" in a grey pill was never what the badge set is for.
+    difficulty: item.role_level ?? undefined,
+    meta: minutes ? `${minutes} min` : undefined,
   };
 }

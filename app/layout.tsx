@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Inter } from "next/font/google";
 import Link from "next/link";
 
 import { AuthStatus } from "@/components/features/auth/AuthStatus";
@@ -7,6 +7,8 @@ import { SearchInput } from "@/components/features/search/SearchInput";
 
 import "./globals.css";
 
+// Blue/Lime pairs Geist for display (headings) with Inter for body text —
+// Viberation Design System readme "Type" / Bible §24.
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -14,6 +16,11 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
@@ -35,7 +42,7 @@ export default function RootLayout({
       visible to its own parent. Declared on <body> they resolved to nothing
       and every page fell back to the browser default serif.
     */
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${inter.variable}`}>
       <body
         className="flex min-h-screen flex-col antialiased"
         /*

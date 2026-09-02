@@ -7,13 +7,12 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  /* next/font sets --font-geist-sans on <body> (app/layout.tsx). Pointing
-     --font-sans at itself resolved to nothing, so font-sans fell through to
-     the browser default serif and the whole site rendered in Times New Roman. */
-  --font-sans: var(--font-geist-sans);
+  /* next/font sets --font-geist-sans / --font-inter on <body> (app/layout.tsx).
+     Blue/Lime pairs Geist for display (headings) with Inter for body text —
+     Bible §24 Typography / Viberation Design System readme "Type". */
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
-  /* One sans family for UI and headings alike, per Bible §24 Typography. */
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-geist-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -50,75 +49,136 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  /* Brand additions — Viberation Design System (Blue/Lime), not part of the
+     stock shadcn palette. --highlight is a fill-only colour, never text
+     (readme "Do"): lime paired with dark text, used for affiliate/outbound
+     actions and sparingly elsewhere. Difficulty colours are fixed across
+     themes/modes so "Beginner" reads the same everywhere. */
+  --color-highlight: var(--highlight);
+  --color-highlight-foreground: var(--highlight-foreground);
+  --color-difficulty-beginner: var(--difficulty-beginner);
+  --color-difficulty-beginner-bg: var(--difficulty-beginner-bg);
+  --color-difficulty-beginner-border: var(--difficulty-beginner-border);
+  --color-difficulty-intermediate: var(--difficulty-intermediate);
+  --color-difficulty-intermediate-bg: var(--difficulty-intermediate-bg);
+  --color-difficulty-intermediate-border: var(--difficulty-intermediate-border);
+  --color-difficulty-advanced: var(--difficulty-advanced);
+  --color-difficulty-advanced-bg: var(--difficulty-advanced-bg);
+  --color-difficulty-advanced-border: var(--difficulty-advanced-border);
 }
 
+/*
+  Brand colours — Viberation Design System, Theme A (Blue / Lime, the shipping
+  default). Ported from the Claude Design handoff's tokens/palette.css +
+  tokens/themes.css onto this app's existing shadcn variable names, so every
+  page already built against bg-background / text-foreground / bg-primary /
+  etc. picks up the brand with no per-component changes. Indigo and
+  Violet/Turbo (the two alternate themes) are documented in the design
+  system but intentionally not wired up here — this app ships one theme.
+*/
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --background: #fffff2; /* paper */
+  --foreground: #1a1a18; /* text-body */
+  --card: #ffffff; /* surface-card */
+  --card-foreground: #1a1a18;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a18;
+  --primary: #011aff; /* blue-primary */
+  --primary-foreground: #ffffff; /* accent-on */
+  --secondary: #f2f2e4; /* surface-muted */
+  --secondary-foreground: #050505; /* text-strong */
+  --muted: #f2f2e4; /* surface-muted */
+  --muted-foreground: #5a5a54; /* text-muted */
+  --accent: #f2f2e4; /* surface-muted */
+  --accent-foreground: #050505; /* text-strong */
+  --destructive: #d33a4b; /* danger */
+  --border: #e3e3d2; /* border-subtle */
+  --input: #e3e3d2; /* border-subtle */
+  --ring: #011aff; /* accent */
+  --chart-1: #011aff;
+  --chart-2: #4c63ff;
+  --chart-3: #0b6b4f;
+  --chart-4: #a9690a;
+  --chart-5: #b3253c;
+  --radius: 0.75rem; /* 12px — Blue/Lime's radius-lg (card radius) */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1a1a18;
+  --sidebar-primary: #011aff;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f2f2e4;
+  --sidebar-accent-foreground: #050505;
+  --sidebar-border: #e3e3d2;
+  --sidebar-ring: #011aff;
+
+  /* Secondary brand colour — fill only, paired with its own on-colour. */
+  --highlight: #e4ff1a; /* lime */
+  --highlight-hover: #c7e000; /* lime-deep */
+  --highlight-foreground: #050505; /* ink */
+
+  /* Difficulty badges — fixed hue per level, independent of theme/mode. The
+     background/border tints are mixed against the active card colour so
+     they still read correctly in dark mode without a second colour set. */
+  --difficulty-beginner: #0b6b4f;
+  --difficulty-beginner-bg: color-mix(in oklab, var(--difficulty-beginner) 13%, var(--card));
+  --difficulty-beginner-border: color-mix(in oklab, var(--difficulty-beginner) 32%, var(--card));
+  --difficulty-intermediate: #a9690a;
+  --difficulty-intermediate-bg: color-mix(in oklab, var(--difficulty-intermediate) 13%, var(--card));
+  --difficulty-intermediate-border: color-mix(in oklab, var(--difficulty-intermediate) 32%, var(--card));
+  --difficulty-advanced: #b3253c;
+  --difficulty-advanced-bg: color-mix(in oklab, var(--difficulty-advanced) 13%, var(--card));
+  --difficulty-advanced-border: color-mix(in oklab, var(--difficulty-advanced) 32%, var(--card));
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #07070c;
+  --foreground: #f2f2f5; /* text-body, dark */
+  --card: #101018;
+  --card-foreground: #f2f2f5;
+  --popover: #101018;
+  --popover-foreground: #f2f2f5;
+  --primary: #4c63ff; /* blue-primary-bright — dark-mode lift for contrast */
+  --primary-foreground: #ffffff;
+  --secondary: #16161f; /* surface-muted, dark */
+  --secondary-foreground: #ffffff; /* text-strong, dark */
+  --muted: #16161f;
+  --muted-foreground: #9c9caa;
+  --accent: #16161f;
+  --accent-foreground: #ffffff;
+  --destructive: #e6677a;
+  --border: #23232e;
+  --input: #23232e;
+  --ring: #4c63ff;
+  --chart-1: #4c63ff;
+  --chart-2: #6b7eff;
+  --chart-3: #0b6b4f;
+  --chart-4: #a9690a;
+  --chart-5: #b3253c;
+  --sidebar: #101018;
+  --sidebar-foreground: #f2f2f5;
+  --sidebar-primary: #4c63ff;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #16161f;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #23232e;
+  --sidebar-ring: #4c63ff;
+
+  /* Lime survives into dark mode as a sparing highlight only (readme
+     "Colour" rules) — the fill colour itself does not change, only its
+     on-colour (dark ink either way, since lime never goes on a dark ground
+     without ink text). */
+  --highlight: #e4ff1a;
+  --highlight-hover: #c7e000;
+  --highlight-foreground: #07070c;
+
+  --difficulty-beginner: #0b6b4f;
+  --difficulty-beginner-bg: color-mix(in oklab, var(--difficulty-beginner) 13%, var(--card));
+  --difficulty-beginner-border: color-mix(in oklab, var(--difficulty-beginner) 32%, var(--card));
+  --difficulty-intermediate: #a9690a;
+  --difficulty-intermediate-bg: color-mix(in oklab, var(--difficulty-intermediate) 13%, var(--card));
+  --difficulty-intermediate-border: color-mix(in oklab, var(--difficulty-intermediate) 32%, var(--card));
+  --difficulty-advanced: #b3253c;
+  --difficulty-advanced-bg: color-mix(in oklab, var(--difficulty-advanced) 13%, var(--card));
+  --difficulty-advanced-border: color-mix(in oklab, var(--difficulty-advanced) 32%, var(--card));
 }
 
 @layer base {

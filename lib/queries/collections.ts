@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { getContentByIds, type Content } from "@/lib/queries/content";
 import { getToolsByIds, type Tool } from "@/lib/queries/tools";
-import type { Database, Tables } from "@/types/supabase";
+import type { Database, Enums, Tables } from "@/types/supabase";
 
 export type Collection = Tables<"collections">;
 export type CollectionItem = Tables<"collection_items">;
@@ -165,4 +165,28 @@ export async function getCollectionsByIds(
     throw new Error(`getCollectionsByIds: ${error.message}`);
   }
   return data;
+}
+
+/**
+ * How many collections a single item appears in — the tool detail rail's
+ * "In collections" fact.
+ *
+ * Counts rows rather than fetching them: the page shows a number, not a
+ * list, and `collection_items` is public-read so the count is honest for
+ * signed-out visitors too.
+ */
+export async function countCollectionsContaining(
+  client: Client,
+  target: { targetType: Enums<"target_kind">; targetId: string },
+): Promise<number> {
+  const { count, error } = await client
+    .from("collection_items")
+    .select("*", { count: "exact", head: true })
+    .eq("target_type", target.targetType)
+    .eq("target_id", target.targetId);
+
+  if (error) {
+    throw new Error(`countCollectionsContaining(${target.targetId}): ${error.message}`);
+  }
+  return count ?? 0;
 }

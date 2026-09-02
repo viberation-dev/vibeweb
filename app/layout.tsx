@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import Link from "next/link";
+import { Suspense } from "react";
 
 import { AuthStatus } from "@/components/features/auth/AuthStatus";
+import { AppSidebar } from "@/components/features/nav/AppSidebar";
 import { SearchInput } from "@/components/features/search/SearchInput";
+import { createClient } from "@/lib/integrations/supabase/server";
+import { TOP_NAV } from "@/lib/nav";
+import { getCurrentProfile } from "@/lib/queries/profiles";
 
 import "./globals.css";
 
@@ -30,11 +35,21 @@ export const metadata: Metadata = {
     "The digital operating system for vibe coders — a curated AI tool library, role-aware guides, and a place to keep what works.",
 };
 
-export default function RootLayout({
+/**
+ * Two nav structures, not one (VIB-76, handoff §2).
+ *
+ * Visitors get a flat marketing top nav. Signed-in users get the app shell:
+ * the same header minus the marketing links, plus the sidebar. The session
+ * is read once here and handed to AuthStatus rather than fetched twice.
+ */
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const supabase = await createClient();
+  const profile = await getCurrentProfile(supabase);
+
   return (
     /*
       The font variables go on <html>, not <body>: globals.css applies
@@ -62,29 +77,44 @@ export default function RootLayout({
             <Link href="/" className="font-semibold">
               Viberation
             </Link>
-            <Link href="/tools" className="text-sm text-muted-foreground hover:text-foreground">
-              Tools
-            </Link>
-            <Link href="/learn" className="text-sm text-muted-foreground hover:text-foreground">
-              Learn
-            </Link>
-            <Link
-              href="/collections"
-              className="text-sm text-muted-foreground hover:text-foreground"
-            >
-              Collections
-            </Link>
-            <Link href="/wizards" className="text-sm text-muted-foreground hover:text-foreground">
-              Wizards
-            </Link>
+            {/*
+              Marketing links only when signed out. Signed in, the same
+              destinations live in the sidebar, and a header copy of them is
+              a second control for one destination.
+            */}
+            {profile
+              ? null
+              : TOP_NAV.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
           </nav>
           <div className="flex items-center gap-4">
             {/* §31 puts search in the top nav on every page, not just /search. */}
             <SearchInput compact className="hidden sm:flex" />
-            <AuthStatus />
+            <AuthStatus profile={profile} />
           </div>
         </header>
-        <div className="flex-1">{children}</div>
+        {profile ? (
+          <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+            {/*
+              AppSidebar reads the query string to mark the active category,
+              and useSearchParams needs a Suspense boundary above it or the
+              whole tree opts out of static rendering.
+            */}
+            <Suspense fallback={<div className="hidden w-56 shrink-0 border-r md:block" />}>
+              <AppSidebar />
+            </Suspense>
+            <div className="min-w-0 flex-1">{children}</div>
+          </div>
+        ) : (
+          <div className="flex-1">{children}</div>
+        )}
         {/*
           Affiliate disclosure gets its own link rather than hiding inside
           "Terms" (VIB-57). /go/[slug] sends visitors to monetized destinations,

@@ -21,6 +21,7 @@ import {
   type Tool,
 } from "@/lib/queries/tools";
 import { toolCategoryLabel } from "@/lib/tool-categories";
+import { hasFreeTier, isOpenSource } from "@/lib/tool-facts";
 import { toolsHref } from "@/lib/tools-url";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -215,12 +216,15 @@ export default async function ToolPage({ params }: Props) {
 
           <dl className="mt-4 border-t pt-3">
             {/*
-              Both facts read off the tags rather than a boolean column,
-              because that is where the information actually lives — the
-              same #free-tier and #open-source pills shown in the header.
+              Derived from pricing_tier, not from the free-tier/open-source
+              tags. The tags are partial curation: 13 of 26 tools would have
+              claimed "Free tier: No" incorrectly. See lib/tool-facts.ts.
             */}
-            <Fact label="Free tier" value={tagSlugs.has("free-tier") ? "Yes" : "No"} />
-            <Fact label="Open source" value={tagSlugs.has("open-source") ? "Yes" : "No"} />
+            <Fact label="Free tier" value={hasFreeTier(tool.pricing_tier) ? "Yes" : "No"} />
+            <Fact
+              label="Open source"
+              value={isOpenSource(tool.pricing_tier, tagSlugs) ? "Yes" : "No"}
+            />
             <Fact label="In collections" value={String(collectionCount)} />
           </dl>
 

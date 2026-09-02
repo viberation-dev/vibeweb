@@ -8,10 +8,7 @@ import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import { bookmarkFolders, groupBookmarksByFolder, UNFILED } from "@/lib/bookmarks";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { listBookmarks } from "@/lib/queries/bookmarks";
-import { getContentByIds } from "@/lib/queries/content";
-import { getToolsByIds } from "@/lib/queries/tools";
-import { contentView, toolView, type ResourceView } from "@/lib/resource-view";
-import type { Enums } from "@/types/supabase";
+import { resolveTargetViews } from "@/lib/queries/resources";
 
 export const metadata: Metadata = {
   title: "Bookmarks — Viberation",
@@ -29,24 +26,12 @@ export default async function BookmarksPage() {
   }
 
   const bookmarks = await listBookmarks(supabase, data.user.id);
-  const idsOf = (kind: Enums<"target_kind">) =>
-    bookmarks.filter((bookmark) => bookmark.target_type === kind).map((b) => b.target_id);
-
-  const [tools, content] = await Promise.all([
-    getToolsByIds(supabase, idsOf("tool")),
-    getContentByIds(supabase, idsOf("content")),
-  ]);
 
   /*
-   * Target ids are uuids, so one map across kinds cannot collide. Kinds with
-   * no UI yet (prompts, collections, wizards) are simply absent from it, and
    * groupBookmarksByFolder drops bookmarks whose target it cannot find —
    * the same path a deleted tool takes.
    */
-  const saved = new Map<string, ResourceView>();
-  for (const view of [...tools.map(toolView), ...content.map(contentView)]) {
-    saved.set(view.id, view);
-  }
+  const saved = await resolveTargetViews(supabase, bookmarks);
 
   const folders = bookmarkFolders(bookmarks);
   const grouped = groupBookmarksByFolder(bookmarks, saved);

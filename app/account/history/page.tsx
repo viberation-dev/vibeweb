@@ -6,11 +6,8 @@ import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { listBookmarks } from "@/lib/queries/bookmarks";
-import { getContentByIds } from "@/lib/queries/content";
 import { listHistory } from "@/lib/queries/history";
-import { getToolsByIds } from "@/lib/queries/tools";
-import { contentView, toolView, type ResourceView } from "@/lib/resource-view";
-import type { Enums } from "@/types/supabase";
+import { resolveTargetViews } from "@/lib/queries/resources";
 
 export const metadata: Metadata = {
   title: "History — Viberation",
@@ -38,22 +35,7 @@ export default async function HistoryPage() {
     listBookmarks(supabase, data.user.id),
   ]);
 
-  const idsOf = (kind: Enums<"target_kind">) =>
-    items.filter((item) => item.target_type === kind).map((item) => item.target_id);
-
-  const [tools, content] = await Promise.all([
-    getToolsByIds(supabase, idsOf("tool")),
-    getContentByIds(supabase, idsOf("content")),
-  ]);
-
-  /*
-   * Target ids are uuids, so one map across kinds cannot collide. Kinds with
-   * no UI yet (prompts, collections, wizards) are simply absent from it.
-   */
-  const viewed = new Map<string, ResourceView>();
-  for (const view of [...tools.map(toolView), ...content.map(contentView)]) {
-    viewed.set(view.id, view);
-  }
+  const viewed = await resolveTargetViews(supabase, items);
 
   const bookmarkedIds = new Set(bookmarks.map((bookmark) => bookmark.target_id));
 

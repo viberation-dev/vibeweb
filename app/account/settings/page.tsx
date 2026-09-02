@@ -30,7 +30,7 @@ export default async function AccountSettingsPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-2xl p-6">
+    <>
       <Card>
         <CardHeader>
           <CardTitle>Settings</CardTitle>
@@ -60,6 +60,6 @@ export default async function AccountSettingsPage() {
           <ThemeToggle />
         </CardContent>
       </Card>
-    </main>
+    </>
   );
 }

@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 
 import { createServerClient } from "@supabase/ssr";
+import { cache } from "react";
 
 import type { Database } from "@/types/supabase";
 
@@ -12,7 +13,13 @@ import { supabasePublishableKey, supabaseUrl } from "./env";
  * Server Components cannot write cookies, so the setAll failure is swallowed
  * there; session refresh is handled by middleware instead.
  */
-export async function createClient() {
+/*
+ * Request-scoped: React cache() returns the same client for every caller in
+ * one request, so the root layout, a nested layout and the page share it
+ * instead of building three. That also makes getCurrentProfile's own cache
+ * effective, since its key is the client it is handed.
+ */
+export const createClient = cache(async function createClient() {
   const cookieStore = await cookies();
 
   return createServerClient<Database>(supabaseUrl(), supabasePublishableKey(), {
@@ -31,4 +38,4 @@ export async function createClient() {
       },
     },
   });
-}
+})

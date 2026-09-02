@@ -53,7 +53,7 @@ export default async function AccountOverviewPage() {
   ];
 
   return (
-    <main className="mx-auto w-full max-w-2xl p-6">
+    <>
       <Card>
         <CardHeader>
           <CardTitle>Your account</CardTitle>
@@ -76,6 +76,6 @@ export default async function AccountOverviewPage() {
           </dl>
         </CardContent>
       </Card>
-    </main>
+    </>
   );
 }

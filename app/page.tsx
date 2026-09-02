@@ -1,9 +1,8 @@
 import { IconArrowRight, IconSearch } from "@tabler/icons-react";
 import Link from "next/link";
 
-import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
+import { MarketingHome } from "@/components/features/marketing/MarketingHome";
 import { CategoryIcon } from "@/components/features/tools/CategoryIcon";
-import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -21,33 +20,28 @@ import {
 } from "@/lib/home-feed";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { contentTypeLabel, LEARN_TYPE_VALUES } from "@/lib/learn";
-import { listBookmarks } from "@/lib/queries/bookmarks";
 import {
   countCollectionItems,
   listFeaturedCollections,
-  type Collection,
 } from "@/lib/queries/collections";
-import { listContent, type Content } from "@/lib/queries/content";
+import { listContent } from "@/lib/queries/content";
 import { listHistory } from "@/lib/queries/history";
 import { getProfile, type Profile } from "@/lib/queries/profiles";
 import { resolveTargetViews } from "@/lib/queries/resources";
 import { listPopularTags } from "@/lib/queries/tags";
 import { listTools } from "@/lib/queries/tools";
-import {
-  getWizardProgress,
-  listWizards,
-  type Wizard,
-} from "@/lib/queries/wizards";
-import { contentView, toolView, type ResourceView } from "@/lib/resource-view";
+import { getWizardProgress, listWizards } from "@/lib/queries/wizards";
 import { TOOL_CATEGORIES } from "@/lib/tool-categories";
 import { toolsHref } from "@/lib/tools-url";
 
 /**
- * Home (§31 Part 2) — two shapes, not one (VIB-78, handoff Screen 2).
+ * Home — two shapes, not one (VIB-78 and VIB-77, handoff screens 2 and 1).
  *
  * Signed in this is the app shell's centre and right rail; the left zone is
- * the sidebar, which lives in the layout. Signed out it stays the stacked
- * marketing page, unchanged pending the marketing homepage rebuild.
+ * the sidebar, which lives in the layout. Signed out it hands off to
+ * MarketingHome. The queries are shared because both shapes want the same
+ * rows — collections, latest content, popular tools, the flagship wizard —
+ * just arranged and framed differently.
  */
 type Props = { searchParams: Promise<{ feed?: string }> };
 
@@ -64,8 +58,7 @@ export default async function HomePage({ searchParams }: Props) {
   const [
     collections,
     { items: latest },
-    { tools },
-    bookmarks,
+    { tools, total: toolCount },
     wizards,
     history,
   ] = await Promise.all([
@@ -82,7 +75,6 @@ export default async function HomePage({ searchParams }: Props) {
       pageSize: 3,
     }),
     listTools(supabase, { sort: "popular", pageSize: 6 }),
-    auth.user ? listBookmarks(supabase, auth.user.id) : [],
     listWizards(supabase),
     // Four is what the rail has room for; the full list is the History tab.
     auth.user ? listHistory(supabase, auth.user.id, 4) : [],
@@ -91,54 +83,21 @@ export default async function HomePage({ searchParams }: Props) {
   // §31 puts the flagship promo last. Nothing renders it when no wizard is
   // published, so the section cannot point at a route that 404s.
   const flagship = wizards[0];
-  const bookmarkedIds = new Set(
-    bookmarks.map((bookmark) => bookmark.target_id),
-  );
 
   if (!auth.user) {
+    const counts = await countCollectionItems(
+      supabase,
+      collections.map((collection) => collection.id),
+    );
     return (
-      <main className="mx-auto w-full max-w-6xl p-6">
-        <section className="py-6">
-          <h1 className="font-heading text-4xl font-semibold tracking-tight">
-            The tools that actually get your project shipped.
-          </h1>
-          <p className="text-muted-foreground mt-3 max-w-2xl text-lg">
-            A curated directory of AI tools for vibe coders, with guides written
-            for the level you are actually at — not the one the docs assume.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/tools" className={buttonVariants({ size: "lg" })}>
-              Browse the directory
-            </Link>
-            <Link
-              href="/learn"
-              className={buttonVariants({ size: "lg", variant: "outline" })}
-            >
-              Start learning
-            </Link>
-          </div>
-        </section>
-
-        <CollectionsSection collections={collections} />
-        <LatestSection
-          items={latest}
-          profile={null}
-          bookmarkedIds={bookmarkedIds}
-        />
-        {tools.length ? (
-          <FeedSection
-            title="Most viewed tools"
-            href="/tools"
-            linkLabel="All tools"
-          >
-            <CardGrid
-              views={tools.map(toolView)}
-              bookmarkedIds={bookmarkedIds}
-            />
-          </FeedSection>
-        ) : null}
-        <FlagshipSection wizard={flagship} />
-      </main>
+      <MarketingHome
+        toolCount={toolCount}
+        previewTools={tools.slice(0, 3)}
+        collections={collections}
+        collectionCounts={counts}
+        latest={latest}
+        flagship={flagship}
+      />
     );
   }
 
@@ -558,150 +517,5 @@ function OnboardingNudge({ profile }: { profile: Profile | null }) {
         Get started
       </Link>
     </section>
-  );
-}
-
-function CollectionsSection({ collections }: { collections: Collection[] }) {
-  if (!collections.length) return null;
-
-  return (
-    <FeedSection
-      title="Featured collections"
-      href="/collections"
-      linkLabel="All collections"
-    >
-      <ul className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {collections.map((collection) => (
-          <li key={collection.id}>
-            <Card className="focus-within:ring-ring hover:bg-muted/40 relative h-full transition-colors focus-within:ring-2">
-              <CardHeader>
-                <Badge variant="secondary" className="w-fit">
-                  Collection
-                </Badge>
-                <CardTitle>
-                  <Link
-                    href={`/collections/${collection.slug}`}
-                    className="outline-none after:absolute after:inset-0"
-                  >
-                    {collection.title}
-                  </Link>
-                </CardTitle>
-                {collection.description ? (
-                  <CardDescription>{collection.description}</CardDescription>
-                ) : null}
-              </CardHeader>
-            </Card>
-          </li>
-        ))}
-      </ul>
-    </FeedSection>
-  );
-}
-
-function LatestSection({
-  items,
-  profile,
-  bookmarkedIds,
-}: {
-  items: Content[];
-  profile: Profile | null;
-  bookmarkedIds: Set<string>;
-}) {
-  if (!items.length) return null;
-
-  return (
-    <FeedSection
-      title={
-        profile ? `Written for ${profile.role_level}s` : "Latest from Learn"
-      }
-      href="/learn"
-      linkLabel="All of Learn"
-    >
-      <CardGrid views={items.map(contentView)} bookmarkedIds={bookmarkedIds} />
-    </FeedSection>
-  );
-}
-
-function FlagshipSection({ wizard }: { wizard: Wizard | undefined }) {
-  if (!wizard) return null;
-
-  return (
-    <section className="bg-muted/40 mt-12 rounded-xl border p-6">
-      <Badge variant="secondary" className="w-fit">
-        Guided build
-      </Badge>
-      <h2 className="font-heading mt-2 text-xl font-medium">{wizard.title}</h2>
-      <p className="text-muted-foreground mt-1 max-w-2xl">
-        {wizard.steps.length} steps, ending with something real on the internet:{" "}
-        {wizard.steps.map((step) => step.title).join(" → ")}.
-      </p>
-      <Link
-        href={`/wizards/${wizard.slug}`}
-        className={buttonVariants({ className: "mt-4" })}
-      >
-        Start the build
-      </Link>
-    </section>
-  );
-}
-
-function FeedSection({
-  title,
-  href,
-  linkLabel,
-  children,
-}: {
-  title: string;
-  href: string;
-  linkLabel: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="mt-12">
-      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="font-heading text-xl font-medium">{title}</h2>
-        <Link
-          href={href}
-          className="text-muted-foreground text-sm hover:underline"
-        >
-          {linkLabel} →
-        </Link>
-      </div>
-      {children}
-    </section>
-  );
-}
-
-function CardGrid({
-  views,
-  bookmarkedIds,
-}: {
-  views: ResourceView[];
-  bookmarkedIds: Set<string>;
-}) {
-  return (
-    <ul className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {views.map((view) => (
-        <li key={`${view.targetType}:${view.id}`}>
-          <ResourceCard
-            href={view.href}
-            title={view.title}
-            eyebrow={view.eyebrow}
-            description={view.description}
-            badges={view.badges}
-            difficulty={view.difficulty}
-            meta={view.meta}
-            action={
-              <BookmarkButton
-                targetType={view.targetType}
-                targetId={view.id}
-                bookmarked={bookmarkedIds.has(view.id)}
-                returnTo="/"
-              />
-            }
-          />
-        </li>
-      ))}
-    </ul>
   );
 }

@@ -9,6 +9,7 @@ import { SiteHeader } from "@/components/features/nav/SiteHeader";
 import { SearchInput } from "@/components/features/search/SearchInput";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { TOP_NAV } from "@/lib/nav";
+import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import { getCurrentProfile, type Profile } from "@/lib/queries/profiles";
 
 import "./globals.css";
@@ -43,7 +44,8 @@ export const metadata: Metadata = {
 function initialsFor(profile: Profile): string {
   const source = profile.username ?? profile.email ?? "";
   const parts = source.split(/[\s._-]+/).filter(Boolean);
-  const letters = parts.length > 1 ? parts[0][0] + parts[1][0] : source.slice(0, 2);
+  const letters =
+    parts.length > 1 ? parts[0][0] + parts[1][0] : source.slice(0, 2);
   return letters.toUpperCase() || "?";
 }
 
@@ -69,7 +71,24 @@ export default async function RootLayout({
       visible to its own parent. Declared on <body> they resolved to nothing
       and every page fell back to the browser default serif.
     */
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${inter.variable}`}>
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} ${inter.variable}`}
+      /*
+        The inline script below sets a class and colorScheme on this element
+        before React hydrates, so the server-rendered markup and the DOM
+        differ by design. Without this, every dark-mode visitor gets a
+        hydration warning about the thing that prevents their white flash.
+      */
+      suppressHydrationWarning
+    >
+      <head>
+        {/*
+          Runs before first paint (VIB-73). An effect would run after, which
+          is a white flash on every navigation for anyone in dark mode.
+        */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body
         className="flex min-h-screen flex-col antialiased"
         /*
@@ -121,7 +140,11 @@ export default async function RootLayout({
               and useSearchParams needs a Suspense boundary above it or the
               whole tree opts out of static rendering.
             */}
-            <Suspense fallback={<div className="hidden w-56 shrink-0 border-r md:block" />}>
+            <Suspense
+              fallback={
+                <div className="hidden w-56 shrink-0 border-r md:block" />
+              }
+            >
               <AppSidebar />
             </Suspense>
             <div className="min-w-0 flex-1">{children}</div>
@@ -144,7 +167,10 @@ export default async function RootLayout({
             <Link href="/terms" className="hover:text-foreground">
               Terms
             </Link>
-            <Link href="/terms#affiliate-disclosure" className="hover:text-foreground">
+            <Link
+              href="/terms#affiliate-disclosure"
+              className="hover:text-foreground"
+            >
               Affiliate disclosure
             </Link>
           </div>

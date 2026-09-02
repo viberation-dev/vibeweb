@@ -78,6 +78,8 @@
   system but intentionally not wired up here — this app ships one theme.
 */
 :root {
+  /* Native controls, scrollbars and form widgets follow this. */
+  color-scheme: light;
   --background: #fffff2; /* paper */
   --foreground: #1a1a18; /* text-body */
   --card: #ffffff; /* surface-card */
@@ -157,6 +159,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: #07070c;
   --foreground: #f2f2f5; /* text-body, dark */
   --card: #101018;

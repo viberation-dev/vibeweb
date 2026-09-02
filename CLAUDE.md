@@ -8,7 +8,7 @@ Next.js/React is component + hook based, not class-based — these are OOP princ
 
 - **Never call `supabase.from(...)` directly from a component.** Every table gets typed query functions in `lib/queries/[table].ts` (e.g. `lib/queries/tools.ts`, `lib/queries/bookmarks.ts`). This is the encapsulation layer — if the schema changes, you change one file, not every component that touched that table.
 - **Folder structure:**
-  - `components/ui/` — shadcn primitives, unmodified
+  - `components/ui/` — shadcn primitives. **May carry brand styling; must not carry product knowledge.** See below.
   - `components/features/[domain]/` — composed components (e.g. `ResourceCard`, `WizardStepper`). One reusable card component across tools/learning/collections, not one per content type.
   - `lib/queries/` — the query layer described above
   - `lib/integrations/` — third-party service adapters (see below)
@@ -22,6 +22,16 @@ Account routes live under **`/account`** as a tab shell: `/account` (Overview) �
 This reverses the 2026-08-27 flat-route decision. Ali confirmed the tabbed IA on 2026-08-31 (Bible §14 Decision Log) and it shipped in VIB-69. `/profile`, `/bookmarks` and `/history` remain as permanent redirects into the shell — don't delete them, they are in browser histories and old `?redirectTo=` links.
 
 Middleware gates the whole subtree with a single `/account` prefix, and every page under it still re-checks the session itself. A layout is not a gate.
+
+## components/ui — styling yes, domain no
+
+The old rule said "shadcn primitives, **unmodified**". PR #37 modified four of them anyway — button heights, hover as a colour swap rather than an opacity change, a new `outbound` variant, card radius, input height — because those requirements are not expressible as CSS tokens alone. The rule and the code disagreed, which is worse than either.
+
+Resolved 2026-09-03 (VIB-74): **`components/ui/` may be restyled to the design system, but must know nothing about this product.** A primitive can gain a variant, a size or a token; it must not know what a `role_level` is, what a tool is, or how this app labels anything.
+
+The test is whether the file would still make sense in a different product. `Button` with an `outbound` variant would. `DifficultyBadge` would not — it knows the `role_level` enum and that `expert` displays as "Advanced" — so it moved to `components/features/resource/`.
+
+Consequence worth knowing: `npx shadcn add` will conflict on the restyled files. That is the accepted cost of a themed design system; re-apply the brand changes rather than taking the stock version.
 
 ## Icons
 

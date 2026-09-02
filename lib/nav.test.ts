@@ -37,22 +37,35 @@ test("disabled items never match", () => {
 
 test("exactly one category is active on a category page", () => {
   const directory = SIDEBAR_GROUPS.find((group) => group.label === "Directory · 13")!;
-  assert.equal(directory.items.length, 13);
 
-  for (const item of directory.items) {
+  for (const item of directory.items.filter((i) => i.href !== "/tools")) {
     const query = item.href.split("?")[1];
     const matches = directory.items.filter((other) =>
-      isActiveNavItem("/tools", new URLSearchParams(query), other.href),
+      isActiveNavItem("/tools", new URLSearchParams(query), other.href, other.exclusive),
     );
     assert.deepEqual(matches, [item]);
   }
 });
 
+test('"All tools" and a category are never active at the same time', () => {
+  // They share the /tools pathname and differ only by the absence of a
+  // param, which a plain pathname check cannot tell apart.
+  const all = "/tools";
+  assert.ok(isActiveNavItem("/tools", new URLSearchParams(""), all, ["category"]));
+  assert.equal(
+    isActiveNavItem("/tools", new URLSearchParams("category=models"), all, ["category"]),
+    false,
+  );
+  // Filters that are not the category axis leave All tools selected.
+  assert.ok(isActiveNavItem("/tools", new URLSearchParams("tag=free&page=2"), all, ["category"]));
+});
+
 test("the Directory label states its own count, and means it", () => {
   // "Directory · 13" is the mockup's label. If a category is ever added to
   // the enum, the label and the list must not drift apart silently.
+  // 13 categories plus the "All tools" entry that fronts them.
   const directory = SIDEBAR_GROUPS.find((group) => group.label === "Directory · 13")!;
-  assert.equal(directory.items.length, 13);
+  assert.equal(directory.items.filter((item) => item.href !== "/tools").length, 13);
 });
 
 test("the logged-out top nav stays flat and short", () => {

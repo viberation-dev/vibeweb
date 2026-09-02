@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 
 import { SignOutButton } from "@/components/features/auth/SignOutButton";
+import { ThemeToggle } from "@/components/features/nav/ThemeToggle";
 import { TOOL_CATEGORIES } from "@/lib/tool-categories";
 import { toolsHref } from "@/lib/tools-url";
 
@@ -77,12 +78,20 @@ export function SiteHeader({ initials }: { initials: string }) {
         </div>
       </details>
 
-      <form method="get" action="/search" role="search" className="flex flex-1 items-center">
+      <form
+        method="get"
+        action="/search"
+        role="search"
+        className="flex flex-1 items-center"
+      >
         <label htmlFor="search-header" className="sr-only">
           Search tools and guides
         </label>
         <div className="focus-within:border-ring flex w-full items-center gap-2 rounded-md border px-3 py-1.5">
-          <IconSearch aria-hidden className="text-muted-foreground size-4 shrink-0" />
+          <IconSearch
+            aria-hidden
+            className="text-muted-foreground size-4 shrink-0"
+          />
           <input
             ref={input}
             id="search-header"
@@ -91,7 +100,9 @@ export function SiteHeader({ initials }: { initials: string }) {
             placeholder="Search tools, guides, paths…"
             className="placeholder:text-muted-foreground w-full bg-transparent text-sm outline-none"
           />
-          <kbd className="text-muted-foreground hidden shrink-0 text-[10px] sm:block">⌘K</kbd>
+          <kbd className="text-muted-foreground hidden shrink-0 text-[10px] sm:block">
+            ⌘K
+          </kbd>
         </div>
       </form>
 
@@ -127,12 +138,18 @@ export function SiteHeader({ initials }: { initials: string }) {
           <ul>
             {ACCOUNT_MENU.map((item) => (
               <li key={item.href}>
-                <Link href={item.href} className="hover:bg-accent block rounded px-2 py-1.5 text-sm">
+                <Link
+                  href={item.href}
+                  className="hover:bg-accent block rounded px-2 py-1.5 text-sm"
+                >
                   {item.label}
                 </Link>
               </li>
             ))}
           </ul>
+          <div className="mt-1 border-t pt-1">
+            <ThemeToggle />
+          </div>
           <div className="mt-1 border-t pt-1">
             <SignOutButton />
           </div>

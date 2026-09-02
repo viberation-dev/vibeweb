@@ -44,15 +44,24 @@ export function WizardBlockView({
 }: Props) {
   switch (block.kind) {
     case "text":
-      return <p className="leading-relaxed whitespace-pre-line">{block.body}</p>;
+      return (
+        <p className="leading-relaxed whitespace-pre-line">{block.body}</p>
+      );
 
     case "callout":
       return (
-        <aside className={cn("rounded-r-lg border-l-4 p-4", CALLOUT_TONES[block.tone])}>
+        <aside
+          className={cn(
+            "rounded-r-lg border-l-4 p-4",
+            CALLOUT_TONES[block.tone],
+          )}
+        >
           <p className="text-xs font-medium tracking-wide uppercase">
             {CALLOUT_LABELS[block.tone]}
           </p>
-          <p className="mt-1 leading-relaxed whitespace-pre-line">{block.body}</p>
+          <p className="mt-1 leading-relaxed whitespace-pre-line">
+            {block.body}
+          </p>
         </aside>
       );
 
@@ -68,7 +77,9 @@ export function WizardBlockView({
             pre-line would collapse, and a prompt that loses its shape is a
             different prompt.
           */}
-          <p className="px-4 py-3 font-mono text-sm whitespace-pre-wrap">{block.prompt}</p>
+          <p className="px-4 py-3 font-mono text-sm whitespace-pre-wrap">
+            {block.prompt}
+          </p>
         </div>
       );
 
@@ -76,7 +87,9 @@ export function WizardBlockView({
       return (
         <div className="rounded-lg border">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2">
-            <p className="font-mono text-xs text-muted-foreground">{block.language}</p>
+            <p className="font-mono text-xs text-muted-foreground">
+              {block.language}
+            </p>
             <CopyButton text={block.code} />
           </div>
           <pre className="overflow-x-auto px-4 py-3 font-mono text-sm">
@@ -109,10 +122,18 @@ export function WizardBlockView({
                     rather than held in a client store that a refresh loses.
                   */
                   <form action={toggleTaskAction}>
-                    <input type="hidden" name="wizard_slug" value={wizardSlug} />
+                    <input
+                      type="hidden"
+                      name="wizard_slug"
+                      value={wizardSlug}
+                    />
                     <input type="hidden" name="step_index" value={stepIndex} />
                     <input type="hidden" name="task_id" value={task.id} />
-                    <input type="hidden" name="done" value={done ? "false" : "true"} />
+                    <input
+                      type="hidden"
+                      name="done"
+                      value={done ? "false" : "true"}
+                    />
                     <button
                       type="submit"
                       aria-pressed={done}
@@ -122,12 +143,17 @@ export function WizardBlockView({
                         aria-hidden
                         className={cn(
                           "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border text-xs",
-                          done && "border-transparent bg-primary text-primary-foreground",
+                          done &&
+                            "border-transparent bg-primary text-primary-foreground",
                         )}
                       >
                         {done ? "✓" : ""}
                       </span>
-                      <span className={cn(done && "text-muted-foreground line-through")}>
+                      <span
+                        className={cn(
+                          done && "text-muted-foreground line-through",
+                        )}
+                      >
                         {task.label}
                       </span>
                     </button>
@@ -147,7 +173,10 @@ export function WizardBlockView({
 
           {canSave ? null : (
             <li className="text-sm text-muted-foreground">
-              <Link href={`/login?redirectTo=/wizards/${wizardSlug}`} className="underline">
+              <Link
+                href={`/login?redirectTo=/wizards/${wizardSlug}`}
+                className="underline"
+              >
                 Sign in
               </Link>{" "}
               to tick these off and pick up where you left them.
@@ -163,10 +192,13 @@ export function WizardNav({
   slug,
   stepIndex,
   stepCount,
+  children,
 }: {
   slug: string;
   stepIndex: number;
   stepCount: number;
+  /** Centre slot — the save control, per mockup screen 5's footer. */
+  children?: React.ReactNode;
 }) {
   const prev = stepIndex > 0 ? stepIndex - 1 : null;
   const next = stepIndex < stepCount - 1 ? stepIndex + 1 : null;
@@ -187,10 +219,16 @@ export function WizardNav({
           ← Previous
         </Link>
       )}
+      {children ?? <span />}
+
       {next === null ? (
         <span />
       ) : (
-        <Link href={wizardHref(slug, next)} rel="next" className={buttonVariants()}>
+        <Link
+          href={wizardHref(slug, next)}
+          rel="next"
+          className={buttonVariants()}
+        >
           Next step →
         </Link>
       )}

@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { cache } from "react";
 
 import type { Database, Tables, TablesUpdate } from "@/types/supabase";
 
@@ -51,15 +52,22 @@ export async function getProfile(client: Client, id: string): Promise<Profile | 
  * Uses getUser() rather than getSession() — getUser() revalidates the token
  * against Supabase, so it can be trusted on the server. getSession() only
  * reads the cookie, which the client could have tampered with.
+ *
+ * Wrapped in cache() so the root layout, the /account layout and the page
+ * beneath them share one revalidation per request instead of three. The key
+ * is the client, which createClient() also caches — both halves are needed
+ * or this dedupes nothing.
  */
-export async function getCurrentProfile(client: Client): Promise<Profile | null> {
+export const getCurrentProfile = cache(async function getCurrentProfile(
+  client: Client,
+): Promise<Profile | null> {
   const { data, error } = await client.auth.getUser();
 
   if (error || !data.user) {
     return null;
   }
   return getProfile(client, data.user.id);
-}
+})
 
 /**
  * Update the current user's own preferences.

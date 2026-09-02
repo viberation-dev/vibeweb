@@ -17,8 +17,8 @@ export function AccountTabs() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Account" className="border-b">
-      <ul className="mx-auto flex w-full max-w-6xl gap-1 px-6">
+    <nav aria-label="Account" className="border-y">
+      <ul className="flex gap-1 px-6">
         {ACCOUNT_TABS.map((tab) => {
           const active = isActiveTab(pathname, tab.href);
           return (

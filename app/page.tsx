@@ -1,21 +1,21 @@
 import {
-  ArrowRightIcon,
-  AwardIcon,
-  BotIcon,
-  BoxIcon,
-  CodeIcon,
-  LayoutTemplateIcon,
-  Layers2Icon,
-  MessageSquareIcon,
-  PlugIcon,
-  PuzzleIcon,
-  RouteIcon,
-  SearchIcon,
-  SlidersHorizontalIcon,
-  TerminalIcon,
-  WrenchIcon,
-  type LucideIcon,
-} from "lucide-react";
+  IconAdjustments,
+  IconArrowRight,
+  IconAward,
+  IconBox,
+  IconCode,
+  IconMessage2,
+  IconPlug,
+  IconPuzzle,
+  IconRobot,
+  IconRoute,
+  IconSearch,
+  IconStack2,
+  IconTemplate,
+  IconTerminal,
+  IconTool,
+  type Icon,
+} from "@tabler/icons-react";
 import Link from "next/link";
 
 import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
@@ -36,7 +36,7 @@ import { listContent, type Content } from "@/lib/queries/content";
 import { listHistory } from "@/lib/queries/history";
 import { getProfile, type Profile } from "@/lib/queries/profiles";
 import { resolveTargetViews } from "@/lib/queries/resources";
-import { listTags } from "@/lib/queries/tags";
+import { listPopularTags } from "@/lib/queries/tags";
 import { listTools } from "@/lib/queries/tools";
 import { getWizardProgress, listWizards, type Wizard } from "@/lib/queries/wizards";
 import { contentView, toolView, type ResourceView } from "@/lib/resource-view";
@@ -126,7 +126,7 @@ export default async function HomePage({ searchParams }: Props) {
       supabase,
       collections.map((collection) => collection.id),
     ),
-    listTags(supabase),
+    listPopularTags(supabase),
     flagship ? getWizardProgress(supabase, auth.user.id, flagship.id) : null,
   ]);
 
@@ -158,7 +158,7 @@ export default async function HomePage({ searchParams }: Props) {
             Describe what you want to build
           </label>
           <div className="focus-within:border-ring flex items-center gap-2 rounded-lg border px-4 py-2.5">
-            <SearchIcon aria-hidden className="text-muted-foreground size-4 shrink-0" />
+            <IconSearch aria-hidden className="text-muted-foreground size-4 shrink-0" />
             <input
               id="search-intent"
               type="search"
@@ -171,7 +171,7 @@ export default async function HomePage({ searchParams }: Props) {
               aria-label="Search"
               className="bg-primary text-primary-foreground flex size-7 shrink-0 items-center justify-center rounded-md"
             >
-              <ArrowRightIcon aria-hidden className="size-4" />
+              <IconArrowRight aria-hidden className="size-4" />
             </button>
           </div>
         </form>
@@ -292,11 +292,11 @@ export default async function HomePage({ searchParams }: Props) {
         </div>
 
         {/*
-          The rail is supplementary, so it drops below lg rather than
-          squeezing the feed — everything in it is reachable from the sidebar
-          and the History tab either way.
+          The rail stacks under the feed on narrow screens rather than being
+          hidden. It was `hidden lg:block`, which meant anything under 1024px
+          — including a 1007px window — lost the whole column silently.
         */}
-        <aside aria-label="Your activity" className="hidden space-y-3 lg:block">
+        <aside aria-label="Your activity" className="space-y-3">
           {flagship && progress ? (
             <RailCard title="Continue where you left off">
               <Link href={`/wizards/${flagship.slug}`} className="hover:underline">
@@ -365,14 +365,13 @@ export default async function HomePage({ searchParams }: Props) {
 
           {tags.length ? (
             /*
-             * "Popular tags" in the mockup. `tags` has no usage count, so
-             * these are simply the tags that exist, alphabetically — the
-             * heading promises more ordering than the table can back, which
-             * is worth fixing with a count column rather than a fake sort.
+             * Genuinely ordered by use, not alphabetically: `tags` has no
+             * count column, but tool_tags and content_tags do, so the
+             * ordering is real and the heading is honest.
              */
-            <RailCard title="Tags">
+            <RailCard title="Popular tags">
               <ul className="flex flex-wrap gap-1.5">
-                {tags.slice(0, 5).map((tag) => (
+                {tags.map((tag) => (
                   <li key={tag.id}>
                     <Link
                       href={`/tags/${tag.slug}`}
@@ -394,20 +393,20 @@ export default async function HomePage({ searchParams }: Props) {
 }
 
 /** One icon per directory family, matching the mockup's tile row. */
-const CATEGORY_ICONS: Record<ToolCategory, LucideIcon> = {
-  models: BoxIcon,
-  chats: MessageSquareIcon,
-  agents: BotIcon,
-  ides: CodeIcon,
-  clis: TerminalIcon,
-  skills: AwardIcon,
-  mcp_servers: PlugIcon,
-  plugins: PuzzleIcon,
-  frameworks: Layers2Icon,
-  templates: LayoutTemplateIcon,
-  workflows: RouteIcon,
-  tools: WrenchIcon,
-  utilities: SlidersHorizontalIcon,
+const CATEGORY_ICONS: Record<ToolCategory, Icon> = {
+  models: IconBox,
+  chats: IconMessage2,
+  agents: IconRobot,
+  ides: IconCode,
+  clis: IconTerminal,
+  skills: IconAward,
+  mcp_servers: IconPlug,
+  plugins: IconPuzzle,
+  frameworks: IconStack2,
+  templates: IconTemplate,
+  workflows: IconRoute,
+  tools: IconTool,
+  utilities: IconAdjustments,
 };
 
 const HUBS = [

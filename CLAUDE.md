@@ -23,6 +23,12 @@ This reverses the 2026-08-27 flat-route decision. Ali confirmed the tabbed IA on
 
 Middleware gates the whole subtree with a single `/account` prefix, and every page under it still re-checks the session itself. A layout is not a gate.
 
+## Icons
+
+**Tabler (`@tabler/icons-react`), not Lucide.** `viberation-mockups_3.html` is drawn with the Tabler webfont, so the mockups and the app now use the same set — `ti-robot` is `IconRobot`, `ti-stack-2` is `IconStack2`, and so on, one for one.
+
+Lucide was the shadcn default and shipped here first; it was removed on 2026-09-02 when the mismatch surfaced, so the repo has one icon set rather than two. Neither the handoff nor §31 had named a set, which is how they drifted apart in the first place — this note is the decision.
+
 ## Security
 
 - **RLS is the actual security boundary**, not the API layer — it's already built into migrations 02/03/05. Don't add app-code checks as a substitute for RLS; add them as defense in depth if you want, but RLS is what actually protects the data.

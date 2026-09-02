@@ -1,4 +1,4 @@
-import { BookmarkIcon } from "lucide-react";
+import { IconBookmark } from "@tabler/icons-react";
 
 import { toggleBookmarkAction } from "@/app/account/bookmarks/actions";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,7 @@ export function BookmarkButton({ targetType, targetId, bookmarked, returnTo }: P
       <input type="hidden" name="return_to" value={returnTo} />
       <input type="hidden" name="intent" value={bookmarked ? "remove" : "add"} />
       <Button type="submit" variant={bookmarked ? "secondary" : "outline"}>
-        <BookmarkIcon aria-hidden className={bookmarked ? "fill-current" : undefined} />
+        <IconBookmark aria-hidden className={bookmarked ? "fill-current" : undefined} />
         {bookmarked ? "Saved" : "Save"}
       </Button>
     </form>

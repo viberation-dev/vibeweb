@@ -1,6 +1,12 @@
 "use client";
 
-import { BellIcon, BookmarkIcon, ChevronDownIcon, SearchIcon, ZapIcon } from "lucide-react";
+import {
+  IconBell,
+  IconBookmark,
+  IconBolt,
+  IconChevronDown,
+  IconSearch,
+} from "@tabler/icons-react";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 
@@ -33,7 +39,7 @@ export function SiteHeader({ initials }: { initials: string }) {
   return (
     <div className="flex items-center gap-4 border-b px-6 py-3">
       <Link href="/" className="flex items-center gap-1.5 font-semibold">
-        <ZapIcon aria-hidden className="size-4" />
+        <IconBolt aria-hidden className="size-4" />
         Viberation
       </Link>
 
@@ -44,7 +50,7 @@ export function SiteHeader({ initials }: { initials: string }) {
       <details className="relative">
         <summary className="text-muted-foreground hover:text-foreground flex cursor-pointer list-none items-center gap-1 text-sm">
           Browse
-          <ChevronDownIcon aria-hidden className="size-3.5" />
+          <IconChevronDown aria-hidden className="size-3.5" />
         </summary>
         <div className="bg-background absolute left-0 z-20 mt-2 w-56 rounded-md border p-2 shadow-md">
           <ul className="grid grid-cols-2 gap-0.5">
@@ -67,7 +73,7 @@ export function SiteHeader({ initials }: { initials: string }) {
           Search tools and guides
         </label>
         <div className="focus-within:border-ring flex w-full items-center gap-2 rounded-md border px-3 py-1.5">
-          <SearchIcon aria-hidden className="text-muted-foreground size-4 shrink-0" />
+          <IconSearch aria-hidden className="text-muted-foreground size-4 shrink-0" />
           <input
             ref={input}
             id="search-header"
@@ -85,7 +91,7 @@ export function SiteHeader({ initials }: { initials: string }) {
         aria-label="Saved"
         className="text-muted-foreground hover:text-foreground"
       >
-        <BookmarkIcon className="size-4" />
+        <IconBookmark className="size-4" />
       </Link>
 
       {/*
@@ -93,7 +99,7 @@ export function SiteHeader({ initials }: { initials: string }) {
         same treatment the sidebar's Later group gets: it signals direction
         without being a control that lies about working.
       */}
-      <BellIcon aria-hidden className="text-muted-foreground/40 size-4" />
+      <IconBell aria-hidden className="text-muted-foreground/40 size-4" />
 
       <Link
         href="/account"

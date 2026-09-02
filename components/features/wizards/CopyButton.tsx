@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckIcon, CopyIcon } from "lucide-react";
+import { IconCheck, IconCopy } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -40,7 +40,7 @@ export function CopyButton({ text, label = "Copy" }: { text: string; label?: str
       }}
       aria-live="polite"
     >
-      {copied ? <CheckIcon aria-hidden /> : <CopyIcon aria-hidden />}
+      {copied ? <IconCheck aria-hidden /> : <IconCopy aria-hidden />}
       {copied ? "Copied" : label}
     </Button>
   );

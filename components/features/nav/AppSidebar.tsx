@@ -1,15 +1,15 @@
 "use client";
 
-import { BookmarkIcon, HomeIcon } from "lucide-react";
+import { IconBookmark, IconHome } from "@tabler/icons-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 
 import { isActiveNavItem, SIDEBAR_GROUPS } from "@/lib/nav";
 
 /** The mockup gives only the top group icons; the rest are plain text. */
-const ICONS: Record<string, typeof HomeIcon> = {
-  "/": HomeIcon,
-  "/account/bookmarks": BookmarkIcon,
+const ICONS: Record<string, typeof IconHome> = {
+  "/": IconHome,
+  "/account/bookmarks": IconBookmark,
 };
 
 /**

@@ -80,10 +80,10 @@ function NavGroups() {
                   <Link
                     href={item.href}
                     aria-current={
-                      isActiveNavItem(pathname, search, item.href) ? "page" : undefined
+                      isActiveNavItem(pathname, search, item.href, item.exclusive) ? "page" : undefined
                     }
                     className={
-                      isActiveNavItem(pathname, search, item.href)
+                      isActiveNavItem(pathname, search, item.href, item.exclusive)
                         ? "bg-accent text-accent-foreground block rounded-md px-3 py-1.5 text-sm font-medium"
                         : "text-muted-foreground hover:bg-accent/50 hover:text-foreground block rounded-md px-3 py-1.5 text-sm"
                     }

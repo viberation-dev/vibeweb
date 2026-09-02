@@ -14,6 +14,8 @@ export type ToolFilters = {
   /** Tag *slug*, not id — it is what appears in the URL. */
   tag?: string;
   sort?: ToolSort;
+  /** Free text, matched against the tools' own search_vector. */
+  q?: string;
   /** 1-based. Values past the end return an empty page, not an error. */
   page?: number;
   pageSize?: number;
@@ -57,6 +59,19 @@ export async function listTools(client: Client, filters: ToolFilters = {}): Prom
 
   if (filters.category) {
     query = query.eq("category", filters.category);
+  }
+
+  if (filters.q) {
+    /*
+     * "Filter within tools" is scoped to this table, so it queries the
+     * tools' own search_vector (VIB-47) rather than going through the
+     * site-wide search adapter, which also spans content.
+     *
+     * websearch_to_tsquery parses visitor-shaped input — quoted phrases,
+     * OR, a leading minus — without throwing on punctuation the way
+     * plainto_tsquery's stricter cousins do.
+     */
+    query = query.textSearch("search_vector", filters.q, { type: "websearch" });
   }
 
   if (filters.tag) {
@@ -119,6 +134,43 @@ export async function getToolTags(client: Client, toolId: string): Promise<Tag[]
     throw new Error(`getToolTags(${toolId}): ${error.message}`);
   }
   return data.map((row) => row.tags).sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/**
+ * Tags for many tools at once, keyed by tool id.
+ *
+ * The directory grid needs a tag pill per card; calling getToolTags per tool
+ * would be 24 round trips for one page. Tools with no tags are absent from
+ * the map rather than present with an empty array — callers already have to
+ * handle "not found" for a tool whose row vanished mid-render.
+ */
+export async function getToolTagsByIds(
+  client: Client,
+  toolIds: string[],
+): Promise<Map<string, Tag[]>> {
+  if (toolIds.length === 0) {
+    return new Map();
+  }
+
+  const { data, error } = await client
+    .from("tool_tags")
+    .select("tool_id, tags!inner(id, name, slug)")
+    .in("tool_id", toolIds);
+
+  if (error) {
+    throw new Error(`getToolTagsByIds: ${error.message}`);
+  }
+
+  const byTool = new Map<string, Tag[]>();
+  for (const row of data) {
+    const list = byTool.get(row.tool_id) ?? [];
+    list.push(row.tags);
+    byTool.set(row.tool_id, list);
+  }
+  for (const list of byTool.values()) {
+    list.sort((a, b) => a.name.localeCompare(b.name));
+  }
+  return byTool;
 }
 
 /**

@@ -1,29 +1,24 @@
-import {
-  IconAdjustments,
-  IconArrowRight,
-  IconAward,
-  IconBox,
-  IconCode,
-  IconMessage2,
-  IconPlug,
-  IconPuzzle,
-  IconRobot,
-  IconRoute,
-  IconSearch,
-  IconStack2,
-  IconTemplate,
-  IconTerminal,
-  IconTool,
-  type Icon,
-} from "@tabler/icons-react";
+import { IconArrowRight, IconSearch } from "@tabler/icons-react";
 import Link from "next/link";
 
 import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
+import { CategoryIcon } from "@/components/features/tools/CategoryIcon";
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FEED_TABS, greetingFor, progressLabel, readingMinutes, toFeedTab } from "@/lib/home-feed";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  FEED_TABS,
+  greetingFor,
+  progressLabel,
+  readingMinutes,
+  toFeedTab,
+} from "@/lib/home-feed";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { contentTypeLabel, LEARN_TYPE_VALUES } from "@/lib/learn";
 import { listBookmarks } from "@/lib/queries/bookmarks";
@@ -38,9 +33,13 @@ import { getProfile, type Profile } from "@/lib/queries/profiles";
 import { resolveTargetViews } from "@/lib/queries/resources";
 import { listPopularTags } from "@/lib/queries/tags";
 import { listTools } from "@/lib/queries/tools";
-import { getWizardProgress, listWizards, type Wizard } from "@/lib/queries/wizards";
+import {
+  getWizardProgress,
+  listWizards,
+  type Wizard,
+} from "@/lib/queries/wizards";
 import { contentView, toolView, type ResourceView } from "@/lib/resource-view";
-import { TOOL_CATEGORIES, type ToolCategory } from "@/lib/tool-categories";
+import { TOOL_CATEGORIES } from "@/lib/tool-categories";
 import { toolsHref } from "@/lib/tools-url";
 
 /**
@@ -62,30 +61,39 @@ export default async function HomePage({ searchParams }: Props) {
   // those queries run.
   const profile = auth.user ? await getProfile(supabase, auth.user.id) : null;
 
-  const [collections, { items: latest }, { tools }, bookmarks, wizards, history] =
-    await Promise.all([
-      listFeaturedCollections(supabase),
-      listContent(supabase, {
-        types: LEARN_TYPE_VALUES,
-        /*
-         * "For you" is the tier filter; "Latest" deliberately drops it, which
-         * is the only difference between the two tabs — listContent already
-         * orders by created_at descending either way.
-         */
-        roleLevel: tab === "latest" ? undefined : (profile?.role_level ?? undefined),
-        pageSize: 3,
-      }),
-      listTools(supabase, { sort: "popular", pageSize: 6 }),
-      auth.user ? listBookmarks(supabase, auth.user.id) : [],
-      listWizards(supabase),
-      // Four is what the rail has room for; the full list is the History tab.
-      auth.user ? listHistory(supabase, auth.user.id, 4) : [],
-    ]);
+  const [
+    collections,
+    { items: latest },
+    { tools },
+    bookmarks,
+    wizards,
+    history,
+  ] = await Promise.all([
+    listFeaturedCollections(supabase),
+    listContent(supabase, {
+      types: LEARN_TYPE_VALUES,
+      /*
+       * "For you" is the tier filter; "Latest" deliberately drops it, which
+       * is the only difference between the two tabs — listContent already
+       * orders by created_at descending either way.
+       */
+      roleLevel:
+        tab === "latest" ? undefined : (profile?.role_level ?? undefined),
+      pageSize: 3,
+    }),
+    listTools(supabase, { sort: "popular", pageSize: 6 }),
+    auth.user ? listBookmarks(supabase, auth.user.id) : [],
+    listWizards(supabase),
+    // Four is what the rail has room for; the full list is the History tab.
+    auth.user ? listHistory(supabase, auth.user.id, 4) : [],
+  ]);
 
   // §31 puts the flagship promo last. Nothing renders it when no wizard is
   // published, so the section cannot point at a route that 404s.
   const flagship = wizards[0];
-  const bookmarkedIds = new Set(bookmarks.map((bookmark) => bookmark.target_id));
+  const bookmarkedIds = new Set(
+    bookmarks.map((bookmark) => bookmark.target_id),
+  );
 
   if (!auth.user) {
     return (
@@ -95,24 +103,38 @@ export default async function HomePage({ searchParams }: Props) {
             The tools that actually get your project shipped.
           </h1>
           <p className="text-muted-foreground mt-3 max-w-2xl text-lg">
-            A curated directory of AI tools for vibe coders, with guides written for the level you
-            are actually at — not the one the docs assume.
+            A curated directory of AI tools for vibe coders, with guides written
+            for the level you are actually at — not the one the docs assume.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link href="/tools" className={buttonVariants({ size: "lg" })}>
               Browse the directory
             </Link>
-            <Link href="/learn" className={buttonVariants({ size: "lg", variant: "outline" })}>
+            <Link
+              href="/learn"
+              className={buttonVariants({ size: "lg", variant: "outline" })}
+            >
               Start learning
             </Link>
           </div>
         </section>
 
         <CollectionsSection collections={collections} />
-        <LatestSection items={latest} profile={null} bookmarkedIds={bookmarkedIds} />
+        <LatestSection
+          items={latest}
+          profile={null}
+          bookmarkedIds={bookmarkedIds}
+        />
         {tools.length ? (
-          <FeedSection title="Most viewed tools" href="/tools" linkLabel="All tools">
-            <CardGrid views={tools.map(toolView)} bookmarkedIds={bookmarkedIds} />
+          <FeedSection
+            title="Most viewed tools"
+            href="/tools"
+            linkLabel="All tools"
+          >
+            <CardGrid
+              views={tools.map(toolView)}
+              bookmarkedIds={bookmarkedIds}
+            />
           </FeedSection>
         ) : null}
         <FlagshipSection wizard={flagship} />
@@ -158,7 +180,10 @@ export default async function HomePage({ searchParams }: Props) {
             Describe what you want to build
           </label>
           <div className="focus-within:border-ring flex items-center gap-2 rounded-lg border px-4 py-2.5">
-            <IconSearch aria-hidden className="text-muted-foreground size-4 shrink-0" />
+            <IconSearch
+              aria-hidden
+              className="text-muted-foreground size-4 shrink-0"
+            />
             <input
               id="search-intent"
               type="search"
@@ -180,20 +205,17 @@ export default async function HomePage({ searchParams }: Props) {
       <section className="mt-8">
         <h2 className="sr-only">Categories</h2>
         <ul className="grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-7">
-          {TOOL_CATEGORIES.map((category) => {
-            const Icon = CATEGORY_ICONS[category.value];
-            return (
-              <li key={category.value}>
-                <Link
-                  href={toolsHref({ category: category.value })}
-                  className="hover:bg-accent hover:text-accent-foreground flex flex-col items-center gap-1.5 rounded-lg border px-2 py-3 text-center text-xs"
-                >
-                  <Icon aria-hidden className="size-4" />
-                  {category.label}
-                </Link>
-              </li>
-            );
-          })}
+          {TOOL_CATEGORIES.map((category) => (
+            <li key={category.value}>
+              <Link
+                href={toolsHref({ category: category.value })}
+                className="hover:bg-accent hover:text-accent-foreground flex flex-col items-center gap-1.5 rounded-lg border px-2 py-3 text-center text-xs"
+              >
+                <CategoryIcon category={category.value} className="size-4" />
+                {category.label}
+              </Link>
+            </li>
+          ))}
         </ul>
       </section>
 
@@ -215,7 +237,10 @@ export default async function HomePage({ searchParams }: Props) {
                   <HubBody {...hub} />
                 </Link>
               ) : (
-                <div aria-disabled className="text-muted-foreground/60 h-full rounded-xl border p-4">
+                <div
+                  aria-disabled
+                  className="text-muted-foreground/60 h-full rounded-xl border p-4"
+                >
                   <HubBody {...hub} />
                 </div>
               )}
@@ -241,7 +266,11 @@ export default async function HomePage({ searchParams }: Props) {
               ) : (
                 <Link
                   key={feedTab.value}
-                  href={feedTab.value === "for-you" ? "/" : `/?feed=${feedTab.value}`}
+                  href={
+                    feedTab.value === "for-you"
+                      ? "/"
+                      : `/?feed=${feedTab.value}`
+                  }
                   aria-current={tab === feedTab.value ? "page" : undefined}
                   className={
                     tab === feedTab.value
@@ -274,7 +303,11 @@ export default async function HomePage({ searchParams }: Props) {
                     .filter(Boolean)
                     .join(" · ")}
                   title={item.title}
-                  meta={readingMinutes(item.body) ? `${readingMinutes(item.body)} min read` : null}
+                  meta={
+                    readingMinutes(item.body)
+                      ? `${readingMinutes(item.body)} min read`
+                      : null
+                  }
                 />
               </li>
             ))}
@@ -299,8 +332,13 @@ export default async function HomePage({ searchParams }: Props) {
         <aside aria-label="Your activity" className="space-y-3">
           {flagship && progress ? (
             <RailCard title="Continue where you left off">
-              <Link href={`/wizards/${flagship.slug}`} className="hover:underline">
-                <p className="text-muted-foreground text-sm">{flagship.title}</p>
+              <Link
+                href={`/wizards/${flagship.slug}`}
+                className="hover:underline"
+              >
+                <p className="text-muted-foreground text-sm">
+                  {flagship.title}
+                </p>
               </Link>
               {(() => {
                 const { label, percent } = progressLabel(
@@ -323,18 +361,25 @@ export default async function HomePage({ searchParams }: Props) {
                         style={{ width: `${percent}%` }}
                       />
                     </div>
-                    <p className="text-muted-foreground mt-1.5 text-xs">{label}</p>
+                    <p className="text-muted-foreground mt-1.5 text-xs">
+                      {label}
+                    </p>
                   </>
                 );
               })()}
             </RailCard>
           ) : continueItems.length ? (
-            <RailCard title="Continue where you left off" href="/account/history">
+            <RailCard
+              title="Continue where you left off"
+              href="/account/history"
+            >
               <ul className="space-y-2">
                 {continueItems.map(({ id, target }) => (
                   <li key={id}>
                     <Link href={target.href} className="block hover:underline">
-                      <span className="text-muted-foreground block text-xs">{target.eyebrow}</span>
+                      <span className="text-muted-foreground block text-xs">
+                        {target.eyebrow}
+                      </span>
                       <span className="block text-sm">{target.title}</span>
                     </Link>
                   </li>
@@ -354,7 +399,10 @@ export default async function HomePage({ searchParams }: Props) {
               <ul className="space-y-1.5">
                 {tools.slice(0, 4).map((tool) => (
                   <li key={tool.id}>
-                    <Link href={`/tools/${tool.slug}`} className="text-sm hover:underline">
+                    <Link
+                      href={`/tools/${tool.slug}`}
+                      className="text-sm hover:underline"
+                    >
                       {tool.name}
                     </Link>
                   </li>
@@ -392,36 +440,40 @@ export default async function HomePage({ searchParams }: Props) {
   );
 }
 
-/** One icon per directory family, matching the mockup's tile row. */
-const CATEGORY_ICONS: Record<ToolCategory, Icon> = {
-  models: IconBox,
-  chats: IconMessage2,
-  agents: IconRobot,
-  ides: IconCode,
-  clis: IconTerminal,
-  skills: IconAward,
-  mcp_servers: IconPlug,
-  plugins: IconPuzzle,
-  frameworks: IconStack2,
-  templates: IconTemplate,
-  workflows: IconRoute,
-  tools: IconTool,
-  utilities: IconAdjustments,
-};
-
 const HUBS = [
   { title: "Setups", blurb: "Reusable config", pill: "Phase 1.5", href: null },
   { title: "Paths", blurb: "Guided builds", pill: "Phase 1.5", href: null },
-  { title: "Collections", blurb: "Curated tool sets", pill: "MVP", href: "/collections" },
-  { title: "Library", blurb: "Your saved items", pill: "MVP", href: "/account/bookmarks" },
+  {
+    title: "Collections",
+    blurb: "Curated tool sets",
+    pill: "MVP",
+    href: "/collections",
+  },
+  {
+    title: "Library",
+    blurb: "Your saved items",
+    pill: "MVP",
+    href: "/account/bookmarks",
+  },
 ] as const;
 
-function HubBody({ title, blurb, pill }: { title: string; blurb: string; pill: string }) {
+function HubBody({
+  title,
+  blurb,
+  pill,
+}: {
+  title: string;
+  blurb: string;
+  pill: string;
+}) {
   return (
     <>
       <h3 className="font-heading text-sm font-medium">{title}</h3>
       <p className="text-muted-foreground mt-0.5 text-xs">{blurb}</p>
-      <Badge variant={pill === "MVP" ? "default" : "secondary"} className="mt-2">
+      <Badge
+        variant={pill === "MVP" ? "default" : "secondary"}
+        className="mt-2"
+      >
         {pill}
       </Badge>
     </>
@@ -444,11 +496,16 @@ function FeedCard({
       <CardHeader>
         <p className="text-muted-foreground text-xs">{eyebrow}</p>
         <CardTitle className="text-base">
-          <Link href={href} className="outline-none after:absolute after:inset-0">
+          <Link
+            href={href}
+            className="outline-none after:absolute after:inset-0"
+          >
             {title}
           </Link>
         </CardTitle>
-        {meta ? <CardDescription className="text-xs">{meta}</CardDescription> : null}
+        {meta ? (
+          <CardDescription className="text-xs">{meta}</CardDescription>
+        ) : null}
       </CardHeader>
     </Card>
   );
@@ -468,7 +525,10 @@ function RailCard({
       <div className="mb-2 flex items-baseline justify-between gap-2">
         <h2 className="font-heading text-sm font-medium">{title}</h2>
         {href ? (
-          <Link href={href} className="text-muted-foreground text-xs hover:underline">
+          <Link
+            href={href}
+            className="text-muted-foreground text-xs hover:underline"
+          >
             All
           </Link>
         ) : null}
@@ -484,11 +544,17 @@ function OnboardingNudge({ profile }: { profile: Profile | null }) {
 
   return (
     <section className="bg-muted/40 mt-8 rounded-xl border p-5">
-      <h2 className="font-heading text-lg font-medium">Set yourself up in under a minute</h2>
+      <h2 className="font-heading text-lg font-medium">
+        Set yourself up in under a minute
+      </h2>
       <p className="text-muted-foreground mt-1 text-sm">
-        Tell us the level you are at and we will tune what you see across the site.
+        Tell us the level you are at and we will tune what you see across the
+        site.
       </p>
-      <Link href="/onboarding" className={buttonVariants({ className: "mt-4" })}>
+      <Link
+        href="/onboarding"
+        className={buttonVariants({ className: "mt-4" })}
+      >
         Get started
       </Link>
     </section>
@@ -499,7 +565,11 @@ function CollectionsSection({ collections }: { collections: Collection[] }) {
   if (!collections.length) return null;
 
   return (
-    <FeedSection title="Featured collections" href="/collections" linkLabel="All collections">
+    <FeedSection
+      title="Featured collections"
+      href="/collections"
+      linkLabel="All collections"
+    >
       <ul className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {collections.map((collection) => (
           <li key={collection.id}>
@@ -541,7 +611,9 @@ function LatestSection({
 
   return (
     <FeedSection
-      title={profile ? `Written for ${profile.role_level}s` : "Latest from Learn"}
+      title={
+        profile ? `Written for ${profile.role_level}s` : "Latest from Learn"
+      }
       href="/learn"
       linkLabel="All of Learn"
     >
@@ -563,7 +635,10 @@ function FlagshipSection({ wizard }: { wizard: Wizard | undefined }) {
         {wizard.steps.length} steps, ending with something real on the internet:{" "}
         {wizard.steps.map((step) => step.title).join(" → ")}.
       </p>
-      <Link href={`/wizards/${wizard.slug}`} className={buttonVariants({ className: "mt-4" })}>
+      <Link
+        href={`/wizards/${wizard.slug}`}
+        className={buttonVariants({ className: "mt-4" })}
+      >
         Start the build
       </Link>
     </section>
@@ -585,7 +660,10 @@ function FeedSection({
     <section className="mt-12">
       <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="font-heading text-xl font-medium">{title}</h2>
-        <Link href={href} className="text-muted-foreground text-sm hover:underline">
+        <Link
+          href={href}
+          className="text-muted-foreground text-sm hover:underline"
+        >
           {linkLabel} →
         </Link>
       </div>
@@ -594,7 +672,13 @@ function FeedSection({
   );
 }
 
-function CardGrid({ views, bookmarkedIds }: { views: ResourceView[]; bookmarkedIds: Set<string> }) {
+function CardGrid({
+  views,
+  bookmarkedIds,
+}: {
+  views: ResourceView[];
+  bookmarkedIds: Set<string>;
+}) {
   return (
     <ul className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {views.map((view) => (

@@ -10,6 +10,7 @@ export function toolsHref(params: {
   category?: string;
   tag?: string;
   sort?: string;
+  q?: string;
   page?: number;
 }): string {
   const search = new URLSearchParams();
@@ -17,6 +18,7 @@ export function toolsHref(params: {
   if (params.category) search.set("category", params.category);
   if (params.tag) search.set("tag", params.tag);
   if (params.sort) search.set("sort", params.sort);
+  if (params.q) search.set("q", params.q);
   if (params.page && params.page > 1) search.set("page", String(params.page));
 
   const query = search.toString();

@@ -19,6 +19,14 @@ export type NavItem = {
   label: string;
   /** Which phase it lands in — "1.5", "2", "sep". Shown after the label. */
   note?: string;
+  /**
+   * Params that must be *absent* for this item to count as active.
+   *
+   * "All tools" is /tools with no category, and every category link shares
+   * that pathname — without this it would light up alongside whichever
+   * category is selected.
+   */
+  exclusive?: readonly string[];
   /** Renders dimmed and unclickable — signals direction, links nowhere. */
   disabled?: boolean;
 };
@@ -47,10 +55,13 @@ export const SIDEBAR_GROUPS: ReadonlyArray<{ label?: string; items: readonly Nav
   },
   {
     label: "Directory · 13",
-    items: TOOL_CATEGORIES.map((category) => ({
-      href: toolsHref({ category: category.value }),
-      label: category.label,
-    })),
+    items: [
+      { href: "/tools", label: "All tools", exclusive: ["category"] },
+      ...TOOL_CATEGORIES.map((category) => ({
+        href: toolsHref({ category: category.value }),
+        label: category.label,
+      })),
+    ],
   },
   {
     label: "Learn",
@@ -97,12 +108,14 @@ export function isActiveNavItem(
   pathname: string,
   search: URLSearchParams,
   href: string,
+  exclusive: readonly string[] = [],
 ): boolean {
   const [path, query] = href.split("?");
 
   if (path === "#") return false;
   if (path === "/") return pathname === "/";
   if (pathname !== path && !pathname.startsWith(`${path}/`)) return false;
+  if (exclusive.some((key) => search.has(key))) return false;
   if (!query) return true;
 
   for (const [key, value] of new URLSearchParams(query)) {

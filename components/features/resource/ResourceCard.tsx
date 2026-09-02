@@ -15,6 +15,8 @@ export type ResourceCardProps = {
   /** Where the whole card links to. */
   href: string;
   title: string;
+  /** Optional square glyph beside the title — the directory's category icon. */
+  icon?: ReactNode;
   /** Small label above the title — a category, content type, or collection name. */
   eyebrow?: string;
   description?: string | null;
@@ -34,6 +36,7 @@ export type ResourceCardProps = {
 export function ResourceCard({
   href,
   title,
+  icon,
   eyebrow,
   description,
   badges,
@@ -47,12 +50,17 @@ export function ResourceCard({
             {eyebrow}
           </span>
         ) : null}
-        <CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          {icon ? (
+            <span className="bg-muted flex size-7 shrink-0 items-center justify-center rounded-md">
+              {icon}
+            </span>
+          ) : null}
           {/*
             The link covers the card via ::after so the whole card is clickable,
             while the accessible name and keyboard focus stay on real link text.
           */}
-          <Link href={href} className="after:absolute after:inset-0 outline-none">
+          <Link href={href} className="outline-none after:absolute after:inset-0">
             {title}
           </Link>
         </CardTitle>

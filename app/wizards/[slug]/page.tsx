@@ -4,12 +4,19 @@ import { notFound } from "next/navigation";
 
 import { saveStepAction } from "@/app/wizards/[slug]/actions";
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
-import { WizardBlockView, WizardNav } from "@/components/features/wizards/WizardBlocks";
+import {
+  WizardBlockView,
+  WizardNav,
+} from "@/components/features/wizards/WizardBlocks";
 import { WizardStepper } from "@/components/features/wizards/WizardStepper";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/integrations/supabase/server";
-import { getWizardBySlug, getWizardProgress, getWizardTools } from "@/lib/queries/wizards";
+import {
+  getWizardBySlug,
+  getWizardProgress,
+  getWizardTools,
+} from "@/lib/queries/wizards";
 import { toolView } from "@/lib/resource-view";
 import { resolveStepIndex, summariseProgress } from "@/lib/wizards";
 
@@ -36,7 +43,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  * shared link all behave. Signed-in visitors resume where they stopped;
  * signed-out ones can read the whole thing but cannot tick anything off.
  */
-export default async function WizardRunnerPage({ params, searchParams }: Props) {
+export default async function WizardRunnerPage({
+  params,
+  searchParams,
+}: Props) {
   const { slug } = await params;
   const { step: stepParam } = await searchParams;
 
@@ -60,11 +70,17 @@ export default async function WizardRunnerPage({ params, searchParams }: Props) 
   }
 
   const [progress, tools] = await Promise.all([
-    auth.user ? getWizardProgress(supabase, auth.user.id, wizard.id) : Promise.resolve(null),
+    auth.user
+      ? getWizardProgress(supabase, auth.user.id, wizard.id)
+      : Promise.resolve(null),
     getWizardTools(supabase, wizard.id),
   ]);
 
-  const stepIndex = resolveStepIndex(stepParam, progress?.stepIndex ?? null, wizard.steps.length);
+  const stepIndex = resolveStepIndex(
+    stepParam,
+    progress?.stepIndex ?? null,
+    wizard.steps.length,
+  );
   const step = wizard.steps[stepIndex];
 
   const checklistState = progress?.checklistState ?? {};
@@ -74,16 +90,34 @@ export default async function WizardRunnerPage({ params, searchParams }: Props) 
 
   return (
     <main className="mx-auto w-full max-w-3xl p-6">
-      <Link href="/wizards" className="text-sm text-muted-foreground hover:underline">
+      <Link
+        href="/wizards"
+        className="text-sm text-muted-foreground hover:underline"
+      >
         ← All wizards
       </Link>
 
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        {wizard.role_level ? <Badge variant="outline">{wizard.role_level}</Badge> : null}
-        {wizard.status === "draft" ? <Badge variant="secondary">Draft</Badge> : null}
+      {/*
+        The mockup's eyebrow. "Project build" is the wizard kind spelled for
+        a reader — Setup and Path are Phase 1.5 and unbuilt, so nothing here
+        branches on kind yet.
+      */}
+      <p className="text-muted-foreground mt-4 text-xs font-medium tracking-wide uppercase">
+        Wizard · Project build
+      </p>
+
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        {wizard.role_level ? (
+          <Badge variant="outline">{wizard.role_level}</Badge>
+        ) : null}
+        {wizard.status === "draft" ? (
+          <Badge variant="secondary">Draft</Badge>
+        ) : null}
       </div>
 
-      <h1 className="mt-3 font-heading text-3xl font-semibold">{wizard.title}</h1>
+      <h1 className="mt-3 font-heading text-3xl font-semibold">
+        {wizard.title}
+      </h1>
 
       <div className="mt-6">
         <WizardStepper
@@ -96,7 +130,9 @@ export default async function WizardRunnerPage({ params, searchParams }: Props) 
 
       <section className="mt-10">
         <h2 className="font-heading text-2xl font-medium">{step.title}</h2>
-        {step.intro ? <p className="mt-2 text-muted-foreground">{step.intro}</p> : null}
+        {step.intro ? (
+          <p className="mt-2 text-muted-foreground">{step.intro}</p>
+        ) : null}
 
         <div className="mt-6 flex flex-col gap-5">
           {step.blocks.map((block, index) => (
@@ -117,7 +153,9 @@ export default async function WizardRunnerPage({ params, searchParams }: Props) 
       {isLastStep ? (
         <section className="mt-10 rounded-xl border bg-muted/40 p-5">
           <h2 className="font-heading text-lg font-medium">
-            {summary.complete ? "That is the whole build. Well done." : "Nearly there"}
+            {summary.complete
+              ? "That is the whole build. Well done."
+              : "Nearly there"}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
             {summary.complete
@@ -128,35 +166,53 @@ export default async function WizardRunnerPage({ params, searchParams }: Props) 
             <Link href="/collections" className={buttonVariants()}>
               Browse collections
             </Link>
-            <Link href="/tools" className={buttonVariants({ variant: "outline" })}>
+            <Link
+              href="/tools"
+              className={buttonVariants({ variant: "outline" })}
+            >
               Explore the directory
             </Link>
           </div>
         </section>
       ) : null}
 
-      <WizardNav slug={wizard.slug} stepIndex={stepIndex} stepCount={wizard.steps.length} />
+      <WizardNav
+        slug={wizard.slug}
+        stepIndex={stepIndex}
+        stepCount={wizard.steps.length}
+      >
+        {auth.user ? (
+          /*
+            Explicit save rather than writing on every page view: paging
+            through a wizard to look at it should not overwrite the step you
+            had actually reached.
 
-      {auth.user ? (
-        /*
-          Explicit save rather than writing on every page view: paging through
-          a wizard to look at it should not overwrite the step you had
-          actually reached.
-        */
-        <form action={saveStepAction} className="mt-4">
-          <input type="hidden" name="wizard_slug" value={wizard.slug} />
-          <input type="hidden" name="step_index" value={stepIndex} />
-          <Button type="submit" variant="outline" size="sm">
-            Save my place here
-          </Button>
-        </form>
-      ) : null}
+            The mockup labels this slot "Autosaved". It is not — saying so
+            would promise a write that does not happen, and someone who
+            trusted it would lose their place. The button says what it does.
+          */
+          <form action={saveStepAction}>
+            <input type="hidden" name="wizard_slug" value={wizard.slug} />
+            <input type="hidden" name="step_index" value={stepIndex} />
+            <Button type="submit" variant="ghost" size="sm">
+              Save my place here
+            </Button>
+          </form>
+        ) : (
+          <p className="text-muted-foreground text-xs">
+            Sign in to save your place.
+          </p>
+        )}
+      </WizardNav>
 
       {tools.length ? (
         <section className="mt-12 border-t pt-8">
-          <h2 className="font-heading text-xl font-medium">Tools used in this build</h2>
+          <h2 className="font-heading text-xl font-medium">
+            Tools used in this build
+          </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Everything this wizard reaches for, with the directory entry for each.
+            Everything this wizard reaches for, with the directory entry for
+            each.
           </p>
           <ul className="mt-4 grid items-start gap-4 sm:grid-cols-2">
             {tools.map(toolView).map((view) => (

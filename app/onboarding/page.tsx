@@ -313,7 +313,7 @@ function StepReveal({
       </form>
       <p className="mt-3 text-sm text-muted-foreground">
         Your level is saved. Change it any time from{" "}
-        <Link href="/profile" className="underline">
+        <Link href="/account" className="underline">
           your profile
         </Link>
         .

@@ -13,9 +13,7 @@ import { supabasePublishableKey, supabaseUrl } from "./env";
  * requireStaff() in lib/staff.ts does the staff half on the page itself.
  */
 const PROTECTED_PREFIXES = [
-  "/profile",
-  "/bookmarks",
-  "/history",
+  "/account",
   "/onboarding",
   "/admin",
 ] as const;

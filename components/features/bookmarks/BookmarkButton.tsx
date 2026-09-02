@@ -1,6 +1,6 @@
 import { BookmarkIcon } from "lucide-react";
 
-import { toggleBookmarkAction } from "@/app/bookmarks/actions";
+import { toggleBookmarkAction } from "@/app/account/bookmarks/actions";
 import { Button } from "@/components/ui/button";
 import type { BookmarkTarget } from "@/lib/queries/bookmarks";
 

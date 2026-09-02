@@ -59,7 +59,7 @@ export async function toggleBookmarkAction(formData: FormData): Promise<void> {
    * through safeRedirect for the same reason the login form does: it lands in
    * a redirect URL, and an absolute value there would bounce the user off-site.
    */
-  const returnTo = safeRedirect(formData.get("return_to")?.toString(), "/bookmarks");
+  const returnTo = safeRedirect(formData.get("return_to")?.toString(), "/account/bookmarks");
 
   const supabase = await createClient();
   const userId = await requireUserId(supabase, returnTo);
@@ -73,7 +73,7 @@ export async function toggleBookmarkAction(formData: FormData): Promise<void> {
 
   // Both the page the button sits on and the bookmarks list are now stale.
   revalidatePath(returnTo);
-  revalidatePath("/bookmarks");
+  revalidatePath("/account/bookmarks");
 }
 
 /** Move a bookmark into a folder, or clear its folder when left blank. */
@@ -88,10 +88,10 @@ export async function setBookmarkFolderAction(formData: FormData): Promise<void>
   }
 
   const supabase = await createClient();
-  const userId = await requireUserId(supabase, "/bookmarks");
+  const userId = await requireUserId(supabase, "/account/bookmarks");
 
   await setBookmarkFolder(supabase, userId, parsed.data.bookmark_id, parsed.data.folder_name);
-  revalidatePath("/bookmarks");
+  revalidatePath("/account/bookmarks");
 }
 
 /** Rename one folder across every bookmark filed under it. */
@@ -106,8 +106,8 @@ export async function renameBookmarkFolderAction(formData: FormData): Promise<vo
   }
 
   const supabase = await createClient();
-  const userId = await requireUserId(supabase, "/bookmarks");
+  const userId = await requireUserId(supabase, "/account/bookmarks");
 
   await renameBookmarkFolder(supabase, userId, parsed.data.from, parsed.data.to);
-  revalidatePath("/bookmarks");
+  revalidatePath("/account/bookmarks");
 }

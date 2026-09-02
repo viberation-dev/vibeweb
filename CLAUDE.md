@@ -17,9 +17,11 @@ Next.js/React is component + hook based, not class-based — these are OOP princ
 
 ## Routing / account IA
 
-Account routes are **top-level**: `/profile`, `/bookmarks`, `/history`. There is no `/account/*` namespace and no account-tabs shell — Bible §31 was amended to match the shipped routes (2026-08-27), not the other way round. `/profile` deliberately merges overview + preferences into one page and one form.
+Account routes live under **`/account`** as a tab shell: `/account` (Overview) · `/account/bookmarks` · `/account/history` · `/account/settings`. Each tab is a real nested route under `app/account/layout.tsx`, not client-side tab state — deep links, back/forward and server-rendered queries all keep working.
 
-Don't "fix" this by moving the routes under `/account/`. If the approved header design later wants an account tab strip, that's a nav concern for the header component — it does not require re-nesting the routes.
+This reverses the 2026-08-27 flat-route decision. Ali confirmed the tabbed IA on 2026-08-31 (Bible §14 Decision Log) and it shipped in VIB-69. `/profile`, `/bookmarks` and `/history` remain as permanent redirects into the shell — don't delete them, they are in browser histories and old `?redirectTo=` links.
+
+Middleware gates the whole subtree with a single `/account` prefix, and every page under it still re-checks the session itself. A layout is not a gate.
 
 ## Security
 

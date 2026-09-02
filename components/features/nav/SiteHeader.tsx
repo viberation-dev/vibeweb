@@ -10,6 +10,7 @@ import {
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 
+import { SignOutButton } from "@/components/features/auth/SignOutButton";
 import { TOOL_CATEGORIES } from "@/lib/tool-categories";
 import { toolsHref } from "@/lib/tools-url";
 
@@ -22,6 +23,14 @@ import { toolsHref } from "@/lib/tools-url";
  * palette, which is a feature nobody has asked for yet. The badge is
  * therefore true rather than decorative.
  */
+/** Mirrors the /account tab strip, so the menu and the shell agree. */
+const ACCOUNT_MENU = [
+  { href: "/account", label: "Overview" },
+  { href: "/account/bookmarks", label: "Bookmarks" },
+  { href: "/account/history", label: "History" },
+  { href: "/account/settings", label: "Settings" },
+] as const;
+
 export function SiteHeader({ initials }: { initials: string }) {
   const input = useRef<HTMLInputElement>(null);
 
@@ -101,13 +110,34 @@ export function SiteHeader({ initials }: { initials: string }) {
       */}
       <IconBell aria-hidden className="text-muted-foreground/40 size-4" />
 
-      <Link
-        href="/account"
-        aria-label="Your account"
-        className="bg-accent text-accent-foreground flex size-7 shrink-0 items-center justify-center rounded-full text-[10px] font-medium"
-      >
-        {initials}
-      </Link>
+      {/*
+        The avatar is a menu, not a link. It was a bare link to /account,
+        which left a signed-in user with no way to sign out anywhere in the
+        app — SignOutButton lives in AuthStatus, and AuthStatus only renders
+        on the signed-out header.
+      */}
+      <details className="relative">
+        <summary
+          aria-label="Your account"
+          className="bg-accent text-accent-foreground flex size-7 shrink-0 cursor-pointer list-none items-center justify-center rounded-full text-[10px] font-medium"
+        >
+          {initials}
+        </summary>
+        <div className="bg-background absolute right-0 z-20 mt-2 w-48 rounded-md border p-1 shadow-md">
+          <ul>
+            {ACCOUNT_MENU.map((item) => (
+              <li key={item.href}>
+                <Link href={item.href} className="hover:bg-accent block rounded px-2 py-1.5 text-sm">
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-1 border-t pt-1">
+            <SignOutButton />
+          </div>
+        </div>
+      </details>
     </div>
   );
 }

@@ -19,6 +19,9 @@ const badgeVariants = cva(
         ghost:
           "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",
+        /* Secondary brand colour as a fill, paired with its own on-colour —
+           never used as a text colour (Viberation Design System readme "Do"). */
+        highlight: "bg-highlight text-highlight-foreground [a]:hover:bg-[var(--highlight-hover)]",
       },
     },
     defaultVariants: {

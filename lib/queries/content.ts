@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import type { ContentType } from "@/lib/learn";
+import { DEFAULT_LEARN_SORT, learnSortOrder, type ContentType, type LearnSort } from "@/lib/learn";
 import { roleLevelFilter, type RoleLevel } from "@/lib/role-level";
 import type { Database, Enums, Tables } from "@/types/supabase";
 
@@ -21,6 +21,8 @@ export type ContentFilters = {
   audience?: Enums<"docs_audience">;
   /** Tag *slug*, not id — it is what appears in the URL. */
   tag?: string;
+  /** Ordering. Omitted means the default, newest first. */
+  sort?: LearnSort;
   /** 1-based. Values past the end return an empty page, not an error. */
   page?: number;
   pageSize?: number;
@@ -53,12 +55,14 @@ export async function listContent(
   const page = Math.max(1, filters.page ?? 1);
   const from = (page - 1) * pageSize;
 
+  const order = learnSortOrder(filters.sort ?? DEFAULT_LEARN_SORT);
+
   let query = client
     .from("content")
     // count: "exact" rides along on the same request, so the pager costs no
     // extra round trip.
     .select("*", { count: "exact" })
-    .order("created_at", { ascending: false })
+    .order(order.column, { ascending: order.ascending })
     // created_at ties on anything seeded in one statement, and Postgres gives
     // no stable order for ties — rows would repeat or vanish across pages.
     // Breaking the tie on the unique slug pins them.

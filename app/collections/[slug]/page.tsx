@@ -82,6 +82,8 @@ export default async function CollectionPage({ params }: Props) {
                 eyebrow={view.eyebrow}
                 description={view.description}
                 badges={view.badges}
+                difficulty={view.difficulty}
+                meta={view.meta}
                 action={
                   <BookmarkButton
                     targetType={view.targetType}

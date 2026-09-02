@@ -197,3 +197,63 @@
     @apply font-sans;
   }
 }
+
+/*
+ * Motion is scoped to exactly two screens — the marketing homepage and the
+ * Learn hub (handoff §4 motion note). The app shell and the directory grid
+ * stay calm and fast, so these are opt-in classes rather than behaviour
+ * baked into the shared card.
+ */
+@layer utilities {
+  .motion-lift {
+    transition:
+      transform 150ms ease-out,
+      box-shadow 150ms ease-out;
+  }
+
+  .motion-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px -14px color-mix(in oklab, var(--primary) 70%, transparent);
+  }
+
+  /*
+   * Scroll-reveal with no JavaScript, no IntersectionObserver and no client
+   * component: a scroll-driven animation on the element's own view()
+   * timeline. Browsers without animation-timeline skip the @supports block
+   * entirely and render the cards in their final state — the fallback has
+   * to be "visible", never content held at opacity 0 waiting for an
+   * animation that will never run.
+   */
+  @supports (animation-timeline: view()) {
+    .motion-reveal {
+      animation: motion-reveal-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 60%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .motion-lift,
+    .motion-reveal {
+      animation: none;
+      transition: none;
+    }
+
+    .motion-lift:hover {
+      transform: none;
+      box-shadow: none;
+    }
+  }
+}
+
+@keyframes motion-reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

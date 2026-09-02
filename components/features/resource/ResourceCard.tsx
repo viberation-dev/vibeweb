@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import { DifficultyBadge } from "@/components/ui/difficulty-badge";
 import {
   Card,
   CardContent,
@@ -10,6 +11,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import type { RoleLevel } from "@/lib/role-level";
+import { cn } from "@/lib/utils";
 
 export type ResourceCardProps = {
   /** Where the whole card links to. */
@@ -20,10 +23,24 @@ export type ResourceCardProps = {
   /** Small label above the title — a category, content type, or collection name. */
   eyebrow?: string;
   description?: string | null;
-  /** Short pills under the description: tags, pricing tier, role level. */
+  /** Short pills under the description: tags, pricing tier. */
   badges?: string[];
+  /**
+   * Skill tier, rendered as the design system's DifficultyBadge rather than
+   * a plain pill — its hues are fixed per level so "Beginner" reads the same
+   * colour in every theme (readme "Colour").
+   */
+  difficulty?: RoleLevel;
+  /** Quiet text beside the badges — reading time, a count. */
+  meta?: string;
   /** Controls in a footer — a bookmark toggle, a folder picker. */
   action?: ReactNode;
+  /**
+   * Extra classes on the card itself. The motion utilities live here rather
+   * than on the component: hover-lift is scoped to the homepage and the
+   * Learn hub, and the directory grid stays calm (handoff §4 motion note).
+   */
+  className?: string;
 };
 
 /**
@@ -40,10 +57,18 @@ export function ResourceCard({
   eyebrow,
   description,
   badges,
+  difficulty,
+  meta,
   action,
+  className,
 }: ResourceCardProps) {
   return (
-    <Card className="relative h-full transition-colors hover:bg-muted/40 focus-within:ring-2 focus-within:ring-ring">
+    <Card
+      className={cn(
+        "relative h-full transition-colors hover:bg-muted/40 focus-within:ring-2 focus-within:ring-ring",
+        className,
+      )}
+    >
       <CardHeader>
         {eyebrow ? (
           <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
@@ -66,13 +91,15 @@ export function ResourceCard({
         </CardTitle>
         {description ? <CardDescription>{description}</CardDescription> : null}
       </CardHeader>
-      {badges?.length ? (
-        <CardContent className="flex flex-wrap gap-1.5">
-          {badges.map((badge) => (
+      {badges?.length || difficulty || meta ? (
+        <CardContent className="flex flex-wrap items-center gap-1.5">
+          {difficulty ? <DifficultyBadge level={difficulty} /> : null}
+          {badges?.map((badge) => (
             <Badge key={badge} variant="secondary">
               {badge}
             </Badge>
           ))}
+          {meta ? <span className="text-muted-foreground text-xs">{meta}</span> : null}
         </CardContent>
       ) : null}
       {action ? (

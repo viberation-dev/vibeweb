@@ -6,7 +6,9 @@ import {
   contentTypeLabel,
   learnHref,
   LEARN_TYPE_VALUES,
+  readingMinutes,
   toContentType,
+  toLearnSort,
 } from "./learn.ts";
 
 const CHEATSHEET_BODY = `git status                 what is actually changed right now
@@ -68,4 +70,25 @@ test("hrefs drop empty params and omit page 1", () => {
 test("every content type has a display label", () => {
   assert.equal(contentTypeLabel("course_link"), "Course");
   assert.equal(contentTypeLabel("role_guide"), "Role guide");
+});
+
+test("sort is narrowed to a real option", () => {
+  assert.equal(toLearnSort("title"), "title");
+  assert.equal(toLearnSort("created_at desc; drop table content"), undefined);
+  assert.equal(toLearnSort(undefined), undefined);
+});
+
+test("the default sort stays out of the URL", () => {
+  // ?sort=latest would mean exactly what no param already means, and split
+  // the canonical /learn URL in two.
+  assert.equal(learnHref({ sort: "title" }), "/learn?sort=title");
+  assert.equal(learnHref({ type: "guide", sort: "title" }), "/learn?type=guide&sort=title");
+});
+
+test("reading time rounds to whole minutes, never to zero", () => {
+  assert.equal(readingMinutes(null), null);
+  assert.equal(readingMinutes("   "), null);
+  // A one-line cheatsheet still takes a minute, not none.
+  assert.equal(readingMinutes("git status"), 1);
+  assert.equal(readingMinutes("word ".repeat(1000)), 5);
 });

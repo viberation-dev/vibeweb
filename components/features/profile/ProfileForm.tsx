@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 
-import type { ProfileFormState } from "@/app/profile/actions";
+import type { ProfileFormState } from "@/app/account/settings/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

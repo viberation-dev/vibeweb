@@ -35,13 +35,13 @@ export async function AuthStatus() {
 
   return (
     <div className="flex items-center gap-3">
-      <Link href="/bookmarks" className="text-sm text-muted-foreground hover:text-foreground">
+      <Link href="/account/bookmarks" className="text-sm text-muted-foreground hover:text-foreground">
         Bookmarks
       </Link>
-      <Link href="/history" className="text-sm text-muted-foreground hover:text-foreground">
+      <Link href="/account/history" className="text-sm text-muted-foreground hover:text-foreground">
         History
       </Link>
-      <Link href="/profile" className="text-sm underline underline-offset-4">
+      <Link href="/account" className="text-sm underline underline-offset-4">
         {profile.username ?? profile.email ?? "Profile"}
       </Link>
       <SignOutButton />

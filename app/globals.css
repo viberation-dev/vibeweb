@@ -55,6 +55,7 @@
      actions and sparingly elsewhere. Difficulty colours are fixed across
      themes/modes so "Beginner" reads the same everywhere. */
   --color-highlight: var(--highlight);
+  --color-highlight-hover: var(--highlight-hover);
   --color-highlight-foreground: var(--highlight-foreground);
   --color-difficulty-beginner: var(--difficulty-beginner);
   --color-difficulty-beginner-bg: var(--difficulty-beginner-bg);
@@ -85,8 +86,10 @@
   --popover-foreground: #1a1a18;
   --primary: #011aff; /* blue-primary */
   --primary-foreground: #ffffff; /* accent-on */
+  --primary-hover: #0014cc; /* blue-primary-hover — hover is a colour swap, never opacity */
   --secondary: #f2f2e4; /* surface-muted */
   --secondary-foreground: #050505; /* text-strong */
+  --secondary-hover: #f6f6e9; /* surface-sunken */
   --muted: #f2f2e4; /* surface-muted */
   --muted-foreground: #5a5a54; /* text-muted */
   --accent: #f2f2e4; /* surface-muted */
@@ -138,8 +141,10 @@
   --popover-foreground: #f2f2f5;
   --primary: #4c63ff; /* blue-primary-bright — dark-mode lift for contrast */
   --primary-foreground: #ffffff;
+  --primary-hover: #6b7eff;
   --secondary: #16161f; /* surface-muted, dark */
   --secondary-foreground: #ffffff; /* text-strong, dark */
+  --secondary-hover: #1c1c28;
   --muted: #16161f;
   --muted-foreground: #9c9caa;
   --accent: #16161f;

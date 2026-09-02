@@ -122,14 +122,38 @@
      background/border tints are mixed against the active card colour so
      they still read correctly in dark mode without a second colour set. */
   --difficulty-beginner: #0b6b4f;
-  --difficulty-beginner-bg: color-mix(in oklab, var(--difficulty-beginner) 13%, var(--card));
-  --difficulty-beginner-border: color-mix(in oklab, var(--difficulty-beginner) 32%, var(--card));
+  --difficulty-beginner-bg: color-mix(
+    in oklab,
+    var(--difficulty-beginner) 13%,
+    var(--card)
+  );
+  --difficulty-beginner-border: color-mix(
+    in oklab,
+    var(--difficulty-beginner) 32%,
+    var(--card)
+  );
   --difficulty-intermediate: #a9690a;
-  --difficulty-intermediate-bg: color-mix(in oklab, var(--difficulty-intermediate) 13%, var(--card));
-  --difficulty-intermediate-border: color-mix(in oklab, var(--difficulty-intermediate) 32%, var(--card));
+  --difficulty-intermediate-bg: color-mix(
+    in oklab,
+    var(--difficulty-intermediate) 13%,
+    var(--card)
+  );
+  --difficulty-intermediate-border: color-mix(
+    in oklab,
+    var(--difficulty-intermediate) 32%,
+    var(--card)
+  );
   --difficulty-advanced: #b3253c;
-  --difficulty-advanced-bg: color-mix(in oklab, var(--difficulty-advanced) 13%, var(--card));
-  --difficulty-advanced-border: color-mix(in oklab, var(--difficulty-advanced) 32%, var(--card));
+  --difficulty-advanced-bg: color-mix(
+    in oklab,
+    var(--difficulty-advanced) 13%,
+    var(--card)
+  );
+  --difficulty-advanced-border: color-mix(
+    in oklab,
+    var(--difficulty-advanced) 32%,
+    var(--card)
+  );
 }
 
 .dark {
@@ -176,14 +200,38 @@
   --highlight-foreground: #07070c;
 
   --difficulty-beginner: #0b6b4f;
-  --difficulty-beginner-bg: color-mix(in oklab, var(--difficulty-beginner) 13%, var(--card));
-  --difficulty-beginner-border: color-mix(in oklab, var(--difficulty-beginner) 32%, var(--card));
+  --difficulty-beginner-bg: color-mix(
+    in oklab,
+    var(--difficulty-beginner) 13%,
+    var(--card)
+  );
+  --difficulty-beginner-border: color-mix(
+    in oklab,
+    var(--difficulty-beginner) 32%,
+    var(--card)
+  );
   --difficulty-intermediate: #a9690a;
-  --difficulty-intermediate-bg: color-mix(in oklab, var(--difficulty-intermediate) 13%, var(--card));
-  --difficulty-intermediate-border: color-mix(in oklab, var(--difficulty-intermediate) 32%, var(--card));
+  --difficulty-intermediate-bg: color-mix(
+    in oklab,
+    var(--difficulty-intermediate) 13%,
+    var(--card)
+  );
+  --difficulty-intermediate-border: color-mix(
+    in oklab,
+    var(--difficulty-intermediate) 32%,
+    var(--card)
+  );
   --difficulty-advanced: #b3253c;
-  --difficulty-advanced-bg: color-mix(in oklab, var(--difficulty-advanced) 13%, var(--card));
-  --difficulty-advanced-border: color-mix(in oklab, var(--difficulty-advanced) 32%, var(--card));
+  --difficulty-advanced-bg: color-mix(
+    in oklab,
+    var(--difficulty-advanced) 13%,
+    var(--card)
+  );
+  --difficulty-advanced-border: color-mix(
+    in oklab,
+    var(--difficulty-advanced) 32%,
+    var(--card)
+  );
 }
 
 @layer base {
@@ -213,7 +261,8 @@
 
   .motion-lift:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 24px -14px color-mix(in oklab, var(--primary) 70%, transparent);
+    box-shadow: 0 10px 24px -14px
+      color-mix(in oklab, var(--primary) 70%, transparent);
   }
 
   /*
@@ -255,5 +304,38 @@
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+/*
+ * Scroll-reveal for the marketing homepage and Learn hub only (handoff §4 —
+ * the app shell and directory stay calm and fast).
+ *
+ * Pure CSS via a scroll-driven animation: no IntersectionObserver, no client
+ * component, no layout shift. Everything below is inside @supports, so where
+ * animation-timeline is unsupported the content simply renders visible — the
+ * default state is "shown", and the animation only ever enhances it.
+ *
+ * prefers-reduced-motion opts out entirely rather than shortening it.
+ */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes reveal-in {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .reveal {
+      animation: reveal-in linear both;
+      animation-timeline: view();
+      /* Finish well before the element is centred, or it reads as lag. */
+      animation-range: entry 0% cover 22%;
+    }
   }
 }

@@ -78,10 +78,14 @@ export default async function ToolsPage({ searchParams }: Props) {
             Real counts, queried — not the mockup's "46 tools", which predates
             the seed. A hero stat that contradicts the grid underneath it is
             worse than no stat.
+
+            The "across N categories" half only holds for the unfiltered
+            directory: with any filter applied the number describes a subset,
+            and "1 tool across 13 categories" is a sentence that is not true.
           */}
           <p className="text-muted-foreground mt-1 text-sm">
             {total} {total === 1 ? "tool" : "tools"}
-            {category ? "" : ` across ${TOOL_CATEGORIES.length} categories`}
+            {category || tag || q ? "" : ` across ${TOOL_CATEGORIES.length} categories`}
           </p>
         </div>
 

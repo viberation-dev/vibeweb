@@ -36,7 +36,7 @@ test("disabled items never match", () => {
 });
 
 test("exactly one category is active on a category page", () => {
-  const directory = SIDEBAR_GROUPS.find((group) => group.label === "Directory")!;
+  const directory = SIDEBAR_GROUPS.find((group) => group.label === "Directory · 13")!;
   assert.equal(directory.items.length, 13);
 
   for (const item of directory.items) {
@@ -46,6 +46,13 @@ test("exactly one category is active on a category page", () => {
     );
     assert.deepEqual(matches, [item]);
   }
+});
+
+test("the Directory label states its own count, and means it", () => {
+  // "Directory · 13" is the mockup's label. If a category is ever added to
+  // the enum, the label and the list must not drift apart silently.
+  const directory = SIDEBAR_GROUPS.find((group) => group.label === "Directory · 13")!;
+  assert.equal(directory.items.length, 13);
 });
 
 test("the logged-out top nav stays flat and short", () => {

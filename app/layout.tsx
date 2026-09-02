@@ -5,10 +5,11 @@ import { Suspense } from "react";
 
 import { AuthStatus } from "@/components/features/auth/AuthStatus";
 import { AppSidebar } from "@/components/features/nav/AppSidebar";
+import { SiteHeader } from "@/components/features/nav/SiteHeader";
 import { SearchInput } from "@/components/features/search/SearchInput";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { TOP_NAV } from "@/lib/nav";
-import { getCurrentProfile } from "@/lib/queries/profiles";
+import { getCurrentProfile, type Profile } from "@/lib/queries/profiles";
 
 import "./globals.css";
 
@@ -34,6 +35,17 @@ export const metadata: Metadata = {
   description:
     "The digital operating system for vibe coders — a curated AI tool library, role-aware guides, and a place to keep what works.",
 };
+
+/**
+ * Up to two letters for the header avatar, from whatever identity exists.
+ * Falls back to "?" rather than rendering an empty circle.
+ */
+function initialsFor(profile: Profile): string {
+  const source = profile.username ?? profile.email ?? "";
+  const parts = source.split(/[\s._-]+/).filter(Boolean);
+  const letters = parts.length > 1 ? parts[0][0] + parts[1][0] : source.slice(0, 2);
+  return letters.toUpperCase() || "?";
+}
 
 /**
  * Two nav structures, not one (VIB-76, handoff §2).
@@ -72,34 +84,36 @@ export default async function RootLayout({
          */
         suppressHydrationWarning
       >
-        <header className="flex items-center justify-between border-b px-6 py-3">
-          <nav className="flex items-center gap-6">
-            <Link href="/" className="font-semibold">
-              Viberation
-            </Link>
-            {/*
-              Marketing links only when signed out. Signed in, the same
-              destinations live in the sidebar, and a header copy of them is
-              a second control for one destination.
-            */}
-            {profile
-              ? null
-              : TOP_NAV.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="text-sm text-muted-foreground hover:text-foreground"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-          </nav>
-          <div className="flex items-center gap-4">
-            {/* §31 puts search in the top nav on every page, not just /search. */}
-            <SearchInput compact className="hidden sm:flex" />
-            <AuthStatus profile={profile} />
-          </div>
-        </header>
+        {/*
+          Two headers for the two nav structures, per handoff §2. The app
+          shell's is its own component because it needs a keyboard shortcut;
+          the marketing one is four links and stays here.
+        */}
+        {profile ? (
+          <SiteHeader initials={initialsFor(profile)} />
+        ) : (
+          <header className="flex items-center justify-between border-b px-6 py-3">
+            <nav className="flex items-center gap-6">
+              <Link href="/" className="font-semibold">
+                Viberation
+              </Link>
+              {TOP_NAV.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="text-muted-foreground hover:text-foreground text-sm"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+            <div className="flex items-center gap-4">
+              {/* §31 puts search in the top nav on every page, not just /search. */}
+              <SearchInput compact className="hidden sm:flex" />
+              <AuthStatus profile={profile} />
+            </div>
+          </header>
+        )}
         {profile ? (
           <div className="flex min-h-0 flex-1 flex-col md:flex-row">
             {/*

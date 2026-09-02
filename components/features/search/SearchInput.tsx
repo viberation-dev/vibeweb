@@ -1,4 +1,4 @@
-import { SearchIcon } from "lucide-react";
+import { IconSearch } from "@tabler/icons-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,7 +40,7 @@ export function SearchInput({ defaultValue, compact, className }: Props) {
         className={cn(compact && "h-9 w-44 lg:w-64")}
       />
       <Button type="submit" variant={compact ? "ghost" : "default"} size={compact ? "icon" : "default"}>
-        <SearchIcon aria-hidden />
+        <IconSearch aria-hidden />
         <span className={cn(compact && "sr-only")}>Search</span>
       </Button>
     </form>

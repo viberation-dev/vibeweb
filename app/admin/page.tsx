@@ -14,11 +14,11 @@ import { requireStaff } from "@/lib/staff";
 export const metadata: Metadata = { title: "Staff — Viberation" };
 
 /**
- * The staff area (VIB-53's gate, VIB-59's first screen behind it).
+ * The staff area — VIB-53's gate, with VIB-59's two editors behind it.
  *
- * The Learn editor is the half that lands here first: articles are the thing
- * written weekly. The tools editor is the other half of VIB-59 and is still
- * the Supabase dashboard.
+ * Two editors and nothing else, deliberately: tags, collections, wizards and
+ * role changes stay in the Supabase dashboard (or VIB-58's RPC) until one of
+ * them becomes a weekly job the way tools and articles are.
  */
 export default async function AdminPage() {
   const profile = await requireStaff("/admin");
@@ -32,13 +32,12 @@ export default async function AdminPage() {
             Signed in as {profile.email} ({profile.app_role}).
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4 text-sm text-muted-foreground">
-          <p>
-            Tools are still edited in the Supabase dashboard — that editor is the
-            other half of VIB-59.
-          </p>
+        <CardContent className="flex flex-wrap gap-3">
           <Link href="/admin/content" className={buttonVariants()}>
             Learn content
+          </Link>
+          <Link href="/admin/tools" className={buttonVariants()}>
+            Tools
           </Link>
         </CardContent>
       </Card>

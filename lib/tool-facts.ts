@@ -22,6 +22,18 @@
 export type PricingTier = "Free" | "Freemium" | "Open source" | "Paid" | (string & {});
 
 /**
+ * Every value `pricing_tier` is allowed to hold, in display order.
+ *
+ * The column is plain `text` (migration 03), but nothing downstream treats it
+ * as free text: `hasFreeTier`, the directory's pricing filter and the detail
+ * rail's "Free tier" fact all compare against these exact strings. So the
+ * admin editor offers this list rather than a text box — a typed "free" would
+ * silently drop a tool out of the Free-tier filter and claim "Free tier: No"
+ * on its own page.
+ */
+export const PRICING_TIERS = ["Free", "Freemium", "Open source", "Paid"] as const;
+
+/**
  * The tiers you can use without paying.
  *
  * Exported so the directory's pricing filter and the tool detail rail's
@@ -29,7 +41,8 @@ export type PricingTier = "Free" | "Freemium" | "Open source" | "Paid" | (string
  * disagreed with the fact on the page it links to would be worse than
  * either alone.
  */
-export const FREE_TIERS = ["Free", "Freemium", "Open source"] as const;
+export const FREE_TIERS = ["Free", "Freemium", "Open source"] as const satisfies
+  ReadonlyArray<(typeof PRICING_TIERS)[number]>;
 
 /**
  * Whether someone can use this without paying.

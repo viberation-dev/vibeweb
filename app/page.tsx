@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import {
   FEED_TABS,
+  feedQueryFor,
   greetingFor,
   progressLabel,
   readingMinutes,
@@ -66,12 +67,10 @@ export default async function HomePage({ searchParams }: Props) {
     listContent(supabase, {
       types: LEARN_TYPE_VALUES,
       /*
-       * "For you" is the tier filter; "Latest" deliberately drops it, which
-       * is the only difference between the two tabs — listContent already
-       * orders by created_at descending either way.
+       * Which tier and which order each tab wants lives in feedQueryFor, so
+       * the tabs cannot quietly disagree with their own labels.
        */
-      roleLevel:
-        tab === "latest" ? undefined : (profile?.role_level ?? undefined),
+      ...feedQueryFor(tab, profile?.role_level ?? undefined),
       pageSize: 3,
     }),
     listTools(supabase, { sort: "popular", pageSize: 6 }),

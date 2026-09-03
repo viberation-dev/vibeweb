@@ -1,3 +1,5 @@
+import type { RoleLevel } from "./role-level.ts";
+
 /**
  * Pure logic behind the signed-in home feed (VIB-78, handoff Screen 2).
  *
@@ -10,14 +12,12 @@ export const FEED_TABS = [
   { value: "for-you", label: "For you" },
   { value: "latest", label: "Latest" },
   /*
-   * Top is rendered but not selectable. Ranking content by popularity needs
-   * a signal that does not exist: `tool_clicks` covers tools only, and
-   * bookmarks are owner-only under RLS so they cannot be counted across
-   * users. Showing an arbitrary order under a "Top" label would be a made-up
-   * ranking, so it stays dimmed until something real backs it — the same
-   * treatment the sidebar's Later group gets.
+   * Selectable since VIB-86 gave `content` a view_count and the detail page
+   * a counter. Before that there was no cross-user signal at all — tool_clicks
+   * covers tools only, and bookmarks are owner-only under RLS — so the tab
+   * rendered dimmed rather than ordering by something invented.
    */
-  { value: "top", label: "Top", disabled: true },
+  { value: "top", label: "Top" },
 ] as const;
 
 export type FeedTab = (typeof FEED_TABS)[number]["value"];
@@ -26,6 +26,21 @@ export type FeedTab = (typeof FEED_TABS)[number]["value"];
 export function toFeedTab(value: string | undefined): FeedTab {
   const tab = FEED_TABS.find((t) => t.value === value);
   return tab && !("disabled" in tab && tab.disabled) ? tab.value : "for-you";
+}
+
+/**
+ * What each tab asks the content query for.
+ *
+ * "For you" is the reader's own tier; "Latest" drops that filter and takes
+ * newest first; "Top" drops it too and takes most-read. Keeping the mapping
+ * here rather than in the page means the tabs cannot quietly disagree with
+ * their own labels.
+ */
+export function feedQueryFor(tab: FeedTab, roleLevel: RoleLevel | undefined) {
+  return {
+    roleLevel: tab === "for-you" ? roleLevel : undefined,
+    sort: tab === "top" ? ("popular" as const) : ("latest" as const),
+  };
 }
 
 /**
@@ -64,7 +79,11 @@ export function readingMinutes(body: string | null): number | null {
  * `stepIndex` is 0-based in the database and 1-based to a reader, which is
  * exactly the sort of thing that ships off by one.
  */
-export function progressLabel(stepIndex: number, stepTitle: string | undefined, total: number) {
+export function progressLabel(
+  stepIndex: number,
+  stepTitle: string | undefined,
+  total: number,
+) {
   const current = Math.min(stepIndex + 1, total);
   const label = `Step ${current} of ${total}`;
   return {

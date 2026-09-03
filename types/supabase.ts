@@ -139,6 +139,7 @@ export type Database = {
           title: string
           type: Database["public"]["Enums"]["content_type"]
           updated_at: string
+          view_count: number
         }
         Insert: {
           audience?: Database["public"]["Enums"]["docs_audience"] | null
@@ -152,6 +153,7 @@ export type Database = {
           title: string
           type: Database["public"]["Enums"]["content_type"]
           updated_at?: string
+          view_count?: number
         }
         Update: {
           audience?: Database["public"]["Enums"]["docs_audience"] | null
@@ -165,6 +167,7 @@ export type Database = {
           title?: string
           type?: Database["public"]["Enums"]["content_type"]
           updated_at?: string
+          view_count?: number
         }
         Relationships: []
       }
@@ -581,6 +584,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      increment_content_views: {
+        Args: { content_slug: string }
+        Returns: undefined
+      }
       increment_tool_views: { Args: { tool_slug: string }; Returns: undefined }
       is_staff: { Args: never; Returns: boolean }
       search_all: {

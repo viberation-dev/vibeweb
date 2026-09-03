@@ -337,16 +337,19 @@ export type Database = {
       tags: {
         Row: {
           id: string
+          kind: Database["public"]["Enums"]["tag_kind"]
           name: string
           slug: string
         }
         Insert: {
           id?: string
+          kind?: Database["public"]["Enums"]["tag_kind"]
           name: string
           slug: string
         }
         Update: {
           id?: string
+          kind?: Database["public"]["Enums"]["tag_kind"]
           name?: string
           slug?: string
         }
@@ -609,6 +612,7 @@ export type Database = {
       docs_audience: "enduser" | "author" | "admin" | "seller"
       layout_mode: "essentials" | "advanced"
       role_level: "beginner" | "intermediate" | "expert"
+      tag_kind: "facet" | "audience" | "pricing"
       target_kind: "tool" | "content" | "prompt" | "collection" | "wizard"
       tool_category:
         | "models"
@@ -767,6 +771,7 @@ export const Constants = {
       docs_audience: ["enduser", "author", "admin", "seller"],
       layout_mode: ["essentials", "advanced"],
       role_level: ["beginner", "intermediate", "expert"],
+      tag_kind: ["facet", "audience", "pricing"],
       target_kind: ["tool", "content", "prompt", "collection", "wizard"],
       tool_category: [
         "models",

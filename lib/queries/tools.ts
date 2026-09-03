@@ -127,7 +127,7 @@ export async function getToolBySlug(client: Client, slug: string): Promise<Tool 
 export async function getToolTags(client: Client, toolId: string): Promise<Tag[]> {
   const { data, error } = await client
     .from("tool_tags")
-    .select("tags!inner(id, name, slug)")
+    .select("tags!inner(id, kind, name, slug)")
     .eq("tool_id", toolId);
 
   if (error) {
@@ -154,7 +154,7 @@ export async function getToolTagsByIds(
 
   const { data, error } = await client
     .from("tool_tags")
-    .select("tool_id, tags!inner(id, name, slug)")
+    .select("tool_id, tags!inner(id, kind, name, slug)")
     .in("tool_id", toolIds);
 
   if (error) {

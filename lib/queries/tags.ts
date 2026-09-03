@@ -1,14 +1,33 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import type { Database, Tables } from "@/types/supabase";
+import type { Database, Enums, Tables } from "@/types/supabase";
 
 export type Tag = Tables<"tags">;
 
 type Client = SupabaseClient<Database>;
 
-/** Every tag, alphabetical. Public-read per migration 03. */
-export async function listTags(client: Client): Promise<Tag[]> {
-  const { data, error } = await client.from("tags").select("*").order("name");
+/**
+ * Tags of one kind, alphabetical. Public-read per migration 03.
+ *
+ * Defaults to `facet` — the filterable topics. Filter bars and chip rows
+ * want those and only those: `free-tier` and `open-source` are assertions
+ * about a product (`pricing`), and `beginner-friendly` describes an audience,
+ * so offering them as filters mixes three different questions into one row
+ * of chips. Pass a kind explicitly to get the others.
+ *
+ * Callers that genuinely want everything a tool carries — the tool detail
+ * header pills, for instance — should read the tool's own tags rather than
+ * this list.
+ */
+export async function listTags(
+  client: Client,
+  kind: Enums<"tag_kind"> | "all" = "facet",
+): Promise<Tag[]> {
+  let query = client.from("tags").select("*").order("name");
+  if (kind !== "all") {
+    query = query.eq("kind", kind);
+  }
+  const { data, error } = await query;
 
   if (error) {
     throw new Error(`listTags: ${error.message}`);
@@ -17,8 +36,15 @@ export async function listTags(client: Client): Promise<Tag[]> {
 }
 
 /** One tag by its URL slug. Null when it does not exist. */
-export async function getTagBySlug(client: Client, slug: string): Promise<Tag | null> {
-  const { data, error } = await client.from("tags").select("*").eq("slug", slug).maybeSingle();
+export async function getTagBySlug(
+  client: Client,
+  slug: string,
+): Promise<Tag | null> {
+  const { data, error } = await client
+    .from("tags")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
 
   if (error) {
     throw new Error(`getTagBySlug(${slug}): ${error.message}`);
@@ -39,8 +65,13 @@ export async function getTagBySlug(client: Client, slug: string): Promise<Tag | 
  * a hundred rows, and they are public-read, so the round trip is cheaper
  * than a migration for a view. Revisit if either table reaches thousands.
  */
-export async function listPopularTags(client: Client, limit = 5): Promise<Tag[]> {
+export async function listPopularTags(
+  client: Client,
+  limit = 5,
+): Promise<Tag[]> {
   const [tags, toolTags, contentTags] = await Promise.all([
+    // Facets only — a "Popular tags" rail offering `free-tier` beside
+    // `frontend` invites the same category error VIB-81 shipped.
     listTags(client),
     client.from("tool_tags").select("tag_id"),
     client.from("content_tags").select("tag_id"),
@@ -62,7 +93,11 @@ export async function listPopularTags(client: Client, limit = 5): Promise<Tag[]>
       // Unused tags are dropped rather than shown with a silent zero — a tag
       // nothing is filed under is a dead end for whoever clicks it.
       .filter((tag) => uses.has(tag.id))
-      .sort((a, b) => (uses.get(b.id) ?? 0) - (uses.get(a.id) ?? 0) || a.name.localeCompare(b.name))
+      .sort(
+        (a, b) =>
+          (uses.get(b.id) ?? 0) - (uses.get(a.id) ?? 0) ||
+          a.name.localeCompare(b.name),
+      )
       .slice(0, limit)
   );
 }

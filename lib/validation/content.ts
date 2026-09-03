@@ -47,6 +47,20 @@ export const contentEditorSchema = z.object({
   audience: z
     .union([z.enum(["enduser", "author", "admin", "seller"]), z.literal("")])
     .transform((value) => (value === "" ? null : value)),
+  /* Unfiled is a real answer, not a missing one — see lib/learn.ts. */
+  pillar: z
+    .union([
+      z.enum([
+        "fundamentals",
+        "context_engineering",
+        "prompt_engineering",
+        "tool_reviews",
+        "walkthroughs",
+        "founder_playbook",
+      ]),
+      z.literal(""),
+    ])
+    .transform((value) => (value === "" ? null : value)),
   status: z.enum(["draft", "published"]),
 });
 

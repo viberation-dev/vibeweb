@@ -10,6 +10,7 @@ const valid = {
   body: "# Hello",
   role_level: "beginner",
   audience: "",
+  pillar: "fundamentals",
   status: "draft",
 };
 
@@ -60,4 +61,18 @@ test("status is not free text", () => {
   // The read policy keys off this enum; anything else would be a live article
   // with an unreadable status.
   assert.equal(contentEditorSchema.safeParse({ ...valid, status: "live" }).success, false);
+});
+
+test("an unfiled pillar is null, and an invented one is rejected", () => {
+  // Null is a real state: help articles belong to no pillar, and a new piece
+  // has not been filed yet. "Fundamentals" as free text is not.
+  const unfiled = contentEditorSchema.safeParse({ ...valid, pillar: "" });
+  assert.ok(unfiled.success);
+  assert.equal(unfiled.data.pillar, null);
+
+  assert.ok(contentEditorSchema.safeParse({ ...valid, pillar: "walkthroughs" }).success);
+  assert.equal(
+    contentEditorSchema.safeParse({ ...valid, pillar: "Fundamentals" }).success,
+    false,
+  );
 });

@@ -132,6 +132,7 @@ export type Database = {
           body: string | null
           created_at: string
           id: string
+          pillar: Database["public"]["Enums"]["content_pillar"] | null
           role_level: Database["public"]["Enums"]["role_level"] | null
           search_vector: unknown
           slug: string
@@ -146,6 +147,7 @@ export type Database = {
           body?: string | null
           created_at?: string
           id?: string
+          pillar?: Database["public"]["Enums"]["content_pillar"] | null
           role_level?: Database["public"]["Enums"]["role_level"] | null
           search_vector?: unknown
           slug: string
@@ -160,6 +162,7 @@ export type Database = {
           body?: string | null
           created_at?: string
           id?: string
+          pillar?: Database["public"]["Enums"]["content_pillar"] | null
           role_level?: Database["public"]["Enums"]["role_level"] | null
           search_vector?: unknown
           slug?: string
@@ -608,6 +611,13 @@ export type Database = {
     }
     Enums: {
       app_role: "member" | "admin" | "super_admin"
+      content_pillar:
+        | "fundamentals"
+        | "context_engineering"
+        | "prompt_engineering"
+        | "tool_reviews"
+        | "walkthroughs"
+        | "founder_playbook"
       content_status: "draft" | "published"
       content_type:
         | "article"
@@ -766,6 +776,14 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["member", "admin", "super_admin"],
+      content_pillar: [
+        "fundamentals",
+        "context_engineering",
+        "prompt_engineering",
+        "tool_reviews",
+        "walkthroughs",
+        "founder_playbook",
+      ],
       content_status: ["draft", "published"],
       content_type: [
         "article",

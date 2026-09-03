@@ -18,6 +18,7 @@ function readForm(formData: FormData) {
     body: formData.get("body"),
     role_level: formData.get("role_level"),
     audience: formData.get("audience"),
+    pillar: formData.get("pillar"),
     status: formData.get("status"),
   });
 }

@@ -2,6 +2,39 @@ import type { LevelParam } from "@/lib/role-level";
 import type { Enums } from "@/types/supabase";
 
 export type ContentType = Enums<"content_type">;
+export type ContentPillar = Enums<"content_pillar">;
+
+/**
+ * The six editorial pillars (VIB-90, mockup screen 10's `PILLARS · 6`).
+ *
+ * A different axis from `type`: type is the *shape* of a piece (article,
+ * cheatsheet, course link), pillar is the section of the publication it
+ * belongs to. A cheatsheet and a course link can both be Prompt engineering.
+ *
+ * Nullable in the database, and null is a real state — help articles are
+ * product documentation and belong to no pillar, and a newly written piece
+ * has not been filed yet.
+ */
+export const CONTENT_PILLARS = [
+  { value: "fundamentals", label: "Fundamentals" },
+  { value: "context_engineering", label: "Context engineering" },
+  { value: "prompt_engineering", label: "Prompt engineering" },
+  { value: "tool_reviews", label: "Tool reviews" },
+  { value: "walkthroughs", label: "Walkthroughs" },
+  { value: "founder_playbook", label: "Founder playbook" },
+] as const satisfies ReadonlyArray<{ value: ContentPillar; label: string }>;
+
+/** Display label for one pillar. */
+export function contentPillarLabel(value: ContentPillar): string {
+  return CONTENT_PILLARS.find((p) => p.value === value)!.label;
+}
+
+/** Narrows an untrusted `?pillar=` value to a real pillar, or undefined. */
+export function toContentPillar(value: string | undefined): ContentPillar | undefined {
+  return CONTENT_PILLARS.some((p) => p.value === value)
+    ? (value as ContentPillar)
+    : undefined;
+}
 
 /**
  * Display label for every content type.

@@ -8,8 +8,12 @@ import type { RoleLevel } from "@/lib/role-level";
  * same colour everywhere (Viberation Design System readme "Colour").
  *
  * Lives in features/, not ui/, because it is not a primitive: it knows the
- * product's `role_level` enum and that "expert" is shown as "Advanced".
- * components/ui holds things that know nothing about this app (VIB-74).
+ * product's `role_level` enum. components/ui holds things that know nothing
+ * about this app (VIB-74).
+ *
+ * The variant is still named `advanced` — that is the design system's colour
+ * token, and renaming it would mean renaming four CSS custom properties for
+ * no visual change. Only the *label* was settled by VIB-83's copy pass.
  */
 const difficultyBadgeVariants = cva(
   "inline-flex h-[22px] w-fit shrink-0 items-center gap-1.5 rounded-4xl border px-2.5 text-xs font-semibold whitespace-nowrap before:content-[''] before:size-1.5 before:shrink-0 before:rounded-full before:bg-current",
@@ -27,14 +31,23 @@ const difficultyBadgeVariants = cva(
   },
 );
 
+/*
+ * "Expert", not the mockup's "Advanced" (VIB-83's copy pass).
+ *
+ * Two settings, one word: `layout_mode` already shows "Advanced" on Account →
+ * Settings, meaning "show me everything". A reader's tier showing "Advanced"
+ * too would put the same word twice on one card for two unrelated things, and
+ * the Overview lists them side by side. "Expert" also matches the `role_level`
+ * enum, so the label and the stored value stop disagreeing.
+ */
 const LEVEL_LABEL: Record<"beginner" | "intermediate" | "advanced", string> = {
   beginner: "Beginner",
   intermediate: "Intermediate",
-  advanced: "Advanced",
+  advanced: "Expert",
 };
 
 export type DifficultyBadgeProps = {
-  /** The product's own enum says "expert"; the badge set says "advanced". */
+  /** The enum value; `expert` maps to the `advanced` colour token. */
   level: RoleLevel;
   className?: string;
 } & Omit<VariantProps<typeof difficultyBadgeVariants>, "level">;

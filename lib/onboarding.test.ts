@@ -5,7 +5,9 @@ import {
   DEFAULT_ROLE_LEVEL,
   onboardingHref,
   resolveStep,
+  revealHeadline,
   revealSummary,
+  stepEyebrow,
 } from "./onboarding.ts";
 
 test("skipping the level question defaults to beginner, not expert", () => {
@@ -45,4 +47,22 @@ test("the reveal reads back both answers, or just the level", () => {
     "You are starting out, and you are focused on frontend.",
   );
   assert.equal(revealSummary("expert"), "You know your way around.");
+});
+
+test("the step eyebrow counts the real number of steps", () => {
+  // Reads the list rather than hardcoding "of 3", so adding a step cannot
+  // leave the label claiming there are still three.
+  assert.equal(stepEyebrow(1), "Step 1 of 3 · Level");
+  assert.equal(stepEyebrow(3), "Step 3 of 3 · The reveal");
+});
+
+test("the reveal headline uses a name when there is one", () => {
+  assert.equal(revealHeadline("Ali"), "Here is your Viberation, Ali.");
+});
+
+test("a missing or blank username falls back rather than trailing a comma", () => {
+  // Most people reach the reveal seconds after signup, before setting one —
+  // "Here is your Viberation, ." would be the more visible bug.
+  assert.equal(revealHeadline(null), "Here is your Viberation.");
+  assert.equal(revealHeadline("   "), "Here is your Viberation.");
 });

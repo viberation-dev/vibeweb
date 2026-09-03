@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { chooseLevelAction, finishOnboardingAction } from "@/app/onboarding/actions";
+import { chooseLevelAction, finishOnboardingAction } from "@/app/(site)/onboarding/actions";
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

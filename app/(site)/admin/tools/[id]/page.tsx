@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { saveToolAction } from "@/app/admin/tools/actions";
+import { saveToolAction } from "@/app/(site)/admin/tools/actions";
 import { ToolForm } from "@/components/features/admin/ToolForm";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { getToolById } from "@/lib/queries/tools";

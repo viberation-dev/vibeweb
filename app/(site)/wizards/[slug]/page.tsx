@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { saveStepAction } from "@/app/wizards/[slug]/actions";
+import { saveStepAction } from "@/app/(site)/wizards/[slug]/actions";
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import {
   WizardBlockView,

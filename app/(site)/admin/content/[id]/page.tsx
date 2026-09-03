@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { saveContentAction } from "@/app/admin/content/actions";
+import { saveContentAction } from "@/app/(site)/admin/content/actions";
 import { ContentForm } from "@/components/features/admin/ContentForm";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { getContentById } from "@/lib/queries/content";

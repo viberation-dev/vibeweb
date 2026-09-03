@@ -1,4 +1,4 @@
-import { renameBookmarkFolderAction, setBookmarkFolderAction } from "@/app/account/bookmarks/actions";
+import { renameBookmarkFolderAction, setBookmarkFolderAction } from "@/app/(site)/account/bookmarks/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 

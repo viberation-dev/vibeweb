@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { toggleTaskAction } from "@/app/wizards/[slug]/actions";
+import { toggleTaskAction } from "@/app/(site)/wizards/[slug]/actions";
 import { CopyButton } from "@/components/features/wizards/CopyButton";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

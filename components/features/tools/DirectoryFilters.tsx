@@ -2,8 +2,14 @@ import { IconChevronDown } from "@tabler/icons-react";
 import Link from "next/link";
 
 import type { Tag } from "@/lib/queries/tags";
+import { PRICING_FILTERS, type PricingFilter } from "@/lib/tool-facts";
 import type { ToolCategory } from "@/lib/tool-categories";
-import { DEFAULT_TOOL_SORT, TOOL_SORTS, toolSortOrder, type ToolSort } from "@/lib/tool-sorts";
+import {
+  DEFAULT_TOOL_SORT,
+  TOOL_SORTS,
+  toolSortOrder,
+  type ToolSort,
+} from "@/lib/tool-sorts";
 import { toolsHref } from "@/lib/tools-url";
 import { cn } from "@/lib/utils";
 
@@ -12,12 +18,14 @@ type Props = {
   tag?: string;
   sort?: ToolSort;
   q?: string;
+  pricing?: PricingFilter;
   tags: Tag[];
 };
 
 const chip =
   "rounded-full border px-3 py-1 text-xs transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
-const chipActive = "border-transparent bg-primary text-primary-foreground hover:bg-primary/80";
+const chipActive =
+  "border-transparent bg-primary text-primary-foreground hover:bg-primary/80";
 
 /**
  * Tag pills and the sort control (VIB-80, mockup screen 3).
@@ -32,7 +40,14 @@ const chipActive = "border-transparent bg-primary text-primary-foreground hover:
  * clears it. Nothing carries `page`, so changing a filter resets to page 1 —
  * the only sane destination when the result set just changed under you.
  */
-export function DirectoryFilters({ category, tag, sort, q, tags }: Props) {
+export function DirectoryFilters({
+  category,
+  tag,
+  sort,
+  q,
+  pricing,
+  tags,
+}: Props) {
   const activeSort = sort ?? DEFAULT_TOOL_SORT;
 
   return (
@@ -45,7 +60,13 @@ export function DirectoryFilters({ category, tag, sort, q, tags }: Props) {
             return (
               <Link
                 key={t.id}
-                href={toolsHref({ category, tag: active ? undefined : t.slug, sort, q })}
+                href={toolsHref({
+                  category,
+                  tag: active ? undefined : t.slug,
+                  sort,
+                  q,
+                  pricing,
+                })}
                 aria-current={active ? "page" : undefined}
                 className={cn(chip, active && chipActive)}
               >
@@ -55,6 +76,32 @@ export function DirectoryFilters({ category, tag, sort, q, tags }: Props) {
           })}
         </>
       ) : null}
+
+      {/*
+        Pricing is its own axis, not a tag. It reads `pricing_tier`, which is
+        set on every row, rather than the `free-tier` tag that covered 7 of 10
+        Freemium tools and none of the 10 priced "Open source" (VIB-88, VIB-93).
+      */}
+      <span className="text-muted-foreground ml-2 text-xs">Pricing:</span>
+      {PRICING_FILTERS.map((option) => {
+        const active = pricing === option.value;
+        return (
+          <Link
+            key={option.value}
+            href={toolsHref({
+              category,
+              tag,
+              sort,
+              q,
+              pricing: active ? undefined : option.value,
+            })}
+            aria-current={active ? "page" : undefined}
+            className={cn(chip, active && chipActive)}
+          >
+            {option.label}
+          </Link>
+        );
+      })}
 
       {/*
         Native <details> rather than a select or a menu library: it needs no
@@ -80,6 +127,7 @@ export function DirectoryFilters({ category, tag, sort, q, tags }: Props) {
                     category,
                     tag,
                     q,
+                    pricing,
                     sort: value === DEFAULT_TOOL_SORT ? undefined : value,
                   })}
                   aria-current={activeSort === value ? "page" : undefined}

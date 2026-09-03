@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { hasFreeTier, isOpenSource } from "./tool-facts.ts";
+import {
+  hasFreeTier,
+  isOpenSource,
+  PRICING_FILTERS,
+  tiersFor,
+  toPricingFilter,
+} from "./tool-facts.ts";
 
 test("everything but Paid has a free tier", () => {
   assert.ok(hasFreeTier("Free"));
@@ -42,4 +48,33 @@ test("a Set of slugs works as well as an array", () => {
   // The page holds tag slugs in a Set for the header pills.
   assert.ok(isOpenSource("Paid", new Set(["open-source"])));
   assert.equal(isOpenSource("Paid", new Set(["automation"])), false);
+});
+
+test("the free-tier filter and the free-tier fact agree", () => {
+  // A filter that disagreed with the fact on the page it links to would be
+  // worse than either alone, so both read FREE_TIERS.
+  for (const tier of tiersFor("free")) {
+    assert.ok(hasFreeTier(tier), `${tier} should count as free`);
+  }
+  for (const tier of tiersFor("paid")) {
+    assert.equal(hasFreeTier(tier), false, `${tier} should not count as free`);
+  }
+});
+
+test("every pricing_tier in the seed is covered by exactly one filter", () => {
+  // Measured 2026-09-03: these are the only four values in `tools`.
+  for (const tier of ["Free", "Freemium", "Open source", "Paid"]) {
+    const matches = PRICING_FILTERS.filter((f) =>
+      (f.tiers as readonly string[]).includes(tier),
+    );
+    assert.equal(matches.length, 1, `${tier} matched ${matches.length} filters`);
+  }
+});
+
+test("an unrecognised ?pricing= is dropped rather than guessed", () => {
+  assert.equal(toPricingFilter("free"), "free");
+  assert.equal(toPricingFilter("paid"), "paid");
+  assert.equal(toPricingFilter(undefined), undefined);
+  assert.equal(toPricingFilter("cheap"), undefined);
+  assert.equal(toPricingFilter("Free"), undefined);
 });

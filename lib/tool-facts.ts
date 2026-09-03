@@ -22,6 +22,16 @@
 export type PricingTier = "Free" | "Freemium" | "Open source" | "Paid" | (string & {});
 
 /**
+ * The tiers you can use without paying.
+ *
+ * Exported so the directory's pricing filter and the tool detail rail's
+ * "Free tier" fact answer the same question the same way. A filter that
+ * disagreed with the fact on the page it links to would be worse than
+ * either alone.
+ */
+export const FREE_TIERS = ["Free", "Freemium", "Open source"] as const;
+
+/**
  * Whether someone can use this without paying.
  *
  * Everything except "Paid" has a free tier by definition — "Freemium" says
@@ -30,7 +40,27 @@ export type PricingTier = "Free" | "Freemium" | "Open source" | "Paid" | (string
  * that costs a reader money to discover is wrong.
  */
 export function hasFreeTier(pricingTier: string | null): boolean {
-  return pricingTier === "Free" || pricingTier === "Freemium" || pricingTier === "Open source";
+  return FREE_TIERS.includes(pricingTier as (typeof FREE_TIERS)[number]);
+}
+
+/** The pricing filters the directory offers, and what each matches. */
+export const PRICING_FILTERS = [
+  { value: "free", label: "Free tier", tiers: FREE_TIERS },
+  { value: "paid", label: "Paid", tiers: ["Paid"] },
+] as const;
+
+export type PricingFilter = (typeof PRICING_FILTERS)[number]["value"];
+
+/** Narrows an untrusted `?pricing=` value, or undefined for no filter. */
+export function toPricingFilter(value: string | undefined): PricingFilter | undefined {
+  return PRICING_FILTERS.some((f) => f.value === value)
+    ? (value as PricingFilter)
+    : undefined;
+}
+
+/** The `pricing_tier` values a filter matches. */
+export function tiersFor(filter: PricingFilter): readonly string[] {
+  return PRICING_FILTERS.find((f) => f.value === filter)!.tiers;
 }
 
 /**

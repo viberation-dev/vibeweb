@@ -40,8 +40,12 @@ export const LEARN_TYPES = [
 export const LEARN_TYPE_VALUES: ContentType[] = LEARN_TYPES.map((t) => t.value);
 
 /** Narrows an untrusted `?type=` value to a listable type, or undefined. */
-export function toContentType(value: string | undefined): ContentType | undefined {
-  return LEARN_TYPES.some((t) => t.value === value) ? (value as ContentType) : undefined;
+export function toContentType(
+  value: string | undefined,
+): ContentType | undefined {
+  return LEARN_TYPES.some((t) => t.value === value)
+    ? (value as ContentType)
+    : undefined;
 }
 
 /** Singular label for one content type — card eyebrows, detail badges. */
@@ -82,15 +86,21 @@ export function learnHref(params: {
  * — "git status what is actually changed right now git diff what changed…".
  * One line of a cheatsheet still reads as a sentence.
  */
-export function contentPreview(type: ContentType, body: string | null): string | null {
+export function contentPreview(
+  type: ContentType,
+  body: string | null,
+): string | null {
   if (!body) return null;
 
   const trimmed = body.trim();
-  const source = type === "cheatsheet" ? trimmed.split("\n")[0] : trimmed.split("\n\n")[0];
+  const source =
+    type === "cheatsheet" ? trimmed.split("\n")[0] : trimmed.split("\n\n")[0];
   const collapsed = source.replace(/\s+/g, " ").trim();
 
   if (!collapsed) return null;
-  return collapsed.length > 160 ? `${collapsed.slice(0, 157).trimEnd()}…` : collapsed;
+  return collapsed.length > 160
+    ? `${collapsed.slice(0, 157).trimEnd()}…`
+    : collapsed;
 }
 
 /**
@@ -102,11 +112,17 @@ export function contentPreview(type: ContentType, body: string | null): string |
  */
 export const LEARN_SORTS = [
   { value: "latest", label: "Latest", column: "created_at", ascending: false },
+  {
+    value: "popular",
+    label: "Most read",
+    column: "view_count",
+    ascending: false,
+  },
   { value: "title", label: "A–Z", column: "title", ascending: true },
 ] as const satisfies ReadonlyArray<{
   value: string;
   label: string;
-  column: "created_at" | "title";
+  column: "created_at" | "title" | "view_count";
   ascending: boolean;
 }>;
 
@@ -117,7 +133,9 @@ export const DEFAULT_LEARN_SORT: LearnSort = "latest";
 
 /** Narrows an untrusted `?sort=` value to a real option, or undefined. */
 export function toLearnSort(value: string | undefined): LearnSort | undefined {
-  return LEARN_SORTS.some((s) => s.value === value) ? (value as LearnSort) : undefined;
+  return LEARN_SORTS.some((s) => s.value === value)
+    ? (value as LearnSort)
+    : undefined;
 }
 
 export function learnSortOrder(sort: LearnSort) {

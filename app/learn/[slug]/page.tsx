@@ -8,7 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { contentTypeLabel, learnHref } from "@/lib/learn";
 import { isBookmarked } from "@/lib/queries/bookmarks";
-import { getContentBySlug, getContentTags } from "@/lib/queries/content";
+import {
+  getContentBySlug,
+  getContentTags,
+  incrementContentViews,
+} from "@/lib/queries/content";
 import { recordVisit } from "@/lib/queries/history";
 import { cn } from "@/lib/utils";
 
@@ -58,23 +62,41 @@ export default async function ContentPage({ params }: Props) {
   const [tags, bookmarked] = await Promise.all([
     getContentTags(supabase, item.id),
     auth.user
-      ? isBookmarked(supabase, auth.user.id, { targetType: "content", targetId: item.id })
+      ? isBookmarked(supabase, auth.user.id, {
+          targetType: "content",
+          targetId: item.id,
+        })
       : Promise.resolve(false),
   ]);
 
   /*
-   * after() runs once the response has been sent, so the history write never
-   * adds latency to the page the reader is waiting on (the pattern the tool
-   * detail view counter established).
+   * after() runs once the response has been sent, so neither write adds
+   * latency to the page the reader is waiting on, and a slow or failed one
+   * cannot break the render (the pattern the tool detail view counter
+   * established).
+   *
+   * The counter runs for everyone; the history row only for a signed-in
+   * reader. Popularity is a fact about the article, history is a fact about
+   * the person — gating the counter on a session would have made "Top" mean
+   * "most read by people who happened to be logged in".
    */
-  if (auth.user) {
-    const userId = auth.user.id;
-    after(() => recordVisit(supabase, userId, { targetType: "content", targetId: item.id }));
-  }
+  const userId = auth.user?.id;
+  after(async () => {
+    await incrementContentViews(supabase, item.slug);
+    if (userId) {
+      await recordVisit(supabase, userId, {
+        targetType: "content",
+        targetId: item.id,
+      });
+    }
+  });
 
   return (
     <main className="mx-auto w-full max-w-3xl p-6">
-      <Link href="/learn" className="text-sm text-muted-foreground hover:underline">
+      <Link
+        href="/learn"
+        className="text-sm text-muted-foreground hover:underline"
+      >
         ← All of Learn
       </Link>
 
@@ -88,7 +110,9 @@ export default async function ContentPage({ params }: Props) {
           </Link>
         ) : null}
         {/* Only role_guide rows carry an audience; it is null on everything else. */}
-        {item.audience ? <Badge variant="outline">{item.audience}</Badge> : null}
+        {item.audience ? (
+          <Badge variant="outline">{item.audience}</Badge>
+        ) : null}
       </div>
 
       <h1 className="mt-3 font-heading text-3xl font-semibold">{item.title}</h1>
@@ -107,7 +131,9 @@ export default async function ContentPage({ params }: Props) {
         <div
           className={cn(
             "mt-6 whitespace-pre-wrap",
-            item.type === "cheatsheet" ? "font-mono text-sm leading-6" : "leading-relaxed",
+            item.type === "cheatsheet"
+              ? "font-mono text-sm leading-6"
+              : "leading-relaxed",
           )}
         >
           {item.body}

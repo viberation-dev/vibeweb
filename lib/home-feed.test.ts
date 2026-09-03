@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { greetingFor, progressLabel, readingMinutes, toFeedTab } from "./home-feed.ts";
+import {
+  feedQueryFor,
+  greetingFor,
+  progressLabel,
+  readingMinutes,
+  toFeedTab,
+} from "./home-feed.ts";
 
 test("the greeting turns over at noon and six", () => {
   assert.equal(greetingFor(0), "Good morning");
@@ -52,8 +58,33 @@ test("the feed falls back to For you rather than erroring", () => {
   assert.equal(toFeedTab("nonsense"), "for-you");
 });
 
-test("Top is not selectable while nothing ranks content", () => {
-  // Rendered as a dimmed tab; asking for it must not silently reorder the
-  // feed under a label the data cannot back.
-  assert.equal(toFeedTab("top"), "for-you");
+test("Top became selectable once content had a view counter", () => {
+  // Dimmed until VIB-86 added content.view_count; before that, ordering by
+  // anything would have been a made-up ranking.
+  assert.equal(toFeedTab("top"), "top");
+});
+
+test("each tab asks for what its label promises", () => {
+  // For you is the reader's tier, newest first.
+  assert.deepEqual(feedQueryFor("for-you", "beginner"), {
+    roleLevel: "beginner",
+    sort: "latest",
+  });
+  // Latest drops the tier — that is the only thing separating it from For you.
+  assert.deepEqual(feedQueryFor("latest", "beginner"), {
+    roleLevel: undefined,
+    sort: "latest",
+  });
+  // Top drops the tier too and orders by reads, or it would be "top among
+  // things written for your level", which is not what the label says.
+  assert.deepEqual(feedQueryFor("top", "beginner"), {
+    roleLevel: undefined,
+    sort: "popular",
+  });
+});
+
+test("a signed-out reader gets no tier filter on any tab", () => {
+  for (const tab of ["for-you", "latest", "top"] as const) {
+    assert.equal(feedQueryFor(tab, undefined).roleLevel, undefined);
+  }
 });

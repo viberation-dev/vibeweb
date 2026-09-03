@@ -1,6 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { DEFAULT_LEARN_SORT, learnSortOrder, type ContentType, type LearnSort } from "@/lib/learn";
+import {
+  DEFAULT_LEARN_SORT,
+  learnSortOrder,
+  type ContentType,
+  type LearnSort,
+} from "@/lib/learn";
 import { roleLevelFilter, type RoleLevel } from "@/lib/role-level";
 import type { Database, Enums, Tables } from "@/types/supabase";
 
@@ -106,11 +111,19 @@ export async function listContent(
   }
 
   const total = count ?? 0;
-  return { items: data, total, page, pageCount: Math.max(1, Math.ceil(total / pageSize)) };
+  return {
+    items: data,
+    total,
+    page,
+    pageCount: Math.max(1, Math.ceil(total / pageSize)),
+  };
 }
 
 /** Ids of every content row carrying `tagSlug`. Empty array when the tag is unknown. */
-async function contentIdsWithTag(client: Client, tagSlug: string): Promise<string[]> {
+async function contentIdsWithTag(
+  client: Client,
+  tagSlug: string,
+): Promise<string[]> {
   const { data, error } = await client
     .from("content_tags")
     .select("content_id, tags!inner(slug)")
@@ -130,8 +143,15 @@ async function contentIdsWithTag(client: Client, tagSlug: string): Promise<strin
  * boundary (§34). Staff previewing a draft at its own URL is the intended
  * behaviour, exactly as with getWizardBySlug().
  */
-export async function getContentBySlug(client: Client, slug: string): Promise<Content | null> {
-  const { data, error } = await client.from("content").select("*").eq("slug", slug).maybeSingle();
+export async function getContentBySlug(
+  client: Client,
+  slug: string,
+): Promise<Content | null> {
+  const { data, error } = await client
+    .from("content")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
 
   if (error) {
     throw new Error(`getContentBySlug(${slug}): ${error.message}`);
@@ -140,7 +160,10 @@ export async function getContentBySlug(client: Client, slug: string): Promise<Co
 }
 
 /** Tags attached to one content row, alphabetical. */
-export async function getContentTags(client: Client, contentId: string): Promise<Tag[]> {
+export async function getContentTags(
+  client: Client,
+  contentId: string,
+): Promise<Tag[]> {
   const { data, error } = await client
     .from("content_tags")
     .select("tags!inner(id, kind, name, slug)")
@@ -149,7 +172,9 @@ export async function getContentTags(client: Client, contentId: string): Promise
   if (error) {
     throw new Error(`getContentTags(${contentId}): ${error.message}`);
   }
-  return data.map((row) => row.tags).sort((a, b) => a.name.localeCompare(b.name));
+  return data
+    .map((row) => row.tags)
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /**
@@ -160,15 +185,42 @@ export async function getContentTags(client: Client, contentId: string): Promise
  * cares about. Ids that no longer exist are simply absent, which is how a
  * deleted article stops showing up in someone's bookmarks.
  */
-export async function getContentByIds(client: Client, ids: string[]): Promise<Content[]> {
+export async function getContentByIds(
+  client: Client,
+  ids: string[],
+): Promise<Content[]> {
   if (ids.length === 0) {
     return [];
   }
 
-  const { data, error } = await client.from("content").select("*").in("id", ids);
+  const { data, error } = await client
+    .from("content")
+    .select("*")
+    .in("id", ids);
 
   if (error) {
     throw new Error(`getContentByIds: ${error.message}`);
   }
   return data;
+}
+
+/**
+ * Bump an article's view counter (VIB-86).
+ *
+ * Goes through a security-definer function for the same reason tools does:
+ * `content` is staff-write under RLS, so a signed-out reader cannot update
+ * the row. The function is the one narrow hole, and it only ever adds 1 to
+ * view_count on a *published* row.
+ */
+export async function incrementContentViews(
+  client: Client,
+  slug: string,
+): Promise<void> {
+  const { error } = await client.rpc("increment_content_views", {
+    content_slug: slug,
+  });
+
+  if (error) {
+    throw new Error(`incrementContentViews(${slug}): ${error.message}`);
+  }
 }

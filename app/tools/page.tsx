@@ -13,7 +13,12 @@ import { listBookmarks } from "@/lib/queries/bookmarks";
 import { listTags } from "@/lib/queries/tags";
 import { getToolTagsByIds, listTools } from "@/lib/queries/tools";
 import { normaliseQuery } from "@/lib/search-query";
-import { TOOL_CATEGORIES, toToolCategory, toolCategoryLabel } from "@/lib/tool-categories";
+import { toPricingFilter } from "@/lib/tool-facts";
+import {
+  TOOL_CATEGORIES,
+  toToolCategory,
+  toolCategoryLabel,
+} from "@/lib/tool-categories";
 import { toToolSort } from "@/lib/tool-sorts";
 import { toolsHref } from "@/lib/tools-url";
 
@@ -29,6 +34,7 @@ type Props = {
     tag?: string;
     sort?: string;
     q?: string;
+    pricing?: string;
     page?: string;
   }>;
 };
@@ -44,13 +50,14 @@ export default async function ToolsPage({ searchParams }: Props) {
   // Shares the site-wide trim-and-cap so a pasted essay cannot become
   // database work here either.
   const q = normaliseQuery(params.q) || undefined;
+  const pricing = toPricingFilter(params.pricing);
   const page = toPageNumber(params.page);
 
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
 
   const [{ tools, total, pageCount }, tags, bookmarks] = await Promise.all([
-    listTools(supabase, { category, tag, sort, q, page }),
+    listTools(supabase, { category, tag, sort, q, pricing, page }),
     listTags(supabase),
     // Signed-out visitors still see Save buttons; pressing one sends them to
     // sign in. Only which ones read as saved needs a user.
@@ -63,9 +70,11 @@ export default async function ToolsPage({ searchParams }: Props) {
     tools.map((tool) => tool.id),
   );
 
-  const bookmarkedIds = new Set(bookmarks.map((bookmark) => bookmark.target_id));
+  const bookmarkedIds = new Set(
+    bookmarks.map((bookmark) => bookmark.target_id),
+  );
   // Come back to this exact filtered page after a signed-out visitor logs in.
-  const returnTo = toolsHref({ category, tag, sort, q, page });
+  const returnTo = toolsHref({ category, tag, sort, q, pricing, page });
 
   return (
     <main className="mx-auto w-full max-w-6xl p-6">
@@ -85,7 +94,9 @@ export default async function ToolsPage({ searchParams }: Props) {
           */}
           <p className="text-muted-foreground mt-1 text-sm">
             {total} {total === 1 ? "tool" : "tools"}
-            {category || tag || q ? "" : ` across ${TOOL_CATEGORIES.length} categories`}
+            {category || tag || q || pricing
+              ? ""
+              : ` across ${TOOL_CATEGORIES.length} categories`}
           </p>
         </div>
 
@@ -94,12 +105,20 @@ export default async function ToolsPage({ searchParams }: Props) {
           form so it needs no JavaScript, and the hidden inputs carry the
           active filters through rather than silently clearing them.
         */}
-        <form method="get" action="/tools" role="search" className="w-full sm:w-72">
+        <form
+          method="get"
+          action="/tools"
+          role="search"
+          className="w-full sm:w-72"
+        >
           <label htmlFor="filter-tools" className="sr-only">
             Filter within tools
           </label>
           <div className="focus-within:border-ring flex items-center gap-2 rounded-md border px-3 py-1.5">
-            <IconSearch aria-hidden className="text-muted-foreground size-4 shrink-0" />
+            <IconSearch
+              aria-hidden
+              className="text-muted-foreground size-4 shrink-0"
+            />
             <input
               id="filter-tools"
               type="search"
@@ -109,14 +128,26 @@ export default async function ToolsPage({ searchParams }: Props) {
               className="placeholder:text-muted-foreground w-full bg-transparent text-sm outline-none"
             />
           </div>
-          {category ? <input type="hidden" name="category" value={category} /> : null}
+          {category ? (
+            <input type="hidden" name="category" value={category} />
+          ) : null}
           {tag ? <input type="hidden" name="tag" value={tag} /> : null}
           {sort ? <input type="hidden" name="sort" value={sort} /> : null}
+          {pricing ? (
+            <input type="hidden" name="pricing" value={pricing} />
+          ) : null}
         </form>
       </div>
 
       <div className="mt-6">
-        <DirectoryFilters category={category} tag={tag} sort={sort} q={q} tags={tags} />
+        <DirectoryFilters
+          category={category}
+          tag={tag}
+          sort={sort}
+          q={q}
+          pricing={pricing}
+          tags={tags}
+        />
       </div>
 
       {tools.length ? (
@@ -127,11 +158,18 @@ export default async function ToolsPage({ searchParams }: Props) {
                 <ResourceCard
                   href={`/tools/${tool.slug}`}
                   title={tool.name}
-                  icon={<CategoryIcon category={tool.category} className="text-primary size-4" />}
+                  icon={
+                    <CategoryIcon
+                      category={tool.category}
+                      className="text-primary size-4"
+                    />
+                  }
                   description={tool.tagline}
                   badges={[
                     toolCategoryLabel(tool.category),
-                    ...(toolTags.get(tool.id) ?? []).slice(0, 1).map((t) => `#${t.slug}`),
+                    ...(toolTags.get(tool.id) ?? [])
+                      .slice(0, 1)
+                      .map((t) => `#${t.slug}`),
                   ]}
                   action={
                     <>
@@ -151,7 +189,10 @@ export default async function ToolsPage({ searchParams }: Props) {
                         href={`/go/${tool.slug}`}
                         rel="sponsored noopener"
                         target="_blank"
-                        className={buttonVariants({ variant: "outbound", size: "sm" })}
+                        className={buttonVariants({
+                          variant: "outbound",
+                          size: "sm",
+                        })}
                       >
                         Visit ↗
                       </a>
@@ -166,7 +207,9 @@ export default async function ToolsPage({ searchParams }: Props) {
             pageCount={pageCount}
             total={total}
             itemLabel="tools"
-            href={(next) => toolsHref({ category, tag, sort, q, page: next })}
+            href={(next) =>
+              toolsHref({ category, tag, sort, q, pricing, page: next })
+            }
           />
         </>
       ) : (

@@ -1,7 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { tiersFor, type PricingFilter } from "@/lib/tool-facts";
 import type { ToolCategory } from "@/lib/tool-categories";
-import { DEFAULT_TOOL_SORT, toolSortOrder, type ToolSort } from "@/lib/tool-sorts";
+import {
+  DEFAULT_TOOL_SORT,
+  toolSortOrder,
+  type ToolSort,
+} from "@/lib/tool-sorts";
 import type { Database, Tables } from "@/types/supabase";
 
 export type Tool = Tables<"tools">;
@@ -16,6 +21,8 @@ export type ToolFilters = {
   sort?: ToolSort;
   /** Free text, matched against the tools' own search_vector. */
   q?: string;
+  /** `free` or `paid` — see lib/tool-facts.ts for what each matches. */
+  pricing?: PricingFilter;
   /** 1-based. Values past the end return an empty page, not an error. */
   page?: number;
   pageSize?: number;
@@ -38,7 +45,10 @@ export type ToolPage = {
  *
  * RLS on `tools` is public-read (migration 03), so this works signed out.
  */
-export async function listTools(client: Client, filters: ToolFilters = {}): Promise<ToolPage> {
+export async function listTools(
+  client: Client,
+  filters: ToolFilters = {},
+): Promise<ToolPage> {
   const pageSize = filters.pageSize ?? TOOLS_PAGE_SIZE;
   const page = Math.max(1, filters.page ?? 1);
   const from = (page - 1) * pageSize;
@@ -59,6 +69,16 @@ export async function listTools(client: Client, filters: ToolFilters = {}): Prom
 
   if (filters.category) {
     query = query.eq("category", filters.category);
+  }
+
+  if (filters.pricing) {
+    /*
+     * Reads pricing_tier, which is set on every row — not the `free-tier`
+     * tag, which covered 7 of 10 Freemium tools and none of the 10 priced
+     * "Open source" (VIB-88). The tier list is shared with the tool detail
+     * rail so the filter and the fact cannot drift apart.
+     */
+    query = query.in("pricing_tier", [...tiersFor(filters.pricing)]);
   }
 
   if (filters.q) {
@@ -97,11 +117,19 @@ export async function listTools(client: Client, filters: ToolFilters = {}): Prom
   }
 
   const total = count ?? 0;
-  return { tools: data, total, page, pageCount: Math.max(1, Math.ceil(total / pageSize)) };
+  return {
+    tools: data,
+    total,
+    page,
+    pageCount: Math.max(1, Math.ceil(total / pageSize)),
+  };
 }
 
 /** Ids of every tool carrying `tagSlug`. Empty array when the tag is unknown. */
-async function toolIdsWithTag(client: Client, tagSlug: string): Promise<string[]> {
+async function toolIdsWithTag(
+  client: Client,
+  tagSlug: string,
+): Promise<string[]> {
   const { data, error } = await client
     .from("tool_tags")
     .select("tool_id, tags!inner(slug)")
@@ -114,8 +142,15 @@ async function toolIdsWithTag(client: Client, tagSlug: string): Promise<string[]
 }
 
 /** One tool by its URL slug. Null when it does not exist. */
-export async function getToolBySlug(client: Client, slug: string): Promise<Tool | null> {
-  const { data, error } = await client.from("tools").select("*").eq("slug", slug).maybeSingle();
+export async function getToolBySlug(
+  client: Client,
+  slug: string,
+): Promise<Tool | null> {
+  const { data, error } = await client
+    .from("tools")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
 
   if (error) {
     throw new Error(`getToolBySlug(${slug}): ${error.message}`);
@@ -124,7 +159,10 @@ export async function getToolBySlug(client: Client, slug: string): Promise<Tool 
 }
 
 /** Tags attached to one tool, alphabetical. */
-export async function getToolTags(client: Client, toolId: string): Promise<Tag[]> {
+export async function getToolTags(
+  client: Client,
+  toolId: string,
+): Promise<Tag[]> {
   const { data, error } = await client
     .from("tool_tags")
     .select("tags!inner(id, kind, name, slug)")
@@ -133,7 +171,9 @@ export async function getToolTags(client: Client, toolId: string): Promise<Tag[]
   if (error) {
     throw new Error(`getToolTags(${toolId}): ${error.message}`);
   }
-  return data.map((row) => row.tags).sort((a, b) => a.name.localeCompare(b.name));
+  return data
+    .map((row) => row.tags)
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /**
@@ -183,8 +223,13 @@ export async function getToolTagsByIds(
  * Deliberately does not throw: a failed counter must never take down the
  * page the visitor actually asked for.
  */
-export async function incrementToolViews(client: Client, slug: string): Promise<void> {
-  const { error } = await client.rpc("increment_tool_views", { tool_slug: slug });
+export async function incrementToolViews(
+  client: Client,
+  slug: string,
+): Promise<void> {
+  const { error } = await client.rpc("increment_tool_views", {
+    tool_slug: slug,
+  });
 
   if (error) {
     console.error(`incrementToolViews(${slug}): ${error.message}`);
@@ -200,7 +245,10 @@ export async function incrementToolViews(client: Client, slug: string): Promise<
  * exist are simply absent, which is how a deleted tool stops showing up in
  * someone's bookmarks.
  */
-export async function getToolsByIds(client: Client, ids: string[]): Promise<Tool[]> {
+export async function getToolsByIds(
+  client: Client,
+  ids: string[],
+): Promise<Tool[]> {
   if (ids.length === 0) {
     return [];
   }

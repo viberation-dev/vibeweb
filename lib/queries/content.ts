@@ -264,7 +264,14 @@ export async function getContentById(
 /** The editable half of a content row. Counters and search_vector are not in it. */
 export type ContentWrite = Pick<
   TablesInsert<"content">,
-  "type" | "title" | "slug" | "body" | "role_level" | "audience" | "status"
+  | "type"
+  | "title"
+  | "slug"
+  | "body"
+  | "role_level"
+  | "audience"
+  | "pillar"
+  | "status"
 >;
 
 export async function createContent(

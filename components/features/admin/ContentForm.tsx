@@ -7,7 +7,7 @@ import type { ContentFormState } from "@/app/(site)/admin/content/actions";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { contentTypeLabel, CONTENT_TYPES } from "@/lib/learn";
+import { contentTypeLabel, CONTENT_PILLARS, CONTENT_TYPES } from "@/lib/learn";
 import type { Content } from "@/lib/queries/content";
 
 type Props = {
@@ -82,6 +82,26 @@ export function ContentForm({ content, action }: Props) {
             <option value="draft">Draft — staff only</option>
             <option value="published">Published — publicly readable</option>
           </select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="pillar">Pillar</Label>
+          <select
+            id="pillar"
+            name="pillar"
+            defaultValue={content?.pillar ?? ""}
+            className={selectClass}
+          >
+            <option value="">Unfiled</option>
+            {CONTENT_PILLARS.map((pillar) => (
+              <option key={pillar.value} value={pillar.value}>
+                {pillar.label}
+              </option>
+            ))}
+          </select>
+          <p className="text-muted-foreground text-sm">
+            The Learn hub&rsquo;s six sections. Help articles stay unfiled.
+          </p>
         </div>
 
         <div className="space-y-2">

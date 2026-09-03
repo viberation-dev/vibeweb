@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/integrations/supabase/server";
-import { contentTypeLabel } from "@/lib/learn";
+import { contentPillarLabel, contentTypeLabel } from "@/lib/learn";
 import { listAllContent } from "@/lib/queries/content";
 import { requireStaff } from "@/lib/staff";
 
@@ -40,6 +40,7 @@ export default async function AdminContentPage() {
               </Link>
               <p className="text-muted-foreground truncate text-sm">
                 /learn/{item.slug} · {contentTypeLabel(item.type)}
+                {item.pillar ? ` · ${contentPillarLabel(item.pillar)}` : ""}
               </p>
             </div>
             <Badge variant={item.status === "published" ? "secondary" : "outline"}>

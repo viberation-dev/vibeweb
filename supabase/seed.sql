@@ -633,3 +633,26 @@ from wizards w
 join tools t on t.slug in ('nextjs', 'shadcn-ui', 'vercel', 'supabase', 'claude-code')
 where w.slug = 'ship-your-first-web-project'
 on conflict do nothing;
+
+-- Editorial pillars (VIB-90). Applied as an update keyed on slug rather than
+-- inline in the insert above, for the same reason content_tags is: the mapping
+-- is an editorial decision that changes independently of the prose, and it
+-- reads as a list you can check against the Learn hub.
+--
+-- The four help_* rows are deliberately absent. They are product documentation
+-- sharing the content table (§34), not editorial, and belong to no pillar.
+-- Walkthroughs and Founder playbook have nothing yet — the pillars exist ahead
+-- of the writing, not the other way round.
+update content c set pillar = v.pillar::content_pillar
+from (values
+  ('what-vibe-coding-is','fundamentals'),
+  ('git-commands-worth-memorising','fundamentals'),
+  ('course-git-for-beginners','fundamentals'),
+  ('course-fullstack-fundamentals','fundamentals'),
+  ('rls-is-the-boundary','fundamentals'),
+  ('reviewing-code-you-did-not-write','fundamentals'),
+  ('why-ai-forgets-context','context_engineering'),
+  ('prompts-for-better-code','prompt_engineering'),
+  ('choosing-your-first-setup','tool_reviews')
+) as v(slug, pillar)
+where c.slug = v.slug;

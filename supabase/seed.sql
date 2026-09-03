@@ -669,3 +669,59 @@ where c.slug = v.slug;
 -- absent row. Set them in /admin/tools.
 update tools t set best_for = 'beginner'
 where t.slug in ('claude-ai','chatgpt','cursor','vs-code','create-t3-app','zapier');
+
+-- Platform and the remaining audience tiers (VIB-87), reviewed by Ali
+-- 2026-09-04.
+--
+-- Nine rows are deliberately blank: AutoGen, LangChain, the Claude Agent SDK,
+-- Next.js, shadcn/ui, Create T3 App, Agent Skills, Superpowers and the two
+-- model entries. A library runs wherever its runtime does, so "macOS ·
+-- Windows · Linux" on it is true and tells a reader nothing, and a model is
+-- not software you install. An absent row beats a noise row.
+update tools t set platform = v.platform
+from (values
+  ('cursor', array['macos','windows','linux']),
+  ('vs-code', array['macos','windows','linux']),
+  ('aider', array['macos','windows','linux']),
+  ('claude-code', array['macos','windows','linux']),
+  ('continue', array['macos','windows','linux']),
+  ('github-copilot', array['macos','windows','linux']),
+  ('playwright-mcp', array['macos','windows','linux']),
+  ('supabase-mcp-server', array['macos','windows','linux']),
+  ('supabase', array['web']),
+  ('vercel', array['web']),
+  ('resend', array['web']),
+  ('zapier', array['web']),
+  ('n8n', array['web']),
+  -- Cloud plus self-host; two answers, and both are true.
+  ('typesense', array['web','linux']),
+  ('chatgpt', array['web','ios','android']),
+  ('claude-ai', array['web','ios','android']),
+  ('gemini', array['web','ios','android'])
+) as v(slug, platform)
+where t.slug = v.slug;
+
+update tools t set best_for = v.best_for::role_level
+from (values
+  ('claude','beginner'),
+  ('gemini','beginner'),
+  ('github-copilot','beginner'),
+  ('vercel','beginner'),
+  ('claude-code','intermediate'),
+  ('aider','intermediate'),
+  ('continue','intermediate'),
+  ('nextjs','intermediate'),
+  ('shadcn-ui','intermediate'),
+  ('supabase','intermediate'),
+  ('resend','intermediate'),
+  ('n8n','intermediate'),
+  ('langchain','intermediate'),
+  ('agent-skills','intermediate'),
+  ('playwright-mcp','intermediate'),
+  ('supabase-mcp-server','intermediate'),
+  ('autogen','expert'),
+  ('claude-agent-sdk','expert'),
+  ('superpowers','expert'),
+  ('typesense','expert')
+) as v(slug, best_for)
+where t.slug = v.slug;

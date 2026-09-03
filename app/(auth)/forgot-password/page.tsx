@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { forgotPasswordAction } from "@/app/(auth)/actions";
 import { ForgotPasswordForm } from "@/components/features/auth/ForgotPasswordForm";
@@ -26,9 +27,9 @@ export default async function ForgotPasswordPage({
   const errorMessage = error ? ERROR_MESSAGES[error] : undefined;
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Reset your password</CardTitle>
+        <CardTitle className="text-2xl">Reset your password</CardTitle>
         <CardDescription>
           We will email you a link to set a new one.
         </CardDescription>
@@ -41,6 +42,13 @@ export default async function ForgotPasswordPage({
         ) : null}
 
         <ForgotPasswordForm action={forgotPasswordAction} />
+
+        <p className="text-muted-foreground text-center text-sm">
+          Remembered it?{" "}
+          <Link href="/login" className="text-primary hover:underline">
+            Sign in
+          </Link>
+        </p>
       </CardContent>
     </Card>
   );

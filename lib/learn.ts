@@ -161,3 +161,18 @@ export function readingMinutes(body: string | null): number | null {
   const words = body?.trim().split(/\s+/).filter(Boolean).length ?? 0;
   return words ? Math.max(1, Math.round(words / WORDS_PER_MINUTE)) : null;
 }
+
+/**
+ * Every content type, in the editor's display order (VIB-59).
+ *
+ * Separate from LEARN_TYPES because that list is what the *hub* shows and
+ * deliberately omits `role_guide` — the editor has to be able to write one.
+ */
+export const CONTENT_TYPES = [
+  "guide",
+  "article",
+  "cheatsheet",
+  "course_link",
+  "help_article",
+  "role_guide",
+] as const satisfies ReadonlyArray<ContentType>;

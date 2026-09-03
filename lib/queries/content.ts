@@ -7,7 +7,7 @@ import {
   type LearnSort,
 } from "@/lib/learn";
 import { roleLevelFilter, type RoleLevel } from "@/lib/role-level";
-import type { Database, Enums, Tables } from "@/types/supabase";
+import type { Database, Enums, Tables, TablesInsert } from "@/types/supabase";
 
 export type Content = Tables<"content">;
 export type Tag = Tables<"tags">;
@@ -223,4 +223,83 @@ export async function incrementContentViews(
   if (error) {
     throw new Error(`incrementContentViews(${slug}): ${error.message}`);
   }
+}
+
+/**
+ * Every content row, drafts included, newest first — the staff editor's list.
+ *
+ * Deliberately not `listContent({ status })`: that function is the visitor's
+ * index and its published filter is part of what it means. Staff see drafts
+ * here because RLS lets them (migration 14), not because this asks.
+ */
+export async function listAllContent(client: Client): Promise<Content[]> {
+  const { data, error } = await client
+    .from("content")
+    .select("*")
+    .order("updated_at", { ascending: false });
+
+  if (error) {
+    throw new Error(`listAllContent: ${error.message}`);
+  }
+  return data;
+}
+
+/** One content row by id, for the editor. Null when it does not exist. */
+export async function getContentById(
+  client: Client,
+  id: string,
+): Promise<Content | null> {
+  const { data, error } = await client
+    .from("content")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`getContentById(${id}): ${error.message}`);
+  }
+  return data;
+}
+
+/** The editable half of a content row. Counters and search_vector are not in it. */
+export type ContentWrite = Pick<
+  TablesInsert<"content">,
+  "type" | "title" | "slug" | "body" | "role_level" | "audience" | "status"
+>;
+
+export async function createContent(
+  client: Client,
+  values: ContentWrite,
+): Promise<Content> {
+  const { data, error } = await client
+    .from("content")
+    .insert(values)
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new Error(`createContent(${values.slug}): ${error.message}`);
+  }
+  return data;
+}
+
+export async function updateContent(
+  client: Client,
+  id: string,
+  values: ContentWrite,
+): Promise<Content> {
+  const { data, error } = await client
+    .from("content")
+    // No `updated_at` trigger on this table (migration 03 only defaults it),
+    // so an edit would otherwise keep its original timestamp and the editor's
+    // most-recent-first list would be a lie.
+    .update({ ...values, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new Error(`updateContent(${id}): ${error.message}`);
+  }
+  return data;
 }

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { signInAction } from "@/app/(auth)/actions";
+import { AuthDivider } from "@/components/features/auth/AuthDivider";
 import { AuthForm } from "@/components/features/auth/AuthForm";
 import { OAuthButtons } from "@/components/features/auth/OAuthButtons";
 import {
@@ -39,10 +41,10 @@ export default async function LoginPage({
   const noticeMessage = notice ? NOTICE_MESSAGES[notice] : undefined;
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Sign in</CardTitle>
-        <CardDescription>Welcome back to Viberation.</CardDescription>
+        <CardTitle className="text-2xl">Welcome back</CardTitle>
+        <CardDescription>Sign in to sync your library.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {errorMessage ? (
@@ -57,15 +59,19 @@ export default async function LoginPage({
           </p>
         ) : null}
 
+        {/* Email form first, providers second — see the note on /signup. */}
+        <AuthForm mode="signin" action={signInAction} redirectTo={safeTarget} />
+
+        <AuthDivider />
+
         <OAuthButtons redirectTo={safeTarget} />
 
-        <div className="flex items-center gap-3">
-          <span className="bg-border h-px flex-1" />
-          <span className="text-muted-foreground text-xs">or</span>
-          <span className="bg-border h-px flex-1" />
-        </div>
-
-        <AuthForm mode="signin" action={signInAction} redirectTo={safeTarget} />
+        <p className="text-muted-foreground text-center text-sm">
+          New here?{" "}
+          <Link href="/signup" className="text-primary hover:underline">
+            Create account
+          </Link>
+        </p>
       </CardContent>
     </Card>
   );

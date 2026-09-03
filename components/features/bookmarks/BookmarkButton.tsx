@@ -1,6 +1,6 @@
 import { IconBookmark } from "@tabler/icons-react";
 
-import { toggleBookmarkAction } from "@/app/account/bookmarks/actions";
+import { toggleBookmarkAction } from "@/app/(site)/account/bookmarks/actions";
 import { Button } from "@/components/ui/button";
 import type { BookmarkTarget } from "@/lib/queries/bookmarks";
 

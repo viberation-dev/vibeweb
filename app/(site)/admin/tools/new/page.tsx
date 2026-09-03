@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { saveToolAction } from "@/app/admin/tools/actions";
+import { saveToolAction } from "@/app/(site)/admin/tools/actions";
 import { ToolForm } from "@/components/features/admin/ToolForm";
 import { requireStaff } from "@/lib/staff";
 

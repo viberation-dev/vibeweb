@@ -32,9 +32,9 @@ export default async function ResetPasswordPage() {
   }
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Set a new password</CardTitle>
+        <CardTitle className="text-2xl">Set a new password</CardTitle>
         <CardDescription>Signing in elsewhere will need this new password.</CardDescription>
       </CardHeader>
       <CardContent>

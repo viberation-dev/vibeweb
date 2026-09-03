@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { updateProfileAction } from "@/app/account/settings/actions";
+import { updateProfileAction } from "@/app/(site)/account/settings/actions";
 import { ThemeToggle } from "@/components/features/nav/ThemeToggle";
 import { ProfileForm } from "@/components/features/profile/ProfileForm";
 import {

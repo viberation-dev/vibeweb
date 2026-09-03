@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { saveContentAction } from "@/app/admin/content/actions";
+import { saveContentAction } from "@/app/(site)/admin/content/actions";
 import { ContentForm } from "@/components/features/admin/ContentForm";
 import { requireStaff } from "@/lib/staff";
 

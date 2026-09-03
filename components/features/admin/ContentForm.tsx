@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 
-import type { ContentFormState } from "@/app/admin/content/actions";
+import type { ContentFormState } from "@/app/(site)/admin/content/actions";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

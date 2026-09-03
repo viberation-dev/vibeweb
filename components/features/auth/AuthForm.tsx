@@ -18,17 +18,11 @@ const COPY = {
   signin: {
     submit: "Sign in",
     pending: "Signing in…",
-    switchText: "Need an account?",
-    switchHref: "/signup",
-    switchLabel: "Create one",
     autoComplete: "current-password",
   },
   signup: {
     submit: "Create account",
     pending: "Creating account…",
-    switchText: "Already have an account?",
-    switchHref: "/login",
-    switchLabel: "Sign in",
     autoComplete: "new-password",
   },
 } as const;
@@ -58,7 +52,18 @@ export function AuthForm({ mode, action, redirectTo }: Props) {
         />
         {mode === "signup" ? (
           <p className="text-muted-foreground text-sm">At least 8 characters.</p>
-        ) : null}
+        ) : (
+          /* Sits with the password field it belongs to, right-aligned, as in
+             the mockup — not stranded under the submit button. */
+          <p className="text-right">
+            <Link
+              href="/forgot-password"
+              className="text-primary text-sm hover:underline"
+            >
+              Forgot?
+            </Link>
+          </p>
+        )}
       </div>
 
       {state.error ? (
@@ -73,24 +78,9 @@ export function AuthForm({ mode, action, redirectTo }: Props) {
         </p>
       ) : null}
 
-      <Button type="submit" className="w-full" disabled={pending}>
+      <Button type="submit" className="w-full" size="lg" disabled={pending}>
         {pending ? copy.pending : copy.submit}
       </Button>
-
-      {mode === "signin" ? (
-        <p className="text-center text-sm">
-          <Link href="/forgot-password" className="underline underline-offset-4">
-            Forgot your password?
-          </Link>
-        </p>
-      ) : null}
-
-      <p className="text-muted-foreground text-center text-sm">
-        {copy.switchText}{" "}
-        <Link href={copy.switchHref} className="underline underline-offset-4">
-          {copy.switchLabel}
-        </Link>
-      </p>
     </form>
   );
 }

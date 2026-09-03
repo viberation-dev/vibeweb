@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 
-import { subscribeAction, type NewsletterFormState } from "@/app/actions";
+import { subscribeAction, type NewsletterFormState } from "@/app/(site)/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

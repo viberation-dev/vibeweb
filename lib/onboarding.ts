@@ -14,10 +14,16 @@ import type { RoleLevel } from "@/lib/role-level";
  */
 
 export const ONBOARDING_STEPS = [
-  { step: 1, title: "Where are you starting from?" },
-  { step: 2, title: "What are you building?" },
-  { step: 3, title: "Here is your Viberation" },
+  { step: 1, label: "Level", title: "First — how much have you built?" },
+  { step: 2, label: "Focus", title: "What are you building?" },
+  { step: 3, label: "The reveal", title: "Here is your Viberation" },
 ] as const;
+
+/** "STEP 2 OF 3 · FOCUS" — the eyebrow above each card in the mockup. */
+export function stepEyebrow(step: OnboardingStep): string {
+  const { label } = ONBOARDING_STEPS.find((s) => s.step === step)!;
+  return `Step ${step} of ${ONBOARDING_STEPS.length} · ${label}`;
+}
 
 export type OnboardingStep = (typeof ONBOARDING_STEPS)[number]["step"];
 
@@ -72,3 +78,18 @@ export function revealSummary(level: RoleLevel, focusLabel?: string): string {
     ? `${levelPhrase}, and you are focused on ${focusLabel.toLowerCase()}.`
     : `${levelPhrase}.`;
 }
+
+/**
+ * The reveal's headline, personalised when there is a name to use.
+ *
+ * Mockup: "Here's your Viberation, Ali." Falls back to the plain version
+ * rather than "Here's your Viberation, ." — a username is optional on
+ * `profiles`, and most people arrive here seconds after signup without one.
+ */
+export function revealHeadline(name: string | null | undefined): string {
+  const trimmed = name?.trim();
+  return trimmed ? `Here is your Viberation, ${trimmed}.` : "Here is your Viberation.";
+}
+
+/** The collection every reveal offers. Seeded by VIB-41. */
+export const STARTER_SET_SLUG = "starter-set";

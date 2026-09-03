@@ -419,6 +419,7 @@ export type Database = {
       }
       tools: {
         Row: {
+          best_for: Database["public"]["Enums"]["role_level"] | null
           bookmark_count: number
           category: Database["public"]["Enums"]["tool_category"]
           comparison_ready: boolean
@@ -428,6 +429,7 @@ export type Database = {
           is_affiliate: boolean
           name: string
           outbound_url: string
+          platform: string[]
           pricing_tier: string | null
           search_vector: unknown
           slug: string
@@ -436,6 +438,7 @@ export type Database = {
           view_count: number
         }
         Insert: {
+          best_for?: Database["public"]["Enums"]["role_level"] | null
           bookmark_count?: number
           category: Database["public"]["Enums"]["tool_category"]
           comparison_ready?: boolean
@@ -445,6 +448,7 @@ export type Database = {
           is_affiliate?: boolean
           name: string
           outbound_url?: string
+          platform?: string[]
           pricing_tier?: string | null
           search_vector?: unknown
           slug: string
@@ -453,6 +457,7 @@ export type Database = {
           view_count?: number
         }
         Update: {
+          best_for?: Database["public"]["Enums"]["role_level"] | null
           bookmark_count?: number
           category?: Database["public"]["Enums"]["tool_category"]
           comparison_ready?: boolean
@@ -462,6 +467,7 @@ export type Database = {
           is_affiliate?: boolean
           name?: string
           outbound_url?: string
+          platform?: string[]
           pricing_tier?: string | null
           search_vector?: unknown
           slug?: string

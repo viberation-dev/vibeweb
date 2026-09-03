@@ -314,6 +314,8 @@ export type ToolWrite = Pick<
   | "tagline"
   | "description"
   | "pricing_tier"
+  | "platform"
+  | "best_for"
   | "outbound_url"
   | "is_affiliate"
 >;

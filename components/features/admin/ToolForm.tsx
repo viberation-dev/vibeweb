@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label";
 import type { Tool } from "@/lib/queries/tools";
 import { TOOL_CATEGORIES } from "@/lib/tool-categories";
 import { PRICING_TIERS } from "@/lib/tool-facts";
+import { TOOL_PLATFORMS } from "@/lib/tool-platforms";
+import { ROLE_LEVELS } from "@/lib/role-level";
 
 type Props = {
   /** Null when creating. Its presence is what makes this an edit form. */
@@ -78,6 +80,48 @@ export function ToolForm({ tool, action }: Props) {
           </p>
         </div>
       </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="best_for">Best for</Label>
+        <select
+          id="best_for"
+          name="best_for"
+          defaultValue={tool?.best_for ?? ""}
+          className={selectClass}
+        >
+          <option value="">Not stated</option>
+          {ROLE_LEVELS.map((level) => (
+            <option key={level.value} value={level.value}>
+              {level.label}
+            </option>
+          ))}
+        </select>
+        <p className="text-muted-foreground text-sm">
+          The audience row on the tool page. Leave unstated rather than guessing.
+        </p>
+      </div>
+
+      <fieldset className="space-y-2">
+        <legend className="text-sm font-medium">Platform</legend>
+        <div className="flex flex-wrap gap-x-6 gap-y-2">
+          {TOOL_PLATFORMS.map((platform) => (
+            <label key={platform.value} className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                name="platform"
+                value={platform.value}
+                defaultChecked={tool?.platform?.includes(platform.value) ?? false}
+                className="border-input size-4 rounded border"
+              />
+              {platform.label}
+            </label>
+          ))}
+        </div>
+        <p className="text-muted-foreground text-sm">
+          Where it runs. Tick nothing if you are not sure — an empty row is better
+          than a wrong one.
+        </p>
+      </fieldset>
 
       <div className="space-y-2">
         <Label htmlFor="tagline">Tagline</Label>

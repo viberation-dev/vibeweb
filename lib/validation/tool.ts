@@ -4,6 +4,7 @@ import { z } from "zod";
 // `node --test` file, which resolves no "@/" alias.
 import { safeOutboundUrl } from "../outbound.ts";
 import { PRICING_TIERS } from "../tool-facts.ts";
+import { TOOL_PLATFORM_VALUES } from "../tool-platforms.ts";
 
 /**
  * Server-side validation for the tools editor (VIB-59).
@@ -62,6 +63,19 @@ export const toolEditorSchema = z.object({
     .refine((value) => value === "" || safeOutboundUrl(value) !== null, {
       message: "Outbound links must be a full http:// or https:// URL.",
     }),
+  /*
+   * Checkboxes, so FormData carries one entry per ticked platform and none at
+   * all when there are none. Unknown values are dropped rather than rejected:
+   * the CHECK constraint would refuse the write anyway, and a form error
+   * naming a value the reader never typed helps nobody.
+   */
+  platform: z
+    .array(z.string())
+    .transform((values) => values.filter((v) => TOOL_PLATFORM_VALUES.includes(v))),
+  /** Same three tiers as a reader's own level — see the migration. */
+  best_for: z
+    .union([z.enum(["beginner", "intermediate", "expert"]), z.literal("")])
+    .transform((value) => (value === "" ? null : value)),
   /** Unchecked checkboxes are absent from FormData, hence the null case. */
   is_affiliate: z
     .union([z.literal("on"), z.literal("")])

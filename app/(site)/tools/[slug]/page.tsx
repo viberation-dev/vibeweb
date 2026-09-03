@@ -21,6 +21,8 @@ import {
   type Tool,
 } from "@/lib/queries/tools";
 import { toolCategoryLabel } from "@/lib/tool-categories";
+import { platformSummary } from "@/lib/tool-platforms";
+import { ROLE_LEVELS } from "@/lib/role-level";
 import { hasFreeTier, isOpenSource } from "@/lib/tool-facts";
 import { toolsHref } from "@/lib/tools-url";
 
@@ -78,6 +80,18 @@ export default async function ToolPage({ params }: Props) {
   ]);
 
   const related = sameCategory.filter((other) => other.id !== tool.id).slice(0, RELATED_LIMIT);
+
+  // Both are optional per row; empty means unstated, and the row is dropped.
+  const platforms = platformSummary(tool.platform);
+  /*
+   * The label alone, not "Beginner and up". The mockup's example copy reads
+   * "Beginners → intermediate", which a single enum value cannot express —
+   * printing a range from one value would be asserting something nobody
+   * stated. One tier is what is stored, so one tier is what is shown.
+   */
+  const bestFor = tool.best_for
+    ? ROLE_LEVELS.find((l) => l.value === tool.best_for)!.label
+    : "";
   const tagSlugs = new Set(tags.map((tag) => tag.slug));
   const outbound = safeOutboundUrl(tool.outbound_url);
 
@@ -134,11 +148,18 @@ export default async function ToolPage({ params }: Props) {
             <Link href={toolsHref({ category: tool.category })}>
               <Badge variant="secondary">{toolCategoryLabel(tool.category)}</Badge>
             </Link>
-            {tags.map((tag) => (
-              <Link key={tag.id} href={`/tags/${tag.slug}`}>
-                <Badge variant="outline">#{tag.slug}</Badge>
-              </Link>
-            ))}
+            {/*
+              Facets only. Audience is the "Best for" row below and pricing is
+              the Pricing row — a tag repeating either would be the same fact
+              in two places, which is the shape of the VIB-81 free-tier bug.
+            */}
+            {tags
+              .filter((tag) => tag.kind === "facet")
+              .map((tag) => (
+                <Link key={tag.id} href={`/tags/${tag.slug}`}>
+                  <Badge variant="outline">#{tag.slug}</Badge>
+                </Link>
+              ))}
           </div>
         </div>
       </div>
@@ -154,14 +175,17 @@ export default async function ToolPage({ params }: Props) {
 
           <h2 className="font-heading mt-8 text-lg font-medium">Key info</h2>
           {/*
-            Pricing and Category only. The mockup also lists Platform and
-            "Best for", and `tools` has no column for either — inventing
-            "macOS · Windows · Linux" from nothing would be worse than
-            leaving the row out. Tracked separately.
+            All four rows from mockup screen 4 now have columns behind them
+            (VIB-87). Platform and "Best for" are still per-row optional, and
+            an unstated one is omitted rather than rendered as "—": a directory
+            that admits it does not know is worth more than one that fills the
+            gap with a guess.
           */}
           <dl className="mt-3">
             {tool.pricing_tier ? <Fact label="Pricing" value={tool.pricing_tier} /> : null}
+            {platforms ? <Fact label="Platform" value={platforms} /> : null}
             <Fact label="Category" value={toolCategoryLabel(tool.category)} />
+            {bestFor ? <Fact label="Best for" value={bestFor} /> : null}
           </dl>
 
           {related.length ? (

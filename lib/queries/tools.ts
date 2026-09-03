@@ -7,7 +7,7 @@ import {
   toolSortOrder,
   type ToolSort,
 } from "@/lib/tool-sorts";
-import type { Database, Tables } from "@/types/supabase";
+import type { Database, Tables, TablesInsert } from "@/types/supabase";
 
 export type Tool = Tables<"tools">;
 export type Tag = Tables<"tags">;
@@ -257,6 +257,99 @@ export async function getToolsByIds(
 
   if (error) {
     throw new Error(`getToolsByIds: ${error.message}`);
+  }
+  return data;
+}
+
+/**
+ * Every tool, most recently edited first — the staff editor's list.
+ *
+ * Separate from listTools() rather than another filter on it: that function
+ * is the public directory, paginated and sorted for browsing, and the editor
+ * wants the whole table in the order it was last touched.
+ */
+export async function listAllTools(client: Client): Promise<Tool[]> {
+  const { data, error } = await client
+    .from("tools")
+    .select("*")
+    .order("updated_at", { ascending: false });
+
+  if (error) {
+    throw new Error(`listAllTools: ${error.message}`);
+  }
+  return data;
+}
+
+/** One tool by id, for the editor. Null when it does not exist. */
+export async function getToolById(
+  client: Client,
+  id: string,
+): Promise<Tool | null> {
+  const { data, error } = await client
+    .from("tools")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`getToolById(${id}): ${error.message}`);
+  }
+  return data;
+}
+
+/**
+ * The editable half of a tool row.
+ *
+ * `view_count` and `bookmark_count` are absent on purpose — they are owned by
+ * increment_tool_views() and the sync_tool_bookmark_count() trigger, and a
+ * hand-edited value would be overwritten by the next visitor anyway.
+ * `search_vector` is generated, and `comparison_ready` is a v2.0 flag nothing
+ * reads yet.
+ */
+export type ToolWrite = Pick<
+  TablesInsert<"tools">,
+  | "name"
+  | "slug"
+  | "category"
+  | "tagline"
+  | "description"
+  | "pricing_tier"
+  | "outbound_url"
+  | "is_affiliate"
+>;
+
+export async function createTool(
+  client: Client,
+  values: ToolWrite,
+): Promise<Tool> {
+  const { data, error } = await client
+    .from("tools")
+    .insert(values)
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new Error(`createTool(${values.slug}): ${error.message}`);
+  }
+  return data;
+}
+
+export async function updateTool(
+  client: Client,
+  id: string,
+  values: ToolWrite,
+): Promise<Tool> {
+  const { data, error } = await client
+    .from("tools")
+    // Same as updateContent: no `updated_at` trigger on this table, so an
+    // edit would otherwise keep its original timestamp.
+    .update({ ...values, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new Error(`updateTool(${id}): ${error.message}`);
   }
   return data;
 }

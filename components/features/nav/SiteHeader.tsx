@@ -3,7 +3,6 @@
 import {
   IconBell,
   IconBookmark,
-  IconBolt,
   IconChevronDown,
   IconSearch,
 } from "@tabler/icons-react";
@@ -11,6 +10,7 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 
 import { SignOutButton } from "@/components/features/auth/SignOutButton";
+import { Logo } from "@/components/features/nav/Logo";
 import { ThemeToggle } from "@/components/features/nav/ThemeToggle";
 import { TOOL_CATEGORIES } from "@/lib/tool-categories";
 import { toolsHref } from "@/lib/tools-url";
@@ -48,9 +48,8 @@ export function SiteHeader({ initials }: { initials: string }) {
 
   return (
     <div className="flex items-center gap-4 border-b px-6 py-3">
-      <Link href="/" className="flex items-center gap-1.5 font-semibold">
-        <IconBolt aria-hidden className="size-4" />
-        Viberation
+      <Link href="/" aria-label="Viberation — home" className="shrink-0">
+        <Logo className="h-5" />
       </Link>
 
       {/*

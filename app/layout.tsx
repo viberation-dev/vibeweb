@@ -5,6 +5,7 @@ import { Suspense } from "react";
 
 import { AuthStatus } from "@/components/features/auth/AuthStatus";
 import { AppSidebar } from "@/components/features/nav/AppSidebar";
+import { Logo } from "@/components/features/nav/Logo";
 import { SiteHeader } from "@/components/features/nav/SiteHeader";
 import { SearchInput } from "@/components/features/search/SearchInput";
 import { createClient } from "@/lib/integrations/supabase/server";
@@ -113,8 +114,12 @@ export default async function RootLayout({
         ) : (
           <header className="flex items-center justify-between border-b px-6 py-3">
             <nav className="flex items-center gap-6">
-              <Link href="/" className="font-semibold">
-                Viberation
+              <Link
+                href="/"
+                aria-label="Viberation — home"
+                className="shrink-0"
+              >
+                <Logo className="h-5" />
               </Link>
               {TOP_NAV.map((item) => (
                 <Link
@@ -160,7 +165,10 @@ export default async function RootLayout({
         */}
         <footer className="border-t px-6 py-6">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-            <span>&copy; {new Date().getFullYear()} Viberation</span>
+            <span className="flex items-center gap-2">
+              <Logo variant="mark" className="h-4" />
+              &copy; {new Date().getFullYear()} Viberation
+            </span>
             <Link href="/privacy" className="hover:text-foreground">
               Privacy
             </Link>

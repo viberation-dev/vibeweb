@@ -1,6 +1,7 @@
 import { IconBook2, IconLayoutGrid, IconWand } from "@tabler/icons-react";
 import Link from "next/link";
 
+import { NewsletterForm } from "@/components/features/marketing/NewsletterForm";
 import { CategoryIcon } from "@/components/features/tools/CategoryIcon";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -19,6 +20,8 @@ type Props = {
   collectionCounts: Map<string, number>;
   latest: Content[];
   flagship: Wizard | undefined;
+  /** VIB-91's flag, resolved by the page — this component stays env-free. */
+  newsletterEnabled: boolean;
 };
 
 /**
@@ -39,6 +42,7 @@ export function MarketingHome({
   collectionCounts,
   latest,
   flagship,
+  newsletterEnabled,
 }: Props) {
   return (
     <main className="mx-auto w-full max-w-6xl px-6 pb-16">
@@ -312,14 +316,26 @@ export function MarketingHome({
         </Section>
       ) : null}
 
+      {newsletterEnabled ? (
+        <Section className="text-center">
+          {/*
+            The mockup's closing capture (VIB-91). Shown only when the list is
+            ready to send to — see lib/newsletter.ts. Until then the slot keeps
+            its job as the closing conversion, below.
+          */}
+          <h2 className="font-heading text-3xl font-semibold tracking-tight">
+            One email a week.{" "}
+            <span className="text-primary">Nothing else.</span>
+          </h2>
+          <p className="text-muted-foreground mx-auto mt-3 max-w-xl">
+            Weekly curation of the best AI tools and walkthroughs, straight to
+            your inbox.
+          </p>
+          <NewsletterForm />
+        </Section>
+      ) : null}
+
       <Section className="text-center">
-        {/*
-          The mockup ends on a newsletter capture — an email field and a
-          Subscribe button. There is no subscribers table, so that form would
-          have nowhere to put an address, and a field that silently discards
-          what you type is worse than no field. Tracked separately; the slot
-          keeps its job as the closing conversion until then.
-        */}
         <h2 className="font-heading text-3xl font-semibold tracking-tight">
           Start building.{" "}
           <span className="text-primary">Stop second-guessing.</span>

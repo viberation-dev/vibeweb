@@ -21,6 +21,7 @@ import {
 } from "@/lib/home-feed";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { contentTypeLabel, LEARN_TYPE_VALUES } from "@/lib/learn";
+import { newsletterFormEnabled } from "@/lib/newsletter";
 import {
   countCollectionItems,
   listFeaturedCollections,
@@ -96,6 +97,7 @@ export default async function HomePage({ searchParams }: Props) {
         collectionCounts={counts}
         latest={latest}
         flagship={flagship}
+        newsletterEnabled={newsletterFormEnabled()}
       />
     );
   }

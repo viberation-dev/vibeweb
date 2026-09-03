@@ -143,7 +143,7 @@ export async function getContentBySlug(client: Client, slug: string): Promise<Co
 export async function getContentTags(client: Client, contentId: string): Promise<Tag[]> {
   const { data, error } = await client
     .from("content_tags")
-    .select("tags!inner(id, name, slug)")
+    .select("tags!inner(id, kind, name, slug)")
     .eq("content_id", contentId);
 
   if (error) {

@@ -37,6 +37,9 @@ export async function saveToolAction(
     tagline: formData.get("tagline"),
     description: formData.get("description"),
     pricing_tier: formData.get("pricing_tier"),
+    // getAll: one entry per ticked box, and an empty array when none are.
+    platform: formData.getAll("platform"),
+    best_for: formData.get("best_for"),
     outbound_url: formData.get("outbound_url"),
     is_affiliate: formData.get("is_affiliate"),
   });

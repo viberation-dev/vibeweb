@@ -10,6 +10,8 @@ const valid = {
   tagline: "Agentic coding in the terminal",
   description: "",
   pricing_tier: "Paid",
+  platform: ["macos", "windows", "linux"],
+  best_for: "intermediate",
   outbound_url: "https://example.com/claude-code",
   is_affiliate: null,
 };
@@ -72,4 +74,30 @@ test("a slug with spaces or slashes is rejected", () => {
 test("an empty name is rejected and an unknown category too", () => {
   assert.equal(toolEditorSchema.safeParse({ ...valid, name: "  " }).success, false);
   assert.equal(toolEditorSchema.safeParse({ ...valid, category: "gizmos" }).success, false);
+});
+
+test("platform keeps only values the CHECK constraint would accept", () => {
+  // The database would reject the write anyway; dropping here means a stale
+  // form or a hand-posted value fails quietly rather than 500ing at a reader.
+  const result = toolEditorSchema.safeParse({
+    ...valid,
+    platform: ["macos", "Mac", "haiku-os"],
+  });
+  assert.ok(result.success);
+  assert.deepEqual(result.data.platform, ["macos"]);
+});
+
+test("no platforms ticked is an empty array, which reads as unstated", () => {
+  const result = toolEditorSchema.safeParse({ ...valid, platform: [] });
+  assert.ok(result.success);
+  assert.deepEqual(result.data.platform, []);
+});
+
+test("an unstated audience is null, not a guess", () => {
+  // A tier printed on a real product's page that nobody chose would be the
+  // invented fact this column exists to avoid.
+  const result = toolEditorSchema.safeParse({ ...valid, best_for: "" });
+  assert.ok(result.success);
+  assert.equal(result.data.best_for, null);
+  assert.equal(toolEditorSchema.safeParse({ ...valid, best_for: "guru" }).success, false);
 });

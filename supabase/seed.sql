@@ -155,12 +155,12 @@ select t.id, g.id
 from (values
   ('claude','code-generation'), ('claude','free-tier'),
   ('gemini','code-generation'), ('gemini','free-tier'),
-  ('claude-ai','beginner-friendly'), ('claude-ai','free-tier'),
-  ('chatgpt','beginner-friendly'), ('chatgpt','free-tier'),
+  ('claude-ai','free-tier'),
+  ('chatgpt','free-tier'),
   ('claude-agent-sdk','automation'), ('claude-agent-sdk','backend'),
   ('autogen','automation'), ('autogen','open-source'),
-  ('cursor','code-generation'), ('cursor','beginner-friendly'),
-  ('vs-code','free-tier'), ('vs-code','open-source'), ('vs-code','beginner-friendly'),
+  ('cursor','code-generation'),
+  ('vs-code','free-tier'), ('vs-code','open-source'),
   ('claude-code','code-generation'), ('claude-code','automation'),
   ('aider','open-source'), ('aider','code-generation'),
   ('agent-skills','automation'), ('agent-skills','free-tier'),
@@ -172,9 +172,9 @@ from (values
   ('nextjs','frontend'), ('nextjs','web-apps'), ('nextjs','open-source'),
   ('langchain','backend'), ('langchain','open-source'),
   ('shadcn-ui','frontend'), ('shadcn-ui','design'), ('shadcn-ui','open-source'),
-  ('create-t3-app','web-apps'), ('create-t3-app','frontend'), ('create-t3-app','beginner-friendly'),
+  ('create-t3-app','web-apps'), ('create-t3-app','frontend'),
   ('n8n','automation'), ('n8n','backend'),
-  ('zapier','automation'), ('zapier','beginner-friendly'),
+  ('zapier','automation'),
   ('supabase','database'), ('supabase','backend'), ('supabase','free-tier'),
   ('vercel','deployment'), ('vercel','web-apps'), ('vercel','free-tier'),
   ('resend','backend'), ('resend','free-tier'),
@@ -656,3 +656,72 @@ from (values
   ('choosing-your-first-setup','tool_reviews')
 ) as v(slug, pillar)
 where c.slug = v.slug;
+
+-- Audience moves off the tag and onto tools.best_for (VIB-87).
+--
+-- The six tools below carried a `beginner-friendly` tag; that is the same
+-- claim the column makes, and two mechanisms for one idea is what caused the
+-- free-tier bug in VIB-81. The tag row itself stays — Learn content still
+-- uses it, and only the *tool* links were the duplicate.
+--
+-- Every other tool is left null: "who is this for" is an editorial judgement
+-- per tool, and a guess printed on a real product's page is worse than an
+-- absent row. Set them in /admin/tools.
+update tools t set best_for = 'beginner'
+where t.slug in ('claude-ai','chatgpt','cursor','vs-code','create-t3-app','zapier');
+
+-- Platform and the remaining audience tiers (VIB-87), reviewed by Ali
+-- 2026-09-04.
+--
+-- Nine rows are deliberately blank: AutoGen, LangChain, the Claude Agent SDK,
+-- Next.js, shadcn/ui, Create T3 App, Agent Skills, Superpowers and the two
+-- model entries. A library runs wherever its runtime does, so "macOS ·
+-- Windows · Linux" on it is true and tells a reader nothing, and a model is
+-- not software you install. An absent row beats a noise row.
+update tools t set platform = v.platform
+from (values
+  ('cursor', array['macos','windows','linux']),
+  ('vs-code', array['macos','windows','linux']),
+  ('aider', array['macos','windows','linux']),
+  ('claude-code', array['macos','windows','linux']),
+  ('continue', array['macos','windows','linux']),
+  ('github-copilot', array['macos','windows','linux']),
+  ('playwright-mcp', array['macos','windows','linux']),
+  ('supabase-mcp-server', array['macos','windows','linux']),
+  ('supabase', array['web']),
+  ('vercel', array['web']),
+  ('resend', array['web']),
+  ('zapier', array['web']),
+  ('n8n', array['web']),
+  -- Cloud plus self-host; two answers, and both are true.
+  ('typesense', array['web','linux']),
+  ('chatgpt', array['web','ios','android']),
+  ('claude-ai', array['web','ios','android']),
+  ('gemini', array['web','ios','android'])
+) as v(slug, platform)
+where t.slug = v.slug;
+
+update tools t set best_for = v.best_for::role_level
+from (values
+  ('claude','beginner'),
+  ('gemini','beginner'),
+  ('github-copilot','beginner'),
+  ('vercel','beginner'),
+  ('claude-code','intermediate'),
+  ('aider','intermediate'),
+  ('continue','intermediate'),
+  ('nextjs','intermediate'),
+  ('shadcn-ui','intermediate'),
+  ('supabase','intermediate'),
+  ('resend','intermediate'),
+  ('n8n','intermediate'),
+  ('langchain','intermediate'),
+  ('agent-skills','intermediate'),
+  ('playwright-mcp','intermediate'),
+  ('supabase-mcp-server','intermediate'),
+  ('autogen','expert'),
+  ('claude-agent-sdk','expert'),
+  ('superpowers','expert'),
+  ('typesense','expert')
+) as v(slug, best_for)
+where t.slug = v.slug;

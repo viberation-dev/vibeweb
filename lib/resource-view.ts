@@ -1,4 +1,4 @@
-import { contentPreview, contentTypeLabel, readingMinutes } from "@/lib/learn";
+import { contentPillarLabel, contentPreview, contentTypeLabel, readingMinutes } from "@/lib/learn";
 import type { Content } from "@/lib/queries/content";
 import type { Tool } from "@/lib/queries/tools";
 import type { RoleLevel } from "@/lib/role-level";
@@ -51,7 +51,13 @@ export function contentView(item: Content): ResourceView {
     id: item.id,
     href: `/learn/${item.slug}`,
     title: item.title,
-    eyebrow: contentTypeLabel(item.type),
+    /*
+     * The mockup's Learn card is eyebrowed with the pillar, not the content
+     * type. Unfiled rows fall back to the type rather than showing nothing:
+     * help articles belong to no pillar by design, and they still surface in
+     * search and bookmarks.
+     */
+    eyebrow: item.pillar ? contentPillarLabel(item.pillar) : contentTypeLabel(item.type),
     // `content` has no tagline column, so the preview is drawn from the body
     // rather than a second stored field.
     description: contentPreview(item.type, item.body),

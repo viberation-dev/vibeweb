@@ -7,6 +7,7 @@ import {
   learnHref,
   LEARN_TYPE_VALUES,
   readingMinutes,
+  toContentPillar,
   toContentType,
   toLearnSort,
 } from "./learn.ts";
@@ -91,4 +92,21 @@ test("reading time rounds to whole minutes, never to zero", () => {
   // A one-line cheatsheet still takes a minute, not none.
   assert.equal(readingMinutes("git status"), 1);
   assert.equal(readingMinutes("word ".repeat(1000)), 5);
+});
+
+test("learnHref carries the pillar and drops it when cleared", () => {
+  // The chip row builds every other control's URL, so a filter that vanished
+  // when you changed the sort would be a filter you cannot combine.
+  assert.equal(learnHref({ pillar: "prompt_engineering" }), "/learn?pillar=prompt_engineering");
+  assert.equal(
+    learnHref({ type: "guide", pillar: "fundamentals", sort: "popular" }),
+    "/learn?type=guide&pillar=fundamentals&sort=popular",
+  );
+  assert.equal(learnHref({ pillar: undefined }), "/learn");
+});
+
+test("an unknown ?pillar= is dropped rather than guessed", () => {
+  assert.equal(toContentPillar("walkthroughs"), "walkthroughs");
+  assert.equal(toContentPillar("Fundamentals"), undefined);
+  assert.equal(toContentPillar(undefined), undefined);
 });

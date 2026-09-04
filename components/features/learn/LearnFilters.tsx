@@ -2,11 +2,13 @@ import { IconChevronDown } from "@tabler/icons-react";
 import Link from "next/link";
 
 import {
+  CONTENT_PILLARS,
   DEFAULT_LEARN_SORT,
   LEARN_SORTS,
   LEARN_TYPES,
   learnHref,
   learnSortOrder,
+  type ContentPillar,
   type ContentType,
   type LearnSort,
 } from "@/lib/learn";
@@ -15,6 +17,9 @@ import { cn } from "@/lib/utils";
 
 type Props = {
   type?: ContentType;
+  pillar?: ContentPillar;
+  /** Published pieces per pillar, so an empty one can say so (VIB-95). */
+  pillarCounts: Map<ContentPillar, number>;
   /** The raw `?level=` choice — undefined means "whatever my profile says". */
   level?: LevelParam;
   /** The tier actually being filtered on, after the profile default applies. */
@@ -41,25 +46,74 @@ const menuItem = "hover:bg-accent block rounded px-2 py-1 text-sm";
  * driving one column would contradict each other the moment they disagreed,
  * so there is one level control, rendered as the mockup's dropdown.
  *
- * **No pillar chips.** The mockup's six editorial pillars (Fundamentals,
- * Context eng, …) have no data model — `content` has `type` and `audience`,
- * and the tags on the published rows are topics, not pillars. Filter chips
- * over a taxonomy that does not exist would be decoration; the taxonomy is
- * its own issue. The type chips are the real axis in its place.
+ * **Pillars and types are both chips**, on separate rows. The pillar is the
+ * section of the publication a piece belongs to (VIB-90); the type is its
+ * shape. A cheatsheet and a course link can both be Prompt engineering, so
+ * neither row is a rename of the other.
+ *
+ * All six pillars are shown with counts, including the empty ones. A chip
+ * that is absent reads as a broken taxonomy; a chip reading "Walkthroughs 0"
+ * reads as a section nothing has been written for yet, which is the truth.
+ * The empty ones are not links — there is nowhere useful to go.
  *
  * Plain links, native <details>, no client component: the filter state lives
  * entirely in the URL, so it is shareable, back-button-correct and works
  * without JS. No control carries `page`, so changing a filter resets to page
  * 1 — the only sane destination when the result set just changed under you.
  */
-export function LearnFilters({ type, level, effectiveLevel, hasProfileLevel, sort }: Props) {
+export function LearnFilters({
+  type,
+  pillar,
+  pillarCounts,
+  level,
+  effectiveLevel,
+  hasProfileLevel,
+  sort,
+}: Props) {
   const activeSort = sort ?? DEFAULT_LEARN_SORT;
 
   return (
     <div className="flex flex-col gap-3">
+      <nav aria-label="Editorial pillars" className="flex flex-wrap gap-2">
+        <Link
+          href={learnHref({ type, level, sort })}
+          aria-current={pillar ? undefined : "page"}
+          className={cn(chip, !pillar && chipActive)}
+        >
+          All pillars
+        </Link>
+        {CONTENT_PILLARS.map(({ value, label }) => {
+          const count = pillarCounts.get(value) ?? 0;
+          const active = pillar === value;
+
+          if (count === 0) {
+            return (
+              <span
+                key={value}
+                className={cn(chip, "text-muted-foreground cursor-default hover:bg-transparent")}
+                title="Nothing published in this pillar yet"
+              >
+                {label} <span className="tabular-nums">0</span>
+              </span>
+            );
+          }
+
+          return (
+            <Link
+              key={value}
+              href={learnHref({ type, level, sort, pillar: active ? undefined : value })}
+              aria-current={active ? "page" : undefined}
+              className={cn(chip, active && chipActive)}
+            >
+              {label} <span className="tabular-nums opacity-70">{count}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
       <nav aria-label="Content types" className="flex flex-wrap gap-2">
         <Link
-          href={learnHref({ level, sort })}
+          href={learnHref({ pillar, level, sort })}
           aria-current={type ? undefined : "page"}
           className={cn(chip, !type && chipActive)}
         >
@@ -70,7 +124,7 @@ export function LearnFilters({ type, level, effectiveLevel, hasProfileLevel, sor
           return (
             <Link
               key={value}
-              href={learnHref({ type: active ? undefined : value, level, sort })}
+              href={learnHref({ type: active ? undefined : value, pillar, level, sort })}
               aria-current={active ? "page" : undefined}
               className={cn(chip, active && chipActive)}
             >
@@ -106,6 +160,7 @@ export function LearnFilters({ type, level, effectiveLevel, hasProfileLevel, sor
                        */
                       href={learnHref({
                         type,
+                        pillar,
                         sort,
                         level: active && !hasProfileLevel ? undefined : value,
                       })}
@@ -119,7 +174,7 @@ export function LearnFilters({ type, level, effectiveLevel, hasProfileLevel, sor
               })}
               <li>
                 <Link
-                  href={learnHref({ type, sort, level: ALL_LEVELS })}
+                  href={learnHref({ type, pillar, sort, level: ALL_LEVELS })}
                   aria-current={effectiveLevel ? undefined : "page"}
                   className={cn(menuItem, !effectiveLevel && "font-medium")}
                 >
@@ -147,6 +202,7 @@ export function LearnFilters({ type, level, effectiveLevel, hasProfileLevel, sor
                      */
                     href={learnHref({
                       type,
+                      pillar,
                       level,
                       sort: value === DEFAULT_LEARN_SORT ? undefined : value,
                     })}

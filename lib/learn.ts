@@ -95,6 +95,7 @@ export function contentTypeLabel(value: ContentType): string {
  */
 export function learnHref(params: {
   type?: string;
+  pillar?: string;
   level?: LevelParam;
   sort?: LearnSort;
   page?: number;
@@ -102,6 +103,7 @@ export function learnHref(params: {
   const search = new URLSearchParams();
 
   if (params.type) search.set("type", params.type);
+  if (params.pillar) search.set("pillar", params.pillar);
   if (params.level) search.set("level", params.level);
   if (params.sort) search.set("sort", params.sort);
   if (params.page && params.page > 1) search.set("page", String(params.page));

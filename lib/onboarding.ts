@@ -91,5 +91,47 @@ export function revealHeadline(name: string | null | undefined): string {
   return trimmed ? `Here is your Viberation, ${trimmed}.` : "Here is your Viberation.";
 }
 
-/** The collection every reveal offers. Seeded by VIB-41. */
-export const STARTER_SET_SLUG = "starter-set";
+/**
+ * The starter collection for one tier (VIB-94).
+ *
+ * Three seeded collections rather than a `role_level` column on
+ * `collections`: no migration, and the curation lives in the collection's own
+ * items where an editor can see it. What makes a starting point good is the
+ * *pairing* of things, which is what a collection already is.
+ *
+ * Seeded by VIB-41 (beginner) and VIB-94 (the other two).
+ */
+export function starterSetSlug(level: RoleLevel): string {
+  return level === "beginner" ? STARTER_SET_FALLBACK_SLUG : `starter-set-${level}`;
+}
+
+/**
+ * The beginner set, and the fallback for any tier with nothing seeded.
+ *
+ * It keeps the unsuffixed slug it was born with (VIB-41) rather than becoming
+ * `starter-set-beginner` for symmetry. A collection slug is a live URL and the
+ * featured collection is linked from elsewhere, so renaming it breaks those
+ * links — verified the hard way: renaming it during this change took the
+ * collection card off the onboarding reveal in production until it was put
+ * back. Symmetry is not worth a broken URL.
+ *
+ * As a fallback it is also the gentlest wrong answer: showing the beginner set
+ * to an expert is a mild mismatch, where an empty panel on the screen that
+ * promises "here is your Viberation" is a broken promise.
+ */
+export const STARTER_SET_FALLBACK_SLUG = "starter-set";
+
+/**
+ * How the flagship wizard is pitched, per tier (VIB-83's second open item).
+ *
+ * The same wizard, framed for who is reading. A beginner needs to know it
+ * ends with something real; someone who has shipped before needs to know it
+ * is not going to waste their afternoon.
+ */
+export function wizardFraming(level: RoleLevel): string {
+  return {
+    beginner: "Start here. It ends with a real URL you can send to someone.",
+    intermediate: "A quick pass end to end — useful for the deployment half if you already know the build half.",
+    expert: "Skim it for the stack choices; the checklist at the end is the part worth keeping.",
+  }[level];
+}

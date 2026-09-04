@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import type { RoleLevel } from "@/lib/role-level";
 import { tiersFor, type PricingFilter } from "@/lib/tool-facts";
 import type { ToolCategory } from "@/lib/tool-categories";
 import {
@@ -16,6 +17,12 @@ type Client = SupabaseClient<Database>;
 
 export type ToolFilters = {
   category?: ToolCategory;
+  /**
+   * Audience tier (VIB-87). Tools with a null `best_for` are for everyone and
+   * are always included — the filter narrows, it never hides the unstated
+   * ones, which is the same rule content's roleLevel filter follows.
+   */
+  bestFor?: RoleLevel;
   /** Tag *slug*, not id — it is what appears in the URL. */
   tag?: string;
   sort?: ToolSort;
@@ -69,6 +76,10 @@ export async function listTools(
 
   if (filters.category) {
     query = query.eq("category", filters.category);
+  }
+
+  if (filters.bestFor) {
+    query = query.or(`best_for.is.null,best_for.eq.${filters.bestFor}`);
   }
 
   if (filters.pricing) {

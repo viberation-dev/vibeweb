@@ -102,18 +102,24 @@ export function revealHeadline(name: string | null | undefined): string {
  * Seeded by VIB-41 (beginner) and VIB-94 (the other two).
  */
 export function starterSetSlug(level: RoleLevel): string {
-  return `starter-set-${level}`;
+  return level === "beginner" ? STARTER_SET_FALLBACK_SLUG : `starter-set-${level}`;
 }
 
 /**
- * Where the reveal falls back when a tier has no collection seeded.
+ * The beginner set, and the fallback for any tier with nothing seeded.
  *
- * Showing the beginner set to an expert is a mild mismatch; showing an empty
- * panel on the screen that is supposed to say "here is your Viberation" is a
- * broken promise. So the fallback exists and is deliberately the gentlest
- * wrong answer.
+ * It keeps the unsuffixed slug it was born with (VIB-41) rather than becoming
+ * `starter-set-beginner` for symmetry. A collection slug is a live URL and the
+ * featured collection is linked from elsewhere, so renaming it breaks those
+ * links — verified the hard way: renaming it during this change took the
+ * collection card off the onboarding reveal in production until it was put
+ * back. Symmetry is not worth a broken URL.
+ *
+ * As a fallback it is also the gentlest wrong answer: showing the beginner set
+ * to an expert is a mild mismatch, where an empty panel on the screen that
+ * promises "here is your Viberation" is a broken promise.
  */
-export const STARTER_SET_FALLBACK_SLUG = "starter-set-beginner";
+export const STARTER_SET_FALLBACK_SLUG = "starter-set";
 
 /**
  * How the flagship wizard is pitched, per tier (VIB-83's second open item).

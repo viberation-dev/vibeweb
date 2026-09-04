@@ -71,7 +71,9 @@ test("a missing or blank username falls back rather than trailing a comma", () =
 });
 
 test("each tier gets its own starter collection", () => {
-  assert.equal(starterSetSlug("beginner"), "starter-set-beginner");
+  // Beginner keeps the unsuffixed slug: it is a live URL that predates the
+  // split, and renaming it broke the reveal in production once already.
+  assert.equal(starterSetSlug("beginner"), "starter-set");
   assert.equal(starterSetSlug("intermediate"), "starter-set-intermediate");
   assert.equal(starterSetSlug("expert"), "starter-set-expert");
 });

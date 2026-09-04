@@ -8,6 +8,9 @@ import {
   revealHeadline,
   revealSummary,
   stepEyebrow,
+  starterSetSlug,
+  STARTER_SET_FALLBACK_SLUG,
+  wizardFraming,
 } from "./onboarding.ts";
 
 test("skipping the level question defaults to beginner, not expert", () => {
@@ -65,4 +68,28 @@ test("a missing or blank username falls back rather than trailing a comma", () =
   // "Here is your Viberation, ." would be the more visible bug.
   assert.equal(revealHeadline(null), "Here is your Viberation.");
   assert.equal(revealHeadline("   "), "Here is your Viberation.");
+});
+
+test("each tier gets its own starter collection", () => {
+  assert.equal(starterSetSlug("beginner"), "starter-set-beginner");
+  assert.equal(starterSetSlug("intermediate"), "starter-set-intermediate");
+  assert.equal(starterSetSlug("expert"), "starter-set-expert");
+});
+
+test("the fallback is a real seeded slug, not a guess", () => {
+  // The reveal falls back here when a tier has no collection. If this drifts
+  // from a slug that exists, the panel silently disappears.
+  assert.equal(STARTER_SET_FALLBACK_SLUG, starterSetSlug("beginner"));
+});
+
+test("the wizard is framed differently for each tier", () => {
+  // One wizard, three pitches. Identical copy would make the tier question
+  // pointless on the one screen that just asked it.
+  const framings = ["beginner", "intermediate", "expert"].map((level) =>
+    wizardFraming(level as Parameters<typeof wizardFraming>[0]),
+  );
+  assert.equal(new Set(framings).size, 3);
+  for (const framing of framings) {
+    assert.ok(framing.length > 0);
+  }
 });

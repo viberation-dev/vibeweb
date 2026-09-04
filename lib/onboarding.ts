@@ -91,5 +91,41 @@ export function revealHeadline(name: string | null | undefined): string {
   return trimmed ? `Here is your Viberation, ${trimmed}.` : "Here is your Viberation.";
 }
 
-/** The collection every reveal offers. Seeded by VIB-41. */
-export const STARTER_SET_SLUG = "starter-set";
+/**
+ * The starter collection for one tier (VIB-94).
+ *
+ * Three seeded collections rather than a `role_level` column on
+ * `collections`: no migration, and the curation lives in the collection's own
+ * items where an editor can see it. What makes a starting point good is the
+ * *pairing* of things, which is what a collection already is.
+ *
+ * Seeded by VIB-41 (beginner) and VIB-94 (the other two).
+ */
+export function starterSetSlug(level: RoleLevel): string {
+  return `starter-set-${level}`;
+}
+
+/**
+ * Where the reveal falls back when a tier has no collection seeded.
+ *
+ * Showing the beginner set to an expert is a mild mismatch; showing an empty
+ * panel on the screen that is supposed to say "here is your Viberation" is a
+ * broken promise. So the fallback exists and is deliberately the gentlest
+ * wrong answer.
+ */
+export const STARTER_SET_FALLBACK_SLUG = "starter-set-beginner";
+
+/**
+ * How the flagship wizard is pitched, per tier (VIB-83's second open item).
+ *
+ * The same wizard, framed for who is reading. A beginner needs to know it
+ * ends with something real; someone who has shipped before needs to know it
+ * is not going to waste their afternoon.
+ */
+export function wizardFraming(level: RoleLevel): string {
+  return {
+    beginner: "Start here. It ends with a real URL you can send to someone.",
+    intermediate: "A quick pass end to end — useful for the deployment half if you already know the build half.",
+    expert: "Skim it for the stack choices; the checklist at the end is the part worth keeping.",
+  }[level];
+}

@@ -399,9 +399,18 @@ on conflict do nothing;
 -- must always exist — keep it featured and keep it first.
 
 insert into collections (title, slug, description, is_featured) values
-  ('Your starter set', 'starter-set',
-   'The short list worth knowing before anything else: one model, one place to work, and somewhere to put what you build.',
+  -- One per tier (VIB-94). Same title on all three: the reveal shows exactly
+  -- one of them, and "Your starter set (intermediate)" would be labelling the
+  -- reader rather than the shelf.
+  ('Your starter set', 'starter-set-beginner',
+   'Three tools and two reads that get a first project from idea to live.',
    true),
+  ('Your starter set', 'starter-set-intermediate',
+   'The stack for someone who has shipped before: agentic editing, a real backend, and the reads that stop the second project repeating the first.',
+   false),
+  ('Your starter set', 'starter-set-expert',
+   'Terminal-first tooling, an agent SDK to build on, and the security reading most vibe-coded projects skip.',
+   false),
   ('Ship your first web project', 'ship-your-first-web-project',
    'Everything needed to get a real URL in front of a real person, in the order you need it.',
    true),
@@ -423,15 +432,21 @@ on conflict (slug) do update set
 delete from collection_items
 where collection_id in (
   select id from collections
-  where slug in ('starter-set','ship-your-first-web-project','local-ai-stack','free-tier-only')
+  where slug in ('starter-set-beginner','starter-set-intermediate','starter-set-expert','ship-your-first-web-project','local-ai-stack','free-tier-only')
 );
 
 insert into collection_items (collection_id, target_type, target_id, sort_order)
 select c.id, 'tool', t.id, m.sort_order
 from (values
-  ('starter-set',                 'claude',        10),
-  ('starter-set',                 'cursor',        20),
-  ('starter-set',                 'vercel',        30),
+  ('starter-set-beginner',        'claude',        10),
+  ('starter-set-beginner',        'cursor',        20),
+  ('starter-set-intermediate',    'claude-code',   10),
+  ('starter-set-intermediate',    'supabase',      20),
+  ('starter-set-intermediate',    'nextjs',        30),
+  ('starter-set-expert',          'aider',         10),
+  ('starter-set-expert',          'claude-agent-sdk', 20),
+  ('starter-set-expert',          'playwright-mcp',30),
+  ('starter-set-beginner',        'vercel',        30),
   ('ship-your-first-web-project', 'nextjs',        10),
   ('ship-your-first-web-project', 'shadcn-ui',     20),
   ('ship-your-first-web-project', 'supabase',      30),
@@ -452,8 +467,12 @@ join tools       t on t.slug = m.tool_slug;
 insert into collection_items (collection_id, target_type, target_id, sort_order)
 select c.id, 'content', k.id, m.sort_order
 from (values
-  ('starter-set',                 'what-vibe-coding-is',        50),
-  ('starter-set',                 'choosing-your-first-setup',  60),
+  ('starter-set-beginner',        'what-vibe-coding-is',        50),
+  ('starter-set-intermediate',    'why-ai-forgets-context',     50),
+  ('starter-set-intermediate',    'reviewing-code-you-did-not-write', 60),
+  ('starter-set-expert',          'rls-is-the-boundary',        50),
+  ('starter-set-expert',          'reviewing-code-you-did-not-write', 60),
+  ('starter-set-beginner',        'choosing-your-first-setup',  60),
   ('ship-your-first-web-project', 'git-commands-worth-memorising', 50),
   ('local-ai-stack',              'why-ai-forgets-context',     50),
   ('local-ai-stack',              'prompts-for-better-code',    60)

@@ -19,7 +19,9 @@ import {
   resolveStep,
   revealHeadline,
   revealSummary,
-  STARTER_SET_SLUG,
+  starterSetSlug,
+  STARTER_SET_FALLBACK_SLUG,
+  wizardFraming,
   stepEyebrow,
 } from "@/lib/onboarding";
 import { getCollectionBySlug, type Collection } from "@/lib/queries/collections";
@@ -102,13 +104,22 @@ export default async function OnboardingPage({ searchParams }: Props) {
           // Narrowed to the focus when there is one. If that tag has fewer
           // than three tools the starter set is simply shorter — better than
           // padding it with things the person did not ask about.
-          listTools(supabase, { tag: focusTag?.slug, sort: "popular", pageSize: 3 }).then(
-            (page) => page.tools,
+          // Narrowed by tier as well as focus (VIB-94): an expert who picks
+          // "frontend" was getting the same three rows as a beginner who did.
+          // Tools with no stated audience stay in for everyone.
+          listTools(supabase, {
+            tag: focusTag?.slug,
+            bestFor: level,
+            sort: "popular",
+            pageSize: 3,
+          }).then((page) => page.tools),
+          // One collection per tier, by slug. Falling back to the beginner
+          // set rather than rendering an empty panel on the screen that
+          // promises "here is your Viberation".
+          getCollectionBySlug(supabase, starterSetSlug(level!)).then(
+            (found) =>
+              found ?? getCollectionBySlug(supabase, STARTER_SET_FALLBACK_SLUG),
           ),
-          // By slug, not "the first featured collection" — that returned
-          // whichever one sorted first, so the reveal could offer the local-AI
-          // stack to someone who just said they had never shipped anything.
-          getCollectionBySlug(supabase, STARTER_SET_SLUG),
           listWizards(supabase),
         ])
       : [[], null, []];
@@ -291,6 +302,8 @@ function StepReveal({
             <p className="text-muted-foreground mt-1 text-sm">
               Guided wizard · {wizard.steps.length} steps · idea → live URL
             </p>
+            {/* Same wizard, pitched for who is reading it (VIB-94). */}
+            <p className="mt-2 text-sm">{wizardFraming(level)}</p>
           </div>
         </section>
       ) : null}

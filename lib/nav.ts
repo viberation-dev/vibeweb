@@ -3,6 +3,7 @@
  * and node --test resolves ESM by real filename. The same reason
  * lib/role-level.ts and lib/search-query.ts stay alias-free.
  */
+import { CONTENT_PILLARS, learnHref } from "./learn.ts";
 import { TOOL_CATEGORIES } from "./tool-categories.ts";
 import { toolsHref } from "./tools-url.ts";
 
@@ -64,16 +65,25 @@ export const SIDEBAR_GROUPS: ReadonlyArray<{ label?: string; items: readonly Nav
     ],
   },
   {
+    /*
+     * The mockup's `PILLARS · 6` group (VIB-95). The count is the size of the
+     * taxonomy, not of what is published in it — two pillars are empty, and
+     * the hub's chips are where that shows, with a 0 beside the label.
+     *
+     * These replace the earlier "Walkthroughs → ?type=guide" stand-in, which
+     * pointed the mockup's pillar label at the closest content type because
+     * pillars had no column yet. Walkthroughs is now a real pillar.
+     */
+    label: `Pillars · ${CONTENT_PILLARS.length}`,
+    items: CONTENT_PILLARS.map((pillar) => ({
+      href: learnHref({ pillar: pillar.value }),
+      label: pillar.label,
+    })),
+  },
+  {
     label: "Learn",
     items: [
-      /*
-       * "Walkthroughs" is the mockup's label; there is no content type by
-       * that name, so it points at guides — the closest real type. Whether
-       * the taxonomy should gain a walkthrough pillar belongs to the Learn
-       * hub issue.
-       */
-      { href: "/learn?type=guide", label: "Walkthroughs" },
-      { href: "/learn?type=article", label: "Articles" },
+      { href: "/learn", label: "Everything" },
       // Grouped under Learn but routed top-level, on purpose (§27 vs §31).
       { href: "/wizards", label: "Wizards" },
       { href: "/collections", label: "Collections" },

@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   DEFAULT_LEARN_SORT,
   learnSortOrder,
+  type ContentPillar,
   type ContentType,
   type LearnSort,
 } from "@/lib/learn";
@@ -24,6 +25,8 @@ export type ContentFilters = {
   roleLevel?: RoleLevel;
   /** Only meaningful for `role_guide` rows; null on everything else. */
   audience?: Enums<"docs_audience">;
+  /** Editorial pillar (VIB-90). Unfiled rows match no pillar. */
+  pillar?: ContentPillar;
   /** Tag *slug*, not id — it is what appears in the URL. */
   tag?: string;
   /** Ordering. Omitted means the default, newest first. */
@@ -86,6 +89,10 @@ export async function listContent(
 
   if (filters.audience) {
     query = query.eq("audience", filters.audience);
+  }
+
+  if (filters.pillar) {
+    query = query.eq("pillar", filters.pillar);
   }
 
   if (filters.tag) {
@@ -309,4 +316,39 @@ export async function updateContent(
     throw new Error(`updateContent(${id}): ${error.message}`);
   }
   return data;
+}
+
+/**
+ * How many published pieces sit in each pillar (VIB-95).
+ *
+ * The Learn hub shows all six pillars whether or not they have anything in
+ * them — a count of 0 reads as "nothing here yet", where a missing chip reads
+ * as a broken taxonomy. That only works if the counts are real.
+ *
+ * ponytail: counts in JS over one narrow select, because PostgREST has no
+ * GROUP BY. Fine at 13 rows and fine at a few hundred; if Learn ever holds
+ * thousands, this becomes an RPC doing `group by pillar` in Postgres.
+ */
+export async function countContentByPillar(
+  client: Client,
+  types: ContentType[],
+): Promise<Map<ContentPillar, number>> {
+  const { data, error } = await client
+    .from("content")
+    .select("pillar")
+    .eq("status", "published")
+    .in("type", types)
+    .not("pillar", "is", null);
+
+  if (error) {
+    throw new Error(`countContentByPillar: ${error.message}`);
+  }
+
+  const counts = new Map<ContentPillar, number>();
+  for (const row of data) {
+    if (row.pillar) {
+      counts.set(row.pillar, (counts.get(row.pillar) ?? 0) + 1);
+    }
+  }
+  return counts;
 }

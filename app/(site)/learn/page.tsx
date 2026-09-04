@@ -5,10 +5,16 @@ import { LearnFilters } from "@/components/features/learn/LearnFilters";
 import { DirectoryPager } from "@/components/features/resource/DirectoryPager";
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import { createClient } from "@/lib/integrations/supabase/server";
-import { LEARN_TYPE_VALUES, learnHref, toContentType, toLearnSort } from "@/lib/learn";
+import {
+  LEARN_TYPE_VALUES,
+  learnHref,
+  toContentPillar,
+  toContentType,
+  toLearnSort,
+} from "@/lib/learn";
 import { toPageNumber } from "@/lib/pagination";
 import { listBookmarks } from "@/lib/queries/bookmarks";
-import { listContent } from "@/lib/queries/content";
+import { countContentByPillar, listContent } from "@/lib/queries/content";
 import { getProfile } from "@/lib/queries/profiles";
 import { contentView } from "@/lib/resource-view";
 import { resolveRoleLevel, toLevelParam } from "@/lib/role-level";
@@ -20,7 +26,13 @@ export const metadata: Metadata = {
 };
 
 type Props = {
-  searchParams: Promise<{ type?: string; level?: string; sort?: string; page?: string }>;
+  searchParams: Promise<{
+    type?: string;
+    pillar?: string;
+    level?: string;
+    sort?: string;
+    page?: string;
+  }>;
 };
 
 /** Learn hub (VIB-85, mockup screen 10). */
@@ -29,6 +41,7 @@ export default async function LearnPage({ searchParams }: Props) {
   // Unknown values are dropped rather than 404'd: a stale or hand-edited URL
   // should still show the hub, not an error.
   const type = toContentType(params.type);
+  const pillar = toContentPillar(params.pillar);
   const level = toLevelParam(params.level);
   const sort = toLearnSort(params.sort);
   const page = toPageNumber(params.page);
@@ -41,13 +54,20 @@ export default async function LearnPage({ searchParams }: Props) {
   const profile = auth.user ? await getProfile(supabase, auth.user.id) : null;
   const effectiveLevel = resolveRoleLevel(level, profile?.role_level ?? null);
 
-  const [{ items, total, pageCount }, bookmarks] = await Promise.all([
+  const [{ items, total, pageCount }, pillarCounts, bookmarks] = await Promise.all([
     listContent(supabase, {
       types: type ? [type] : LEARN_TYPE_VALUES,
       roleLevel: effectiveLevel,
+      pillar,
       sort,
       page,
     }),
+    /*
+     * Counts ignore the active filters on purpose: a chip row that renumbers
+     * itself as you filter cannot be read as "what is in this section", and
+     * picking one pillar would zero the other five.
+     */
+    countContentByPillar(supabase, LEARN_TYPE_VALUES),
     // Signed-out visitors still see Save buttons; pressing one sends them to
     // sign in. Only which ones read as saved needs a user.
     auth.user ? listBookmarks(supabase, auth.user.id, "content") : [],
@@ -55,7 +75,7 @@ export default async function LearnPage({ searchParams }: Props) {
 
   const bookmarkedIds = new Set(bookmarks.map((bookmark) => bookmark.target_id));
   // Come back to this exact filtered page after a signed-out visitor logs in.
-  const returnTo = learnHref({ type, level, sort, page });
+  const returnTo = learnHref({ type, pillar, level, sort, page });
 
   return (
     <main className="mx-auto w-full max-w-6xl p-6">
@@ -72,6 +92,8 @@ export default async function LearnPage({ searchParams }: Props) {
       <div className="mt-6">
         <LearnFilters
           type={type}
+          pillar={pillar}
+          pillarCounts={pillarCounts}
           level={level}
           effectiveLevel={effectiveLevel}
           hasProfileLevel={Boolean(profile?.role_level)}
@@ -119,7 +141,7 @@ export default async function LearnPage({ searchParams }: Props) {
             pageCount={pageCount}
             total={total}
             itemLabel="pieces"
-            href={(next) => learnHref({ type, level, sort, page: next })}
+            href={(next) => learnHref({ type, pillar, level, sort, page: next })}
           />
         </>
       ) : (

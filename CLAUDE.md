@@ -42,6 +42,7 @@ Lucide was the shadcn default and shipped here first; it was removed on 2026-09-
 ## Security
 
 - **RLS is the actual security boundary**, not the API layer — it's already built into migrations 02/03/05. Don't add app-code checks as a substitute for RLS; add them as defense in depth if you want, but RLS is what actually protects the data.
+- **A new table reaches the app only if the migration grants it.** Since migration 20 (VIB-60) `public` no longer hands `anon` and `authenticated` privileges on newly created tables automatically, so a `create table` alone produces a table the Data API cannot see. Grant what the table's RLS policies assume — `select` to `anon, authenticated` for public-read, writes to `authenticated` only, nothing to `anon` for owner-scoped data — in the same migration. The symptom of forgetting is `42501 permission denied`, not a security hole.
 - Never expose the Supabase service-role key client-side.
 - Validate all form/API input with `zod` — server-side validation is the security control; client-side is UX only.
 - Secrets live in Vercel env vars. Never commit `.env` or hardcode a key.

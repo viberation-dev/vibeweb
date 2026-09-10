@@ -70,5 +70,12 @@ Lucide was the shadcn default and shipped here first; it was removed on 2026-09-
 
 No separate docs system — migration 03's `content` table already covers it:
 - `content.type = help_article | role_guide`, `content.audience = enduser | author | admin | seller`
-- Visitor-facing and member-facing help → rows in `content`, surfaced through the Learn hub
+- Visitor-facing and member-facing help → rows in `content`, surfaced at **`/docs`** (VIB-104)
 - Internal engineering docs (README, this file, architecture notes) → repo + Notion Bible, **not** `content` rows
+
+"No separate docs system" still holds and means what it always meant: no second store, no Nextra/Mintlify, no second editor. `/docs` is a *view* over `content`, the same way `/blog` is — §28 calls it the "Docs/Help IA section, distinct from Learn (which teaches vibe-coding, not the platform)". Before VIB-104 that help surfaced through the Learn hub; it now has its own route, and `lib/learn.ts` still excludes `role_guide` from the Learn indexes for the same reason as before.
+
+The three utility-bar routes and where their content lives:
+- `/blog` — `content` rows of type `article | guide | cheatsheet | course_link`, by date. A view, not a store.
+- `/docs` — `content` rows of type `help_article | role_guide`, grouped by audience.
+- `/changelog` — a repo constant in `lib/changelog.ts`, **not** the database. A changelog entry is written by whoever ships the change, in the PR that causes it. Add the entry in the same PR as the change.

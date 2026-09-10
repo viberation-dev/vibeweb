@@ -677,6 +677,7 @@ export type Database = {
         | "course_link"
         | "help_article"
         | "role_guide"
+        | "announcement"
       docs_audience: "enduser" | "author" | "admin" | "seller"
       layout_mode: "essentials" | "advanced"
       role_level: "beginner" | "intermediate" | "expert"
@@ -843,6 +844,7 @@ export const Constants = {
         "course_link",
         "help_article",
         "role_guide",
+        "announcement",
       ],
       docs_audience: ["enduser", "author", "admin", "seller"],
       layout_mode: ["essentials", "advanced"],

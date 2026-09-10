@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import type { ContentFormState } from "@/app/(site)/admin/content/actions";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -37,6 +37,12 @@ const selectClass =
 
 export function ContentForm({ content, action }: Props) {
   const [state, formAction, pending] = useActionState(action, {});
+  /*
+   * Follows the select rather than the saved row, so switching the type to
+   * Announcement updates the hint before saving rather than after.
+   */
+  const [type, setType] = useState<string>(content?.type ?? "article");
+  const urlPrefix = type === "announcement" ? "/blog" : "/learn";
 
   return (
     <form action={formAction} className="space-y-6">
@@ -49,8 +55,9 @@ export function ContentForm({ content, action }: Props) {
         <Label htmlFor="slug">Slug</Label>
         <Input id="slug" name="slug" defaultValue={content?.slug ?? ""} required />
         <p className="text-muted-foreground text-sm">
-          The URL: <code>/learn/{content?.slug ?? "your-slug"}</code>. Changing it breaks
-          existing links.
+          The URL: <code>{urlPrefix}/{content?.slug ?? "your-slug"}</code> —
+          announcements live under <code>/blog</code>, everything else under{" "}
+          <code>/learn</code>. Changing a slug breaks existing links.
         </p>
       </div>
 
@@ -61,6 +68,7 @@ export function ContentForm({ content, action }: Props) {
             id="type"
             name="type"
             defaultValue={content?.type ?? "article"}
+            onChange={(event) => setType(event.target.value)}
             className={selectClass}
           >
             {CONTENT_TYPES.map((value) => (
@@ -147,7 +155,7 @@ export function ContentForm({ content, action }: Props) {
           className={`${selectClass} h-auto font-mono leading-relaxed`}
         />
         <p className="text-muted-foreground text-sm">
-          Markdown, rendered by <code>/learn/[slug]</code>.
+          Plain text, rendered as written by the page this appears on.
         </p>
       </div>
 

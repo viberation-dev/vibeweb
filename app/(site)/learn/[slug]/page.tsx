@@ -23,18 +23,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = await createClient();
   const item = await getContentBySlug(supabase, slug);
 
-  if (!item) {
+  if (!item || item.type === "announcement") {
     return { title: "Not found — Viberation" };
   }
   return { title: `${item.title} — Viberation` };
 }
 
 /**
- * One route for every content type.
+ * One route for every content type except announcements.
  *
  * `help_article` and `role_guide` render here alongside the editorial types
  * — migration 03's `content` table is the documentation system, so there is
  * no second set of routes or templates to keep in sync (§34).
+ *
+ * `announcement` is the exception (VIB-106): it has its own stream at /blog
+ * and its own detail route. Slugs are unique across `content`, so without
+ * the check below a post would answer at both /learn/x and /blog/x — two
+ * URLs for one thing, which is a duplicate rather than a convenience.
  */
 export default async function ContentPage({ params }: Props) {
   const { slug } = await params;
@@ -51,7 +56,7 @@ export default async function ContentPage({ params }: Props) {
     supabase.auth.getUser(),
   ]);
 
-  if (!item) {
+  if (!item || item.type === "announcement") {
     notFound();
   }
 

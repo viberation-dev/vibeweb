@@ -41,6 +41,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-11",
+    kind: "improved",
+    title: "Model pages that help you choose",
+    body: "Model pages now show live cost, memory, what a model can read and do, how it scores at coding, and uptime — with providers, limits and benchmarks one click away under Advanced details.",
+  },
+  {
+    date: "2026-09-11",
     kind: "added",
     title: "Testimonials",
     body: "The homepage can now carry quotes from real people, managed in the staff area. Until there are any, it keeps describing who the product is for instead.",

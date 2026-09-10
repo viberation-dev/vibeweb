@@ -748,3 +748,12 @@ from (values
   ('typesense','expert')
 ) as v(slug, best_for)
 where t.slug = v.slug;
+
+-- Live specs for the seeded models (VIB-107). The family's current flagship on
+-- OpenRouter; staff can point either at a different model in the editor.
+update tools t set openrouter_id = v.id
+from (values
+  ('claude', 'anthropic/claude-fable-5.1'),
+  ('gemini', 'google/gemini-3.8-flash')
+) as v(slug, id)
+where t.slug = v.slug;

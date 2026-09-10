@@ -101,3 +101,21 @@ test("an unstated audience is null, not a guess", () => {
   assert.equal(result.data.best_for, null);
   assert.equal(toolEditorSchema.safeParse({ ...valid, best_for: "guru" }).success, false);
 });
+
+test("an OpenRouter id is optional, and vendor/model when given", () => {
+  // Every tool that is not a model has none, and `valid` omits it entirely.
+  assert.equal(toolEditorSchema.parse(valid).openrouter_id, null);
+  assert.equal(toolEditorSchema.parse({ ...valid, openrouter_id: "  " }).openrouter_id, null);
+  assert.equal(
+    toolEditorSchema.parse({ ...valid, openrouter_id: " OpenAI/GPT-5.6-Luna " }).openrouter_id,
+    "openai/gpt-5.6-luna",
+  );
+  // The adapter puts this in a URL, so nothing that could walk out of /models/.
+  for (const id of ["gpt-5", "../admin", "a/b/c"]) {
+    assert.equal(
+      toolEditorSchema.safeParse({ ...valid, openrouter_id: id }).success,
+      false,
+      `expected ${id} to be rejected`,
+    );
+  }
+});

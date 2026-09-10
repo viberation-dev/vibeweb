@@ -2,6 +2,7 @@ import { z } from "zod";
 
 // Relative, with the extension: this module is imported by a plain
 // `node --test` file, which resolves no "@/" alias.
+import { OPENROUTER_ID } from "../model-facts.ts";
 import { safeOutboundUrl } from "../outbound.ts";
 import { PRICING_TIERS } from "../tool-facts.ts";
 import { TOOL_PLATFORM_VALUES } from "../tool-platforms.ts";
@@ -81,6 +82,21 @@ export const toolEditorSchema = z.object({
     .union([z.literal("on"), z.literal("")])
     .nullable()
     .transform((value) => value === "on"),
+  /*
+   * Where a model's live specs come from (VIB-107). Checked against the same
+   * shape as the column's CHECK so a typo is a form error rather than a 500 —
+   * and because the adapter puts this value in a URL.
+   */
+  openrouter_id: z
+    .string()
+    // Absent from a stale form and from any hand-posted request: unstated,
+    // not an error — the same treatment as the affiliate checkbox.
+    .nullish()
+    .transform((value) => (value ?? "").trim().toLowerCase())
+    .refine((value) => value === "" || OPENROUTER_ID.test(value), {
+      message: "OpenRouter IDs look like vendor/model, e.g. openai/gpt-5.6-luna.",
+    })
+    .transform((value) => (value === "" ? null : value)),
 });
 
 export type ToolEditorInput = z.infer<typeof toolEditorSchema>;

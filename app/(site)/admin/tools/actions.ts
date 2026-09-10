@@ -42,6 +42,7 @@ export async function saveToolAction(
     best_for: formData.get("best_for"),
     outbound_url: formData.get("outbound_url"),
     is_affiliate: formData.get("is_affiliate"),
+    openrouter_id: formData.get("openrouter_id"),
   });
 
   if (!parsed.success) {

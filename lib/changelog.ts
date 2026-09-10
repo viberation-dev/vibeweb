@@ -41,6 +41,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-11",
+    kind: "fixed",
+    title: "Header fits on phones and tablets",
+    body: "The header no longer pushes the page sideways on smaller screens. The colour mode switch now lives in the menu there.",
+  },
+  {
+    date: "2026-09-11",
     kind: "added",
     title: "Testimonials",
     body: "The homepage can now carry quotes from real people, managed in the staff area. Until there are any, it keeps describing who the product is for instead.",

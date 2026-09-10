@@ -15,6 +15,7 @@ import { ButtonIcon, buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { TOP_NAV } from "@/lib/nav";
 import { getCurrentProfile, type Profile } from "@/lib/queries/profiles";
+import { countAffiliateTools } from "@/lib/queries/tools";
 
 /**
  * Up to two letters for the header avatar, from whatever identity exists.
@@ -52,6 +53,12 @@ export default async function SiteLayout({
   const supabase = await createClient();
   const profile = await getCurrentProfile(supabase);
 
+  /*
+   * The footer's affiliate line is a claim about the site, so it is read from
+   * the site rather than typed into the markup — see countAffiliateTools.
+   */
+  const affiliateCount = await countAffiliateTools(supabase);
+
   return (
     <>
       {profile ? (
@@ -85,7 +92,11 @@ export default async function SiteLayout({
         </>
       )}
 
-      {profile ? <AppFooter /> : <VisitorFooter />}
+      {profile ? (
+        <AppFooter />
+      ) : (
+        <VisitorFooter hasAffiliateLinks={affiliateCount > 0} />
+      )}
     </>
   );
 }
@@ -193,7 +204,7 @@ const FOOTER_COLUMNS = [
 ] as const;
 
 /** v3's visitor footer (VIB-98). */
-function VisitorFooter() {
+function VisitorFooter({ hasAffiliateLinks }: { hasAffiliateLinks: boolean }) {
   return (
     <footer className="mt-20 border-t">
       <div className="mx-auto max-w-7xl px-6 py-12">
@@ -225,7 +236,15 @@ function VisitorFooter() {
 
         <div className="text-muted-foreground mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 border-t pt-6 text-sm">
           <span>&copy; {new Date().getFullYear()} Viberation</span>
-          <span>Some links are affiliate links</span>
+          {/*
+            Only claimed when it is true. No tool carries an affiliate link
+            today (VIB-100): the programmes require a live site with content
+            before they approve an application, so this line would have been
+            asserting something untrue on every page.
+          */}
+          {hasAffiliateLinks ? (
+            <span>Some links are affiliate links</span>
+          ) : null}
           {/*
             SocialRail is hidden below 1280px, so the same links need a home
             that is always reachable.

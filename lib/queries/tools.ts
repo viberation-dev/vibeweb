@@ -320,6 +320,32 @@ export async function countToolsByCategory(
   return counts;
 }
 
+/**
+ * How many tools actually carry an affiliate link.
+ *
+ * The footer's "Some links are affiliate links" line is derived from this
+ * rather than hardcoded. As of 2026-09-11 the answer is 0: affiliate
+ * programmes require a live site with real content before they approve an
+ * application, so the /go redirect and the disclosure page are plumbing built
+ * ahead of relationships that do not exist yet.
+ *
+ * Deriving it means the claim appears by itself the day the first affiliate
+ * link is flagged, and cannot be left asserting something untrue in the
+ * meantime — which is exactly the kind of promise nobody remembers to go back
+ * and make honest.
+ */
+export async function countAffiliateTools(client: Client): Promise<number> {
+  const { count, error } = await client
+    .from("tools")
+    .select("id", { count: "exact", head: true })
+    .eq("is_affiliate", true);
+
+  if (error) {
+    throw new Error(`countAffiliateTools: ${error.message}`);
+  }
+  return count ?? 0;
+}
+
 /** One tool by id, for the editor. Null when it does not exist. */
 export async function getToolById(
   client: Client,

@@ -4,17 +4,14 @@ import Link from "next/link";
  * Thin bar above the header (VIB-99) — contact and support on the left,
  * publication links on the right. Wraps to two rows below 760px.
  *
- * ⚠️ Blog, Docs, Changelog and Get support have **no routes in this app**,
- * and `hello@viberation.dev` is not the address on record (§20 lists
- * viberation.dev@gmail.com). Ali chose to ship the bar with v3's links
- * as-is after this was flagged — see the VIB-98 PR. They are `#` anchors,
- * not Next routes, so nothing 404s, but they also go nowhere. Replace each
- * with a real destination as it lands.
+ * All four destinations are real as of VIB-104. They shipped as `#` anchors
+ * with VIB-98 because none of the pages existed; Blog, Docs and Changelog now
+ * do, and "Get support" points at Docs, which is where support lives.
  */
 const PUBLICATIONS = [
-  { label: "Blog", href: "#" },
-  { label: "Docs", href: "#" },
-  { label: "Changelog", href: "#" },
+  { label: "Blog", href: "/blog" },
+  { label: "Docs", href: "/docs" },
+  { label: "Changelog", href: "/changelog" },
 ] as const;
 
 export function UtilityBar() {
@@ -31,7 +28,7 @@ export function UtilityBar() {
           </a>
         </span>
         <Separator />
-        <Link href="#" className="hover:text-foreground">
+        <Link href="/docs" className="hover:text-foreground">
           Get support
         </Link>
 

@@ -15,6 +15,8 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
+import { contrastRatio, mixOklab } from "./color-contrast.ts";
+
 const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
 
 /** Pulls the hex custom properties out of one top-level block. */
@@ -27,20 +29,6 @@ function palette(selector: string): Record<string, string> {
     out[name] = hex.toLowerCase();
   }
   return out;
-}
-
-/** WCAG 2.x relative luminance. */
-function luminance(hex: string): number {
-  const ch = [1, 3, 5].map((i) => {
-    const v = parseInt(hex.slice(i, i + 2), 16) / 255;
-    return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
-  });
-  return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
-}
-
-function ratio(a: string, b: string): number {
-  const [x, y] = [luminance(a) + 0.05, luminance(b) + 0.05];
-  return Math.max(x, y) / Math.min(x, y);
 }
 
 const AA_NORMAL = 4.5;
@@ -59,7 +47,7 @@ for (const mode of [":root", ".dark"] as const) {
        */
       "--secondary",
     ] as const) {
-      const r = ratio(p["--primary"], p[ground]);
+      const r = contrastRatio(p["--primary"], p[ground]);
       assert.ok(
         r >= AA_NORMAL,
         `${p["--primary"]} on ${ground} ${p[ground]} is ${r.toFixed(2)}:1, under ${AA_NORMAL}`,
@@ -69,10 +57,47 @@ for (const mode of [":root", ".dark"] as const) {
 
   test(`${mode}: --primary-foreground clears AA on a --primary fill`, () => {
     const p = palette(mode);
-    const r = ratio(p["--primary-foreground"], p["--primary"]);
+    const r = contrastRatio(p["--primary-foreground"], p["--primary"]);
     assert.ok(
       r >= AA_NORMAL,
       `label ${p["--primary-foreground"]} on ${p["--primary"]} is ${r.toFixed(2)}:1, under ${AA_NORMAL}`,
     );
+  });
+}
+
+/*
+ * Difficulty badges (VIB-103).
+ *
+ * These build their own background: the plate is
+ * `color-mix(in oklab, <colour> 13%, var(--card))`, so the pair to check is
+ * the colour against a mix of itself and the card. That is why this needs
+ * real Oklab maths rather than two hex values — and why the failure hid for
+ * so long, since eyeballing a token list tells you nothing about it.
+ */
+const DIFFICULTY_LEVELS = [
+  "--difficulty-beginner",
+  "--difficulty-intermediate",
+  "--difficulty-advanced",
+] as const;
+
+/** Matches the `13%` in globals.css. Both must move together. */
+const PLATE_MIX = 0.13;
+
+for (const mode of [":root", ".dark"] as const) {
+  test(`${mode}: every difficulty badge clears AA on its own plate`, () => {
+    const p = palette(mode);
+
+    for (const level of DIFFICULTY_LEVELS) {
+      const colour = p[level];
+      assert.ok(colour, `${mode} is missing ${level}`);
+
+      const plate = mixOklab(colour, p["--card"], PLATE_MIX);
+      const r = contrastRatio(colour, plate);
+
+      assert.ok(
+        r >= AA_NORMAL,
+        `${level} ${colour} on its plate ${plate} is ${r.toFixed(2)}:1, under ${AA_NORMAL}`,
+      );
+    }
   });
 }

@@ -120,9 +120,15 @@
   --highlight-hover: #c7e000; /* lime-deep */
   --highlight-foreground: #050505; /* ink */
 
-  /* Difficulty badges — fixed hue per level, independent of theme/mode. The
-     background/border tints are mixed against the active card colour so
-     they still read correctly in dark mode without a second colour set. */
+  /* Difficulty badges — one hue per level, so "Beginner" is always the same
+     green. The *lightness* adapts per mode, which the shipped set did not do
+     (VIB-103): the plate is mixed from the colour and --card, so in dark mode
+     it became a near-black tint while the text stayed light-mode ink, and all
+     three levels landed between 2.7:1 and 3.8:1. Intermediate additionally
+     failed at 3.8:1 on white.
+
+     Every pair now clears 4.5:1 against its own plate with headroom —
+     lib/contrast.test.ts walks all six and fails if a change breaks one. */
   --difficulty-beginner: #0b6b4f;
   --difficulty-beginner-bg: color-mix(
     in oklab,
@@ -134,7 +140,7 @@
     var(--difficulty-beginner) 32%,
     var(--card)
   );
-  --difficulty-intermediate: #a9690a;
+  --difficulty-intermediate: #8d5603; /* was #a9690a — 3.78:1 on its own plate */
   --difficulty-intermediate-bg: color-mix(
     in oklab,
     var(--difficulty-intermediate) 13%,
@@ -214,7 +220,9 @@
   --highlight-hover: #c7e000;
   --highlight-foreground: #07070c;
 
-  --difficulty-beginner: #0b6b4f;
+  /* Lifted for the dark card (VIB-103). Same hues as light mode, brighter
+     stops — a fixed hex across modes is what put these at 2.7:1. */
+  --difficulty-beginner: #499b7c;
   --difficulty-beginner-bg: color-mix(
     in oklab,
     var(--difficulty-beginner) 13%,
@@ -225,7 +233,7 @@
     var(--difficulty-beginner) 32%,
     var(--card)
   );
-  --difficulty-intermediate: #a9690a;
+  --difficulty-intermediate: #c07f2d;
   --difficulty-intermediate-bg: color-mix(
     in oklab,
     var(--difficulty-intermediate) 13%,
@@ -236,7 +244,7 @@
     var(--difficulty-intermediate) 32%,
     var(--card)
   );
-  --difficulty-advanced: #b3253c;
+  --difficulty-advanced: #eb5c69;
   --difficulty-advanced-bg: color-mix(
     in oklab,
     var(--difficulty-advanced) 13%,

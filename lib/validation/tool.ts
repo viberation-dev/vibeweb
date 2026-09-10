@@ -2,6 +2,7 @@ import { z } from "zod";
 
 // Relative, with the extension: this module is imported by a plain
 // `node --test` file, which resolves no "@/" alias.
+import { OPENROUTER_FAMILY, OPENROUTER_ID } from "../model-facts.ts";
 import { safeOutboundUrl } from "../outbound.ts";
 import { PRICING_TIERS } from "../tool-facts.ts";
 import { TOOL_PLATFORM_VALUES } from "../tool-platforms.ts";
@@ -81,6 +82,45 @@ export const toolEditorSchema = z.object({
     .union([z.literal("on"), z.literal("")])
     .nullable()
     .transform((value) => value === "on"),
-});
+  /*
+   * Model family and its featured model (VIB-107). Checked against the same
+   * shapes as the columns' CHECKs so a typo is a form error rather than a 500
+   * — and because the adapter puts these values in URLs.
+   */
+  openrouter_family: optionalOpenRouter(
+    OPENROUTER_FAMILY,
+    "OpenRouter families look like vendor/name, e.g. anthropic/claude.",
+  ),
+  openrouter_id: optionalOpenRouter(
+    OPENROUTER_ID,
+    "OpenRouter IDs look like vendor/model, e.g. anthropic/claude-sonnet-5.",
+  ),
+})
+  // Mirrors tools_openrouter_id_in_family: featuring a GPT on the Claude page
+  // would be a wrong fact, not a style choice.
+  .refine(
+    (tool) =>
+      tool.openrouter_id === null ||
+      (tool.openrouter_family !== null && tool.openrouter_id.startsWith(tool.openrouter_family)),
+    {
+      message:
+        "The featured model has to belong to the family, e.g. anthropic/claude-sonnet-5 in anthropic/claude.",
+      path: ["openrouter_id"],
+    },
+  );
 
 export type ToolEditorInput = z.infer<typeof toolEditorSchema>;
+
+/**
+ * An optional, lowercased OpenRouter identifier. Absent from a stale form or a
+ * hand-posted request means unstated, not an error — the same treatment as
+ * the affiliate checkbox.
+ */
+function optionalOpenRouter(shape: RegExp, message: string) {
+  return z
+    .string()
+    .nullish()
+    .transform((value) => (value ?? "").trim().toLowerCase())
+    .refine((value) => value === "" || shape.test(value), { message })
+    .transform((value) => (value === "" ? null : value));
+}

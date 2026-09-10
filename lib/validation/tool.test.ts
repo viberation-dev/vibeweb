@@ -101,3 +101,45 @@ test("an unstated audience is null, not a guess", () => {
   assert.equal(result.data.best_for, null);
   assert.equal(toolEditorSchema.safeParse({ ...valid, best_for: "guru" }).success, false);
 });
+
+test("OpenRouter family and featured model are optional, and shaped when given", () => {
+  // Every tool that is not a model has neither, and `valid` omits both.
+  const plain = toolEditorSchema.parse(valid);
+  assert.equal(plain.openrouter_family, null);
+  assert.equal(plain.openrouter_id, null);
+
+  const model = toolEditorSchema.parse({
+    ...valid,
+    openrouter_family: " OpenAI/GPT ",
+    openrouter_id: " OpenAI/GPT-5.6-Luna ",
+  });
+  assert.equal(model.openrouter_family, "openai/gpt");
+  assert.equal(model.openrouter_id, "openai/gpt-5.6-luna");
+
+  // The adapter puts these in URLs, so nothing that could walk out of /models/.
+  for (const family of ["gpt", "../admin", "a/b/c", "openai/gpt:free"]) {
+    assert.equal(
+      toolEditorSchema.safeParse({ ...valid, openrouter_family: family }).success,
+      false,
+      `expected ${family} to be rejected`,
+    );
+  }
+});
+
+test("a featured model must belong to its family", () => {
+  assert.equal(
+    toolEditorSchema.safeParse({
+      ...valid,
+      openrouter_family: "anthropic/claude",
+      openrouter_id: "openai/gpt-5.6-luna",
+    }).success,
+    false,
+  );
+  // A featured model with no family has nothing to belong to.
+  assert.equal(
+    toolEditorSchema.safeParse({ ...valid, openrouter_id: "anthropic/claude-sonnet-5" }).success,
+    false,
+  );
+  // A family alone is fine: the page then leads with the newest model.
+  assert.ok(toolEditorSchema.safeParse({ ...valid, openrouter_family: "anthropic/claude" }).success);
+});

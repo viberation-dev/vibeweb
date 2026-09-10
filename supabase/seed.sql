@@ -748,3 +748,13 @@ from (values
   ('typesense','expert')
 ) as v(slug, best_for)
 where t.slug = v.slug;
+
+-- Live specs for the seeded model families (VIB-107). Each lists every model
+-- OpenRouter has under the prefix; the featured one leads. Staff can change
+-- either in the editor.
+update tools t set openrouter_family = v.family, openrouter_id = v.featured
+from (values
+  ('claude', 'anthropic/claude', 'anthropic/claude-sonnet-5'),
+  ('gemini', 'google/gemini', 'google/gemini-3.8-flash')
+) as v(slug, family, featured)
+where t.slug = v.slug;

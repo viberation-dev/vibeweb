@@ -41,6 +41,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-11",
+    kind: "improved",
+    title: "Model families that help you choose",
+    body: "Model pages now list every model in a family — each Claude, GPT or Gemini, newest first — with live cost, memory, what it can read and do, how it scores at coding, and uptime. Providers, limits and benchmarks sit one click away under Advanced details.",
+  },
+  {
+    date: "2026-09-11",
     kind: "fixed",
     title: "Header fits on phones and tablets",
     body: "The header no longer pushes the page sideways on smaller screens. The colour mode switch now lives in the menu there.",

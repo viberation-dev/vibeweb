@@ -7,7 +7,9 @@ import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import { CategoryIcon } from "@/components/features/tools/CategoryIcon";
 import { DirectoryFilters } from "@/components/features/tools/DirectoryFilters";
 import { buttonVariants } from "@/components/ui/button";
+import { getOpenRouterModels } from "@/lib/integrations/openrouter";
 import { createClient } from "@/lib/integrations/supabase/server";
+import { familyLine, familyMembers } from "@/lib/model-facts";
 import { toPageNumber } from "@/lib/pagination";
 import { listBookmarks } from "@/lib/queries/bookmarks";
 import { listTags } from "@/lib/queries/tags";
@@ -64,11 +66,23 @@ export default async function ToolsPage({ searchParams }: Props) {
     auth.user ? listBookmarks(supabase, auth.user.id, "tool") : [],
   ]);
 
-  // One round trip for the whole grid's tag pills rather than one per card.
-  const toolTags = await getToolTagsByIds(
-    supabase,
-    tools.map((tool) => tool.id),
-  );
+  const [toolTags, liveModels] = await Promise.all([
+    // One round trip for the whole grid's tag pills rather than one per card.
+    getToolTagsByIds(
+      supabase,
+      tools.map((tool) => tool.id),
+    ),
+    // Only when this page shows a model with live specs; cached for an hour
+    // and empty rather than throwing when OpenRouter is down (VIB-107).
+    tools.some((tool) => tool.openrouter_family) ? getOpenRouterModels() : null,
+  ]);
+
+  /** "15 models · from $0.25 per 1M" for a model family's card; undefined otherwise. */
+  const familyFor = (family: string | null) =>
+    family && liveModels
+      ? familyLine(familyMembers(liveModels.values(), family).map((m) => m.price.input)) ||
+        undefined
+      : undefined;
 
   const bookmarkedIds = new Set(
     bookmarks.map((bookmark) => bookmark.target_id),
@@ -165,6 +179,7 @@ export default async function ToolsPage({ searchParams }: Props) {
                     />
                   }
                   description={tool.tagline}
+                  meta={familyFor(tool.openrouter_family)}
                   badges={[
                     toolCategoryLabel(tool.category),
                     ...(toolTags.get(tool.id) ?? [])

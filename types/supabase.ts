@@ -361,6 +361,51 @@ export type Database = {
         }
         Relationships: []
       }
+      testimonials: {
+        Row: {
+          author_name: string
+          consent_at: string
+          created_at: string
+          id: string
+          initials: string | null
+          location: string | null
+          published: boolean
+          quote: string
+          role_level: Database["public"]["Enums"]["role_level"] | null
+          sort_order: number
+          source_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          author_name: string
+          consent_at: string
+          created_at?: string
+          id?: string
+          initials?: string | null
+          location?: string | null
+          published?: boolean
+          quote: string
+          role_level?: Database["public"]["Enums"]["role_level"] | null
+          sort_order?: number
+          source_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          author_name?: string
+          consent_at?: string
+          created_at?: string
+          id?: string
+          initials?: string | null
+          location?: string | null
+          published?: boolean
+          quote?: string
+          role_level?: Database["public"]["Enums"]["role_level"] | null
+          sort_order?: number
+          source_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tool_clicks: {
         Row: {
           clicked_at: string

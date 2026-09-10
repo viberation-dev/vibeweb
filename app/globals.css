@@ -128,7 +128,16 @@
      failed at 3.8:1 on white.
 
      Every pair now clears 4.5:1 against its own plate with headroom —
-     lib/contrast.test.ts walks all six and fails if a change breaks one. */
+     lib/contrast.test.ts walks all six and fails if a change breaks one.
+
+     The border is a 70% mix, not the original 32%: at 32% it sat around
+     1.5-1.7:1 against the card, which is not an edge, it is a suggestion of
+     one. 70% clears 3:1 on the outside (VIB-105). The inner side, border
+     against its own plate, lands at ~2.8:1 — deliberately: pushing that to
+     3:1 too would mean a border close to the full colour, which turns a soft
+     status tint into a hard outlined chip. A badge is a static label, not an
+     interactive control, so the boundary that matters is the one against the
+     surface it sits on. */
   --difficulty-beginner: #0b6b4f;
   --difficulty-beginner-bg: color-mix(
     in oklab,
@@ -137,7 +146,7 @@
   );
   --difficulty-beginner-border: color-mix(
     in oklab,
-    var(--difficulty-beginner) 32%,
+    var(--difficulty-beginner) 70%,
     var(--card)
   );
   --difficulty-intermediate: #8d5603; /* was #a9690a — 3.78:1 on its own plate */
@@ -148,7 +157,7 @@
   );
   --difficulty-intermediate-border: color-mix(
     in oklab,
-    var(--difficulty-intermediate) 32%,
+    var(--difficulty-intermediate) 70%,
     var(--card)
   );
   --difficulty-advanced: #b3253c;
@@ -159,7 +168,7 @@
   );
   --difficulty-advanced-border: color-mix(
     in oklab,
-    var(--difficulty-advanced) 32%,
+    var(--difficulty-advanced) 70%,
     var(--card)
   );
 }
@@ -230,7 +239,7 @@
   );
   --difficulty-beginner-border: color-mix(
     in oklab,
-    var(--difficulty-beginner) 32%,
+    var(--difficulty-beginner) 70%,
     var(--card)
   );
   --difficulty-intermediate: #c07f2d;
@@ -241,7 +250,7 @@
   );
   --difficulty-intermediate-border: color-mix(
     in oklab,
-    var(--difficulty-intermediate) 32%,
+    var(--difficulty-intermediate) 70%,
     var(--card)
   );
   --difficulty-advanced: #eb5c69;
@@ -252,7 +261,7 @@
   );
   --difficulty-advanced-border: color-mix(
     in oklab,
-    var(--difficulty-advanced) 32%,
+    var(--difficulty-advanced) 70%,
     var(--card)
   );
 }

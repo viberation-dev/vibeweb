@@ -4,8 +4,11 @@ import { cn } from "@/lib/utils";
 import type { RoleLevel } from "@/lib/role-level";
 
 /*
- * Fixed hue per level, independent of theme/mode, so "Beginner" reads the
- * same colour everywhere (Viberation Design System readme "Colour").
+ * One hue per level, so "Beginner" reads as the same green everywhere
+ * (Viberation Design System readme "Colour"). The *lightness* adapts per
+ * mode: the plate is mixed from the colour and --card, so a hex fixed across
+ * modes put all three levels between 2.7:1 and 3.8:1 in dark (VIB-103). Hue
+ * is the promise; the hex is not.
  *
  * Lives in features/, not ui/, because it is not a primitive: it knows the
  * product's `role_level` enum. components/ui holds things that know nothing

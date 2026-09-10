@@ -46,9 +46,19 @@ function ratio(a: string, b: string): number {
 const AA_NORMAL = 4.5;
 
 for (const mode of [":root", ".dark"] as const) {
-  test(`${mode}: --primary clears AA as small text, both grounds`, () => {
+  test(`${mode}: --primary clears AA as small text on every ground`, () => {
     const p = palette(mode);
-    for (const ground of ["--background", "--card"] as const) {
+    for (const ground of [
+      "--background",
+      "--card",
+      /*
+       * --secondary is the one that binds: it is the lightest of the three
+       * dark grounds, and the v3 homepage (VIB-98) sets text-primary on it
+       * throughout — section links, card CTAs, eyebrows. Checking only
+       * --background and --card passes a token that still fails in place.
+       */
+      "--secondary",
+    ] as const) {
       const r = ratio(p["--primary"], p[ground]);
       assert.ok(
         r >= AA_NORMAL,

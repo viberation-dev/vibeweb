@@ -166,12 +166,19 @@
   --card-foreground: #f2f2f5;
   --popover: #101018;
   --popover-foreground: #f2f2f5;
-  /* #4c63ff cleared 3:1 as an icon but only 4.4:1 / 4.1:1 as small text on
-     --background / --card, under the 4.5:1 bar (VIB-97). Lifting it fixes the
-     text but costs the fill: white on #5a6fff is 4.08:1. One token cannot
-     serve both roles here — text wants a lighter blue, a white label wants a
-     darker one — so the label goes to ink, which reads 4.9:1 on the fill. */
-  --primary: #5a6fff; /* blue-primary-bright — 4.6:1 on --card, 4.9:1 on --background */
+  /* #4c63ff cleared 3:1 as an icon but only 4.3:1 / 4.1:1 / 3.9:1 as small
+     text on --background / --card / --secondary, under the 4.5:1 bar
+     (VIB-97). Lifting it fixes the text but costs the fill: white on a blue
+     this light is under 4.5:1 too. One token cannot serve both roles here —
+     text wants a lighter blue, a white label wants a darker one — so the
+     label goes to ink, which reads 5.1:1 on the fill.
+
+     --secondary is the binding ground, not --background: it is the lightest
+     of the three, so it needs the most lift. An earlier pass at this issue
+     stopped at #5a6fff, which clears --background (4.9) and --card (4.6) but
+     leaves --secondary at 4.41 — and the v3 homepage (VIB-98) puts
+     text-primary on secondary surfaces throughout. */
+  --primary: #6072ff; /* blue-primary-bright — 5.1 bg / 4.8 card / 4.6 secondary */
   --primary-foreground: #07070c; /* ink, not white — see above */
   --primary-hover: #6b7eff;
   --secondary: #16161f; /* surface-muted, dark */
@@ -184,7 +191,7 @@
   --destructive: #e6677a;
   --border: #23232e;
   --input: #23232e;
-  --ring: #5a6fff;
+  --ring: #6072ff;
   --chart-1: #4c63ff;
   --chart-2: #6b7eff;
   --chart-3: #0b6b4f;
@@ -192,12 +199,12 @@
   --chart-5: #b3253c;
   --sidebar: #101018;
   --sidebar-foreground: #f2f2f5;
-  --sidebar-primary: #5a6fff;
+  --sidebar-primary: #6072ff;
   --sidebar-primary-foreground: #07070c;
   --sidebar-accent: #16161f;
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: #23232e;
-  --sidebar-ring: #5a6fff;
+  --sidebar-ring: #6072ff;
 
   /* Lime survives into dark mode as a sparing highlight only (readme
      "Colour" rules) — the fill colour itself does not change, only its

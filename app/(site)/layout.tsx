@@ -8,7 +8,6 @@ import { Logo } from "@/components/features/nav/Logo";
 import { SiteHeader } from "@/components/features/nav/SiteHeader";
 import { SocialRail } from "@/components/features/nav/SocialRail";
 import { ThemeRail } from "@/components/features/nav/ThemeRail";
-import { ThemeToggle } from "@/components/features/nav/ThemeToggle";
 import { UtilityBar } from "@/components/features/nav/UtilityBar";
 import { SearchInput } from "@/components/features/search/SearchInput";
 import { ButtonIcon, buttonVariants } from "@/components/ui/button";
@@ -149,27 +148,32 @@ function VisitorHeader() {
           {/* §31 puts search in the top nav on every page, not just /search. */}
           <SearchInput compact className="hidden md:flex" />
           {/*
-            The rails hide below 1280px, which VIB-99 flags as a gap. Above it
-            ThemeRail owns this control, so the header copy hides — never two
-            toggles on screen at once.
+            No theme switch here. Its three labelled buttons pushed the header
+            past the viewport at every width below 1280px. ThemeRail owns it
+            from xl, and the hamburger overlay carries it below that.
           */}
-          <div className="xl:hidden">
-            <ThemeToggle />
-          </div>
           <Link
             href="/login"
-            className="hover:text-primary hidden text-[0.9375rem] font-semibold sm:block"
+            className="hover:text-primary hidden text-[0.9375rem] font-semibold whitespace-nowrap sm:block"
           >
             Sign in
           </Link>
+          {/*
+            Below 640px the burger and wordmark leave ~100px, so the pill
+            collapses to its badge. The label stays for screen readers.
+          */}
           <Link
             href="/signup"
-            className={buttonVariants({ variant: "pill", size: "pill-sm" })}
+            className={buttonVariants({
+              variant: "pill",
+              size: "pill-sm",
+              className: "max-sm:pr-1.5",
+            })}
           >
             <ButtonIcon size="sm">
               <IconArrowUpRight />
             </ButtonIcon>
-            Get started
+            <span className="max-sm:sr-only">Get started</span>
           </Link>
         </div>
       </div>

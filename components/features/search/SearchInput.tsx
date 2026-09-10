@@ -37,7 +37,7 @@ export function SearchInput({ defaultValue, compact, className }: Props) {
         name="q"
         defaultValue={defaultValue}
         placeholder="Search tools and guides"
-        className={cn(compact && "h-9 w-44 lg:w-64")}
+        className={cn(compact && "h-9 w-44 xl:w-64")}
       />
       <Button type="submit" variant={compact ? "ghost" : "default"} size={compact ? "icon" : "default"}>
         <IconSearch aria-hidden />

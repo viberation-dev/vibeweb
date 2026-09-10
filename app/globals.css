@@ -166,8 +166,13 @@
   --card-foreground: #f2f2f5;
   --popover: #101018;
   --popover-foreground: #f2f2f5;
-  --primary: #4c63ff; /* blue-primary-bright — dark-mode lift for contrast */
-  --primary-foreground: #ffffff;
+  /* #4c63ff cleared 3:1 as an icon but only 4.4:1 / 4.1:1 as small text on
+     --background / --card, under the 4.5:1 bar (VIB-97). Lifting it fixes the
+     text but costs the fill: white on #5a6fff is 4.08:1. One token cannot
+     serve both roles here — text wants a lighter blue, a white label wants a
+     darker one — so the label goes to ink, which reads 4.9:1 on the fill. */
+  --primary: #5a6fff; /* blue-primary-bright — 4.6:1 on --card, 4.9:1 on --background */
+  --primary-foreground: #07070c; /* ink, not white — see above */
   --primary-hover: #6b7eff;
   --secondary: #16161f; /* surface-muted, dark */
   --secondary-foreground: #ffffff; /* text-strong, dark */
@@ -179,7 +184,7 @@
   --destructive: #e6677a;
   --border: #23232e;
   --input: #23232e;
-  --ring: #4c63ff;
+  --ring: #5a6fff;
   --chart-1: #4c63ff;
   --chart-2: #6b7eff;
   --chart-3: #0b6b4f;
@@ -187,12 +192,12 @@
   --chart-5: #b3253c;
   --sidebar: #101018;
   --sidebar-foreground: #f2f2f5;
-  --sidebar-primary: #4c63ff;
-  --sidebar-primary-foreground: #ffffff;
+  --sidebar-primary: #5a6fff;
+  --sidebar-primary-foreground: #07070c;
   --sidebar-accent: #16161f;
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: #23232e;
-  --sidebar-ring: #4c63ff;
+  --sidebar-ring: #5a6fff;
 
   /* Lime survives into dark mode as a sparing highlight only (readme
      "Colour" rules) — the fill colour itself does not change, only its

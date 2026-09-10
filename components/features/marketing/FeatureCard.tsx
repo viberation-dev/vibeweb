@@ -39,7 +39,7 @@ export function FeatureCard({
       <Link
         href={href}
         className={cn(
-          "motion-lift flex h-full flex-col rounded-2xl p-7",
+          "motion-lift flex h-full flex-col rounded-[1.125rem] p-[clamp(1.5rem,2.4vw,2.125rem)]",
           filled
             ? "bg-primary text-primary-foreground"
             : "bg-secondary text-foreground",
@@ -47,7 +47,7 @@ export function FeatureCard({
       >
         <span
           className={cn(
-            "flex size-14 items-center justify-center rounded-2xl [&_svg]:size-6",
+            "mb-[1.625rem] flex size-15 items-center justify-center rounded-2xl [&_svg]:size-6.5",
             filled
               ? "bg-highlight text-highlight-foreground"
               : "bg-card text-primary",
@@ -56,16 +56,16 @@ export function FeatureCard({
           {icon}
         </span>
 
-        <h3 className="font-heading mt-6 text-xl font-semibold tracking-tight">
+        <h3 className="font-heading text-[clamp(1.25rem,1.6vw,1.5rem)] leading-tight font-bold tracking-[-0.035em]">
           {title}
         </h3>
 
-        <ul className="mt-5 grid gap-2.5">
+        <ul className="mt-[1.375rem] grid gap-[0.6875rem]">
           {points.map((point) => (
             <li
               key={point}
               className={cn(
-                "flex items-center gap-2.5 text-sm",
+                "flex items-center gap-2.5 text-[0.9rem] font-semibold",
                 /* No opacity on the filled card: --primary-foreground at 90%
                    over the fill measures 4.07:1, under the 4.5 bar. The
                    token at full strength is what clears it. */
@@ -86,7 +86,7 @@ export function FeatureCard({
 
         <span
           className={cn(
-            "mt-auto flex items-center gap-2 pt-7 text-sm font-semibold",
+            "mt-auto flex items-center gap-2 pt-[1.625rem] text-[0.9rem] font-bold",
             filled ? "" : "text-primary",
           )}
         >

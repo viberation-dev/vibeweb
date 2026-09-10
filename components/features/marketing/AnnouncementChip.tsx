@@ -22,9 +22,9 @@ export function AnnouncementChip({
   return (
     <Link
       href={href}
-      className="bg-secondary hover:bg-accent inline-flex items-center gap-2.5 rounded-full py-1.5 pr-4 pl-1.5 text-sm transition-colors"
+      className="bg-secondary hover:bg-primary/10 inline-flex items-center gap-3 rounded-full py-2 pr-5 pl-2 text-sm font-medium transition-colors"
     >
-      <span className="bg-foreground text-background rounded-full px-2.5 py-0.5 text-xs font-bold">
+      <span className="bg-foreground text-background rounded-full px-3 py-1 text-xs font-bold">
         {badge}
       </span>
       {children}

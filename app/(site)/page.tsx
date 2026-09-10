@@ -31,7 +31,7 @@ import { listHistory } from "@/lib/queries/history";
 import { getProfile, type Profile } from "@/lib/queries/profiles";
 import { resolveTargetViews } from "@/lib/queries/resources";
 import { listPopularTags } from "@/lib/queries/tags";
-import { listTools } from "@/lib/queries/tools";
+import { countToolsByCategory, listTools } from "@/lib/queries/tools";
 import { getWizardProgress, listWizards } from "@/lib/queries/wizards";
 import { TOOL_CATEGORIES } from "@/lib/tool-categories";
 import { toolsHref } from "@/lib/tools-url";
@@ -85,16 +85,23 @@ export default async function HomePage({ searchParams }: Props) {
   const flagship = wizards[0];
 
   if (!auth.user) {
-    const counts = await countCollectionItems(
-      supabase,
-      collections.map((collection) => collection.id),
-    );
+    const [counts, categoryCounts] = await Promise.all([
+      countCollectionItems(
+        supabase,
+        collections.map((collection) => collection.id),
+      ),
+      // The category tiles carry real totals (VIB-101), same rule as the
+      // stat block: a number that contradicts the directory is worse than
+      // no number.
+      countToolsByCategory(supabase),
+    ]);
     return (
       <MarketingHome
         toolCount={toolCount}
         previewTools={tools.slice(0, 3)}
         collections={collections}
         collectionCounts={counts}
+        categoryCounts={categoryCounts}
         latest={latest}
         flagship={flagship}
         newsletterEnabled={newsletterFormEnabled()}

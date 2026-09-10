@@ -131,8 +131,9 @@ function VisitorHeader() {
           </nav>
         </details>
 
+        {/* Wordmark at 26px — 30% up from the shipped 20px (VIB-101). */}
         <Link href="/" aria-label="Viberation — home" className="shrink-0">
-          <Logo className="h-5" />
+          <Logo className="h-6.5" />
         </Link>
 
         {/*
@@ -177,7 +178,7 @@ function VisitorHeader() {
             href="/signup"
             className={buttonVariants({ variant: "pill", size: "pill-sm" })}
           >
-            <ButtonIcon>
+            <ButtonIcon size="sm">
               <IconArrowUpRight />
             </ButtonIcon>
             Get started

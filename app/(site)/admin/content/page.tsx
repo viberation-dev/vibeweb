@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/integrations/supabase/server";
-import { contentPillarLabel, contentTypeLabel } from "@/lib/learn";
+import { contentHref, contentPillarLabel, contentTypeLabel } from "@/lib/learn";
 import { listAllContent } from "@/lib/queries/content";
 import { requireStaff } from "@/lib/staff";
 
@@ -39,7 +39,8 @@ export default async function AdminContentPage() {
                 {item.title}
               </Link>
               <p className="text-muted-foreground truncate text-sm">
-                /learn/{item.slug} · {contentTypeLabel(item.type)}
+                {/* Announcements live at /blog, everything else at /learn. */}
+                {contentHref(item.type, item.slug)} · {contentTypeLabel(item.type)}
                 {item.pillar ? ` · ${contentPillarLabel(item.pillar)}` : ""}
               </p>
             </div>

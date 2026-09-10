@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { saveContentAction } from "@/app/(site)/admin/content/actions";
 import { ContentForm } from "@/components/features/admin/ContentForm";
 import { createClient } from "@/lib/integrations/supabase/server";
+import { contentHref } from "@/lib/learn";
 import { getContentById } from "@/lib/queries/content";
 import { requireStaff } from "@/lib/staff";
 
@@ -31,7 +32,7 @@ export default async function EditContentPage({
         <h1 className="text-2xl font-semibold">Edit article</h1>
         {/* Staff can open a draft at its own URL — getContentBySlug does not
             filter status, so this previews unpublished prose. */}
-        <Link href={`/learn/${content.slug}`} className="text-sm hover:underline">
+        <Link href={contentHref(content.type, content.slug)} className="text-sm hover:underline">
           Preview →
         </Link>
       </div>

@@ -1,0 +1,17 @@
+-- Announcements as their own content type (VIB-106).
+--
+-- VIB-104 shipped /blog as a dated view of the editorial rows, flagged at the
+-- time as a guess: §28's feature list has no "Blog" entry and the word came
+-- from the demo5 utility bar. Ali settled it — Blog is a separate
+-- announcements stream, news about the product rather than teaching material.
+--
+-- An enum value, not a `posts` table. The standing answer in this project to
+-- "where does this content live" is the `content` table (CLAUDE.md, §28), and
+-- an announcement is the same shape as everything already in it: a title, a
+-- slug, a body, a draft/published state. A second table would duplicate the
+-- editorial pipeline, the admin editor, search, tags and role-awareness in
+-- order to store the same columns.
+--
+-- It stays out of LEARN_TYPES in the app, the way role_guide already does:
+-- the Learn hub teaches vibe-coding, and an announcement is not that.
+alter type content_type add value 'announcement';

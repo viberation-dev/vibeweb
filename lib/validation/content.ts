@@ -17,6 +17,7 @@ export const contentEditorSchema = z.object({
     "course_link",
     "help_article",
     "role_guide",
+    "announcement",
   ]),
   title: z.string().trim().min(1, "Give the article a title."),
   /*

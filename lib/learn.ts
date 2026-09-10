@@ -50,16 +50,19 @@ const TYPE_LABELS: Record<ContentType, string> = {
   course_link: "Course",
   help_article: "Help article",
   role_guide: "Role guide",
+  announcement: "Announcement",
 };
 
 /**
  * The content types the Learn hub lists, in display order.
  *
- * `role_guide` is deliberately absent: those rows are staff-facing docs
+ * Two types are deliberately absent. `role_guide` rows are staff-facing docs
  * (audience = author | admin | seller) and would be noise in a visitor's
- * index. They still render on `/learn/[slug]` — one detail route serves
- * every content type, which is the whole reason there is no separate docs
- * system (§34).
+ * index. `announcement` rows are news about the product, and the Learn hub
+ * teaches vibe-coding — they have their own stream at /blog (VIB-106).
+ *
+ * Both still live in `content`: one table, several surfaces, which is the
+ * whole reason there is no separate docs or blog system (§34, §28).
  */
 export const LEARN_TYPES = [
   { value: "guide", label: "Guides" },
@@ -210,4 +213,17 @@ export const CONTENT_TYPES = [
   "course_link",
   "help_article",
   "role_guide",
+  "announcement",
 ] as const satisfies ReadonlyArray<ContentType>;
+
+/**
+ * Where a piece of content actually lives, given its type.
+ *
+ * Slugs are unique across `content` but the surfaces are not one route:
+ * announcements are their own stream. Keeping this in one function means the
+ * admin list, the detail pages and anything linking to a row all agree on
+ * where it is (VIB-106).
+ */
+export function contentHref(type: ContentType, slug: string): string {
+  return type === "announcement" ? `/blog/${slug}` : `/learn/${slug}`;
+}

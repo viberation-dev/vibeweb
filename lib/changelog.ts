@@ -42,8 +42,8 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-11",
     kind: "improved",
-    title: "Model pages that help you choose",
-    body: "Model pages now show live cost, memory, what a model can read and do, how it scores at coding, and uptime — with providers, limits and benchmarks one click away under Advanced details.",
+    title: "Model families that help you choose",
+    body: "Model pages now list every model in a family — each Claude, GPT or Gemini, newest first — with live cost, memory, what it can read and do, how it scores at coding, and uptime. Providers, limits and benchmarks sit one click away under Advanced details.",
   },
   {
     date: "2026-09-11",

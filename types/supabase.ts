@@ -473,6 +473,7 @@ export type Database = {
           id: string
           is_affiliate: boolean
           name: string
+          openrouter_family: string | null
           openrouter_id: string | null
           outbound_url: string
           platform: string[]
@@ -493,6 +494,7 @@ export type Database = {
           id?: string
           is_affiliate?: boolean
           name: string
+          openrouter_family?: string | null
           openrouter_id?: string | null
           outbound_url?: string
           platform?: string[]
@@ -513,6 +515,7 @@ export type Database = {
           id?: string
           is_affiliate?: boolean
           name?: string
+          openrouter_family?: string | null
           openrouter_id?: string | null
           outbound_url?: string
           platform?: string[]

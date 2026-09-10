@@ -134,20 +134,57 @@ export function formatReleased(unixSeconds: number): string {
   return DAY.format(new Date(unixSeconds * 1000));
 }
 
-/** One line for a directory card: "$0.20 / $1.20 per 1M · 1.1M context". Empty when nothing is known. */
-export function specLine(spec: {
-  input: number | null;
-  output: number | null;
-  contextLength: number | null;
-}): string {
-  const parts: string[] = [];
-  if (spec.input !== null && spec.output !== null) {
-    parts.push(
-      spec.input === 0 && spec.output === 0
-        ? "Free"
-        : `${formatUsd(spec.input)} / ${formatUsd(spec.output)} per 1M`,
-    );
-  }
-  if (spec.contextLength) parts.push(`${formatTokens(spec.contextLength)} context`);
-  return parts.join(" · ");
+/**
+ * A model family as OpenRouter ids spell it: `anthropic/claude`, `openai/gpt`,
+ * `qwen/qwen`. Matched as a prefix, so staff can widen (`qwen/qwen` covers
+ * qwen3 and qwen3.5) or narrow (`openai/gpt-5`) a family without a code
+ * change. Same rule as the `tools_openrouter_family_shape` CHECK.
+ */
+export const OPENROUTER_FAMILY = /^[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*$/;
+
+/**
+ * Every model in a family, newest first.
+ *
+ * `:free`, `:batch` and friends are ways of calling a model, not models, so
+ * they stay out of the list — a free one surfaces as a note on its model.
+ */
+export function familyMembers<T extends { id: string; created: number | null }>(
+  models: Iterable<T>,
+  family: string,
+): T[] {
+  return [...models]
+    .filter((m) => m.id.startsWith(family) && !m.id.includes(":") && OPENROUTER_ID.test(m.id))
+    .sort((a, b) => (b.created ?? 0) - (a.created ?? 0));
+}
+
+/** Which member a family page shows: the one asked for, else the featured one, else the newest. */
+export function pickMember<T extends { id: string }>(
+  members: readonly T[],
+  requested: string | undefined,
+  featured: string | null,
+): T | undefined {
+  return (
+    members.find((m) => m.id === requested) ??
+    members.find((m) => m.id === featured) ??
+    members[0]
+  );
+}
+
+/** "Anthropic: Claude Opus 5" → "Claude Opus 5". The family page already says who made it. */
+export function modelDisplayName(name: string): string {
+  const i = name.indexOf(": ");
+  return i === -1 ? name : name.slice(i + 2);
+}
+
+/** A family's directory card line: "15 models · from $0.25 per 1M". Empty for no models. */
+export function familyLine(inputPrices: readonly (number | null)[]): string {
+  const count = inputPrices.length;
+  if (count === 0) return "";
+  const models = `${count} ${count === 1 ? "model" : "models"}`;
+  const known = inputPrices.filter((p): p is number => p !== null);
+  if (known.length === 0) return models;
+  const cheapest = Math.min(...known);
+  return cheapest === 0
+    ? `${models} · free options`
+    : `${models} · from ${formatUsd(cheapest)} per 1M`;
 }

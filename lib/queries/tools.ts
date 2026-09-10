@@ -384,6 +384,7 @@ export type ToolWrite = Pick<
   | "best_for"
   | "outbound_url"
   | "is_affiliate"
+  | "openrouter_family"
   | "openrouter_id"
 >;
 

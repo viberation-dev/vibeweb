@@ -155,20 +155,38 @@ export function ToolForm({ tool, action }: Props) {
         </p>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="openrouter_id">OpenRouter ID</Label>
-        <Input
-          id="openrouter_id"
-          name="openrouter_id"
-          defaultValue={tool?.openrouter_id ?? ""}
-          placeholder="openai/gpt-5.6-luna"
-          spellCheck={false}
-          autoCapitalize="none"
-        />
-        <p className="text-muted-foreground text-sm">
-          Models only: the part after <code>openrouter.ai/</code> in the model&apos;s URL. Its
-          page then shows live cost, memory, providers and uptime. Leave blank for everything else.
-        </p>
+      <div className="grid gap-6 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="openrouter_family">OpenRouter family</Label>
+          <Input
+            id="openrouter_family"
+            name="openrouter_family"
+            defaultValue={tool?.openrouter_family ?? ""}
+            placeholder="anthropic/claude"
+            spellCheck={false}
+            autoCapitalize="none"
+          />
+          <p className="text-muted-foreground text-sm">
+            Models only. Every OpenRouter model whose ID starts with this is listed on the page,
+            newest first — new releases appear by themselves. Blank for everything else.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="openrouter_id">Featured model</Label>
+          <Input
+            id="openrouter_id"
+            name="openrouter_id"
+            defaultValue={tool?.openrouter_id ?? ""}
+            placeholder="anthropic/claude-sonnet-5"
+            spellCheck={false}
+            autoCapitalize="none"
+          />
+          <p className="text-muted-foreground text-sm">
+            Optional: the model shown first, from the part after <code>openrouter.ai/</code> in
+            its URL. Blank means the newest in the family.
+          </p>
+        </div>
       </div>
 
       <div className="flex items-start gap-3">

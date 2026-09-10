@@ -6,14 +6,18 @@ import {
   capabilities,
   contextInPages,
   costTier,
+  familyLine,
+  familyMembers,
   formatReleased,
   formatTokens,
   formatUsd,
   modalityLabels,
+  modelDisplayName,
+  OPENROUTER_FAMILY,
   OPENROUTER_ID,
   percentileBelow,
   perMillion,
-  specLine,
+  pickMember,
 } from "./model-facts.ts";
 
 test("per-token prices become per-million, and unpriced is unknown, not free", () => {
@@ -75,13 +79,40 @@ test("release dates are UTC, not the server's zone", () => {
   assert.equal(formatReleased(1_783_590_864), "Jul 9, 2026");
 });
 
-test("card spec line drops what is unknown", () => {
-  assert.equal(
-    specLine({ input: 0.2, output: 1.2, contextLength: 1_050_000 }),
-    "$0.20 / $1.20 per 1M · 1.1M context",
+test("family members are the family's models, newest first, without variants", () => {
+  const models = [
+    { id: "anthropic/claude-sonnet-5", created: 300 },
+    { id: "anthropic/claude-sonnet-5:batch", created: 300 },
+    { id: "anthropic/claude-3-haiku", created: 100 },
+    { id: "anthropic/claude-opus-5", created: 200 },
+    { id: "google/gemini-3.8-flash", created: 400 },
+    { id: "~anthropic/claude-latest", created: 500 },
+  ];
+  assert.deepEqual(
+    familyMembers(models, "anthropic/claude").map((m) => m.id),
+    ["anthropic/claude-sonnet-5", "anthropic/claude-opus-5", "anthropic/claude-3-haiku"],
   );
-  assert.equal(specLine({ input: 0, output: 0, contextLength: 262_144 }), "Free · 262K context");
-  assert.equal(specLine({ input: null, output: 1, contextLength: null }), "");
+});
+
+test("a family page shows the requested model, else the featured one, else the newest", () => {
+  const members = [{ id: "a/x-new" }, { id: "a/x-featured" }];
+  assert.equal(pickMember(members, "a/x-new", "a/x-featured")?.id, "a/x-new");
+  // A stale or hand-typed ?model= falls back rather than 404ing.
+  assert.equal(pickMember(members, "b/elsewhere", "a/x-featured")?.id, "a/x-featured");
+  assert.equal(pickMember(members, undefined, null)?.id, "a/x-new");
+  assert.equal(pickMember([], undefined, null), undefined);
+});
+
+test("display names drop the vendor prefix", () => {
+  assert.equal(modelDisplayName("Anthropic: Claude Opus 5"), "Claude Opus 5");
+  assert.equal(modelDisplayName("Auto Router"), "Auto Router");
+});
+
+test("family card line counts models and quotes the cheapest input", () => {
+  assert.equal(familyLine([3, 0.25, null, 15]), "4 models · from $0.25 per 1M");
+  assert.equal(familyLine([0, 2]), "2 models · free options");
+  assert.equal(familyLine([null]), "1 model");
+  assert.equal(familyLine([]), "");
 });
 
 test("OpenRouter ids are vendor/model and cannot escape the models path", () => {
@@ -93,4 +124,13 @@ test("OpenRouter ids are vendor/model and cannot escape the models path", () => 
   assert.equal(OPENROUTER_ID.test("openai"), false);
   assert.equal(OPENROUTER_ID.test("a/b/c"), false);
   assert.equal(OPENROUTER_ID.test("OpenAI/GPT"), false);
+});
+
+test("family prefixes are vendor/name, without variants or aliases", () => {
+  assert.ok(OPENROUTER_FAMILY.test("anthropic/claude"));
+  assert.ok(OPENROUTER_FAMILY.test("openai/gpt-5"));
+  assert.equal(OPENROUTER_FAMILY.test("anthropic"), false);
+  assert.equal(OPENROUTER_FAMILY.test("~anthropic/claude"), false);
+  assert.equal(OPENROUTER_FAMILY.test("anthropic/claude:free"), false);
+  assert.equal(OPENROUTER_FAMILY.test("../admin"), false);
 });

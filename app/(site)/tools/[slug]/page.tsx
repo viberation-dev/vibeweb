@@ -6,12 +6,13 @@ import { after } from "next/server";
 import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
 import { CategoryIcon } from "@/components/features/tools/CategoryIcon";
 import { Fact } from "@/components/features/tools/Fact";
-import { ModelSpecs } from "@/components/features/tools/ModelSpecs";
+import { ModelPicker, ModelSpecs } from "@/components/features/tools/ModelSpecs";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { getOpenRouterEndpoints, getOpenRouterModels } from "@/lib/integrations/openrouter";
 import { createClient } from "@/lib/integrations/supabase/server";
+import { familyMembers, pickMember } from "@/lib/model-facts";
 import { outboundRel, safeOutboundUrl } from "@/lib/outbound";
 import { isBookmarked } from "@/lib/queries/bookmarks";
 import { countCollectionsContaining } from "@/lib/queries/collections";
@@ -29,7 +30,11 @@ import { ROLE_LEVELS } from "@/lib/role-level";
 import { hasFreeTier, isOpenSource } from "@/lib/tool-facts";
 import { toolsHref } from "@/lib/tools-url";
 
-type Props = { params: Promise<{ slug: string }> };
+type Props = {
+  params: Promise<{ slug: string }>;
+  /** `model`: which model of a family to show (VIB-107). */
+  searchParams: Promise<{ model?: string }>;
+};
 
 /** Related tools shown under the overview. Four fills two rows of two. */
 const RELATED_LIMIT = 4;
@@ -49,8 +54,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 /** Tool detail (VIB-81, mockup screen 4). */
-export default async function ToolPage({ params }: Props) {
+export default async function ToolPage({ params, searchParams }: Props) {
   const { slug } = await params;
+  const { model: requestedModel } = await searchParams;
   const supabase = await createClient();
 
   /*
@@ -72,8 +78,8 @@ export default async function ToolPage({ params }: Props) {
    * Signed-out visitors still see the button — pressing it sends them to
    * sign in and back. Only the saved/unsaved state needs a user.
    */
-  const openrouterId = tool.openrouter_id;
-  const [tags, bookmarked, collectionCount, { tools: sameCategory }, openRouter] =
+  const family = tool.openrouter_family;
+  const [tags, bookmarked, collectionCount, { tools: sameCategory }, liveModels] =
     await Promise.all([
       getToolTags(supabase, tool.id),
       auth.user
@@ -83,17 +89,26 @@ export default async function ToolPage({ params }: Props) {
       // One extra so removing this tool from its own related list still fills it.
       listTools(supabase, { category: tool.category, pageSize: RELATED_LIMIT + 1 }),
       /*
-       * Live model specs ride the same wave (VIB-107). Both calls are cached
-       * for an hour and resolve to nothing rather than throwing, so OpenRouter
-       * being down costs this section, never the page.
+       * The family's models ride the same wave (VIB-107): cached for an hour,
+       * and empty rather than throwing, so OpenRouter being down costs this
+       * section, never the page.
        */
-      openrouterId
-        ? Promise.all([getOpenRouterModels(), getOpenRouterEndpoints(openrouterId)])
-        : null,
+      family ? getOpenRouterModels() : null,
     ]);
 
   const related = sameCategory.filter((other) => other.id !== tool.id).slice(0, RELATED_LIMIT);
-  const liveModel = openrouterId ? openRouter?.[0].get(openrouterId) : undefined;
+
+  const members = family && liveModels ? familyMembers(liveModels.values(), family) : [];
+  // A stale or hand-typed ?model= falls back to the featured model, not a 404.
+  // It is only ever compared against ids OpenRouter itself returned.
+  const selected = pickMember(members, requestedModel, tool.openrouter_id);
+  const defaultModelId = pickMember(members, undefined, tool.openrouter_id)?.id;
+  /*
+   * ponytail: one serial call once the model is known. It is served from
+   * Next's data cache after the first view each hour; fetch it speculatively
+   * alongside the list if cold-cache latency ever shows up.
+   */
+  const endpoints = selected ? await getOpenRouterEndpoints(selected.id) : [];
 
   // Both are optional per row; empty means unstated, and the row is dropped.
   const platforms = platformSummary(tool.platform);
@@ -192,12 +207,21 @@ export default async function ToolPage({ params }: Props) {
             <p className="mt-3 leading-relaxed whitespace-pre-line">{tool.description}</p>
           ) : null}
 
-          {liveModel && openRouter ? (
-            <ModelSpecs
-              model={liveModel}
-              endpoints={openRouter[1]}
-              peers={[...openRouter[0].values()]}
-            />
+          {selected && defaultModelId && liveModels ? (
+            <>
+              <ModelPicker
+                members={members}
+                selectedId={selected.id}
+                defaultId={defaultModelId}
+                basePath={`/tools/${tool.slug}`}
+              />
+              <ModelSpecs
+                model={selected}
+                endpoints={endpoints}
+                peers={[...liveModels.values()]}
+                hasFreeVariant={liveModels.has(`${selected.id}:free`)}
+              />
+            </>
           ) : null}
 
           <h2 className="font-heading mt-8 text-lg font-medium">Key info</h2>

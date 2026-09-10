@@ -1,4 +1,5 @@
 import { IconCheck, IconChevronDown, IconMinus } from "@tabler/icons-react";
+import Link from "next/link";
 
 import { Fact } from "@/components/features/tools/Fact";
 import { Badge } from "@/components/ui/badge";
@@ -16,14 +17,85 @@ import {
   formatTokens,
   formatUsd,
   modalityLabels,
+  modelDisplayName,
   percentileBelow,
 } from "@/lib/model-facts";
+import { cn } from "@/lib/utils";
 
-type Props = {
+/** Chips before the rest fold under "Older models" — a current lineup, not an archive. */
+const RECENT_LIMIT = 6;
+
+type PickerProps = {
+  /** The family's models, newest first. */
+  members: OpenRouterModel[];
+  selectedId: string;
+  /** The model the page shows with no ?model= — featured, else newest. */
+  defaultId: string;
+  basePath: string;
+};
+
+/**
+ * The models in a family (VIB-107), as links rather than client state: every
+ * model has a shareable URL, back/forward work, and the specs below render on
+ * the server — the same reasoning as the account tabs.
+ */
+export function ModelPicker({ members, selectedId, defaultId, basePath }: PickerProps) {
+  const recent = members.slice(0, RECENT_LIMIT);
+  const older = members.slice(RECENT_LIMIT);
+
+  const chips = (list: OpenRouterModel[]) => (
+    <ul className="flex flex-wrap gap-2">
+      {list.map((member) => {
+        const selected = member.id === selectedId;
+        return (
+          <li key={member.id}>
+            <Link
+              // The default model is the page's canonical URL, so no ?model=.
+              href={member.id === defaultId ? basePath : `${basePath}?model=${member.id}`}
+              // Switching models should not throw the reader back to the top.
+              scroll={false}
+              aria-current={selected ? "page" : undefined}
+              className={cn(
+                "inline-flex rounded-full border px-3 py-1 text-sm transition-colors",
+                selected
+                  ? "border-primary bg-primary/10 text-foreground font-medium"
+                  : "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
+              )}
+            >
+              {modelDisplayName(member.name)}
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
+  );
+
+  return (
+    <nav aria-labelledby="family-models" className="mt-8">
+      <h2 id="family-models" className="font-heading text-lg font-medium">
+        {members.length} {members.length === 1 ? "model" : "models"} in this family
+      </h2>
+      <div className="mt-3">{chips(recent)}</div>
+      {older.length ? (
+        // Opens itself when the model on screen is one of the older ones.
+        <details className="mt-3" open={older.some((member) => member.id === selectedId)}>
+          <summary className="text-muted-foreground hover:text-foreground cursor-pointer text-sm">
+            Older models ({older.length})
+          </summary>
+          <div className="mt-2">{chips(older)}</div>
+        </details>
+      ) : null}
+    </nav>
+  );
+}
+
+type SpecsProps = {
   model: OpenRouterModel;
   endpoints: OpenRouterEndpoint[];
   /** Every model OpenRouter lists — what "better than N%" is measured against. */
   peers: OpenRouterModel[];
+  /** OpenRouter also serves this model as a rate-limited `:free` variant. */
+  hasFreeVariant: boolean;
 };
 
 const BENCHMARKS: { key: keyof ModelBenchmarks; label: string }[] = [
@@ -38,12 +110,12 @@ const MIN_PEERS = 20;
 const money = (value: number | null) => (value === null ? "—" : formatUsd(value));
 
 /**
- * Live model specs (VIB-107): a plain-language "At a glance" list by default,
- * with the numbers a developer wiring up an API wants behind a native
- * <details> toggle — no JavaScript, keyboard-operable, the same disclosure
- * pattern as the directory filters.
+ * Live specs for one model (VIB-107): a plain-language "At a glance" list by
+ * default, with the numbers a developer wiring up an API wants behind a
+ * native <details> toggle — no JavaScript, keyboard-operable, the same
+ * disclosure pattern as the directory filters.
  */
-export function ModelSpecs({ model, endpoints, peers }: Props) {
+export function ModelSpecs({ model, endpoints, peers, hasFreeVariant }: SpecsProps) {
   const { input, output } = model.price;
   const uptime = bestUptime(endpoints.map((endpoint) => endpoint.uptime));
   const reads = modalityLabels(model.inputs);
@@ -70,7 +142,7 @@ export function ModelSpecs({ model, endpoints, peers }: Props) {
   return (
     <section aria-labelledby="at-a-glance">
       <h2 id="at-a-glance" className="font-heading mt-8 text-lg font-medium">
-        At a glance
+        At a glance — {modelDisplayName(model.name)}
       </h2>
       <dl className="mt-3">
         {input !== null && output !== null ? (
@@ -83,6 +155,7 @@ export function ModelSpecs({ model, endpoints, peers }: Props) {
                   <span className="text-muted-foreground font-normal">per 1M tokens</span>
                 </span>
                 <Badge variant="outline">{costTier(input)}</Badge>
+                {hasFreeVariant ? <Badge variant="secondary">Free version too</Badge> : null}
               </span>
             }
           />
@@ -156,6 +229,14 @@ export function ModelSpecs({ model, endpoints, peers }: Props) {
               label="API model ID"
               value={<code className="bg-muted rounded px-1.5 py-0.5 text-xs">{model.id}</code>}
             />
+            {hasFreeVariant ? (
+              <Fact
+                label="Free version"
+                value={
+                  <code className="bg-muted rounded px-1.5 py-0.5 text-xs">{model.id}:free</code>
+                }
+              />
+            ) : null}
             {model.maxOutput ? (
               <Fact label="Max output" value={`${formatTokens(model.maxOutput)} tokens`} />
             ) : null}

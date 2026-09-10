@@ -9,7 +9,7 @@ import { DirectoryFilters } from "@/components/features/tools/DirectoryFilters";
 import { buttonVariants } from "@/components/ui/button";
 import { getOpenRouterModels } from "@/lib/integrations/openrouter";
 import { createClient } from "@/lib/integrations/supabase/server";
-import { specLine } from "@/lib/model-facts";
+import { familyLine, familyMembers } from "@/lib/model-facts";
 import { toPageNumber } from "@/lib/pagination";
 import { listBookmarks } from "@/lib/queries/bookmarks";
 import { listTags } from "@/lib/queries/tags";
@@ -74,16 +74,15 @@ export default async function ToolsPage({ searchParams }: Props) {
     ),
     // Only when this page shows a model with live specs; cached for an hour
     // and empty rather than throwing when OpenRouter is down (VIB-107).
-    tools.some((tool) => tool.openrouter_id) ? getOpenRouterModels() : null,
+    tools.some((tool) => tool.openrouter_family) ? getOpenRouterModels() : null,
   ]);
 
-  /** "$0.20 / $1.20 per 1M · 1.1M context" for a model card; undefined otherwise. */
-  const specsFor = (openrouterId: string | null) => {
-    const model = openrouterId ? liveModels?.get(openrouterId) : undefined;
-    return model
-      ? specLine({ ...model.price, contextLength: model.contextLength }) || undefined
+  /** "15 models · from $0.25 per 1M" for a model family's card; undefined otherwise. */
+  const familyFor = (family: string | null) =>
+    family && liveModels
+      ? familyLine(familyMembers(liveModels.values(), family).map((m) => m.price.input)) ||
+        undefined
       : undefined;
-  };
 
   const bookmarkedIds = new Set(
     bookmarks.map((bookmark) => bookmark.target_id),
@@ -180,7 +179,7 @@ export default async function ToolsPage({ searchParams }: Props) {
                     />
                   }
                   description={tool.tagline}
-                  meta={specsFor(tool.openrouter_id)}
+                  meta={familyFor(tool.openrouter_family)}
                   badges={[
                     toolCategoryLabel(tool.category),
                     ...(toolTags.get(tool.id) ?? [])

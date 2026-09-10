@@ -22,6 +22,10 @@ const buttonVariants = cva(
            colour (lime) is a fill, always paired with its own on-colour. */
         outbound:
           "bg-highlight text-highlight-foreground font-semibold hover:bg-[var(--highlight-hover)]",
+        /* v3 pill CTA (VIB-98/VIB-99). Pair with the `pill` / `pill-sm` size
+           and put a <ButtonIcon> first in the children for the inset badge. */
+        pill: "bg-primary text-primary-foreground hover:bg-[var(--primary-hover)]",
+        "pill-soft": "bg-secondary text-secondary-foreground hover:bg-[var(--secondary-hover)]",
       },
       size: {
         default:
@@ -35,6 +39,10 @@ const buttonVariants = cva(
         "icon-sm":
           "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
         "icon-lg": "size-11",
+        /* Asymmetric on purpose: the inset badge supplies the left padding,
+           so the text sits optically centred rather than pushed right. */
+        pill: "h-14 gap-3 rounded-full py-2 pr-6 pl-2 text-[0.9375rem] font-semibold",
+        "pill-sm": "h-12 gap-2 rounded-full py-1.5 pr-5 pl-1.5 text-sm font-semibold",
       },
     },
     defaultVariants: {
@@ -59,4 +67,40 @@ function Button({
   )
 }
 
-export { Button, buttonVariants }
+/**
+ * The inset circular badge inside a pill CTA (VIB-99).
+ *
+ * A component rather than a `icon` prop on Button, because most CTAs on the
+ * marketing page are `<Link className={buttonVariants(...)}>` rather than
+ * `<Button>` — a prop would not reach them, and two ways to draw the same
+ * badge is how they drift apart.
+ */
+function ButtonIcon({
+  tone = "on-primary",
+  className,
+  children,
+}: {
+  /** Which fill the badge sits on — it inverts against it. */
+  tone?: "on-primary" | "on-soft";
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <span
+      aria-hidden
+      data-slot="button-icon"
+      className={cn(
+        "flex size-10 shrink-0 items-center justify-center rounded-full",
+        "[&_svg]:size-[1.1rem]",
+        tone === "on-primary"
+          ? "bg-primary-foreground text-primary"
+          : "bg-card text-primary",
+        className,
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
+export { Button, ButtonIcon, buttonVariants }

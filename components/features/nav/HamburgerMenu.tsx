@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { ThemeToggle } from "@/components/features/nav/ThemeToggle";
 import { TOP_NAV } from "@/lib/nav";
 
 /**
@@ -175,6 +176,15 @@ export function HamburgerMenu() {
               >
                 Sign in
               </Link>
+            </div>
+            {/* The header has no theme switch; ThemeRail covers xl and up. */}
+            <div className="xl:hidden">
+              <p className="text-xs font-bold tracking-widest uppercase opacity-50">
+                Colour mode
+              </p>
+              <div className="-ml-1 mt-1">
+                <ThemeToggle />
+              </div>
             </div>
             <div className="flex items-end gap-5 text-sm font-semibold">
               <a

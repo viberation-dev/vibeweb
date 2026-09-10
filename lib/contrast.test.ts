@@ -19,16 +19,41 @@ import { contrastRatio, mixOklab } from "./color-contrast.ts";
 
 const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
 
-/** Pulls the hex custom properties out of one top-level block. */
-function palette(selector: string): Record<string, string> {
+/** The text of one top-level block, e.g. everything inside `.dark { … }`. */
+function blockOf(selector: string): string {
   const start = css.indexOf(`${selector} {`);
   assert.notEqual(start, -1, `no ${selector} block in globals.css`);
-  const body = css.slice(start, css.indexOf("\n}", start));
+  return css.slice(start, css.indexOf("\n}", start));
+}
+
+/** Pulls the hex custom properties out of one top-level block. */
+function palette(selector: string): Record<string, string> {
+  const body = blockOf(selector);
   const out: Record<string, string> = {};
   for (const [, name, hex] of body.matchAll(/(--[\w-]+):\s*(#[0-9a-fA-F]{6})/g)) {
     out[name] = hex.toLowerCase();
   }
   return out;
+}
+
+/**
+ * The percentage inside one `color-mix()` token, read from the stylesheet.
+ *
+ * Restating it as a constant here was a real bug in the first version of
+ * this file: the tests recomputed the mix with their own hardcoded 13% / 70%,
+ * so editing the percentage in globals.css changed what shipped without
+ * changing what was asserted. A guard that cannot notice the change it is
+ * guarding is worse than none, because it reads like cover.
+ */
+function mixPercent(selector: string, token: string, source: string): number {
+  const body = blockOf(selector);
+
+  const pattern = new RegExp(
+    String.raw`${token}:\s*color-mix\(\s*in oklab,\s*var\(${source}\)\s*([\d.]+)%`,
+  );
+  const found = body.match(pattern);
+  assert.ok(found, `${selector} ${token} is not an oklab mix of ${source}`);
+  return Number(found[1]) / 100;
 }
 
 const AA_NORMAL = 4.5;
@@ -80,8 +105,8 @@ const DIFFICULTY_LEVELS = [
   "--difficulty-advanced",
 ] as const;
 
-/** Matches the `13%` in globals.css. Both must move together. */
-const PLATE_MIX = 0.13;
+/** Non-text contrast (WCAG 1.4.11) — boundaries, icons, graphical objects. */
+const AA_NON_TEXT = 3;
 
 for (const mode of [":root", ".dark"] as const) {
   test(`${mode}: every difficulty badge clears AA on its own plate`, () => {
@@ -91,12 +116,45 @@ for (const mode of [":root", ".dark"] as const) {
       const colour = p[level];
       assert.ok(colour, `${mode} is missing ${level}`);
 
-      const plate = mixOklab(colour, p["--card"], PLATE_MIX);
+      const plate = mixOklab(
+        colour,
+        p["--card"],
+        mixPercent(mode, `${level}-bg`, level),
+      );
       const r = contrastRatio(colour, plate);
 
       assert.ok(
         r >= AA_NORMAL,
         `${level} ${colour} on its plate ${plate} is ${r.toFixed(2)}:1, under ${AA_NORMAL}`,
+      );
+    }
+  });
+}
+
+/*
+ * Badge borders against the surface the badge sits on (VIB-105).
+ *
+ * The outer edge is the one that makes the badge read as a bounded object,
+ * so that is the pair checked. The inner edge — border against its own plate
+ * — sits near 2.8:1 on purpose: taking it to 3:1 as well would need a border
+ * close to the full colour, turning a soft status tint into a hard outlined
+ * chip. A badge is a static label, not an interactive control.
+ */
+for (const mode of [":root", ".dark"] as const) {
+  test(`${mode}: every difficulty border reads as an edge against the card`, () => {
+    const p = palette(mode);
+
+    for (const level of DIFFICULTY_LEVELS) {
+      const border = mixOklab(
+        p[level],
+        p["--card"],
+        mixPercent(mode, `${level}-border`, level),
+      );
+      const r = contrastRatio(border, p["--card"]);
+
+      assert.ok(
+        r >= AA_NON_TEXT,
+        `${level} border ${border} on --card ${p["--card"]} is ${r.toFixed(2)}:1, under ${AA_NON_TEXT}`,
       );
     }
   });

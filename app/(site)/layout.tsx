@@ -1,8 +1,9 @@
-import { IconArrowUpRight, IconMenu2 } from "@tabler/icons-react";
+import { IconArrowUpRight } from "@tabler/icons-react";
 import Link from "next/link";
 import { Suspense } from "react";
 
 import { AppSidebar } from "@/components/features/nav/AppSidebar";
+import { HamburgerMenu } from "@/components/features/nav/HamburgerMenu";
 import { Logo } from "@/components/features/nav/Logo";
 import { SiteHeader } from "@/components/features/nav/SiteHeader";
 import { SocialRail } from "@/components/features/nav/SocialRail";
@@ -95,41 +96,17 @@ function VisitorHeader() {
     <header className="bg-background sticky top-0 z-50 border-b">
       <div className="mx-auto flex max-w-7xl items-center gap-5 px-6 py-3.5">
         {/*
-          The burger only appears where the centre nav collapses. v3 shows it
-          at every width, but demo5's opens an off-canvas carrying more links
-          than the nav — we have no such content, so at desktop it would be a
-          control that duplicates what is already on screen.
+          The hamburger now shows at every width, matching demo5's pairing of
+          `desktop-hamburger` and `mobile-hamburger` (both `-left`). It earns
+          the desktop slot because the overlay carries more than the header
+          nav does — Wizards, contact, socials — so it is not a duplicate of
+          the links already on screen.
 
-          <details> rather than a client component: this is a disclosure, and
-          the platform already has one. No JavaScript, no hydration, and it
-          works before React loads.
+          This replaces the <details> disclosure that shipped in VIB-98: a
+          full-screen overlay needs focus trapping, Escape and an inert page
+          behind it, which <dialog> does properly and <details> does not.
         */}
-        <details className="relative lg:hidden">
-          <summary className="bg-secondary hover:bg-accent hover:text-primary flex size-11 cursor-pointer list-none items-center justify-center rounded-full transition-colors [&::-webkit-details-marker]:hidden">
-            <IconMenu2 aria-hidden className="size-5" />
-            <span className="sr-only">Open menu</span>
-          </summary>
-          <nav
-            aria-label="Primary"
-            className="bg-card absolute top-full left-0 z-50 mt-2 w-56 rounded-xl border p-2 shadow-lg"
-          >
-            {TOP_NAV.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="hover:bg-accent block rounded-lg px-3 py-2 text-sm"
-              >
-                {item.label}
-              </Link>
-            ))}
-            <Link
-              href="/login"
-              className="hover:bg-accent block rounded-lg px-3 py-2 text-sm sm:hidden"
-            >
-              Sign in
-            </Link>
-          </nav>
-        </details>
+        <HamburgerMenu />
 
         {/* Wordmark at 26px — 30% up from the shipped 20px (VIB-101). */}
         <Link href="/" aria-label="Viberation — home" className="shrink-0">

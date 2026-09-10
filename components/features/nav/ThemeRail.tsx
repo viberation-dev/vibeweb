@@ -14,7 +14,9 @@ import { ThemeToggle } from "@/components/features/nav/ThemeToggle";
 export function ThemeRail() {
   return (
     <div className="fixed top-1/2 left-4 z-40 hidden -translate-y-1/2 xl:block">
-      <div className="bg-card rounded-2xl border shadow-lg">
+      {/* v3's `.tgl`: a bordered pill, not a card — the buttons inside are
+          round, so a rounded-full shell keeps the silhouette consistent. */}
+      <div className="bg-card rounded-full border p-1.5 shadow-lg">
         <ThemeToggle orientation="vertical" />
       </div>
     </div>

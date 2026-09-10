@@ -367,15 +367,6 @@ export function MarketingHome({
       {/* ── Proof ────────────────────────────────────────────────────── */}
       <Section>
         {/*
-          v3 runs this as three customer testimonials — quoted, with names,
-          cities and avatars. Maya, Tyler and Rachel are §03 *personas*:
-          fictional composites written to guide design, not customers who said
-          anything. Publishing invented quotes as social proof on a live
-          monetized page would be fabricated, so the same three cards state who
-          the product is for, in the third person, with no quote marks and no
-          attribution (VIB-98 constraint 2). Swap in real quotes, names and
-          avatars when there are real users to quote.
-
           The "deep" surface: this repo has no --deep token (that was in the
           superseded handoff CSS). In v3's own dark theme --deep equals the
           surface colour, so the dark chapter only exists in light mode —
@@ -383,41 +374,71 @@ export function MarketingHome({
         */}
         <div className="bg-foreground text-background dark:bg-secondary dark:text-foreground rounded-3xl p-9 lg:p-14">
           {/*
-            v3 sets both of these in lime *text*. --highlight is a fill-only
-            colour (VIB-99) and the repo enforces that in every existing use,
-            so the accent arrives as a fill instead: a marker behind ink. That
-            is the v2 lime-marker gesture the decision log records as
-            dropped-but-reversible — reversed here, because it is the one way
-            to get lime into this block without making it a text colour.
+            Lime as *text*, which VIB-99's fill-only rule otherwise forbids.
+            Narrowed rather than broken: the rule exists because lime fails
+            contrast on every light surface, and this block is dark in both
+            modes — lime measures ~15:1 on the light-mode ink ground and ~14:1
+            on the dark-mode surface. Approved by Ali 2026-09-10 for this block
+            specifically. It is still never lime-on-light anywhere else.
           */}
-          <p className="flex items-center gap-2.5 text-xs font-bold tracking-widest uppercase opacity-80">
+          <p className="text-highlight flex items-center gap-2.5 text-xs font-bold tracking-widest uppercase">
             <span aria-hidden className="bg-highlight h-0.5 w-5 rounded-full" />
             Who it&rsquo;s for
           </p>
           <h2 className="font-heading mt-4 text-3xl font-bold tracking-[-0.04em] lg:text-4xl">
             Built for real builders,{" "}
-            <span className="bg-highlight text-highlight-foreground box-decoration-clone rounded-md px-2 py-1">
-              at every level.
-            </span>
+            <span className="text-highlight">at every level.</span>
           </h2>
-          <ul className="mt-10 grid gap-5 md:grid-cols-3">
-            {AUDIENCES.map((audience) => (
-              <li
-                key={audience.tier}
-                className="rounded-[1.125rem] border border-current/15 bg-current/5 p-6"
-              >
-                <span className="text-xs font-bold tracking-widest uppercase opacity-70">
-                  {audience.tier}
-                </span>
-                <h3 className="font-heading mt-3 text-lg font-bold tracking-tight">
-                  {audience.headline}
-                </h3>
-                <p className="mt-2.5 text-sm leading-relaxed opacity-80">
-                  {audience.blurb}
-                </p>
-              </li>
-            ))}
-          </ul>
+
+          {TESTIMONIALS.length ? (
+            <ul className="mt-10 grid gap-5 md:grid-cols-3">
+              {TESTIMONIALS.map((t) => (
+                <li
+                  key={t.name}
+                  className="flex flex-col rounded-[1.125rem] border border-current/15 bg-current/5 p-6"
+                >
+                  <blockquote className="text-[0.95rem] leading-relaxed">
+                    &ldquo;{t.quote}&rdquo;
+                  </blockquote>
+                  <div className="mt-5 flex items-center gap-3 pt-1">
+                    <span
+                      aria-hidden
+                      className="flex size-9.5 shrink-0 items-center justify-center rounded-full border border-current/15 bg-current/10 text-xs font-bold"
+                    >
+                      {t.initials}
+                    </span>
+                    <span className="text-sm opacity-70">
+                      {t.name} · {t.location}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            /*
+              No testimonials yet. §03's personas stand in, in the third
+              person — who the product is for, not who said what. See
+              VIB-102 for the table that replaces this.
+            */
+            <ul className="mt-10 grid gap-5 md:grid-cols-3">
+              {AUDIENCES.map((audience) => (
+                <li
+                  key={audience.tier}
+                  className="rounded-[1.125rem] border border-current/15 bg-current/5 p-6"
+                >
+                  <span className="text-xs font-bold tracking-widest uppercase opacity-70">
+                    {audience.tier}
+                  </span>
+                  <h3 className="font-heading mt-3 text-lg font-bold tracking-tight">
+                    {audience.headline}
+                  </h3>
+                  <p className="mt-2.5 text-sm leading-relaxed opacity-80">
+                    {audience.blurb}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </Section>
 
@@ -557,6 +578,29 @@ const COVER_TONES = [
   "bg-highlight text-highlight-foreground",
   "bg-foreground text-background dark:bg-card dark:text-foreground",
 ] as const;
+
+/**
+ * Customer testimonials.
+ *
+ * ⚠️ EMPTY ON PURPOSE. Maya/Tyler/Rachel are §03 *personas* — fictional
+ * composites written to guide design, not customers who said anything — so
+ * there is nothing truthful to put here yet. Publishing invented quotes with
+ * names and faces on a monetized page is fabricated social proof, and the
+ * section falls back to the third-person AUDIENCES cards below while this is
+ * empty rather than inventing any.
+ *
+ * VIB-102 replaces this constant with a `testimonials` table and an admin
+ * screen. Until then, the only correct way to fill it is with quotes real
+ * people actually gave.
+ */
+type Testimonial = {
+  quote: string;
+  name: string;
+  location: string;
+  initials: string;
+};
+
+const TESTIMONIALS: readonly Testimonial[] = [];
 
 /**
  * §03's three personas, stated as audiences rather than quoted as customers.

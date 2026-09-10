@@ -21,8 +21,10 @@ import { readingMinutes } from "@/lib/home-feed";
 import { CONTENT_PILLARS } from "@/lib/learn";
 import type { Collection } from "@/lib/queries/collections";
 import type { Content } from "@/lib/queries/content";
+import type { Testimonial } from "@/lib/queries/testimonials";
 import type { Tool } from "@/lib/queries/tools";
 import type { Wizard } from "@/lib/queries/wizards";
+import { initialsFrom } from "@/lib/testimonials";
 import { TOOL_CATEGORIES } from "@/lib/tool-categories";
 import { toolsHref } from "@/lib/tools-url";
 
@@ -33,6 +35,12 @@ type Props = {
   collectionCounts: Map<string, number>;
   /** Per-category tool totals for the taxonomy tiles (VIB-101). */
   categoryCounts: Map<string, number>;
+  /**
+   * Published testimonials (VIB-102). Empty is the normal state until real
+   * people have said something — the proof section falls back to describing
+   * who the product is for rather than inventing quotes.
+   */
+  testimonials: Testimonial[];
   latest: Content[];
   flagship: Wizard | undefined;
   /** VIB-91's flag, resolved by the page — this component stays env-free. */
@@ -61,6 +69,7 @@ export function MarketingHome({
   collections,
   collectionCounts,
   categoryCounts,
+  testimonials,
   latest,
   flagship,
   newsletterEnabled,
@@ -390,11 +399,11 @@ export function MarketingHome({
             <span className="text-highlight">at every level.</span>
           </h2>
 
-          {TESTIMONIALS.length ? (
+          {testimonials.length ? (
             <ul className="mt-10 grid gap-5 md:grid-cols-3">
-              {TESTIMONIALS.map((t) => (
+              {testimonials.map((t) => (
                 <li
-                  key={t.name}
+                  key={t.id}
                   className="flex flex-col rounded-[1.125rem] border border-current/15 bg-current/5 p-6"
                 >
                   <blockquote className="text-[0.95rem] leading-relaxed">
@@ -405,10 +414,11 @@ export function MarketingHome({
                       aria-hidden
                       className="flex size-9.5 shrink-0 items-center justify-center rounded-full border border-current/15 bg-current/10 text-xs font-bold"
                     >
-                      {t.initials}
+                      {initialsFrom(t.author_name, t.initials)}
                     </span>
                     <span className="text-sm opacity-70">
-                      {t.name} · {t.location}
+                      {t.author_name}
+                      {t.location ? ` · ${t.location}` : ""}
                     </span>
                   </div>
                 </li>
@@ -416,9 +426,9 @@ export function MarketingHome({
             </ul>
           ) : (
             /*
-              No testimonials yet. §03's personas stand in, in the third
-              person — who the product is for, not who said what. See
-              VIB-102 for the table that replaces this.
+              No published testimonials. §03's personas stand in, in the
+              third person — who the product is for, not who said what.
+              Staff add real ones at /admin/testimonials (VIB-102).
             */
             <ul className="mt-10 grid gap-5 md:grid-cols-3">
               {AUDIENCES.map((audience) => (
@@ -578,29 +588,6 @@ const COVER_TONES = [
   "bg-highlight text-highlight-foreground",
   "bg-foreground text-background dark:bg-card dark:text-foreground",
 ] as const;
-
-/**
- * Customer testimonials.
- *
- * ⚠️ EMPTY ON PURPOSE. Maya/Tyler/Rachel are §03 *personas* — fictional
- * composites written to guide design, not customers who said anything — so
- * there is nothing truthful to put here yet. Publishing invented quotes with
- * names and faces on a monetized page is fabricated social proof, and the
- * section falls back to the third-person AUDIENCES cards below while this is
- * empty rather than inventing any.
- *
- * VIB-102 replaces this constant with a `testimonials` table and an admin
- * screen. Until then, the only correct way to fill it is with quotes real
- * people actually gave.
- */
-type Testimonial = {
-  quote: string;
-  name: string;
-  location: string;
-  initials: string;
-};
-
-const TESTIMONIALS: readonly Testimonial[] = [];
 
 /**
  * §03's three personas, stated as audiences rather than quoted as customers.

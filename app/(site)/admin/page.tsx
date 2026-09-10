@@ -16,9 +16,11 @@ export const metadata: Metadata = { title: "Staff — Viberation" };
 /**
  * The staff area — VIB-53's gate, with VIB-59's two editors behind it.
  *
- * Two editors and nothing else, deliberately: tags, collections, wizards and
- * role changes stay in the Supabase dashboard (or VIB-58's RPC) until one of
- * them becomes a weekly job the way tools and articles are.
+ * Three editors and nothing else, deliberately: tags, collections, wizards
+ * and role changes stay in the Supabase dashboard (or VIB-58's RPC) until one
+ * of them becomes a weekly job the way tools and articles are. Testimonials
+ * joined them in VIB-102 — they are visitor-facing claims about real people,
+ * which is not work to do in a database client.
  */
 export default async function AdminPage() {
   const profile = await requireStaff("/admin");
@@ -38,6 +40,9 @@ export default async function AdminPage() {
           </Link>
           <Link href="/admin/tools" className={buttonVariants()}>
             Tools
+          </Link>
+          <Link href="/admin/testimonials" className={buttonVariants()}>
+            Testimonials
           </Link>
         </CardContent>
       </Card>

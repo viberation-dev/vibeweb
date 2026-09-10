@@ -31,6 +31,7 @@ import { listHistory } from "@/lib/queries/history";
 import { getProfile, type Profile } from "@/lib/queries/profiles";
 import { resolveTargetViews } from "@/lib/queries/resources";
 import { listPopularTags } from "@/lib/queries/tags";
+import { listPublishedTestimonials } from "@/lib/queries/testimonials";
 import { countToolsByCategory, listTools } from "@/lib/queries/tools";
 import { getWizardProgress, listWizards } from "@/lib/queries/wizards";
 import { TOOL_CATEGORIES } from "@/lib/tool-categories";
@@ -85,7 +86,7 @@ export default async function HomePage({ searchParams }: Props) {
   const flagship = wizards[0];
 
   if (!auth.user) {
-    const [counts, categoryCounts] = await Promise.all([
+    const [counts, categoryCounts, testimonials] = await Promise.all([
       countCollectionItems(
         supabase,
         collections.map((collection) => collection.id),
@@ -94,6 +95,9 @@ export default async function HomePage({ searchParams }: Props) {
       // stat block: a number that contradicts the directory is worse than
       // no number.
       countToolsByCategory(supabase),
+      // Real quotes, or none — the proof section falls back to describing who
+      // the product is for rather than inventing anyone (VIB-102).
+      listPublishedTestimonials(supabase),
     ]);
     return (
       <MarketingHome
@@ -102,6 +106,7 @@ export default async function HomePage({ searchParams }: Props) {
         collections={collections}
         collectionCounts={counts}
         categoryCounts={categoryCounts}
+        testimonials={testimonials}
         latest={latest}
         flagship={flagship}
         newsletterEnabled={newsletterFormEnabled()}

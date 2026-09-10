@@ -86,8 +86,10 @@ export function ThemeToggle({
       role="group"
       aria-label="Colour mode"
       className={cn(
-        "flex gap-0.5 p-1",
-        orientation === "vertical" && "flex-col",
+        "flex gap-0.5",
+        /* The rail supplies the padding in vertical form, so the control
+           does not add a second ring of it inside the pill. */
+        orientation === "vertical" ? "flex-col" : "p-1",
       )}
     >
       {THEME_MODES.map((value) => {
@@ -101,13 +103,18 @@ export function ThemeToggle({
             aria-pressed={active}
             title={LABELS[value]}
             className={cn(
-              "flex items-center justify-center gap-1.5 rounded text-xs",
+              "flex items-center justify-center gap-1.5 rounded text-xs transition-colors",
               orientation === "vertical"
-                ? "size-9 rounded-full"
+                ? "size-9.5 rounded-full"
                 : "flex-1 px-2 py-1",
+              /*
+                Active is the brand fill, per the mockup's `.tgl` — the
+                shipped state was --accent, a muted surface that read as
+                "hovered" rather than "selected".
+              */
               active
-                ? "bg-accent text-accent-foreground font-medium"
-                : "text-muted-foreground hover:bg-accent/50",
+                ? "bg-primary text-primary-foreground font-semibold"
+                : "text-muted-foreground hover:bg-primary/10 hover:text-primary",
             )}
           >
             <Icon aria-hidden className="size-3.5" />

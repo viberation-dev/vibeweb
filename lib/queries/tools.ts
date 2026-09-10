@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { RoleLevel } from "@/lib/role-level";
 import { tiersFor, type PricingFilter } from "@/lib/tool-facts";
-import type { ToolCategory } from "@/lib/tool-categories";
+import { TOOL_CATEGORIES, type ToolCategory } from "@/lib/tool-categories";
 import {
   DEFAULT_TOOL_SORT,
   toolSortOrder,
@@ -289,6 +289,35 @@ export async function listAllTools(client: Client): Promise<Tool[]> {
     throw new Error(`listAllTools: ${error.message}`);
   }
   return data;
+}
+
+/**
+ * How many tools sit in each category, for the homepage category tiles.
+ *
+ * Counted rather than hardcoded, for the same reason every other number on
+ * that page is queried: a tile promising 6 Models that opens on 4 is worse
+ * than a tile with no number. Categories with nothing in them come back as
+ * 0 rather than missing, so the caller renders a real zero instead of a gap.
+ *
+ * One round trip fetching just the category column — the table is small and
+ * PostgREST has no group-by, so tallying here beats 13 count queries.
+ */
+export async function countToolsByCategory(
+  client: Client,
+): Promise<Map<string, number>> {
+  const { data, error } = await client.from("tools").select("category");
+
+  if (error) {
+    throw new Error(`countToolsByCategory: ${error.message}`);
+  }
+
+  const counts = new Map<string, number>(
+    TOOL_CATEGORIES.map((category) => [category.value, 0]),
+  );
+  for (const row of data) {
+    counts.set(row.category, (counts.get(row.category) ?? 0) + 1);
+  }
+  return counts;
 }
 
 /** One tool by id, for the editor. Null when it does not exist. */

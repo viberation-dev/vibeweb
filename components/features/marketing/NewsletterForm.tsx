@@ -1,10 +1,10 @@
 "use client";
 
+import { IconArrowUpRight } from "@tabler/icons-react";
 import { useActionState } from "react";
 
 import { subscribeAction, type NewsletterFormState } from "@/app/(site)/actions";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { ButtonIcon, buttonVariants } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
 /** The mockup's closing capture (screen 1). Rendered only when VIB-91's flag is on. */
@@ -15,24 +15,36 @@ export function NewsletterForm() {
   );
 
   return (
-    <form action={formAction} className="mx-auto mt-6 max-w-md">
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <div className="flex-1 text-left">
+    <form action={formAction} className="mx-auto mt-8 max-w-2xl">
+      {/*
+        v3's pill field: 56px tall to match the pill button beside it, so the
+        pair reads as one control rather than two stacked shapes.
+      */}
+      <div className="flex flex-col justify-center gap-3 sm:flex-row">
+        <div className="text-left sm:min-w-[340px]">
           <Label htmlFor="newsletter-email" className="sr-only">
             Email address
           </Label>
-          <Input
+          <input
             id="newsletter-email"
             name="email"
             type="email"
             autoComplete="email"
             placeholder="you@example.com"
             required
+            className="border-input bg-card placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 h-14 w-full rounded-full border px-6 text-[0.9375rem] outline-none focus-visible:ring-3"
           />
         </div>
-        <Button type="submit" size="lg" disabled={pending}>
+        <button
+          type="submit"
+          disabled={pending}
+          className={buttonVariants({ variant: "pill", size: "pill" })}
+        >
+          <ButtonIcon>
+            <IconArrowUpRight />
+          </ButtonIcon>
           {pending ? "Subscribing…" : "Subscribe"}
-        </Button>
+        </button>
       </div>
 
       {/*
@@ -57,8 +69,13 @@ export function NewsletterForm() {
         </p>
       ) : null}
 
-      <p className="text-muted-foreground mt-3 text-sm">
-        One email a week. Unsubscribe any time — every email carries the link.
+      {/*
+        One line, not two sentences stacked: the promise and the escape hatch
+        belong together, and "no account required" already sits below in the
+        section itself.
+      */}
+      <p className="text-muted-foreground mt-5 text-sm">
+        One email a week · Unsubscribe any time, every email carries the link
       </p>
     </form>
   );

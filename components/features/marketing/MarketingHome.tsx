@@ -16,7 +16,6 @@ import { FeatureCard } from "@/components/features/marketing/FeatureCard";
 import { NewsletterForm } from "@/components/features/marketing/NewsletterForm";
 import { ProductPanel } from "@/components/features/marketing/ProductPanel";
 import { CategoryIcon } from "@/components/features/tools/CategoryIcon";
-import { Badge } from "@/components/ui/badge";
 import { ButtonIcon, buttonVariants } from "@/components/ui/button";
 import { readingMinutes } from "@/lib/home-feed";
 import { CONTENT_PILLARS } from "@/lib/learn";
@@ -32,6 +31,8 @@ type Props = {
   previewTools: Tool[];
   collections: Collection[];
   collectionCounts: Map<string, number>;
+  /** Per-category tool totals for the taxonomy tiles (VIB-101). */
+  categoryCounts: Map<string, number>;
   latest: Content[];
   flagship: Wizard | undefined;
   /** VIB-91's flag, resolved by the page — this component stays env-free. */
@@ -40,32 +41,34 @@ type Props = {
 
 /**
  * Marketing homepage — what a visitor sees at / (VIB-77, restyled to v3
- * under VIB-98).
+ * under VIB-98, polished against the mockup under VIB-101).
  *
  * Signed-in users get the app shell instead; that branch lives in the page.
  * This is the only screen besides the Learn hub where the motion treatment
  * applies (handoff §4), and it is CSS-only — see `.reveal` in globals.css.
- * v3's design assumed a JavaScript reveal; the repo already had this and it
- * is better, so the existing utilities stand.
  *
- * Every number here is still queried. The v3 mockup hardcodes 46 tools / 13
- * categories / 6 pillars; a hero stat that contradicts the directory one
- * click away is worse than no stat at all, so the counts stay derived
+ * Every number here is still queried, including the per-category tile totals.
+ * The v3 mockup hardcodes 46 tools / 13 categories / 6 pillars; a number that
+ * contradicts the directory one click away is worse than no number at all
  * (VIB-98 constraint 1).
+ *
+ * Type weight follows the mockup rather than the shadcn default: headings are
+ * 700 and the hero is 800, where the shipped page had been 600 throughout.
  */
 export function MarketingHome({
   toolCount,
   previewTools,
   collections,
   collectionCounts,
+  categoryCounts,
   latest,
   flagship,
   newsletterEnabled,
 }: Props) {
   return (
-    <main className="mx-auto w-full max-w-7xl px-6 pb-10">
+    <main className="mx-auto w-full max-w-[1320px] px-[clamp(1.25rem,4vw,3.75rem)] pb-12">
       {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <section className="reveal grid items-center gap-12 py-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:py-20">
+      <section className="reveal grid items-center gap-[clamp(2rem,5vw,4.5rem)] py-[clamp(3rem,7vw,6rem)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
         <div>
           <AnnouncementChip badge="New" href="/tools">
             All {TOOL_CATEGORIES.length} categories, retagged
@@ -76,18 +79,18 @@ export function MarketingHome({
             *column*, not the viewport, and "Ship what matters." wraps to a
             third line above this in a 578px hero column.
           */}
-          <h1 className="font-heading mt-6 text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
+          <h1 className="font-heading mt-8 text-4xl font-extrabold tracking-[-0.045em] sm:text-5xl lg:text-6xl">
             Build with AI.
             <br />
             <span className="text-primary">Ship what matters.</span>
           </h1>
 
-          <p className="text-muted-foreground mt-6 text-lg">
+          <p className="text-muted-foreground mt-7 text-lg leading-relaxed">
             A curated directory of AI coding tools, role-aware guides, and
             step-by-step wizards — for beginner and intermediate vibe coders.
           </p>
 
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-10 flex flex-wrap gap-3">
             <Link
               href="/signup"
               className={buttonVariants({ variant: "pill", size: "pill" })}
@@ -108,9 +111,12 @@ export function MarketingHome({
             </Link>
           </div>
 
-          <p className="text-muted-foreground mt-6 text-[0.9375rem]">
+          <p className="text-muted-foreground mt-7 text-[0.9375rem]">
             Already have an account?{" "}
-            <Link href="/login" className="text-foreground font-bold hover:text-primary">
+            <Link
+              href="/login"
+              className="text-foreground hover:text-primary font-bold"
+            >
               Sign in
             </Link>
           </p>
@@ -130,7 +136,7 @@ export function MarketingHome({
       </section>
 
       {/* ── Feature cards — exactly one filled ───────────────────────── */}
-      <Section>
+      <SectionTight>
         <ul className="grid gap-5 md:grid-cols-3">
           <FeatureCard
             tone="filled"
@@ -174,27 +180,43 @@ export function MarketingHome({
             href={flagship ? `/wizards/${flagship.slug}` : "/wizards"}
           />
         </ul>
-      </Section>
+      </SectionTight>
 
       {/* ── Stats ────────────────────────────────────────────────────── */}
-      <Section>
-        <div className="bg-secondary grid grid-cols-2 gap-6 rounded-2xl p-8 text-center lg:grid-cols-4 lg:p-11">
-          <Stat value={String(toolCount)} label="tools catalogued" />
+      <SectionTight>
+        <SectionHead eyebrow="By the numbers" title="What&rsquo;s in here today." />
+        {/*
+          Dividers only once the row is four across. At two columns they would
+          cut between rows as well as within them, which reads as a table.
+        */}
+        <div className="bg-secondary grid grid-cols-2 gap-8 rounded-[1.125rem] p-8 text-center lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-muted-foreground/25 lg:p-11">
+          <Stat
+            value={String(toolCount)}
+            label="tools catalogued"
+            sub="vetted, tagged and linked"
+          />
           <Stat
             value={String(TOOL_CATEGORIES.length)}
             label="categories"
+            sub="sorted by what a thing is"
           />
           <Stat
             value={String(CONTENT_PILLARS.length)}
             label="learning pillars"
+            sub="beginner to intermediate"
           />
-          <Stat value="Free" label="to get started" accent />
+          <Stat
+            value="Free"
+            label="to get started"
+            sub="and free to keep browsing"
+            accent
+          />
         </div>
         <p className="text-muted-foreground mt-5 text-center text-sm">
           Everything above is free to browse. No card, no trial clock, no gated
           directory.
         </p>
-      </Section>
+      </SectionTight>
 
       {/* ── Categories ───────────────────────────────────────────────── */}
       <Section>
@@ -204,18 +226,25 @@ export function MarketingHome({
           lede="Sorted by what a thing is, not what it's for. Use cases live as tags, so one tool can serve many."
           action={{ label: "View all tools", href: "/tools" }}
         />
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <ul className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-4">
           {TOOL_CATEGORIES.map((category) => (
             <li key={category.value}>
               <Link
                 href={toolsHref({ category: category.value })}
-                className="bg-secondary hover:bg-accent flex items-center gap-3 rounded-xl px-5 py-4 transition-all hover:-translate-y-0.5"
+                className="bg-secondary hover:bg-primary/10 flex items-center gap-3.5 rounded-2xl px-5 py-[1.125rem] transition-all hover:-translate-y-0.5"
               >
-                <span className="bg-card text-primary flex size-10 shrink-0 items-center justify-center rounded-xl">
+                <IconTile>
                   <CategoryIcon category={category.value} className="size-5" />
-                </span>
-                <span className="truncate text-[0.95rem] font-semibold">
+                </IconTile>
+                <span className="truncate font-bold tracking-tight">
                   {category.label}
+                </span>
+                {/*
+                  Real totals, queried per category. A tile promising 6 Models
+                  that opens on 4 is worse than a tile with no number.
+                */}
+                <span className="text-muted-foreground ml-auto shrink-0 font-mono text-[0.8125rem]">
+                  {categoryCounts.get(category.value) ?? 0}
                 </span>
               </Link>
             </li>
@@ -236,7 +265,7 @@ export function MarketingHome({
               <li key={collection.id}>
                 <Link
                   href={`/collections/${collection.slug}`}
-                  className="motion-lift bg-secondary flex h-full flex-col overflow-hidden rounded-2xl"
+                  className="motion-lift bg-secondary flex h-full flex-col overflow-hidden rounded-[1.125rem]"
                 >
                   {/*
                     v3 uses colour fields where a cover image would go. There
@@ -248,32 +277,35 @@ export function MarketingHome({
                   >
                     {(() => {
                       const Glyph = COVER_GLYPHS[i % COVER_GLYPHS.length];
-                      return <Glyph aria-hidden className="size-10 opacity-90" />;
+                      return (
+                        <Glyph aria-hidden className="size-10 opacity-90" />
+                      );
                     })()}
                     {/*
                       Bordered rather than tinted. v3 darkens this chip with a
-                      translucent black, which on the blue cover drags the
-                      fill under its own ink label — 3.76:1. The three covers
-                      have opposite polarity (ink on blue and lime, paper on
-                      deep), so no single tint helps all three. With no fill
-                      the label keeps the cover's own on-colour pairing, which
-                      is AA by construction.
+                      translucent black, which on the blue cover drags the fill
+                      under its own ink label — 3.76:1. The three covers have
+                      opposite polarity (ink on blue and lime, paper on deep),
+                      so no single tint helps all three. With no fill the label
+                      keeps the cover's own on-colour pairing, which is AA by
+                      construction.
                     */}
-                    <span className="absolute top-4 right-4 rounded-full border border-current/40 px-3 py-0.5 font-mono text-xs">
+                    <span className="absolute top-4 right-4 rounded-full border border-current/40 px-3 py-1 font-mono text-xs font-semibold">
                       {collectionCounts.get(collection.id) ?? 0} tools
                     </span>
                   </span>
                   <span className="flex flex-1 flex-col p-6">
-                    <span className="font-heading text-lg font-semibold tracking-tight">
+                    <span className="font-heading text-lg font-bold tracking-tight">
                       {collection.title}
                     </span>
                     {collection.description ? (
-                      <span className="text-muted-foreground mt-2 text-sm">
+                      <span className="text-muted-foreground mt-2 text-sm leading-relaxed">
                         {collection.description}
                       </span>
                     ) : null}
-                    <span className="text-primary mt-auto pt-5 text-sm font-semibold">
-                      Browse collection →
+                    <span className="text-primary mt-auto flex items-center gap-2 pt-5 text-sm font-bold">
+                      Browse collection
+                      <IconArrowRight aria-hidden className="size-4" />
                     </span>
                   </span>
                 </Link>
@@ -298,20 +330,18 @@ export function MarketingHome({
                 <li key={item.id}>
                   <Link
                     href={`/learn/${item.slug}`}
-                    className="motion-lift bg-secondary flex h-full items-start gap-5 rounded-2xl p-6"
+                    className="motion-lift bg-secondary flex h-full items-start gap-5 rounded-[1.125rem] p-6"
                   >
-                    <span className="bg-card text-primary flex size-13 shrink-0 items-center justify-center rounded-2xl">
+                    <IconTile size="lg">
                       <IconBook2 aria-hidden className="size-6" />
-                    </span>
+                    </IconTile>
                     <span className="min-w-0">
-                      <span className="font-heading block text-lg font-semibold tracking-tight">
+                      <span className="font-heading block text-lg font-bold tracking-tight">
                         {item.title}
                       </span>
-                      <span className="mt-2.5 flex flex-wrap items-center gap-2.5">
+                      <span className="mt-3 flex flex-wrap items-center gap-3">
                         {item.role_level ? (
-                          <Badge variant="outline" className="capitalize">
-                            {item.role_level}
-                          </Badge>
+                          <TagPill>{item.role_level}</TagPill>
                         ) : null}
                         {/*
                           The mockup puts an author byline here ("Alex R."),
@@ -337,15 +367,6 @@ export function MarketingHome({
       {/* ── Proof ────────────────────────────────────────────────────── */}
       <Section>
         {/*
-          v3 runs this as three customer testimonials — quoted, with names and
-          cities. Maya, Tyler and Rachel are §03 *personas*: fictional
-          composites written to guide design, not customers who said anything.
-          Publishing invented quotes as social proof on a live marketing page
-          would be fabricated, so the same three cards state who the product
-          is for, in the third person, with no quote marks and no attribution
-          (VIB-98 constraint 2). Swap in real quotes when there are real users
-          to quote.
-
           The "deep" surface: this repo has no --deep token (that was in the
           superseded handoff CSS). In v3's own dark theme --deep equals the
           surface colour, so the dark chapter only exists in light mode —
@@ -353,39 +374,71 @@ export function MarketingHome({
         */}
         <div className="bg-foreground text-background dark:bg-secondary dark:text-foreground rounded-3xl p-9 lg:p-14">
           {/*
-            v3 sets both of these in lime *text*. --highlight is a fill-only
-            colour (VIB-99) and the repo enforces that in every existing use,
-            so the accent arrives as a fill instead: a marker behind ink.
-            That is the v2 lime-marker gesture the decision log records as
-            dropped-but-reversible — reversed here, because it is the one way
-            to get lime into this block without making it a text colour.
+            Lime as *text*, which VIB-99's fill-only rule otherwise forbids.
+            Narrowed rather than broken: the rule exists because lime fails
+            contrast on every light surface, and this block is dark in both
+            modes — lime measures ~15:1 on the light-mode ink ground and ~14:1
+            on the dark-mode surface. Approved by Ali 2026-09-10 for this block
+            specifically. It is still never lime-on-light anywhere else.
           */}
-          <p className="flex items-center gap-2.5 text-xs font-semibold tracking-widest uppercase opacity-80">
+          <p className="text-highlight flex items-center gap-2.5 text-xs font-bold tracking-widest uppercase">
             <span aria-hidden className="bg-highlight h-0.5 w-5 rounded-full" />
             Who it&rsquo;s for
           </p>
-          <h2 className="font-heading mt-4 text-3xl font-semibold tracking-tight lg:text-4xl">
+          <h2 className="font-heading mt-4 text-3xl font-bold tracking-[-0.04em] lg:text-4xl">
             Built for real builders,{" "}
-            <span className="bg-highlight text-highlight-foreground rounded-md px-2 py-0.5 decoration-clone">
-              at every level.
-            </span>
+            <span className="text-highlight">at every level.</span>
           </h2>
-          <ul className="mt-10 grid gap-5 md:grid-cols-3">
-            {AUDIENCES.map((audience) => (
-              <li
-                key={audience.tier}
-                className="rounded-2xl border border-current/15 bg-current/5 p-6"
-              >
-                <span className="text-xs font-bold tracking-widest uppercase opacity-70">
-                  {audience.tier}
-                </span>
-                <h3 className="font-heading mt-3 text-lg font-semibold tracking-tight">
-                  {audience.headline}
-                </h3>
-                <p className="mt-2 text-sm opacity-80">{audience.blurb}</p>
-              </li>
-            ))}
-          </ul>
+
+          {TESTIMONIALS.length ? (
+            <ul className="mt-10 grid gap-5 md:grid-cols-3">
+              {TESTIMONIALS.map((t) => (
+                <li
+                  key={t.name}
+                  className="flex flex-col rounded-[1.125rem] border border-current/15 bg-current/5 p-6"
+                >
+                  <blockquote className="text-[0.95rem] leading-relaxed">
+                    &ldquo;{t.quote}&rdquo;
+                  </blockquote>
+                  <div className="mt-5 flex items-center gap-3 pt-1">
+                    <span
+                      aria-hidden
+                      className="flex size-9.5 shrink-0 items-center justify-center rounded-full border border-current/15 bg-current/10 text-xs font-bold"
+                    >
+                      {t.initials}
+                    </span>
+                    <span className="text-sm opacity-70">
+                      {t.name} · {t.location}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            /*
+              No testimonials yet. §03's personas stand in, in the third
+              person — who the product is for, not who said what. See
+              VIB-102 for the table that replaces this.
+            */
+            <ul className="mt-10 grid gap-5 md:grid-cols-3">
+              {AUDIENCES.map((audience) => (
+                <li
+                  key={audience.tier}
+                  className="rounded-[1.125rem] border border-current/15 bg-current/5 p-6"
+                >
+                  <span className="text-xs font-bold tracking-widest uppercase opacity-70">
+                    {audience.tier}
+                  </span>
+                  <h3 className="font-heading mt-3 text-lg font-bold tracking-tight">
+                    {audience.headline}
+                  </h3>
+                  <p className="mt-2.5 text-sm leading-relaxed opacity-80">
+                    {audience.blurb}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </Section>
 
@@ -394,24 +447,24 @@ export function MarketingHome({
         <Section>
           <div className="bg-highlight text-highlight-foreground grid items-center gap-10 rounded-3xl p-9 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:p-14">
             <div>
-              <p className="flex items-center gap-2.5 text-xs font-semibold tracking-widest uppercase">
+              <p className="flex items-center gap-2.5 text-xs font-bold tracking-widest uppercase">
                 <span
                   aria-hidden
                   className="bg-highlight-foreground h-0.5 w-5 rounded-full"
                 />
                 Flagship wizard
               </p>
-              <h2 className="font-heading mt-4 text-3xl font-semibold tracking-tight lg:text-4xl">
+              <h2 className="font-heading mt-4 text-3xl font-bold tracking-[-0.04em] lg:text-4xl">
                 {flagship.title}
               </h2>
-              <p className="mt-4 text-lg opacity-75">
+              <p className="mt-4 text-lg leading-relaxed opacity-75">
                 A guided {flagship.steps.length}-step walkthrough, ending with
                 something real on the internet. Copyable prompts at every step.
               </p>
               <ul className="mt-7 flex flex-wrap gap-x-7 gap-y-2.5 border-t border-current/20 pt-6">
                 {flagship.steps.map((step, i) => (
-                  <li key={step.title} className="text-[0.95rem] font-semibold">
-                    <span className="mr-2 font-mono text-xs opacity-75">
+                  <li key={step.title} className="text-[0.95rem] font-bold">
+                    <span className="mr-2 font-mono text-xs font-semibold opacity-75">
                       {String(i + 1).padStart(2, "0")}
                     </span>
                     {step.title}
@@ -420,8 +473,14 @@ export function MarketingHome({
               </ul>
             </div>
             <div>
+              {/*
+                v3's ink button on the lime field: the fill inverts to
+                --foreground and the inset badge carries the lime back.
+              */}
               <Link
                 href={`/wizards/${flagship.slug}`}
+                /* v3's ink button on the lime field: the fill inverts to
+                   --foreground and the inset badge carries the lime back. */
                 className={buttonVariants({
                   size: "pill",
                   className:
@@ -438,7 +497,7 @@ export function MarketingHome({
                 remember where you stopped. The app does not autosave, so the
                 line is left out rather than reworded into the same claim.
               */}
-              <p className="mt-4 text-sm opacity-70">Free to run.</p>
+              <p className="mt-4 text-sm font-medium opacity-70">Free to run.</p>
             </div>
           </div>
         </Section>
@@ -447,7 +506,7 @@ export function MarketingHome({
       {/* ── Closing capture ──────────────────────────────────────────── */}
       <Section>
         <div className="bg-secondary rounded-3xl p-9 text-center lg:p-14">
-          <h2 className="font-heading text-3xl font-semibold tracking-tight lg:text-4xl">
+          <h2 className="font-heading text-3xl font-bold tracking-[-0.04em] lg:text-4xl">
             Start building.{" "}
             <span className="text-primary">Stop second-guessing.</span>
           </h2>
@@ -457,7 +516,7 @@ export function MarketingHome({
                 VIB-91's flag, already shipped with a server action. v3 draws a
                 new form; there was no need to build one.
               */}
-              <p className="text-muted-foreground mx-auto mt-4 max-w-xl text-lg">
+              <p className="text-muted-foreground mx-auto mt-4 max-w-xl text-lg leading-relaxed">
                 Weekly curation of the AI tools and walkthroughs worth your
                 time.
               </p>
@@ -465,7 +524,7 @@ export function MarketingHome({
             </>
           ) : (
             <>
-              <p className="text-muted-foreground mx-auto mt-4 max-w-xl text-lg">
+              <p className="text-muted-foreground mx-auto mt-4 max-w-xl text-lg leading-relaxed">
                 Create a free account to save tools, track what you have read,
                 and run the wizard at your own pace.
               </p>
@@ -481,13 +540,13 @@ export function MarketingHome({
                 </Link>
                 <Link
                   href="/learn"
+                  /* This block is already --secondary, so the soft pill
+                     lifts to --card and its badge drops back to --secondary.
+                     Left at the defaults the badge and the button are the
+                     same colour and it disappears. */
                   className={buttonVariants({
                     variant: "pill-soft",
                     size: "pill",
-                    /* This block is already --secondary, so the soft pill
-                       lifts to --card and its badge drops back to
-                       --secondary. Left at the defaults the badge and the
-                       button are the same colour and it disappears. */
                     className: "bg-card hover:bg-accent",
                   })}
                 >
@@ -497,11 +556,11 @@ export function MarketingHome({
                   Read the guides
                 </Link>
               </div>
+              <p className="text-muted-foreground mt-5 text-sm">
+                No account required to browse the directory.
+              </p>
             </>
           )}
-          <p className="text-muted-foreground mt-5 text-sm">
-            No account required to browse the directory.
-          </p>
         </div>
       </Section>
     </main>
@@ -519,6 +578,29 @@ const COVER_TONES = [
   "bg-highlight text-highlight-foreground",
   "bg-foreground text-background dark:bg-card dark:text-foreground",
 ] as const;
+
+/**
+ * Customer testimonials.
+ *
+ * ⚠️ EMPTY ON PURPOSE. Maya/Tyler/Rachel are §03 *personas* — fictional
+ * composites written to guide design, not customers who said anything — so
+ * there is nothing truthful to put here yet. Publishing invented quotes with
+ * names and faces on a monetized page is fabricated social proof, and the
+ * section falls back to the third-person AUDIENCES cards below while this is
+ * empty rather than inventing any.
+ *
+ * VIB-102 replaces this constant with a `testimonials` table and an admin
+ * screen. Until then, the only correct way to fill it is with quotes real
+ * people actually gave.
+ */
+type Testimonial = {
+  quote: string;
+  name: string;
+  location: string;
+  initials: string;
+};
+
+const TESTIMONIALS: readonly Testimonial[] = [];
 
 /**
  * §03's three personas, stated as audiences rather than quoted as customers.
@@ -546,15 +628,58 @@ const AUDIENCES = [
   },
 ] as const;
 
-function Section({
+/** v3's `.sec` rhythm: clamp(56px, 7vw, 104px). */
+function Section({ children }: { children: React.ReactNode }) {
+  return (
+    <section className="reveal mt-[clamp(3.5rem,7vw,6.5rem)]">
+      {children}
+    </section>
+  );
+}
+
+/** v3's `.sec-t` rhythm — the tighter one, clamp(36px, 4.5vw, 64px). */
+function SectionTight({ children }: { children: React.ReactNode }) {
+  return (
+    <section className="reveal mt-[clamp(2.25rem,4.5vw,4rem)]">
+      {children}
+    </section>
+  );
+}
+
+/**
+ * The square icon plate used by the category tiles and article cards.
+ *
+ * v3 draws these as a --card plate with a blue glyph; Ali asked for the
+ * inverse — blue plate, light glyph — on 2026-09-10. The glyph is
+ * --primary-foreground rather than lime: `--highlight` is a fill-only colour
+ * (VIB-99) and a stroke is not a fill, so lime here would be the first break
+ * of that rule. --primary-foreground is also the token that already resolves
+ * against a --primary fill in both modes.
+ */
+function IconTile({
+  size = "md",
   children,
-  className,
 }: {
+  size?: "md" | "lg";
   children: React.ReactNode;
-  className?: string;
 }) {
   return (
-    <section className={`reveal mt-20 ${className ?? ""}`}>{children}</section>
+    <span
+      className={`bg-primary text-primary-foreground flex shrink-0 items-center justify-center ${
+        size === "lg" ? "size-13 rounded-2xl" : "size-10 rounded-xl"
+      }`}
+    >
+      {children}
+    </span>
+  );
+}
+
+/** v3's `.tag`: a wash of the accent with the accent as its text. */
+function TagPill({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="bg-primary/10 text-primary rounded-full px-3 py-1 text-xs font-bold capitalize">
+      {children}
+    </span>
   );
 }
 
@@ -572,15 +697,15 @@ function SectionHead({
   return (
     <div className="mb-10 flex flex-wrap items-end justify-between gap-7">
       <div>
-        <p className="text-primary flex items-center gap-2.5 text-xs font-semibold tracking-widest uppercase">
+        <p className="text-primary flex items-center gap-2.5 text-xs font-bold tracking-widest uppercase">
           <span aria-hidden className="bg-primary h-0.5 w-5 rounded-full" />
           {eyebrow}
         </p>
-        <h2 className="font-heading mt-3.5 text-3xl font-semibold tracking-tight lg:text-4xl">
+        <h2 className="font-heading mt-3.5 text-3xl font-bold tracking-[-0.04em] lg:text-4xl">
           {title}
         </h2>
         {lede ? (
-          <p className="text-muted-foreground mt-3.5 max-w-[56ch] text-lg">
+          <p className="text-muted-foreground mt-3.5 max-w-[56ch] text-lg leading-relaxed">
             {lede}
           </p>
         ) : null}
@@ -588,7 +713,7 @@ function SectionHead({
       {action ? (
         <Link
           href={action.href}
-          className="text-primary flex shrink-0 items-center gap-2 text-[0.9375rem] font-semibold hover:underline"
+          className="text-primary flex shrink-0 items-center gap-2 text-[0.9375rem] font-bold hover:underline"
         >
           {action.label}
           <IconArrowRight aria-hidden className="size-4" />
@@ -601,20 +726,23 @@ function SectionHead({
 function Stat({
   value,
   label,
+  sub,
   accent,
 }: {
   value: string;
   label: string;
+  sub: string;
   accent?: boolean;
 }) {
   return (
-    <div>
+    <div className="lg:px-6">
       <p
-        className={`font-heading text-4xl font-bold tracking-tight lg:text-5xl ${accent ? "text-primary" : ""}`}
+        className={`font-heading text-4xl font-extrabold tracking-[-0.05em] lg:text-5xl ${accent ? "text-primary" : ""}`}
       >
         {value}
       </p>
-      <p className="text-muted-foreground mt-2.5 text-sm">{label}</p>
+      <p className="mt-3 text-sm font-bold">{label}</p>
+      <p className="text-muted-foreground mt-1 text-sm leading-snug">{sub}</p>
     </div>
   );
 }

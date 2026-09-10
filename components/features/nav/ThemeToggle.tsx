@@ -40,7 +40,12 @@ function apply(mode: ThemeMode) {
  * be a hydration mismatch. Until the effect runs the control shows the
  * default, which is what the markup says too.
  */
-export function ThemeToggle() {
+export function ThemeToggle({
+  orientation = "horizontal",
+}: {
+  /** `vertical` is the fixed left rail on the marketing pages (VIB-98). */
+  orientation?: "horizontal" | "vertical";
+} = {}) {
   const [mode, setMode] = useState<ThemeMode>("system");
 
   useEffect(() => {
@@ -77,7 +82,14 @@ export function ThemeToggle() {
   }
 
   return (
-    <div role="group" aria-label="Colour mode" className="flex gap-0.5 p-1">
+    <div
+      role="group"
+      aria-label="Colour mode"
+      className={cn(
+        "flex gap-0.5 p-1",
+        orientation === "vertical" && "flex-col",
+      )}
+    >
       {THEME_MODES.map((value) => {
         const Icon = ICONS[value];
         const active = mode === value;
@@ -89,14 +101,19 @@ export function ThemeToggle() {
             aria-pressed={active}
             title={LABELS[value]}
             className={cn(
-              "flex flex-1 items-center justify-center gap-1.5 rounded px-2 py-1 text-xs",
+              "flex items-center justify-center gap-1.5 rounded text-xs",
+              orientation === "vertical"
+                ? "size-9 rounded-full"
+                : "flex-1 px-2 py-1",
               active
                 ? "bg-accent text-accent-foreground font-medium"
                 : "text-muted-foreground hover:bg-accent/50",
             )}
           >
             <Icon aria-hidden className="size-3.5" />
-            {LABELS[value]}
+            {/* The rail is icon-only — three stacked words is a column of
+                text, not a control. `title` already names each one. */}
+            {orientation === "vertical" ? null : LABELS[value]}
           </button>
         );
       })}

@@ -30,7 +30,6 @@ import { TOOL_CATEGORIES } from "@/lib/tool-categories";
 import { toolsHref } from "@/lib/tools-url";
 
 type Props = {
-  toolCount: number;
   previewTools: Tool[];
   collections: Collection[];
   collectionCounts: Map<string, number>;
@@ -65,7 +64,6 @@ type Props = {
  * 700 and the hero is 800, where the shipped page had been 600 throughout.
  */
 export function MarketingHome({
-  toolCount,
   previewTools,
   collections,
   collectionCounts,
@@ -86,7 +84,7 @@ export function MarketingHome({
           */}
           {flagship ? (
             <AnnouncementChip badge="New" href={`/wizards/${flagship.slug}`}>
-              {flagship.title}: a free {flagship.steps.length}-step walkthrough
+              {flagship.title} — free, guided, start to finish
             </AnnouncementChip>
           ) : null}
 
@@ -134,8 +132,7 @@ export function MarketingHome({
           </div>
 
           <p className="text-muted-foreground mt-7 text-[0.9375rem]">
-            Free to browse · No card · {toolCount} AI tools with honest
-            tradeoffs
+            Free to browse · No card · No sign-up to start
           </p>
 
           <p className="text-muted-foreground mt-2 text-[0.9375rem]">
@@ -170,8 +167,8 @@ export function MarketingHome({
             icon={<IconLayoutGrid aria-hidden />}
             title="Know which tool to use."
             points={[
-              `${toolCount} AI coding tools in ${TOOL_CATEGORIES.length} categories`,
-              "Who each one is best for",
+              "The whole AI coding toolkit, sorted by type",
+              "Who each tool is really for",
               "Affiliate links always labelled",
             ]}
             cta="Compare the tools"
@@ -192,9 +189,7 @@ export function MarketingHome({
             icon={<IconWand aria-hidden />}
             title="Get it live this week."
             points={[
-              flagship
-                ? `${flagship.steps.length} guided steps, idea to live URL`
-                : "A guided walkthrough to a live URL",
+              "Idea to live URL, one step at a time",
               /*
                 v3 says progress "saves as you go". The app deliberately does
                 not autosave — browsing a wizard must not overwrite real
@@ -212,11 +207,12 @@ export function MarketingHome({
       {/* ── How it works ─────────────────────────────────────────────── */}
       {/*
         Replaced "By the numbers" (VIB-115). Small true numbers on display
-        read as a thin catalogue next to competitors' "1,000+"; the counts
-        still appear, queried, in the cards above and the tiles below.
+        read as a thin catalogue next to competitors' "1,000+". Headline copy
+        carries no counts at all (Ali, 2026-09-11); the queried totals survive
+        only as data labels on the category tiles and collection covers.
       */}
       <SectionTight>
-        <SectionHead eyebrow="How it works" title="Three steps to a live project." />
+        <SectionHead eyebrow="How it works" title="Idea in. Live project out." />
         <ol className="bg-secondary grid gap-8 rounded-[1.125rem] p-8 md:grid-cols-3 md:gap-0 md:divide-x md:divide-muted-foreground/25 lg:p-11">
           {STEPS.map((step, i) => (
             <li key={step.title} className="md:px-6">
@@ -499,9 +495,9 @@ export function MarketingHome({
                 {flagship.title}
               </h2>
               <p className="mt-4 text-lg leading-relaxed opacity-75">
-                {flagship.steps.length} steps from blank page to a live link you
-                can send to anyone. Copy each prompt, paste it into your AI
-                tool, check the result, move on.
+                From blank page to a live link you can send to anyone. Copy
+                each prompt, paste it into your AI tool, check the result, move
+                on.
               </p>
               <ul className="mt-7 flex flex-wrap gap-x-7 gap-y-2.5 border-t border-current/20 pt-6">
                 {flagship.steps.map((step, i) => (

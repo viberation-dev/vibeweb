@@ -6,7 +6,9 @@ import { after } from "next/server";
 import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
 import { CategoryIcon } from "@/components/features/tools/CategoryIcon";
 import { Fact } from "@/components/features/tools/Fact";
+import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import { ModelPicker, ModelSpecs } from "@/components/features/tools/ModelSpecs";
+import { StarterPrompts } from "@/components/features/tools/StarterPrompts";
 import { ToolLinks } from "@/components/features/tools/ToolLinks";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -17,8 +19,13 @@ import { familyMembers, pickMember } from "@/lib/model-facts";
 import { outboundRel, safeOutboundUrl } from "@/lib/outbound";
 import { isBookmarked } from "@/lib/queries/bookmarks";
 import { countCollectionsContaining } from "@/lib/queries/collections";
+import { listContentSharingTags } from "@/lib/queries/content";
 import { recordVisit } from "@/lib/queries/history";
+import { listPromptsForTool } from "@/lib/queries/prompts";
 import { listToolLinks } from "@/lib/queries/tool-links";
+import { getWizardsForTool } from "@/lib/queries/wizards";
+import { contentView } from "@/lib/resource-view";
+import { wizardHref } from "@/lib/wizards";
 import {
   getToolBySlug,
   getToolTags,
@@ -40,6 +47,9 @@ type Props = {
 
 /** Related tools shown under the overview. Four fills two rows of two. */
 const RELATED_LIMIT = 4;
+
+/** Related Learn reading (VIB-111). Same two-by-two grid as related tools. */
+const READING_LIMIT = 4;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -81,8 +91,16 @@ export default async function ToolPage({ params, searchParams }: Props) {
    * sign in and back. Only the saved/unsaved state needs a user.
    */
   const family = tool.openrouter_family;
-  const [tags, bookmarked, collectionCount, { tools: sameCategory }, links, liveModels] =
-    await Promise.all([
+  const [
+    tags,
+    bookmarked,
+    collectionCount,
+    { tools: sameCategory },
+    links,
+    prompts,
+    guides,
+    liveModels,
+  ] = await Promise.all([
       getToolTags(supabase, tool.id),
       auth.user
         ? isBookmarked(supabase, auth.user.id, { targetType: "tool", targetId: tool.id })
@@ -91,6 +109,8 @@ export default async function ToolPage({ params, searchParams }: Props) {
       // One extra so removing this tool from its own related list still fills it.
       listTools(supabase, { category: tool.category, pageSize: RELATED_LIMIT + 1 }),
       listToolLinks(supabase, tool.id),
+      listPromptsForTool(supabase, tool.id),
+      getWizardsForTool(supabase, tool.id),
       /*
        * The family's models ride the same wave (VIB-107): cached for an hour,
        * and empty rather than throwing, so OpenRouter being down costs this
@@ -111,7 +131,13 @@ export default async function ToolPage({ params, searchParams }: Props) {
    * Next's data cache after the first view each hour; fetch it speculatively
    * alongside the list if cold-cache latency ever shows up.
    */
-  const endpoints = selected ? await getOpenRouterEndpoints(selected.id) : [];
+  const facetTagIds = tags.filter((tag) => tag.kind === "facet").map((tag) => tag.id);
+  // Related reading needs the tags, so it rides this wave with the endpoints
+  // call rather than adding a round trip of its own on model pages.
+  const [endpoints, reading] = await Promise.all([
+    selected ? getOpenRouterEndpoints(selected.id) : [],
+    listContentSharingTags(supabase, facetTagIds, READING_LIMIT),
+  ]);
 
   // Both are optional per row; empty means unstated, and the row is dropped.
   const platforms = platformSummary(tool.platform);
@@ -229,6 +255,8 @@ export default async function ToolPage({ params, searchParams }: Props) {
 
           <ToolLinks outgoing={links.outgoing} incoming={links.incoming} />
 
+          <StarterPrompts prompts={prompts} />
+
           <h2 className="font-heading mt-8 text-lg font-medium">Key info</h2>
           {/*
             All four rows from mockup screen 4 now have columns behind them
@@ -243,6 +271,37 @@ export default async function ToolPage({ params, searchParams }: Props) {
             <Fact label="Category" value={toolCategoryLabel(tool.category)} />
             {bestFor ? <Fact label="Best for" value={bestFor} /> : null}
           </dl>
+
+          {guides.length ? (
+            <>
+              <h2 className="font-heading mt-8 text-lg font-medium">Guided walkthroughs</h2>
+              <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+                {guides.map((wizard) => (
+                  <li key={wizard.slug}>
+                    <ResourceCard
+                      href={wizardHref(wizard.slug)}
+                      title={wizard.title}
+                      eyebrow="Wizard"
+                      difficulty={wizard.role_level ?? undefined}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
+
+          {reading.length ? (
+            <>
+              <h2 className="font-heading mt-8 text-lg font-medium">Related reading</h2>
+              <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+                {reading.map((item) => (
+                  <li key={item.id}>
+                    <ResourceCard {...contentView(item)} />
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
 
           {related.length ? (
             <>

@@ -2,12 +2,14 @@ import {
   IconArrowRight,
   IconArrowUpRight,
   IconBook2,
+  IconCheck,
   IconCoin,
   IconCompass,
   IconLayoutGrid,
   IconPlug,
   IconRocket,
   IconWand,
+  IconX,
 } from "@tabler/icons-react";
 import Link from "next/link";
 
@@ -18,7 +20,6 @@ import { ProductPanel } from "@/components/features/marketing/ProductPanel";
 import { CategoryIcon } from "@/components/features/tools/CategoryIcon";
 import { ButtonIcon, buttonVariants } from "@/components/ui/button";
 import { readingMinutes } from "@/lib/home-feed";
-import { CONTENT_PILLARS } from "@/lib/learn";
 import type { Collection } from "@/lib/queries/collections";
 import type { Content } from "@/lib/queries/content";
 import type { Testimonial } from "@/lib/queries/testimonials";
@@ -79,35 +80,47 @@ export function MarketingHome({
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <section className="reveal grid items-center gap-[clamp(2rem,5vw,4.5rem)] py-[clamp(3rem,7vw,6rem)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
         <div>
-          <AnnouncementChip badge="New" href="/tools">
-            All {TOOL_CATEGORIES.length} categories, retagged
-          </AnnouncementChip>
+          {/*
+            The chip sells the walkthrough, not internal news (VIB-115): a
+            visitor has no use for "categories retagged".
+          */}
+          {flagship ? (
+            <AnnouncementChip badge="New" href={`/wizards/${flagship.slug}`}>
+              {flagship.title}: a free {flagship.steps.length}-step walkthrough
+            </AnnouncementChip>
+          ) : null}
 
           {/*
             Capped at 60px, not v3's 80px: the display size has to fit the
-            *column*, not the viewport, and "Ship what matters." wraps to a
-            third line above this in a 578px hero column.
+            *column*, not the viewport, and the accent line wraps to a third
+            line above this in a 578px hero column.
           */}
           <h1 className="font-heading mt-8 text-4xl font-extrabold tracking-[-0.045em] sm:text-5xl lg:text-6xl">
-            Build with AI.
+            Ship your first app with AI.
             <br />
-            <span className="text-primary">Ship what matters.</span>
+            <span className="text-primary">No guesswork. No hype.</span>
           </h1>
 
           <p className="text-muted-foreground mt-7 text-lg leading-relaxed">
-            A curated directory of AI coding tools, role-aware guides, and
-            step-by-step wizards — for beginner and intermediate vibe coders.
+            Viberation shows you which AI tools to use, what to type into them,
+            and how to get your project live. Step by step, in plain English.
+            No coding background needed.
           </p>
 
+          {/*
+            The walkthrough leads, not signup: reading it needs no account, so
+            the first click costs nothing. Signing in is asked for only when
+            someone saves progress (VIB-115).
+          */}
           <div className="mt-10 flex flex-wrap gap-3">
             <Link
-              href="/signup"
+              href={flagship ? `/wizards/${flagship.slug}` : "/signup"}
               className={buttonVariants({ variant: "pill", size: "pill" })}
             >
               <ButtonIcon>
                 <IconArrowUpRight />
               </ButtonIcon>
-              Get started — it&rsquo;s free
+              {flagship ? "Start the free walkthrough" : "Get started — it’s free"}
             </Link>
             <Link
               href="/tools"
@@ -116,11 +129,16 @@ export function MarketingHome({
               <ButtonIcon tone="on-soft">
                 <IconCompass />
               </ButtonIcon>
-              Browse the directory
+              Find the right AI tool
             </Link>
           </div>
 
           <p className="text-muted-foreground mt-7 text-[0.9375rem]">
+            Free to browse · No card · {toolCount} AI tools with honest
+            tradeoffs
+          </p>
+
+          <p className="text-muted-foreground mt-2 text-[0.9375rem]">
             Already have an account?{" "}
             <Link
               href="/login"
@@ -150,89 +168,101 @@ export function MarketingHome({
           <FeatureCard
             tone="filled"
             icon={<IconLayoutGrid aria-hidden />}
-            title="Find the right tool in minutes."
+            title="Know which tool to use."
             points={[
-              `${toolCount} tools, ${TOOL_CATEGORIES.length} categories`,
-              "Tagged by what a thing is, not what it's for",
-              "Affiliate-transparent",
+              `${toolCount} AI coding tools in ${TOOL_CATEGORIES.length} categories`,
+              "Who each one is best for",
+              "Affiliate links always labelled",
             ]}
-            cta="Explore the directory"
+            cta="Compare the tools"
             href="/tools"
           />
           <FeatureCard
             icon={<IconBook2 aria-hidden />}
-            title="Stop reading tutorials that skip steps."
+            title="Understand what you're doing."
             points={[
-              `${CONTENT_PILLARS.length} pillars, level-gated`,
-              "Copy-paste prompts",
-              "Beginner and intermediate tracks",
+              "Plain-English guides that don't talk down",
+              "Prompts you can copy and paste",
+              "Tracks for beginners and for people already shipping",
             ]}
-            cta="Open the Learn hub"
+            cta="Start learning"
             href="/learn"
           />
           <FeatureCard
             icon={<IconWand aria-hidden />}
-            title="Get to a live URL this week."
+            title="Get it live this week."
             points={[
               flagship
-                ? `${flagship.steps.length} guided steps`
-                : "A guided walkthrough",
+                ? `${flagship.steps.length} guided steps, idea to live URL`
+                : "A guided walkthrough to a live URL",
               /*
                 v3 says progress "saves as you go". The app deliberately does
                 not autosave — browsing a wizard must not overwrite real
                 progress — so that line is not reproduced (VIB-98 constraint 3).
               */
-              "Copyable prompts at every step",
-              "No experience assumed",
+              "A copyable prompt at every step",
+              "No coding experience assumed",
             ]}
-            cta="Start the wizard"
+            cta="Start the walkthrough"
             href={flagship ? `/wizards/${flagship.slug}` : "/wizards"}
           />
         </ul>
       </SectionTight>
 
-      {/* ── Stats ────────────────────────────────────────────────────── */}
+      {/* ── How it works ─────────────────────────────────────────────── */}
+      {/*
+        Replaced "By the numbers" (VIB-115). Small true numbers on display
+        read as a thin catalogue next to competitors' "1,000+"; the counts
+        still appear, queried, in the cards above and the tiles below.
+      */}
       <SectionTight>
-        <SectionHead eyebrow="By the numbers" title="What&rsquo;s in here today." />
-        {/*
-          Dividers only once the row is four across. At two columns they would
-          cut between rows as well as within them, which reads as a table.
-        */}
-        <div className="bg-secondary grid grid-cols-2 gap-8 rounded-[1.125rem] p-8 text-center lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-muted-foreground/25 lg:p-11">
-          <Stat
-            value={String(toolCount)}
-            label="tools catalogued"
-            sub="vetted, tagged and linked"
-          />
-          <Stat
-            value={String(TOOL_CATEGORIES.length)}
-            label="categories"
-            sub="sorted by what a thing is"
-          />
-          <Stat
-            value={String(CONTENT_PILLARS.length)}
-            label="learning pillars"
-            sub="beginner to intermediate"
-          />
-          <Stat
-            value="Free"
-            label="to get started"
-            sub="and free to keep browsing"
-            accent
-          />
-        </div>
+        <SectionHead eyebrow="How it works" title="Three steps to a live project." />
+        <ol className="bg-secondary grid gap-8 rounded-[1.125rem] p-8 md:grid-cols-3 md:gap-0 md:divide-x md:divide-muted-foreground/25 lg:p-11">
+          {STEPS.map((step, i) => (
+            <li key={step.title} className="md:px-6">
+              <span className="text-primary font-mono text-sm font-semibold">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <h3 className="font-heading mt-2 text-xl font-bold tracking-tight">
+                {step.title}
+              </h3>
+              <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
+                {step.blurb}
+              </p>
+            </li>
+          ))}
+        </ol>
         <p className="text-muted-foreground mt-5 text-center text-sm">
-          Everything above is free to browse. No card, no trial clock, no gated
+          Everything is free to browse. No card, no trial clock, no locked
           directory.
         </p>
       </SectionTight>
 
+      {/* ── Before / after ───────────────────────────────────────────── */}
+      <Section>
+        <SectionHead
+          eyebrow="The difference"
+          title="Same AI. Very different results."
+        />
+        <div className="grid gap-5 md:grid-cols-2">
+          <ContrastList
+            heading="Without a map"
+            items={CONTRAST.map((row) => row.without)}
+          />
+          <ContrastList
+            heading="With Viberation"
+            items={CONTRAST.map((row) => row.with)}
+            positive
+          />
+        </div>
+      </Section>
+
       {/* ── Categories ───────────────────────────────────────────────── */}
       <Section>
         <SectionHead
-          eyebrow="The taxonomy"
-          title={`${TOOL_CATEGORIES.length} categories. Zero fluff.`}
-          lede="Sorted by what a thing is, not what it's for. Use cases live as tags, so one tool can serve many."
+          eyebrow="The directory"
+          title="Every AI coding tool, sorted so you can choose."
+          lede="Browse by type: models, IDEs, agents, MCP servers and more. Each tool says what it does and who it's best for."
           action={{ label: "View all tools", href: "/tools" }}
         />
         <ul className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-4">
@@ -265,8 +295,9 @@ export function MarketingHome({
       {collections.length ? (
         <Section>
           <SectionHead
-            eyebrow="Expert curation"
-            title="Curated collections"
+            eyebrow="Collections"
+            title="Starter stacks, already picked for you."
+            lede="Hand-picked tool sets for common builds. Start from one instead of from zero."
             action={{ label: "View all", href: "/collections" }}
           />
           <ul className="grid gap-5 md:grid-cols-3">
@@ -313,7 +344,7 @@ export function MarketingHome({
                       </span>
                     ) : null}
                     <span className="text-primary mt-auto flex items-center gap-2 pt-5 text-sm font-bold">
-                      Browse collection
+                      See the stack
                       <IconArrowRight aria-hidden className="size-4" />
                     </span>
                   </span>
@@ -328,9 +359,9 @@ export function MarketingHome({
       {latest.length ? (
         <Section>
           <SectionHead
-            eyebrow="Resources"
-            title="From the Learn hub"
-            action={{ label: "See all articles", href: "/learn" }}
+            eyebrow="Learn"
+            title="Guides that don't skip steps."
+            action={{ label: "All guides", href: "/learn" }}
           />
           <ul className="grid gap-4 md:grid-cols-2">
             {latest.map((item) => {
@@ -395,8 +426,8 @@ export function MarketingHome({
             Who it&rsquo;s for
           </p>
           <h2 className="font-heading mt-4 text-3xl font-bold tracking-[-0.04em] lg:text-4xl">
-            Built for real builders,{" "}
-            <span className="text-highlight">at every level.</span>
+            Wherever you&rsquo;re{" "}
+            <span className="text-highlight">starting from.</span>
           </h2>
 
           {testimonials.length ? (
@@ -462,14 +493,15 @@ export function MarketingHome({
                   aria-hidden
                   className="bg-highlight-foreground h-0.5 w-5 rounded-full"
                 />
-                Flagship wizard
+                Free guided walkthrough
               </p>
               <h2 className="font-heading mt-4 text-3xl font-bold tracking-[-0.04em] lg:text-4xl">
                 {flagship.title}
               </h2>
               <p className="mt-4 text-lg leading-relaxed opacity-75">
-                A guided {flagship.steps.length}-step walkthrough, ending with
-                something real on the internet. Copyable prompts at every step.
+                {flagship.steps.length} steps from blank page to a live link you
+                can send to anyone. Copy each prompt, paste it into your AI
+                tool, check the result, move on.
               </p>
               <ul className="mt-7 flex flex-wrap gap-x-7 gap-y-2.5 border-t border-current/20 pt-6">
                 {flagship.steps.map((step, i) => (
@@ -500,25 +532,83 @@ export function MarketingHome({
                 <ButtonIcon className="bg-highlight text-highlight-foreground">
                   <IconArrowUpRight />
                 </ButtonIcon>
-                Start the wizard
+                Start step 1
               </Link>
               {/*
                 v3 adds "you can stop anywhere", which reads as a promise to
                 remember where you stopped. The app does not autosave, so the
                 line is left out rather than reworded into the same claim.
+                "No account needed to start" is true: the wizard page reads
+                signed out; only saving progress redirects to login.
               */}
-              <p className="mt-4 text-sm font-medium opacity-70">Free to run.</p>
+              <p className="mt-4 text-sm font-medium opacity-70">
+                Free · No account needed to start.
+              </p>
             </div>
           </div>
         </Section>
       ) : null}
 
+      {/* ── Founder note ─────────────────────────────────────────────── */}
+      {/*
+        The honest trust signal while there are no testimonials (VIB-115).
+        Bible §01's brand story: the platform is built with the tools it
+        teaches. Ali's own words belong here — edit freely.
+      */}
+      <Section>
+        <div className="grid items-center gap-8 md:grid-cols-[auto_minmax(0,1fr)]">
+          <span
+            aria-hidden
+            className="bg-primary text-primary-foreground font-heading flex size-20 items-center justify-center rounded-full text-2xl font-bold"
+          >
+            AR
+          </span>
+          <div>
+            <p className="text-primary flex items-center gap-2.5 text-xs font-bold tracking-widest uppercase">
+              <span aria-hidden className="bg-primary h-0.5 w-5 rounded-full" />
+              Why this exists
+            </p>
+            <h2 className="font-heading mt-3.5 text-3xl font-bold tracking-[-0.04em] lg:text-4xl">
+              Built with the tools on this site.
+            </h2>
+            <p className="text-muted-foreground mt-3.5 max-w-[62ch] text-lg leading-relaxed">
+              Viberation is built by one founder, Ali Rizwan, from Pakistan,
+              using the same AI coding tools you&rsquo;ll find in the
+              directory. No agency, no dev team. If something is on this site,
+              it&rsquo;s because I needed it while building this one.
+            </p>
+          </div>
+        </div>
+      </Section>
+
+      {/* ── FAQ ──────────────────────────────────────────────────────── */}
+      {/* Native <details>: no JS, keyboard and screen-reader support for free. */}
+      <Section>
+        <SectionHead eyebrow="FAQ" title="Questions, answered." />
+        <div className="divide-y rounded-[1.125rem] border">
+          {FAQS.map((faq) => (
+            <details key={faq.q} className="group px-6 py-5">
+              <summary className="font-heading flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-bold tracking-tight">
+                {faq.q}
+                <IconArrowRight
+                  aria-hidden
+                  className="text-primary size-5 shrink-0 transition-transform group-open:rotate-90"
+                />
+              </summary>
+              <p className="text-muted-foreground mt-3 max-w-[70ch] leading-relaxed">
+                {faq.a}
+              </p>
+            </details>
+          ))}
+        </div>
+      </Section>
+
       {/* ── Closing capture ──────────────────────────────────────────── */}
       <Section>
         <div className="bg-secondary rounded-3xl p-9 text-center lg:p-14">
           <h2 className="font-heading text-3xl font-bold tracking-[-0.04em] lg:text-4xl">
-            Start building.{" "}
-            <span className="text-primary">Stop second-guessing.</span>
+            Stop researching.{" "}
+            <span className="text-primary">Start shipping.</span>
           </h2>
           {newsletterEnabled ? (
             <>
@@ -527,16 +617,16 @@ export function MarketingHome({
                 new form; there was no need to build one.
               */}
               <p className="text-muted-foreground mx-auto mt-4 max-w-xl text-lg leading-relaxed">
-                Weekly curation of the AI tools and walkthroughs worth your
-                time.
+                One email a week: the AI tools worth your time, and one thing
+                to build next.
               </p>
               <NewsletterForm />
             </>
           ) : (
             <>
               <p className="text-muted-foreground mx-auto mt-4 max-w-xl text-lg leading-relaxed">
-                Create a free account to save tools, track what you have read,
-                and run the wizard at your own pace.
+                A free account lets you save tools, keep track of what
+                you&rsquo;ve read, and save your walkthrough progress.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
                 <Link
@@ -596,20 +686,20 @@ const COVER_TONES = [
  */
 const AUDIENCES = [
   {
-    tier: "Beginner",
-    headline: "Three weeks in, and the tutorials skip steps",
+    tier: "Just starting",
+    headline: "You've used ChatGPT. Now you want to build something real.",
     blurb:
       "Plain-English explanations of context windows, tokens and system prompts — without the condescension — plus prompts you can actually copy.",
   },
   {
-    tier: "Intermediate",
-    headline: "Shipping already, but the process feels chaotic",
+    tier: "Already shipping",
+    headline: "Your projects work. Your process doesn't.",
     blurb:
       "Context engineering, project structure and prompt templates you can clone, for people who do not need the fundamentals re-explained.",
   },
   {
-    tier: "Founder",
-    headline: "A validated idea and no coding background",
+    tier: "Founder, no dev background",
+    headline: "You have the idea. You need the MVP.",
     blurb:
       "Curated tools with honest tradeoffs, and a step-by-step path from idea to a deployed MVP framed around business outcomes.",
   },
@@ -710,26 +800,98 @@ function SectionHead({
   );
 }
 
-function Stat({
-  value,
-  label,
-  sub,
-  accent,
+/** One side of the before/after pair: soft surface for "without", primary fill for "with". */
+function ContrastList({
+  heading,
+  items,
+  positive,
 }: {
-  value: string;
-  label: string;
-  sub: string;
-  accent?: boolean;
+  heading: string;
+  items: readonly string[];
+  positive?: boolean;
 }) {
+  const Icon = positive ? IconCheck : IconX;
   return (
-    <div className="lg:px-6">
-      <p
-        className={`font-heading text-4xl font-extrabold tracking-[-0.05em] lg:text-5xl ${accent ? "text-primary" : ""}`}
-      >
-        {value}
-      </p>
-      <p className="mt-3 text-sm font-bold">{label}</p>
-      <p className="text-muted-foreground mt-1 text-sm leading-snug">{sub}</p>
+    <div
+      className={`rounded-[1.125rem] p-8 ${positive ? "bg-primary text-primary-foreground" : "bg-secondary"}`}
+    >
+      <h3 className="font-heading text-xl font-bold tracking-tight">
+        {heading}
+      </h3>
+      <ul className="mt-5 grid gap-3.5">
+        {items.map((item) => (
+          <li key={item} className="flex items-start gap-3 font-semibold">
+            <Icon
+              aria-hidden
+              className={`mt-0.5 size-5 shrink-0 ${positive ? "" : "text-muted-foreground"}`}
+            />
+            <span className={positive ? "" : "text-muted-foreground"}>
+              {item}
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
+
+const STEPS = [
+  {
+    title: "Pick your tools.",
+    blurb: "Find your stack in minutes, not a weekend of YouTube.",
+  },
+  {
+    title: "Follow the steps.",
+    blurb: "Copy the prompt, paste it into your AI, check the result.",
+  },
+  {
+    title: "Ship it.",
+    blurb: "Finish with a real link you can send to anyone.",
+  },
+] as const;
+
+const CONTRAST = [
+  {
+    without: "Prompts copied from random threads",
+    with: "A prompt written for the step you're on",
+  },
+  {
+    without: "Tools picked from sponsored top-10 lists",
+    with: "Honest tradeoffs, affiliate links labelled",
+  },
+  {
+    without: "Tutorials that skip the step you're stuck on",
+    with: "Every step shown, nothing assumed",
+  },
+  {
+    without: "A half-finished project stuck on localhost",
+    with: "A live URL you can share",
+  },
+] as const;
+
+/**
+ * Every answer must stay true of the product as shipped — no "free forever",
+ * no autosave, no tool recommendation the directory does not back up.
+ */
+const FAQS = [
+  {
+    q: "Do I need to know how to code?",
+    a: "No. The walkthrough assumes no experience, and every step gives you a prompt to paste into your AI tool. You'll learn what the code does as you go, in plain English.",
+  },
+  {
+    q: "Is it really free?",
+    a: "Yes. The directory, the guides and the walkthrough are free to browse, with no card and no trial. A free account adds bookmarks, reading history and saved walkthrough progress.",
+  },
+  {
+    q: "How does Viberation make money?",
+    a: "Some tool links are affiliate links, which means we may earn a commission if you sign up. Every one is labelled, and it never changes what we say about a tool.",
+  },
+  {
+    q: "Which AI tool should I start with?",
+    a: "Start the walkthrough. It tells you what to use at each step. If you'd rather compare first, the directory shows who each tool is best for.",
+  },
+  {
+    q: "I'm not a beginner. Is this for me?",
+    a: "Yes. The guides have tracks for people already shipping: context engineering, project structure, and prompt templates you can reuse.",
+  },
+] as const;

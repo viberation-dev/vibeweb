@@ -653,7 +653,7 @@ where wizard_id in (select id from wizards where slug = 'ship-your-first-web-pro
 insert into wizard_recommended_tools (wizard_id, tool_id)
 select w.id, t.id
 from wizards w
-join tools t on t.slug in ('nextjs', 'shadcn-ui', 'vercel', 'supabase', 'claude-code')
+join tools t on t.slug in ('nextjs', 'shadcn-ui', 'vercel', 'supabase', 'claude-code', 'claude')
 where w.slug = 'ship-your-first-web-project'
 on conflict do nothing;
 

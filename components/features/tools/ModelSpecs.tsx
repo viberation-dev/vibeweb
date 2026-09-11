@@ -18,6 +18,7 @@ import {
   formatUsd,
   modalityLabels,
   modelDisplayName,
+  modelHref,
   percentileBelow,
 } from "@/lib/model-facts";
 import { cn } from "@/lib/utils";
@@ -50,8 +51,7 @@ export function ModelPicker({ members, selectedId, defaultId, basePath }: Picker
         return (
           <li key={member.id}>
             <Link
-              // The default model is the page's canonical URL, so no ?model=.
-              href={member.id === defaultId ? basePath : `${basePath}?model=${member.id}`}
+              href={modelHref(basePath, member.id, defaultId)}
               // Switching models should not throw the reader back to the top.
               scroll={false}
               aria-current={selected ? "page" : undefined}

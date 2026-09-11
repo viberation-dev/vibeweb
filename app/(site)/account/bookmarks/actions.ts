@@ -46,6 +46,7 @@ export async function toggleBookmarkAction(formData: FormData): Promise<void> {
     target_type: formData.get("target_type"),
     target_id: formData.get("target_id"),
     intent: formData.get("intent"),
+    model_id: formData.get("model_id"),
   });
 
   if (!parsed.success) {
@@ -63,7 +64,11 @@ export async function toggleBookmarkAction(formData: FormData): Promise<void> {
 
   const supabase = await createClient();
   const userId = await requireUserId(supabase, returnTo);
-  const target = { targetType: parsed.data.target_type, targetId: parsed.data.target_id };
+  const target = {
+    targetType: parsed.data.target_type,
+    targetId: parsed.data.target_id,
+    modelId: parsed.data.model_id,
+  };
 
   if (parsed.data.intent === "add") {
     await addBookmark(supabase, userId, target);
@@ -72,7 +77,8 @@ export async function toggleBookmarkAction(formData: FormData): Promise<void> {
   }
 
   // Both the page the button sits on and the bookmarks list are now stale.
-  revalidatePath(returnTo);
+  // revalidatePath takes a path; a family page's ?model= is not part of it.
+  revalidatePath(returnTo.split("?")[0]);
   revalidatePath("/account/bookmarks");
 }
 

@@ -1,5 +1,7 @@
 import type { Bookmark } from "@/lib/queries/bookmarks";
 
+import { modelHref } from "./model-facts.ts";
+
 /** Bookmarks with no folder collect here, always shown last. */
 export const UNFILED = "Unfiled";
 
@@ -12,6 +14,27 @@ export function bookmarkFolders(bookmarks: Bookmark[]): string[] {
     }
   }
   return [...names].sort((a, b) => a.localeCompare(b));
+}
+
+/**
+ * A saved model's card (VIB-113): its family's card, retitled to the model,
+ * eyebrowed with the family and linked straight to that model.
+ *
+ * `modelName` is absent when OpenRouter no longer lists the model. The id
+ * stands in, and the link still works — the family page falls back to its
+ * featured model for an unknown ?model=.
+ */
+export function modelBookmarkView<T extends { href: string; title: string; eyebrow: string }>(
+  family: T,
+  modelId: string,
+  modelName: string | undefined,
+): T {
+  return {
+    ...family,
+    href: modelHref(family.href, modelId),
+    title: modelName ?? modelId,
+    eyebrow: family.title,
+  };
 }
 
 export type BookmarkGroup<T> = [folder: string, entries: { bookmark: Bookmark; target: T }[]];

@@ -42,6 +42,12 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-11",
     kind: "added",
+    title: "Save a single model",
+    body: "On a model family page like Gemini or Claude you can now save the exact model you are looking at, as well as the whole family. Saved models show up in your bookmarks and open straight to that model.",
+  },
+  {
+    date: "2026-09-11",
+    kind: "added",
     title: "Starter prompts on model pages",
     body: "Claude, GPT and Gemini pages now have starter prompts to copy — for planning, context files, design and debugging — and tool pages link to the wizards and Learn reading that cover them.",
   },

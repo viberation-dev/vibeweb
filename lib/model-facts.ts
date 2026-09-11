@@ -170,6 +170,16 @@ export function pickMember<T extends { id: string }>(
   );
 }
 
+/**
+ * A family page's link to one of its models. The default model is the page's
+ * canonical URL, so it gets no ?model= (VIB-107). Leave `defaultId` out to
+ * always name the model: a saved model should keep opening that model even
+ * after it becomes, or stops being, the default (VIB-113).
+ */
+export function modelHref(basePath: string, modelId: string, defaultId?: string): string {
+  return modelId === defaultId ? basePath : `${basePath}?model=${modelId}`;
+}
+
 /** "Anthropic: Claude Opus 5" → "Claude Opus 5". The family page already says who made it. */
 export function modelDisplayName(name: string): string {
   const i = name.indexOf(": ");

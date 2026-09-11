@@ -31,6 +31,7 @@ export type Database = {
           created_at: string
           folder_name: string | null
           id: string
+          model_id: string | null
           target_id: string
           target_type: Database["public"]["Enums"]["target_kind"]
           user_id: string
@@ -39,6 +40,7 @@ export type Database = {
           created_at?: string
           folder_name?: string | null
           id?: string
+          model_id?: string | null
           target_id: string
           target_type: Database["public"]["Enums"]["target_kind"]
           user_id: string
@@ -47,6 +49,7 @@ export type Database = {
           created_at?: string
           folder_name?: string | null
           id?: string
+          model_id?: string | null
           target_id?: string
           target_type?: Database["public"]["Enums"]["target_kind"]
           user_id?: string

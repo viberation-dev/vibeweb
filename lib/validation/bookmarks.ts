@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { OPENROUTER_ID } from "../model-facts.ts";
+
 /**
  * Server-side validation for the bookmark forms.
  *
@@ -19,13 +21,26 @@ export const bookmarkTargetSchema = z.object({
   target_id: z.uuid({ message: "That bookmark target is not valid." }),
 });
 
-export const toggleBookmarkSchema = bookmarkTargetSchema.extend({
-  /**
-   * The button says what it wants done rather than reporting what it thinks
-   * the current state is — the server never has to guess which way to flip.
-   */
-  intent: z.enum(["add", "remove"]),
-});
+export const toggleBookmarkSchema = bookmarkTargetSchema
+  .extend({
+    /**
+     * The button says what it wants done rather than reporting what it thinks
+     * the current state is — the server never has to guess which way to flip.
+     */
+    intent: z.enum(["add", "remove"]),
+    /**
+     * One model inside a tool's family (VIB-113). Missing or blank means the
+     * target itself. Shape-checked here and in bookmarks_model_id_shape; that
+     * it belongs to the tool's family is checked in addBookmark.
+     */
+    model_id: z
+      .union([z.literal(""), z.string().regex(OPENROUTER_ID)])
+      .nullish()
+      .transform((value) => value || null),
+  })
+  .refine((data) => data.model_id === null || data.target_type === "tool", {
+    message: "Only tools have models.",
+  });
 
 export const setBookmarkFolderSchema = z.object({
   bookmark_id: z.uuid(),

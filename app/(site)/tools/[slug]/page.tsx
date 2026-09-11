@@ -15,7 +15,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { getOpenRouterEndpoints, getOpenRouterModels } from "@/lib/integrations/openrouter";
 import { createClient } from "@/lib/integrations/supabase/server";
-import { familyMembers, pickMember } from "@/lib/model-facts";
+import { familyMembers, modelDisplayName, modelHref, pickMember } from "@/lib/model-facts";
 import { outboundRel, safeOutboundUrl } from "@/lib/outbound";
 import { isBookmarked } from "@/lib/queries/bookmarks";
 import { countCollectionsContaining } from "@/lib/queries/collections";
@@ -126,6 +126,11 @@ export default async function ToolPage({ params, searchParams }: Props) {
   // It is only ever compared against ids OpenRouter itself returned.
   const selected = pickMember(members, requestedModel, tool.openrouter_id);
   const defaultModelId = pickMember(members, undefined, tool.openrouter_id)?.id;
+  // This page as the visitor sees it, model included — where Save sends a
+  // signed-out visitor back to after they sign in (VIB-113).
+  const pageHref = selected
+    ? modelHref(`/tools/${tool.slug}`, selected.id, defaultModelId)
+    : `/tools/${tool.slug}`;
   /*
    * ponytail: one serial call once the model is known. It is served from
    * Next's data cache after the first view each hour; fetch it speculatively
@@ -134,9 +139,18 @@ export default async function ToolPage({ params, searchParams }: Props) {
   const facetTagIds = tags.filter((tag) => tag.kind === "facet").map((tag) => tag.id);
   // Related reading needs the tags, so it rides this wave with the endpoints
   // call rather than adding a round trip of its own on model pages.
-  const [endpoints, reading] = await Promise.all([
+  const [endpoints, reading, modelBookmarked] = await Promise.all([
     selected ? getOpenRouterEndpoints(selected.id) : [],
     listContentSharingTags(supabase, facetTagIds, READING_LIMIT),
+    // The model on screen has its own save (VIB-113). It needs `selected`,
+    // so it rides this wave rather than the first.
+    selected && auth.user
+      ? isBookmarked(supabase, auth.user.id, {
+          targetType: "tool",
+          targetId: tool.id,
+          modelId: selected.id,
+        })
+      : false,
   ]);
 
   // Both are optional per row; empty means unstated, and the row is dropped.
@@ -244,6 +258,20 @@ export default async function ToolPage({ params, searchParams }: Props) {
                 defaultId={defaultModelId}
                 basePath={`/tools/${tool.slug}`}
               />
+              {/*
+                Saves the model on screen; the rail's Save still saves the
+                family. Two separate bookmarks (VIB-113).
+              */}
+              <div className="mt-4">
+                <BookmarkButton
+                  targetType="tool"
+                  targetId={tool.id}
+                  modelId={selected.id}
+                  modelName={modelDisplayName(selected.name)}
+                  bookmarked={modelBookmarked}
+                  returnTo={pageHref}
+                />
+              </div>
               <ModelSpecs
                 model={selected}
                 endpoints={endpoints}
@@ -344,7 +372,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
               targetType="tool"
               targetId={tool.id}
               bookmarked={bookmarked}
-              returnTo={`/tools/${tool.slug}`}
+              returnTo={pageHref}
             />
           </div>
           {auth.user ? null : (

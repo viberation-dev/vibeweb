@@ -11,9 +11,12 @@ import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import {
   bookmarkFolders,
   groupBookmarksByFolder,
+  modelBookmarkView,
   UNFILED,
 } from "@/lib/bookmarks";
+import { getOpenRouterModels } from "@/lib/integrations/openrouter";
 import { createClient } from "@/lib/integrations/supabase/server";
+import { modelDisplayName } from "@/lib/model-facts";
 import { listBookmarks } from "@/lib/queries/bookmarks";
 import { resolveTargetViews } from "@/lib/queries/resources";
 import { cn } from "@/lib/utils";
@@ -44,13 +47,21 @@ export default async function BookmarksPage({ searchParams }: Props) {
     redirect("/login?redirectTo=/account/bookmarks");
   }
 
-  const bookmarks = await listBookmarks(supabase, data.user.id);
+  // The one list that shows saved models as well as saved tools (VIB-113).
+  const bookmarks = await listBookmarks(supabase, data.user.id, undefined, {
+    includeModels: true,
+  });
 
   /*
    * groupBookmarksByFolder drops bookmarks whose target it cannot find —
-   * the same path a deleted tool takes.
+   * the same path a deleted tool takes. Model names come from OpenRouter,
+   * fetched only when something here is a model; it is cached for an hour
+   * and empty rather than throwing, so an outage costs names, not the page.
    */
-  const saved = await resolveTargetViews(supabase, bookmarks);
+  const [saved, models] = await Promise.all([
+    resolveTargetViews(supabase, bookmarks),
+    bookmarks.some((bookmark) => bookmark.model_id) ? getOpenRouterModels() : null,
+  ]);
 
   const folders = bookmarkFolders(bookmarks);
   /*
@@ -121,32 +132,43 @@ export default async function BookmarksPage({ searchParams }: Props) {
               {folder === UNFILED ? null : <RenameFolderForm folder={folder} />}
             </div>
             <ul className="mt-3 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {entries.map(({ bookmark, target }) => (
-                <li key={bookmark.id}>
-                  <ResourceCard
-                    href={target.href}
-                    title={target.title}
-                    eyebrow={target.eyebrow}
-                    description={target.description}
-                    badges={target.badges}
-                    action={
-                      <>
-                        <FolderForm
-                          bookmarkId={bookmark.id}
-                          folderName={bookmark.folder_name}
-                          folders={folders}
-                        />
-                        <BookmarkButton
-                          targetType={target.targetType}
-                          targetId={bookmark.target_id}
-                          bookmarked
-                          returnTo="/account/bookmarks"
-                        />
-                      </>
-                    }
-                  />
-                </li>
-              ))}
+              {entries.map(({ bookmark, target }) => {
+                const modelName = bookmark.model_id && models?.get(bookmark.model_id)?.name;
+                const view = bookmark.model_id
+                  ? modelBookmarkView(
+                      target,
+                      bookmark.model_id,
+                      modelName ? modelDisplayName(modelName) : undefined,
+                    )
+                  : target;
+                return (
+                  <li key={bookmark.id}>
+                    <ResourceCard
+                      href={view.href}
+                      title={view.title}
+                      eyebrow={view.eyebrow}
+                      description={view.description}
+                      badges={view.badges}
+                      action={
+                        <>
+                          <FolderForm
+                            bookmarkId={bookmark.id}
+                            folderName={bookmark.folder_name}
+                            folders={folders}
+                          />
+                          <BookmarkButton
+                            targetType={target.targetType}
+                            targetId={bookmark.target_id}
+                            modelId={bookmark.model_id}
+                            bookmarked
+                            returnTo="/account/bookmarks"
+                          />
+                        </>
+                      }
+                    />
+                  </li>
+                );
+              })}
             </ul>
           </section>
         ))

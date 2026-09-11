@@ -91,6 +91,29 @@ export async function getWizardTools(client: Client, wizardId: string): Promise<
   return data.map((row) => row.tools).sort((a, b) => a.name.localeCompare(b.name));
 }
 
+/**
+ * Published wizards that recommend one tool, alphabetical (VIB-111) — the
+ * reverse of getWizardTools, for the tool page's "Guided walkthroughs".
+ *
+ * The status filter is intent, not security: RLS already hides drafts from
+ * everyone but staff, and staff do not need their drafts advertised here.
+ */
+export async function getWizardsForTool(
+  client: Client,
+  toolId: string,
+): Promise<Pick<WizardRow, "slug" | "title" | "role_level">[]> {
+  const { data, error } = await client
+    .from("wizard_recommended_tools")
+    .select("wizards!inner(slug, title, role_level, status)")
+    .eq("tool_id", toolId)
+    .eq("wizards.status", "published");
+
+  if (error) {
+    throw new Error(`getWizardsForTool(${toolId}): ${error.message}`);
+  }
+  return data.map((row) => row.wizards).sort((a, b) => a.title.localeCompare(b.title));
+}
+
 export type ProgressSnapshot = {
   stepIndex: number;
   checklistState: ChecklistState;

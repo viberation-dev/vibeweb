@@ -1010,3 +1010,124 @@ join tools a on a.slug = v.tool
 join tools b on b.slug = v.linked
 on conflict (tool_id, linked_tool_id) do update
   set kind = excluded.kind, note = excluded.note, sort_order = excluded.sort_order;
+
+-- ---------------------------------------------------------------------------
+-- Starter prompts on model pages (VIB-111)
+--
+-- Four per family: context file, planning or coding, design, debugging. Each
+-- leans on something real about that model's tooling — Claude Code reads
+-- CLAUDE.md and Anthropic recommends XML tags for structure, Codex reads
+-- AGENTS.md, Gemini CLI loads GEMINI.md and Gemini's long context suits
+-- reading a whole repo. `prompts` has no natural key, so re-running skips a
+-- title the tool already has instead of duplicating it.
+insert into prompts (title, prompt_text, tool_id, use_case_category)
+select v.title, v.prompt_text, t.id, v.category
+from (values
+  ('claude', 'Plan before any code', 'planning',
+'Before you write any code, read the files this touches and reply with a short plan:
+
+1. What you will change, file by file
+2. What could break, and why
+3. How we will check it works
+
+Do not edit anything until I say go.
+
+<task>
+[Describe the feature or fix in a sentence or two]
+</task>'),
+  ('claude', 'Write a CLAUDE.md for this project', 'context',
+'Read this repository and write a CLAUDE.md at its root for future sessions. Keep it under 60 lines and include only what you could not work out quickly from the code:
+
+- How to install, run, test and build (exact commands)
+- Where things live, and any folder with a rule attached
+- Conventions a newcomer would get wrong
+- Things never to do here
+
+Ask me about anything you are unsure of instead of guessing.'),
+  ('claude', 'UI that does not look AI-generated', 'design',
+'Design [the page or component] for [who it is for].
+
+Commit to one clear visual direction and tell me what it is in one line before you build. Avoid the defaults every AI tool reaches for: purple gradients, one font everywhere, three identical feature cards, emoji as icons.
+
+<constraints>
+- Use the design tokens and components already in this project
+- Mobile first; nothing may scroll sideways at 375px wide
+- Text must meet WCAG AA contrast in light and dark mode
+</constraints>'),
+  ('claude', 'Find the root cause, not a patch', 'debugging',
+'Something is broken.
+
+<symptom>
+[What you see, and the exact error message]
+</symptom>
+
+<steps>
+[How to make it happen]
+</steps>
+
+Do not fix anything yet. Find every place that calls the code involved, work out the actual cause, and explain it in two or three sentences. Then propose the smallest fix at the cause, plus one check that would have caught it.'),
+
+  ('gpt', 'Write an AGENTS.md for this repo', 'context',
+'Read this repository and write an AGENTS.md at its root so Codex and other agents know how to work here. Keep it short and specific:
+
+- Setup, test, lint and build commands, exactly as they run
+- Project layout, and which folders have rules attached
+- Code style and naming conventions to follow
+- What to check before calling a task done
+
+Only include what is true of this repo. Mark anything you are unsure of with a question.'),
+  ('gpt', 'One small, reviewable change', 'coding',
+'Implement this as the smallest change that fully works:
+
+[Describe the feature]
+
+Rules:
+- Reuse what already exists in the codebase before adding anything new
+- No new dependencies unless you ask first
+- Add or update one test that fails without your change
+- Finish with a short summary: files changed, what to check, anything you skipped'),
+  ('gpt', 'Screenshot to component', 'design',
+'I am attaching a screenshot of [the screen]. Build it as a [React / Next.js] component using this project''s existing components and styles.
+
+Match layout, spacing and hierarchy, not exact pixels. List anything the screenshot does not show clearly or that you had to guess (hover states, empty states, the mobile layout) and ask me about it rather than inventing it.'),
+  ('gpt', 'Reproduce, then fix', 'debugging',
+'Bug: [what goes wrong, and the exact error]
+
+1. Write a failing test that reproduces it
+2. Find the cause, not just the line that throws
+3. Fix it at the cause
+4. Run that test and the rest of the suite, and show me the output
+
+If you cannot reproduce it, stop and tell me what you tried.'),
+
+  ('gemini', 'Write a GEMINI.md for this project', 'context',
+'Read this repository and write a GEMINI.md at its root, the context file Gemini CLI loads at the start of every session. Keep it brief:
+
+- How to run, test and build, with exact commands
+- Where the important code lives
+- Conventions and rules that are easy to miss
+- Things never to do in this repo
+
+Leave out anything the code already makes obvious.'),
+  ('gemini', 'Map a codebase you just inherited', 'planning',
+'I am new to this codebase. Read all of it, then give me:
+
+1. What the app does, in three sentences
+2. The main parts, and how a request flows through them
+3. The five files I should read first, and why
+4. Anything that looks risky, unfinished or inconsistent
+
+Cite a file path for every claim so I can check it.'),
+  ('gemini', 'Sketch or screenshot to layout', 'design',
+'I am attaching [a sketch / a screenshot]. Turn it into a responsive layout for [the page] using this project''s components.
+
+Before writing code, describe the structure you see: sections, hierarchy, what repeats. Then build it mobile first. Call out anything the image does not show — hover states, empty states, errors — instead of making it up.'),
+  ('gemini', 'Review my changes before I commit', 'debugging',
+'Review the uncommitted changes in this repository as a careful senior engineer would.
+
+For each problem, give the file and line, what goes wrong, and a concrete scenario that triggers it. Focus on bugs, security and missing edge cases; skip style nitpicks. If you find nothing serious, say so plainly.')
+) as v(tool, title, category, prompt_text)
+join tools t on t.slug = v.tool
+where not exists (
+  select 1 from prompts p where p.tool_id = t.id and p.title = v.title
+);

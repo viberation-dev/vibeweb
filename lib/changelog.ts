@@ -42,6 +42,12 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-11",
     kind: "added",
+    title: "Starter prompts on model pages",
+    body: "Claude, GPT and Gemini pages now have starter prompts to copy — for planning, context files, design and debugging — and tool pages link to the wizards and Learn reading that cover them.",
+  },
+  {
+    date: "2026-09-11",
+    kind: "added",
     title: "GPT and 24 new tools in the directory",
     body: "GPT now has its own model page with live specs, and the directory adds the apps, MCP servers and skills people pair with Claude, GPT and Gemini — from Codex, Gemini CLI and Devin Desktop (formerly Windsurf) to the GitHub, Linear and Notion MCP servers.",
   },

@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import {
   DEFAULT_LEARN_SORT,
+  LEARN_TYPE_VALUES,
   learnSortOrder,
   type ContentPillar,
   type ContentType,
@@ -124,6 +125,41 @@ export async function listContent(
     page,
     pageCount: Math.max(1, Math.ceil(total / pageSize)),
   };
+}
+
+/**
+ * Published Learn content carrying any of `tagIds`, newest first (VIB-111) —
+ * the tool page's "Related reading".
+ *
+ * Tags are the only thing connecting content to tools, so callers pass the
+ * tool's *facet* tags: sharing `free-tier` with a course link says nothing
+ * about the topic. Learn types only, so help articles, role guides and
+ * announcements stay on their own surfaces. One round trip: the !inner embed
+ * filters on the join table and returns each row once.
+ */
+export async function listContentSharingTags(
+  client: Client,
+  tagIds: string[],
+  limit: number,
+): Promise<Content[]> {
+  if (tagIds.length === 0) {
+    return [];
+  }
+
+  const { data, error } = await client
+    .from("content")
+    .select("*, content_tags!inner(tag_id)")
+    .in("content_tags.tag_id", tagIds)
+    .eq("status", "published")
+    .in("type", LEARN_TYPE_VALUES)
+    .order("created_at", { ascending: false })
+    .order("slug", { ascending: true })
+    .limit(limit);
+
+  if (error) {
+    throw new Error(`listContentSharingTags: ${error.message}`);
+  }
+  return data;
 }
 
 /** Ids of every content row carrying `tagSlug`. Empty array when the tag is unknown. */

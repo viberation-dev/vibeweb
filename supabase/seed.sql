@@ -758,3 +758,39 @@ from (values
   ('gemini', 'google/gemini', 'google/gemini-3.8-flash')
 ) as v(slug, family, featured)
 where t.slug = v.slug;
+
+-- "Works with" links between existing entries (VIB-109). Only connections that
+-- are true today: both models are in Cursor, Copilot's model menu, Continue
+-- and Aider; the MCP servers work from any MCP client. Upserted on the pair,
+-- so re-running this corrects a kind or note instead of failing.
+insert into tool_links (tool_id, linked_tool_id, kind, note, sort_order)
+select a.id, b.id, v.kind::tool_link_kind, v.note, v.sort_order
+from (values
+  ('claude', 'claude-code', 'official', 'terminal, desktop, web and IDE', 0),
+  ('claude', 'claude-ai', 'official', null, 1),
+  ('claude', 'claude-agent-sdk', 'official', 'build your own agents', 2),
+  ('claude', 'cursor', 'runs_in', null, 0),
+  ('claude', 'vs-code', 'runs_in', 'via the Claude Code extension', 1),
+  ('claude', 'github-copilot', 'runs_in', 'in the model picker', 2),
+  ('claude', 'continue', 'runs_in', 'bring your own key', 3),
+  ('claude', 'aider', 'runs_in', 'bring your own key', 4),
+  ('claude', 'superpowers', 'pairs_with', null, 0),
+  ('claude', 'agent-skills', 'pairs_with', null, 0),
+  ('claude', 'supabase-mcp-server', 'pairs_with', null, 0),
+  ('claude', 'playwright-mcp', 'pairs_with', null, 0),
+  ('claude', 'nextjs', 'pairs_with', null, 0),
+  ('claude', 'shadcn-ui', 'pairs_with', null, 0),
+  ('gemini', 'cursor', 'runs_in', null, 0),
+  ('gemini', 'vs-code', 'runs_in', 'via Gemini Code Assist', 1),
+  ('gemini', 'github-copilot', 'runs_in', 'in the model picker', 2),
+  ('gemini', 'continue', 'runs_in', 'bring your own key', 3),
+  ('gemini', 'aider', 'runs_in', 'bring your own key', 4),
+  ('gemini', 'supabase-mcp-server', 'pairs_with', null, 0),
+  ('gemini', 'playwright-mcp', 'pairs_with', null, 0),
+  ('gemini', 'nextjs', 'pairs_with', null, 0),
+  ('gemini', 'shadcn-ui', 'pairs_with', null, 0)
+) as v(tool, linked, kind, note, sort_order)
+join tools a on a.slug = v.tool
+join tools b on b.slug = v.linked
+on conflict (tool_id, linked_tool_id) do update
+  set kind = excluded.kind, note = excluded.note, sort_order = excluded.sort_order;

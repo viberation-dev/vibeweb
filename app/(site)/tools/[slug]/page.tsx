@@ -7,6 +7,7 @@ import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
 import { CategoryIcon } from "@/components/features/tools/CategoryIcon";
 import { Fact } from "@/components/features/tools/Fact";
 import { ModelPicker, ModelSpecs } from "@/components/features/tools/ModelSpecs";
+import { ToolLinks } from "@/components/features/tools/ToolLinks";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +18,7 @@ import { outboundRel, safeOutboundUrl } from "@/lib/outbound";
 import { isBookmarked } from "@/lib/queries/bookmarks";
 import { countCollectionsContaining } from "@/lib/queries/collections";
 import { recordVisit } from "@/lib/queries/history";
+import { listToolLinks } from "@/lib/queries/tool-links";
 import {
   getToolBySlug,
   getToolTags,
@@ -79,7 +81,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
    * sign in and back. Only the saved/unsaved state needs a user.
    */
   const family = tool.openrouter_family;
-  const [tags, bookmarked, collectionCount, { tools: sameCategory }, liveModels] =
+  const [tags, bookmarked, collectionCount, { tools: sameCategory }, links, liveModels] =
     await Promise.all([
       getToolTags(supabase, tool.id),
       auth.user
@@ -88,6 +90,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
       countCollectionsContaining(supabase, { targetType: "tool", targetId: tool.id }),
       // One extra so removing this tool from its own related list still fills it.
       listTools(supabase, { category: tool.category, pageSize: RELATED_LIMIT + 1 }),
+      listToolLinks(supabase, tool.id),
       /*
        * The family's models ride the same wave (VIB-107): cached for an hour,
        * and empty rather than throwing, so OpenRouter being down costs this
@@ -223,6 +226,8 @@ export default async function ToolPage({ params, searchParams }: Props) {
               />
             </>
           ) : null}
+
+          <ToolLinks outgoing={links.outgoing} incoming={links.incoming} />
 
           <h2 className="font-heading mt-8 text-lg font-medium">Key info</h2>
           {/*

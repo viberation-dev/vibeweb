@@ -432,6 +432,45 @@ export type Database = {
           },
         ]
       }
+      tool_links: {
+        Row: {
+          kind: Database["public"]["Enums"]["tool_link_kind"]
+          linked_tool_id: string
+          note: string | null
+          sort_order: number
+          tool_id: string
+        }
+        Insert: {
+          kind: Database["public"]["Enums"]["tool_link_kind"]
+          linked_tool_id: string
+          note?: string | null
+          sort_order?: number
+          tool_id: string
+        }
+        Update: {
+          kind?: Database["public"]["Enums"]["tool_link_kind"]
+          linked_tool_id?: string
+          note?: string | null
+          sort_order?: number
+          tool_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_links_linked_tool_id_fkey"
+            columns: ["linked_tool_id"]
+            isOneToOne: false
+            referencedRelation: "tools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tool_links_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "tools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tool_tags: {
         Row: {
           tag_id: string
@@ -703,6 +742,7 @@ export type Database = {
         | "utilities"
         | "templates"
         | "workflows"
+      tool_link_kind: "official" | "runs_in" | "pairs_with"
       user_plan: "free" | "pro"
       wizard_kind: "wizard" | "setup" | "path"
       wizard_status: "draft" | "published"
@@ -872,6 +912,7 @@ export const Constants = {
         "templates",
         "workflows",
       ],
+      tool_link_kind: ["official", "runs_in", "pairs_with"],
       user_plan: ["free", "pro"],
       wizard_kind: ["wizard", "setup", "path"],
       wizard_status: ["draft", "published"],

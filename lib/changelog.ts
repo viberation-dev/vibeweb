@@ -41,6 +41,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-11",
+    kind: "added",
+    title: "See what a tool works with",
+    body: "Tool pages now show where you can use a tool and what pairs well with it — Claude links to Claude Code, Cursor, the Supabase MCP server and more — and each linked page shows what it works with in return.",
+  },
+  {
+    date: "2026-09-11",
     kind: "improved",
     title: "Model families that help you choose",
     body: "Model pages now list every model in a family — each Claude, GPT or Gemini, newest first — with live cost, memory, what it can read and do, how it scores at coding, and uptime. Providers, limits and benchmarks sit one click away under Advanced details.",

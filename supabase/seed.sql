@@ -794,3 +794,219 @@ join tools a on a.slug = v.tool
 join tools b on b.slug = v.linked
 on conflict (tool_id, linked_tool_id) do update
   set kind = excluded.kind, note = excluded.note, sort_order = excluded.sort_order;
+
+-- ---------------------------------------------------------------------------
+-- The ecosystem model pages link to (VIB-110)
+--
+-- Every entry below was checked against its own site or repository on
+-- 2026-09-11. Windsurf is listed under its current name: Cognition renamed it
+-- Devin Desktop on 2026-06-02 and windsurf.com redirects there; the old name
+-- stays in the tagline so searching "Windsurf" still finds it. Higgsfield's
+-- pricing is left unstated rather than guessed.
+insert into tools (name, slug, category, tagline, description, pricing_tier, outbound_url) values
+  ('GPT', 'gpt', 'models',
+   'OpenAI''s model family, behind ChatGPT and Codex.',
+   'GPT is OpenAI''s family of large language models. For vibe coders it is the model behind ChatGPT and the Codex coding agent, and it is available in nearly every AI editor.',
+   'Freemium', 'https://platform.openai.com/docs/models'),
+
+  ('Claude Design', 'claude-design', 'tools',
+   'Anthropic''s design tool: prompts in, prototypes and slides out.',
+   'Describe a landing page, prototype or deck and Claude builds a first version you refine by conversation or direct edits. It can apply your design system, so results match your product. Part of Anthropic Labs, on paid Claude plans.',
+   'Paid', 'https://claude.com/product/design'),
+  ('Gemini CLI', 'gemini-cli', 'clis',
+   'Google''s open-source agent for Gemini in your terminal.',
+   'Reads, edits and runs your project from the command line with Gemini models, with Google Search grounding and MCP support. A personal Google account gets a free daily allowance.',
+   'Open source', 'https://github.com/google-gemini/gemini-cli'),
+  ('Codex', 'codex', 'clis',
+   'OpenAI''s coding agent in your terminal, IDE and ChatGPT.',
+   'Codex reads your codebase, edits files and runs commands from plain-language requests. The CLI is open source; the same agent runs in the desktop app, IDE extensions and ChatGPT on the web.',
+   'Open source', 'https://openai.com/codex/'),
+
+  ('Devin Desktop', 'devin-desktop', 'ides',
+   'The AI editor formerly called Windsurf.',
+   'Windsurf, renamed by Cognition in June 2026. The same agentic editor with Cascade, now alongside Devin for running agents on whole tasks. Lets you pick between Claude, GPT and Gemini models.',
+   'Freemium', 'https://devin.ai/desktop'),
+  ('WebStorm', 'webstorm', 'ides',
+   'JetBrains'' IDE for JavaScript and TypeScript.',
+   'A full JavaScript and TypeScript IDE with deep refactoring. JetBrains AI Assistant brings Claude, GPT and Gemini models into it, and Claude Code has a JetBrains plugin. Free for non-commercial use.',
+   'Freemium', 'https://www.jetbrains.com/webstorm/'),
+  ('Kilo Code', 'kilo-code', 'plugins',
+   'Open-source coding agent for VS Code, JetBrains and the terminal.',
+   'An agent that plans, writes and refactors code inside your editor. Pick from hundreds of models — Claude, GPT, Gemini, open models — and pay the provider''s rate, or bring your own key.',
+   'Open source', 'https://kilo.ai'),
+  ('OpenCode', 'opencode', 'clis',
+   'Open-source coding agent for the terminal, any provider.',
+   'A terminal-first agent with Plan and Build modes, LSP diagnostics and MCP support. Bring your own provider — Anthropic, OpenAI, Google and more — and pay only for what you use.',
+   'Open source', 'https://opencode.ai'),
+
+  ('OpenRouter', 'openrouter', 'utilities',
+   'One API key for hundreds of models.',
+   'A single OpenAI-compatible API in front of every major model provider, with prices and uptime side by side. The live model specs on Viberation''s model pages come from its public API.',
+   'Freemium', 'https://openrouter.ai'),
+  ('OmniRoute', 'omniroute', 'utilities',
+   'Free, self-hosted gateway that routes across AI providers.',
+   'An MIT-licensed gateway that puts hundreds of providers behind one local OpenAI-compatible endpoint, falling back automatically when one runs out of quota. Works with Claude Code, Codex, Cursor and OpenCode.',
+   'Open source', 'https://github.com/diegosouzapw/OmniRoute'),
+
+  ('Lovable', 'lovable', 'tools',
+   'Describe an app, get a working full-stack build.',
+   'A browser-based app builder: you describe what you want and refine it in conversation until it matches. Built on Claude. The quickest route from idea to something clickable if you would rather not touch an editor yet.',
+   'Freemium', 'https://lovable.dev'),
+  ('Replit', 'replit', 'tools',
+   'Build, run and deploy from the browser with Replit Agent.',
+   'A browser IDE with hosting built in. Replit Agent, powered by Claude, builds an app from a description and deploys it without you setting up anything locally.',
+   'Freemium', 'https://replit.com'),
+
+  ('Vercel MCP', 'vercel-mcp', 'mcp_servers',
+   'Let your agent check deployments, logs and docs on Vercel.',
+   'Vercel''s official remote MCP server. Your agent can search Vercel docs, manage projects and deployments, and read logs, signed in over OAuth.',
+   'Free', 'https://vercel.com/docs/mcp/vercel-mcp'),
+  ('Netlify MCP', 'netlify-mcp', 'mcp_servers',
+   'Let your agent deploy and manage Netlify sites.',
+   'Netlify''s official MCP server. Your agent can create and deploy sites, and manage their settings and extensions, from the same session as the code.',
+   'Free', 'https://github.com/netlify/netlify-mcp'),
+  ('GitHub MCP Server', 'github-mcp-server', 'mcp_servers',
+   'Let your agent work with repos, issues, PRs and Actions.',
+   'GitHub''s official MCP server. Your agent can read code, open and update issues and pull requests, and check why a CI run failed.',
+   'Open source', 'https://github.com/github/github-mcp-server'),
+  ('Linear MCP', 'linear-mcp', 'mcp_servers',
+   'Let your agent read and update your Linear issues.',
+   'Linear''s official hosted MCP server. Your agent can find, create and update issues, projects and comments, so the ticket and the code change stay in step.',
+   'Free', 'https://linear.app/docs/mcp'),
+  ('Notion MCP', 'notion-mcp', 'mcp_servers',
+   'Let your agent read and write your Notion workspace.',
+   'Notion''s official hosted MCP server. Your agent can search, read and update the pages and databases you can access — specs, notes and docs included.',
+   'Free', 'https://developers.notion.com/guides/mcp/overview'),
+  ('Firecrawl MCP', 'firecrawl-mcp', 'mcp_servers',
+   'Give your agent clean web pages, search and docs.',
+   'Firecrawl''s official MCP server. Your agent can search the web and scrape pages back as clean Markdown, which is how it reads current docs instead of guessing from memory.',
+   'Open source', 'https://docs.firecrawl.dev/mcp-server'),
+
+  ('Taste Skill', 'taste-skill', 'skills',
+   'Stops your agent from producing generic-looking UI.',
+   'A frontend design skill that pushes an agent toward a committed visual direction — layout, typography and motion — instead of the default look every AI page builder shares.',
+   'Open source', 'https://github.com/Leonxlnx/taste-skill'),
+  ('UI/UX Pro Max', 'ui-ux-pro-max', 'skills',
+   'Searchable design knowledge your agent can draw on.',
+   'A skill that gives an agent databases of UI styles, colour palettes, font pairings and UX guidelines to choose from while building an interface. Free core, with a paid tier for brand assets.',
+   'Freemium', 'https://github.com/nextlevelbuilder/ui-ux-pro-max-skill'),
+  ('gstack', 'gstack', 'skills',
+   'Garry Tan''s Claude Code setup: a team of specialist roles.',
+   'An open-source pack of slash-command skills that turn one agent into roles — product review, engineering planning, code review, QA with a real browser, release.',
+   'Open source', 'https://github.com/garrytan/gstack'),
+  ('graphify', 'graphify', 'skills',
+   'Turn a codebase into a knowledge graph your agent can query.',
+   'A skill that maps code, docs and schemas into a graph with every relationship explained, so the agent answers questions about a large project without rereading every file.',
+   'Open source', 'https://github.com/Graphify-Labs/graphify'),
+
+  ('Slack', 'slack', 'tools',
+   'Team chat, and a place to talk to Claude at work.',
+   'The chat tool most teams already use. The Claude app for Slack lets you ask Claude questions in threads and DMs without switching windows.',
+   'Freemium', 'https://slack.com'),
+  ('ClickUp', 'clickup', 'tools',
+   'Tasks, docs and planning in one workspace.',
+   'Project management with tasks, docs and goals. Its official MCP server lets an agent create and update tasks and read docs from inside your editor.',
+   'Freemium', 'https://clickup.com'),
+  ('Higgsfield', 'higgsfield', 'tools',
+   'AI image and video generation across many models.',
+   'A production platform for AI video and images that puts many generation models in one place. Its MCP server and skills let an agent generate visual assets for the project it is building.',
+   null, 'https://higgsfield.ai')
+on conflict (slug) do update set
+  name         = excluded.name,
+  category     = excluded.category,
+  tagline      = excluded.tagline,
+  description  = excluded.description,
+  pricing_tier = excluded.pricing_tier,
+  outbound_url = excluded.outbound_url,
+  updated_at   = now();
+
+insert into tool_tags (tool_id, tag_id)
+select t.id, g.id
+from (values
+  ('gpt','code-generation'), ('gpt','free-tier'),
+  ('claude-design','design'), ('claude-design','frontend'),
+  ('gemini-cli','open-source'), ('gemini-cli','code-generation'), ('gemini-cli','free-tier'),
+  ('codex','open-source'), ('codex','code-generation'),
+  ('devin-desktop','code-generation'), ('devin-desktop','free-tier'),
+  ('webstorm','frontend'),
+  ('kilo-code','open-source'), ('kilo-code','code-generation'),
+  ('opencode','open-source'), ('opencode','code-generation'),
+  ('openrouter','backend'), ('openrouter','free-tier'),
+  ('omniroute','open-source'), ('omniroute','backend'),
+  ('lovable','web-apps'), ('lovable','free-tier'),
+  ('replit','web-apps'), ('replit','deployment'), ('replit','free-tier'),
+  ('vercel-mcp','deployment'),
+  ('netlify-mcp','deployment'), ('netlify-mcp','open-source'),
+  ('github-mcp-server','open-source'),
+  ('linear-mcp','automation'),
+  ('notion-mcp','automation'),
+  ('firecrawl-mcp','open-source'),
+  ('taste-skill','design'), ('taste-skill','frontend'), ('taste-skill','open-source'),
+  ('ui-ux-pro-max','design'), ('ui-ux-pro-max','frontend'),
+  ('gstack','open-source'), ('gstack','automation'),
+  ('graphify','open-source'),
+  ('slack','automation'),
+  ('clickup','automation'),
+  ('higgsfield','design')
+) as m(tool_slug, tag_slug)
+join tools t on t.slug = m.tool_slug
+join tags  g on g.slug = m.tag_slug
+on conflict do nothing;
+
+-- GPT gets live specs like Claude and Gemini. No featured model: the newest
+-- in the family leads until staff pick one.
+update tools set openrouter_family = 'openai/gpt' where slug = 'gpt';
+
+-- Links to the new entries. `shared` applies to all three model families —
+-- the editors, agents and gateways below run any of them, and MCP servers
+-- work from any MCP client. `specific` is what is only true of one.
+insert into tool_links (tool_id, linked_tool_id, kind, note, sort_order)
+select a.id, b.id, v.kind::tool_link_kind, v.note, v.sort_order
+from (
+  select m.model as tool, s.linked, s.kind, s.note, s.sort_order
+  from (values ('claude'), ('gemini'), ('gpt')) as m(model)
+  cross join (values
+    ('cursor', 'runs_in', null, 0),
+    ('github-copilot', 'runs_in', 'in the model picker', 2),
+    ('continue', 'runs_in', 'bring your own key', 3),
+    ('aider', 'runs_in', 'bring your own key', 4),
+    ('devin-desktop', 'runs_in', 'formerly Windsurf', 5),
+    ('webstorm', 'runs_in', 'via JetBrains AI Assistant', 6),
+    ('kilo-code', 'runs_in', 'bring your own key', 7),
+    ('opencode', 'runs_in', 'bring your own key', 8),
+    ('openrouter', 'runs_in', 'one API for every model', 9),
+    ('omniroute', 'runs_in', 'self-hosted gateway', 10),
+    ('supabase-mcp-server', 'pairs_with', null, 0),
+    ('playwright-mcp', 'pairs_with', null, 0),
+    ('vercel-mcp', 'pairs_with', null, 0),
+    ('netlify-mcp', 'pairs_with', null, 0),
+    ('github-mcp-server', 'pairs_with', null, 0),
+    ('linear-mcp', 'pairs_with', null, 0),
+    ('notion-mcp', 'pairs_with', null, 0),
+    ('firecrawl-mcp', 'pairs_with', null, 0),
+    ('graphify', 'pairs_with', null, 0),
+    ('nextjs', 'pairs_with', null, 0),
+    ('shadcn-ui', 'pairs_with', null, 0),
+    ('clickup', 'pairs_with', 'via the ClickUp MCP server', 0),
+    ('higgsfield', 'pairs_with', 'via the Higgsfield MCP server', 0)
+  ) as s(linked, kind, note, sort_order)
+  union all
+  select * from (values
+    ('claude', 'claude-design', 'official', 'prototypes, slides, one-pagers', 3),
+    ('claude', 'lovable', 'runs_in', 'powers the app builder', 11),
+    ('claude', 'replit', 'runs_in', 'powers Replit Agent', 12),
+    ('claude', 'taste-skill', 'pairs_with', null, 0),
+    ('claude', 'ui-ux-pro-max', 'pairs_with', null, 0),
+    ('claude', 'gstack', 'pairs_with', null, 0),
+    ('claude', 'slack', 'pairs_with', 'the Claude app for Slack', 0),
+    ('gemini', 'gemini-cli', 'official', 'free daily allowance', 0),
+    ('gpt', 'chatgpt', 'official', null, 0),
+    ('gpt', 'codex', 'official', 'terminal, desktop, web and IDE', 1),
+    ('gpt', 'vs-code', 'runs_in', 'via the Codex extension', 1),
+    ('gpt', 'superpowers', 'pairs_with', 'in Codex', 0)
+  ) as x(tool, linked, kind, note, sort_order)
+) v
+join tools a on a.slug = v.tool
+join tools b on b.slug = v.linked
+on conflict (tool_id, linked_tool_id) do update
+  set kind = excluded.kind, note = excluded.note, sort_order = excluded.sort_order;

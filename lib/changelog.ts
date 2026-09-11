@@ -42,6 +42,12 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-11",
     kind: "added",
+    title: "GPT and 24 new tools in the directory",
+    body: "GPT now has its own model page with live specs, and the directory adds the apps, MCP servers and skills people pair with Claude, GPT and Gemini — from Codex, Gemini CLI and Devin Desktop (formerly Windsurf) to the GitHub, Linear and Notion MCP servers.",
+  },
+  {
+    date: "2026-09-11",
+    kind: "added",
     title: "See what a tool works with",
     body: "Tool pages now show where you can use a tool and what pairs well with it — Claude links to Claude Code, Cursor, the Supabase MCP server and more — and each linked page shows what it works with in return.",
   },

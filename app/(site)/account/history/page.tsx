@@ -1,9 +1,13 @@
+import { IconCompass } from "@tabler/icons-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
+import { ButtonIcon, buttonVariants } from "@/components/ui/button";
+import { Panel } from "@/components/ui/panel";
+import { SectionHead } from "@/components/ui/section-head";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { listBookmarks } from "@/lib/queries/bookmarks";
 import { listHistory } from "@/lib/queries/history";
@@ -53,15 +57,19 @@ export default async function HistoryPage() {
 
   return (
     <>
-      <h1 className="font-heading text-2xl font-semibold">History</h1>
-      <p className="mt-1 text-muted-foreground">
-        {entries.length
-          ? "The tools and guides you have looked at recently, newest first."
-          : "Nothing viewed yet."}
-      </p>
+      <SectionHead
+        level="h1"
+        title="History"
+        lede={
+          entries.length
+            ? "The tools and guides you have opened recently, newest first."
+            : "Nothing viewed yet."
+        }
+        className="mb-7"
+      />
 
       {entries.length ? (
-        <ul className="mt-6 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {entries.map(({ id, target }) => (
             <li key={id}>
               <ResourceCard
@@ -83,17 +91,26 @@ export default async function HistoryPage() {
           ))}
         </ul>
       ) : (
-        <p className="mt-8 text-muted-foreground">
-          Open something in the{" "}
-          <Link href="/tools" className="underline">
-            directory
-          </Link>{" "}
-          or{" "}
-          <Link href="/learn" className="underline">
-            Learn
-          </Link>{" "}
-          and it will show up here.
-        </p>
+        <Panel className="text-center">
+          <h2 className="font-heading text-xl font-bold tracking-tight">
+            Nothing viewed yet
+          </h2>
+          <p className="text-muted-foreground mx-auto mt-3 max-w-[46ch] leading-relaxed">
+            Open a tool or a guide and it shows up here, so you can find your
+            way back to it without remembering the name.
+          </p>
+          <div className="mt-7 flex justify-center">
+            <Link
+              href="/tools"
+              className={buttonVariants({ variant: "pill", size: "pill-sm" })}
+            >
+              <ButtonIcon size="sm">
+                <IconCompass />
+              </ButtonIcon>
+              Open the directory
+            </Link>
+          </div>
+        </Panel>
       )}
     </>
   );

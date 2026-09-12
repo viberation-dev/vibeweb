@@ -1,5 +1,7 @@
 import {
   IconAdjustmentsAlt,
+  IconArrowRight,
+  IconArrowUpRight,
   IconRocket,
   IconSeeding,
   IconWand,
@@ -12,7 +14,9 @@ import {
   chooseLevelAction,
   finishOnboardingAction,
 } from "@/app/(focused)/onboarding/actions";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonIcon } from "@/components/ui/button";
+import { IconTile } from "@/components/ui/icon-tile";
+import { Panel } from "@/components/ui/panel";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { getCurrentProfile } from "@/lib/queries/profiles";
 import {
@@ -134,7 +138,7 @@ export default async function OnboardingPage({ searchParams }: Props) {
 
   return (
     <div className="w-full max-w-2xl">
-      <p className="text-muted-foreground text-center text-xs tracking-widest uppercase">
+      <p className="text-primary text-center text-xs font-bold tracking-widest uppercase">
         {stepEyebrow(step)}
       </p>
 
@@ -157,7 +161,7 @@ export default async function OnboardingPage({ searchParams }: Props) {
         ))}
       </nav>
 
-      <h1 className="font-heading mt-6 text-center text-3xl font-semibold">
+      <h1 className="font-heading mt-6 text-center text-3xl font-bold tracking-[-0.04em] lg:text-4xl">
         {step === 3 ? revealHeadline(profile.username) : heading}
       </h1>
 
@@ -181,7 +185,7 @@ function StepLevel() {
     <>
       <p className="text-muted-foreground mx-auto mt-3 max-w-md text-center">
         This is the one setting that changes what you see. We keep beginner
-        guides clear of advanced noise — and the reverse.
+        guides clear of advanced noise, and the reverse.
       </p>
 
       {/*
@@ -196,7 +200,7 @@ function StepLevel() {
             return (
               <label
                 key={value}
-                className="hover:bg-muted/50 has-checked:border-primary has-checked:bg-muted/40 flex cursor-pointer flex-col items-center rounded-xl border p-5 text-center transition-colors"
+                className="bg-secondary hover:bg-primary/10 has-checked:ring-primary flex cursor-pointer flex-col items-center rounded-[1.125rem] p-6 text-center transition-colors has-checked:ring-2"
               >
                 <input
                   type="radio"
@@ -205,8 +209,12 @@ function StepLevel() {
                   defaultChecked={value === DEFAULT_ROLE_LEVEL}
                   className="sr-only"
                 />
-                <Icon className="text-primary size-6" aria-hidden />
-                <span className="mt-3 font-medium">{label}</span>
+                <IconTile>
+                  <Icon className="size-5" aria-hidden />
+                </IconTile>
+                <span className="font-heading mt-4 font-bold tracking-tight">
+                  {label}
+                </span>
                 <span className="text-muted-foreground mt-1 text-sm">
                   {LEVEL_BLURBS[value]}
                 </span>
@@ -216,7 +224,10 @@ function StepLevel() {
         </div>
 
         <div className="mt-8 flex flex-col items-center gap-3">
-          <Button type="submit" size="lg">
+          <Button type="submit" variant="pill" size="pill">
+            <ButtonIcon>
+              <IconArrowUpRight />
+            </ButtonIcon>
             Continue
           </Button>
           {/*
@@ -237,8 +248,8 @@ function StepFocus({ level, tags }: { level: RoleLevel; tags: Tag[] }) {
   return (
     <>
       <p className="text-muted-foreground mx-auto mt-3 max-w-md text-center">
-        Optional — pick the one closest to what you are working on and we will
-        lead with it. Skip if you are just here to explore.
+        Optional. Pick the one closest to what you are working on and we will
+        lead with it, or skip if you are just here to explore.
       </p>
 
       <form method="get" action="/onboarding" className="mt-6">
@@ -249,7 +260,7 @@ function StepFocus({ level, tags }: { level: RoleLevel; tags: Tag[] }) {
           {tags.map((tag) => (
             <label
               key={tag.id}
-              className="cursor-pointer rounded-full border px-3 py-1 text-sm transition-colors hover:bg-muted has-checked:border-transparent has-checked:bg-primary has-checked:text-primary-foreground"
+              className="bg-secondary hover:bg-primary/10 has-checked:bg-primary has-checked:text-primary-foreground cursor-pointer rounded-full px-3.5 py-1.5 text-sm font-bold transition-colors"
             >
               <input
                 type="radio"
@@ -263,7 +274,10 @@ function StepFocus({ level, tags }: { level: RoleLevel; tags: Tag[] }) {
         </div>
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-          <Button type="submit" size="lg">
+          <Button type="submit" variant="pill" size="pill">
+            <ButtonIcon>
+              <IconArrowUpRight />
+            </ButtonIcon>
             Continue
           </Button>
           {/*
@@ -307,39 +321,45 @@ function StepReveal({
         one thing that ends with something built.
       */}
       {walkthrough ? (
-        <section className="border-primary bg-primary/5 mt-8 flex flex-wrap items-center gap-4 rounded-xl border p-5">
-          <IconWand className="text-primary size-7 shrink-0" aria-hidden />
+        <Panel
+          tone="accent"
+          className="mt-8 flex flex-wrap items-center gap-5"
+          role="group"
+        >
+          <span
+            aria-hidden
+            className="bg-highlight-foreground text-highlight flex size-13 shrink-0 items-center justify-center rounded-2xl"
+          >
+            <IconWand className="size-6" />
+          </span>
           <div className="min-w-40 flex-1">
-            <p className="text-primary text-xs font-semibold tracking-widest uppercase">
+            <p className="text-xs font-bold tracking-widest uppercase opacity-80">
               Start here
             </p>
-            <h2 className="font-heading mt-1 text-lg font-medium">
+            <h2 className="font-heading mt-1.5 text-xl font-bold tracking-tight">
               {walkthrough.title}
             </h2>
-            <p className="text-muted-foreground mt-1 text-sm">
-              Guided walkthrough · {walkthrough.steps.length} steps · idea → live URL
+            <p className="mt-1.5 text-sm font-semibold opacity-75">
+              Guided walkthrough, from an idea to a live URL
             </p>
             {/* Same walkthrough, pitched for who is reading it (VIB-94). */}
-            <p className="mt-2 text-sm">{walkthroughFraming(level)}</p>
+            <p className="mt-2.5 text-sm">{walkthroughFraming(level)}</p>
           </div>
-        </section>
+        </Panel>
       ) : null}
 
       <div className="mt-4 grid gap-4 sm:grid-cols-3">
         {tools.length ? (
-          <section className="bg-muted/40 rounded-xl border p-5 sm:col-span-2">
-            <h2 className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
+          <Panel className="sm:col-span-2">
+            <h2 className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
               {tools.length === 1
                 ? "A tool to start with"
                 : `${tools.length} tools to start with`}
             </h2>
-            <ul className="mt-3 space-y-3">
+            <ul className="mt-5 space-y-3.5">
               {tools.map(toolView).map((view) => (
                 <li key={view.id} className="flex items-baseline gap-3">
-                  <Link
-                    href={view.href}
-                    className="font-medium hover:underline"
-                  >
+                  <Link href={view.href} className="font-bold hover:underline">
                     {view.title}
                   </Link>
                   <span className="text-muted-foreground ml-auto text-xs">
@@ -348,15 +368,15 @@ function StepReveal({
                 </li>
               ))}
             </ul>
-          </section>
+          </Panel>
         ) : null}
 
         {collection ? (
-          <section className="bg-muted/40 relative rounded-xl border p-5">
-            <h2 className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
+          <Panel className="hover:bg-primary/10 relative transition-colors">
+            <h2 className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
               A collection
             </h2>
-            <h3 className="font-heading mt-3 font-medium">
+            <h3 className="font-heading mt-5 text-lg font-bold tracking-tight">
               <Link
                 href={`/collections/${collection.slug}`}
                 className="outline-none after:absolute after:inset-0"
@@ -365,11 +385,11 @@ function StepReveal({
               </Link>
             </h3>
             {collection.description ? (
-              <p className="text-muted-foreground mt-1 text-sm">
+              <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
                 {collection.description}
               </p>
             ) : null}
-          </section>
+          </Panel>
         ) : null}
       </div>
 
@@ -390,8 +410,12 @@ function StepReveal({
               type="submit"
               name="next"
               value={`/walkthroughs/${walkthrough.slug}`}
-              size="lg"
+              variant="pill"
+              size="pill"
             >
+              <ButtonIcon>
+                <IconArrowUpRight />
+              </ButtonIcon>
               Start {walkthrough.title}
             </Button>
             {/*
@@ -399,12 +423,24 @@ function StepReveal({
               completion, or the home nudge keeps offering a flow this person
               has finished (VIB-67).
             */}
-            <Button type="submit" name="next" value="/" variant="ghost">
-              Skip to my feed →
+            <Button
+              type="submit"
+              name="next"
+              value="/"
+              variant="pill-soft"
+              size="pill-sm"
+            >
+              <ButtonIcon tone="on-soft" size="sm">
+                <IconArrowRight />
+              </ButtonIcon>
+              Skip to my feed
             </Button>
           </>
         ) : (
-          <Button type="submit" size="lg">
+          <Button type="submit" variant="pill" size="pill">
+            <ButtonIcon>
+              <IconArrowUpRight />
+            </ButtonIcon>
             Finish and take me in
           </Button>
         )}

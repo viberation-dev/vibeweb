@@ -4,13 +4,7 @@ import { redirect } from "next/navigation";
 import { updateProfileAction } from "@/app/(site)/account/settings/actions";
 import { ThemeToggle } from "@/components/features/nav/ThemeToggle";
 import { ProfileForm } from "@/components/features/profile/ProfileForm";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Panel } from "@/components/ui/panel";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { getCurrentProfile } from "@/lib/queries/profiles";
 
@@ -30,16 +24,16 @@ export default async function AccountSettingsPage() {
   }
 
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <CardTitle>Settings</CardTitle>
-          <CardDescription>{profile.email}</CardDescription>
-        </CardHeader>
-        <CardContent>
+    <div className="grid gap-5">
+      <Panel>
+        <h2 className="font-heading text-xl font-bold tracking-tight">
+          Your profile
+        </h2>
+        <p className="text-muted-foreground mt-2 text-sm">{profile.email}</p>
+        <div className="mt-7">
           <ProfileForm profile={profile} action={updateProfileAction} />
-        </CardContent>
-      </Card>
+        </div>
+      </Panel>
 
       {/*
         Appearance sits outside the profile form because it is not a profile
@@ -49,17 +43,17 @@ export default async function AccountSettingsPage() {
         would imply it is written with the rest, and it is not — it applies
         the moment you press it.
       */}
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>Appearance</CardTitle>
-          <CardDescription>
-            Applies to this browser. System follows your device setting.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <Panel>
+        <h2 className="font-heading text-xl font-bold tracking-tight">
+          Appearance
+        </h2>
+        <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
+          Applies to this browser. System follows your device setting.
+        </p>
+        <div className="mt-7">
           <ThemeToggle />
-        </CardContent>
-      </Card>
-    </>
+        </div>
+      </Panel>
+    </div>
   );
 }

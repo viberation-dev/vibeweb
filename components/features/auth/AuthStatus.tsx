@@ -24,7 +24,10 @@ export function AuthStatus({ profile }: { profile: Profile | null }) {
   if (!profile) {
     return (
       <div className="flex items-center gap-2">
-        <Link href="/login" className={buttonVariants({ variant: "ghost", size: "sm" })}>
+        <Link
+          href="/login"
+          className={buttonVariants({ variant: "ghost", size: "sm" })}
+        >
           Sign in
         </Link>
         <Link href="/signup" className={buttonVariants({ size: "sm" })}>

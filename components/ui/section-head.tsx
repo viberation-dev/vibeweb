@@ -17,6 +17,7 @@ export function SectionHead({
   lede,
   action,
   align = "start",
+  level = "h2",
   className,
 }: {
   eyebrow?: string;
@@ -24,9 +25,12 @@ export function SectionHead({
   lede?: React.ReactNode;
   action?: { label: string; href: string };
   align?: "start" | "center";
+  /** h1 where this is the page title, h2 where it heads a section within one. */
+  level?: "h1" | "h2";
   className?: string;
 }) {
   const centred = align === "center";
+  const Heading = level;
 
   return (
     <div
@@ -50,14 +54,14 @@ export function SectionHead({
             {eyebrow}
           </p>
         ) : null}
-        <h2
+        <Heading
           className={[
             "font-heading text-3xl font-bold tracking-[-0.04em] lg:text-4xl",
             eyebrow ? "mt-3.5" : "",
           ].join(" ")}
         >
           {title}
-        </h2>
+        </Heading>
         {lede ? (
           <p
             className={[

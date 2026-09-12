@@ -1,16 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-import { Badge } from "@/components/ui/badge";
 import { DifficultyBadge } from "@/components/features/resource/DifficultyBadge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { TagPill } from "@/components/ui/tag-pill";
 import type { RoleLevel } from "@/lib/role-level";
 import { cn } from "@/lib/utils";
 
@@ -31,7 +23,7 @@ export type ResourceCardProps = {
    * colour in every theme (readme "Colour").
    */
   difficulty?: RoleLevel;
-  /** Quiet text beside the badges — reading time, a count. */
+  /** Quiet text beside the badges — a count, a date. */
   meta?: string;
   /** Controls in a footer — a bookmark toggle, a folder picker. */
   action?: ReactNode;
@@ -46,9 +38,16 @@ export type ResourceCardProps = {
 /**
  * One card for every kind of directory item.
  *
- * Deliberately generic: tools, Learn articles and collection entries all
- * render through this, so the grid stays visually identical across the site
- * and there is one place to change how a listed item looks (§34).
+ * Deliberately generic: tools, Learn articles, collection entries, bookmarks
+ * and history all render through this, so the grid stays visually identical
+ * across the site and there is one place to change how a listed item looks
+ * (§34).
+ *
+ * Drawn on the v3 soft surface since VIB-126. It was a bordered shadcn Card,
+ * which was the last outlined box left once the account screens moved onto
+ * panels — a bordered card sitting inside a soft panel reads as two systems
+ * arguing. Hover lightens toward the accent rather than the muted grey, the
+ * same move the category tiles make.
  */
 export function ResourceCard({
   href,
@@ -63,54 +62,66 @@ export function ResourceCard({
   className,
 }: ResourceCardProps) {
   return (
-    <Card
+    <div
       className={cn(
-        "relative h-full transition-colors hover:bg-muted/40 focus-within:ring-2 focus-within:ring-ring",
+        "bg-secondary focus-within:ring-ring hover:bg-primary/10 relative flex h-full flex-col rounded-[1.125rem] p-6 transition-colors focus-within:ring-2",
         className,
       )}
     >
-      <CardHeader>
-        {eyebrow ? (
-          <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-            {eyebrow}
+      {eyebrow ? (
+        <span className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
+          {eyebrow}
+        </span>
+      ) : null}
+
+      <h3
+        className={cn(
+          "font-heading flex items-center gap-2.5 text-lg font-bold tracking-tight",
+          eyebrow && "mt-2.5",
+        )}
+      >
+        {icon ? (
+          <span className="bg-primary text-primary-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
+            {icon}
           </span>
         ) : null}
-        <CardTitle className="flex items-center gap-2">
-          {icon ? (
-            <span className="bg-muted flex size-7 shrink-0 items-center justify-center rounded-md">
-              {icon}
-            </span>
-          ) : null}
-          {/*
-            The link covers the card via ::after so the whole card is clickable,
-            while the accessible name and keyboard focus stay on real link text.
-          */}
-          <Link href={href} className="outline-none after:absolute after:inset-0">
-            {title}
-          </Link>
-        </CardTitle>
-        {description ? <CardDescription>{description}</CardDescription> : null}
-      </CardHeader>
+        {/*
+          The link covers the card via ::after so the whole card is clickable,
+          while the accessible name and keyboard focus stay on real link text.
+        */}
+        <Link href={href} className="outline-none after:absolute after:inset-0">
+          {title}
+        </Link>
+      </h3>
+
+      {description ? (
+        <p className="text-muted-foreground mt-2.5 text-sm leading-relaxed">
+          {description}
+        </p>
+      ) : null}
+
       {badges?.length || difficulty || meta ? (
-        <CardContent className="flex flex-wrap items-center gap-1.5">
+        <div className="mt-4 flex flex-wrap items-center gap-2">
           {difficulty ? <DifficultyBadge level={difficulty} /> : null}
           {badges?.map((badge) => (
-            <Badge key={badge} variant="secondary">
-              {badge}
-            </Badge>
+            <TagPill key={badge}>{badge}</TagPill>
           ))}
-          {meta ? <span className="text-muted-foreground text-xs">{meta}</span> : null}
-        </CardContent>
+          {meta ? (
+            <span className="text-muted-foreground text-xs">{meta}</span>
+          ) : null}
+        </div>
       ) : null}
+
       {action ? (
         /*
           z-10 lifts the footer above the link's covering ::after — without it
           the card-wide click target would swallow every control in here.
+          mt-auto keeps it on the bottom edge however tall the card grows.
         */
-        <CardFooter className="relative z-10 flex flex-wrap items-center justify-between gap-2">
+        <div className="relative z-10 mt-auto flex flex-wrap items-center justify-between gap-2 pt-6">
           {action}
-        </CardFooter>
+        </div>
       ) : null}
-    </Card>
+    </div>
   );
 }

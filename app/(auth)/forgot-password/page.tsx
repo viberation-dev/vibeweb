@@ -3,13 +3,8 @@ import Link from "next/link";
 
 import { forgotPasswordAction } from "@/app/(auth)/actions";
 import { ForgotPasswordForm } from "@/components/features/auth/ForgotPasswordForm";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Panel } from "@/components/ui/panel";
+import { SectionHead } from "@/components/ui/section-head";
 
 export const metadata: Metadata = { title: "Reset your password" };
 
@@ -27,14 +22,15 @@ export default async function ForgotPasswordPage({
   const errorMessage = error ? ERROR_MESSAGES[error] : undefined;
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle className="text-2xl">Reset your password</CardTitle>
-        <CardDescription>
-          We will email you a link to set a new one.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <Panel size="lg" className="w-full max-w-md p-8 lg:p-10">
+      <SectionHead
+        level="h1"
+        align="center"
+        title="Reset your password"
+        lede="We will email you a link to set a new one."
+        className="mb-8"
+      />
+      <div className="space-y-6">
         {errorMessage ? (
           <p role="alert" className="text-destructive text-sm">
             {errorMessage}
@@ -49,7 +45,7 @@ export default async function ForgotPasswordPage({
             Sign in
           </Link>
         </p>
-      </CardContent>
-    </Card>
+      </div>
+    </Panel>
   );
 }

@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useActionState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { IconArrowUpRight } from "@tabler/icons-react";
+
+import { Button, ButtonIcon } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { AuthFormState } from "@/app/(auth)/actions";
@@ -33,11 +35,19 @@ export function AuthForm({ mode, action, redirectTo }: Props) {
 
   return (
     <form action={formAction} className="space-y-4">
-      {redirectTo ? <input type="hidden" name="redirectTo" value={redirectTo} /> : null}
+      {redirectTo ? (
+        <input type="hidden" name="redirectTo" value={redirectTo} />
+      ) : null}
 
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" autoComplete="email" required />
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          required
+        />
       </div>
 
       <div className="space-y-2">
@@ -51,7 +61,9 @@ export function AuthForm({ mode, action, redirectTo }: Props) {
           minLength={mode === "signup" ? 8 : undefined}
         />
         {mode === "signup" ? (
-          <p className="text-muted-foreground text-sm">At least 8 characters.</p>
+          <p className="text-muted-foreground text-sm">
+            At least 8 characters.
+          </p>
         ) : (
           /* Sits with the password field it belongs to, right-aligned, as in
              the mockup — not stranded under the submit button. */
@@ -78,7 +90,17 @@ export function AuthForm({ mode, action, redirectTo }: Props) {
         </p>
       ) : null}
 
-      <Button type="submit" className="w-full" size="lg" disabled={pending}>
+      {/* The pill CTA, as on the marketing pages: same shape, same badge. */}
+      <Button
+        type="submit"
+        variant="pill"
+        size="pill"
+        className="w-full"
+        disabled={pending}
+      >
+        <ButtonIcon>
+          <IconArrowUpRight />
+        </ButtonIcon>
         {pending ? copy.pending : copy.submit}
       </Button>
     </form>

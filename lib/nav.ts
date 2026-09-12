@@ -75,7 +75,7 @@ export const SIDEBAR_GROUPS: ReadonlyArray<{ label?: string; items: readonly Nav
      * pillars had no column yet. That pillar is real now, and labelled
      * "Build logs" so it does not collide with the guided builds (VIB-120).
      */
-    label: `Pillars · ${CONTENT_PILLARS.length}`,
+    label: "Pillars",
     items: CONTENT_PILLARS.map((pillar) => ({
       href: learnHref({ pillar: pillar.value }),
       label: pillar.label,

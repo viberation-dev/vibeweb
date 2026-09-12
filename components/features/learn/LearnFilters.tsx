@@ -18,7 +18,11 @@ import { cn } from "@/lib/utils";
 type Props = {
   type?: ContentType;
   pillar?: ContentPillar;
-  /** Published pieces per pillar, so an empty one can say so (VIB-95). */
+  /*
+   * Published pieces per pillar. The number is no longer displayed (VIB-124);
+   * it still decides whether a pillar is offered as a link, because a chip
+   * that opens on nothing is a dead end.
+   */
   pillarCounts: Map<ContentPillar, number>;
   /** The raw `?level=` choice — undefined means "whatever my profile says". */
   level?: LevelParam;
@@ -93,7 +97,7 @@ export function LearnFilters({
                 className={cn(chip, "text-muted-foreground cursor-default hover:bg-transparent")}
                 title="Nothing published in this pillar yet"
               >
-                {label} <span className="tabular-nums">0</span>
+                {label}
               </span>
             );
           }
@@ -105,7 +109,7 @@ export function LearnFilters({
               aria-current={active ? "page" : undefined}
               className={cn(chip, active && chipActive)}
             >
-              {label} <span className="tabular-nums opacity-70">{count}</span>
+              {label}
             </Link>
           );
         })}

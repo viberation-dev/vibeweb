@@ -2,13 +2,19 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { listWizards } from "@/lib/queries/wizards";
 
 export const metadata: Metadata = {
   title: "Wizards — Viberation",
-  description: "Step-by-step builds that end with something real on the internet.",
+  description:
+    "Guided builds that end with a live link you can send to anyone. Copy each prompt, paste it into your AI tool, and keep going.",
 };
 
 /**
@@ -24,7 +30,8 @@ export default async function WizardsPage() {
     <main className="mx-auto w-full max-w-6xl p-6">
       <h1 className="font-heading text-2xl font-semibold">Wizards</h1>
       <p className="mt-1 text-muted-foreground">
-        Step-by-step builds that end with something real on the internet, not a finished tutorial.
+        Follow the steps and end with a live link you can send to anyone. Copy
+        each prompt, paste it into your AI tool, check the result, move on.
       </p>
 
       {wizards.length ? (
@@ -35,7 +42,8 @@ export default async function WizardsPage() {
                 <CardHeader>
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="secondary">
-                      {wizard.steps.length} step{wizard.steps.length === 1 ? "" : "s"}
+                      {wizard.steps.length} step
+                      {wizard.steps.length === 1 ? "" : "s"}
                     </Badge>
                     {wizard.role_level ? (
                       <Badge variant="outline">{wizard.role_level}</Badge>

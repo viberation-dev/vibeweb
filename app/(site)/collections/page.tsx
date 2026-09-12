@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import { CollectionCard } from "@/components/features/collections/CollectionCard";
 import { createClient } from "@/lib/integrations/supabase/server";
-import { countCollectionItems, listCollections } from "@/lib/queries/collections";
+import {
+  countCollectionItems,
+  listCollections,
+} from "@/lib/queries/collections";
 
 export const metadata: Metadata = {
   title: "Collections — Viberation",
   description:
-    "Curated sets of tools and guides, grouped around one thing you are trying to do.",
+    "Starter stacks, already picked for you. Each one gathers the tools and guides for a single job, so you start from something instead of a blank page.",
 };
 
 export default async function CollectionsPage() {
@@ -21,7 +24,9 @@ export default async function CollectionsPage() {
     <main className="mx-auto w-full max-w-6xl p-6">
       <h1 className="font-heading text-2xl font-semibold">Collections</h1>
       <p className="mt-1 text-muted-foreground">
-        Curated sets of tools and guides, grouped around one thing you are trying to do.
+        Starter stacks, already picked for you. Each one gathers the tools and
+        guides for a single job, so you start from something instead of a blank
+        page.
       </p>
 
       {collections.length ? (

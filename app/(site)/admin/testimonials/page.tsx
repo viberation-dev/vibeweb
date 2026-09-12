@@ -19,30 +19,35 @@ export default async function AdminTestimonialsPage() {
   const published = items.filter((item) => item.published).length;
 
   return (
-    <main className="mx-auto w-full max-w-4xl space-y-6 p-6">
+    <main className="mx-auto w-full max-w-4xl space-y-6 px-[clamp(1.25rem,4vw,2.5rem)] py-10">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">Testimonials</h1>
+          <h1 className="font-heading text-3xl font-bold tracking-[-0.04em]">
+            Testimonials
+          </h1>
           <p className="text-muted-foreground text-sm">
             {items.length} total, {published} published. The homepage shows the
             first three published, by order.
           </p>
         </div>
-        <Link href="/admin/testimonials/new" className={buttonVariants()}>
+        <Link
+          href="/admin/testimonials/new"
+          className={buttonVariants({ variant: "pill", size: "pill-sm" })}
+        >
           Add testimonial
         </Link>
       </div>
 
-      <ul className="divide-border divide-y rounded-lg border">
+      <ul className="bg-secondary divide-border/60 divide-y overflow-hidden rounded-[1.125rem]">
         {items.map((item) => (
           <li
             key={item.id}
-            className="flex items-start justify-between gap-4 p-4"
+            className="flex items-start justify-between gap-4 p-5"
           >
             <div className="min-w-0">
               <Link
                 href={`/admin/testimonials/${item.id}`}
-                className="font-medium hover:underline"
+                className="font-heading font-bold tracking-tight hover:underline"
               >
                 {item.author_name}
                 {item.location ? ` · ${item.location}` : ""}
@@ -62,7 +67,7 @@ export default async function AdminTestimonialsPage() {
           </li>
         ))}
         {items.length === 0 ? (
-          <li className="text-muted-foreground p-4 text-sm">
+          <li className="text-muted-foreground p-5 text-sm">
             None yet. Until there is at least one published quote the homepage
             keeps describing who the product is for, in the third person — which
             is the honest thing to show when nobody has said anything.

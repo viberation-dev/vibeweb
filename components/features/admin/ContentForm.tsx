@@ -13,7 +13,10 @@ import type { Content } from "@/lib/queries/content";
 type Props = {
   /** Null when creating. Its presence is what makes this an edit form. */
   content: Content | null;
-  action: (state: ContentFormState, formData: FormData) => Promise<ContentFormState>;
+  action: (
+    state: ContentFormState,
+    formData: FormData,
+  ) => Promise<ContentFormState>;
 };
 
 const ROLE_LEVELS = [
@@ -48,15 +51,28 @@ export function ContentForm({ content, action }: Props) {
     <form action={formAction} className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="title">Title</Label>
-        <Input id="title" name="title" defaultValue={content?.title ?? ""} required />
+        <Input
+          id="title"
+          name="title"
+          defaultValue={content?.title ?? ""}
+          required
+        />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="slug">Slug</Label>
-        <Input id="slug" name="slug" defaultValue={content?.slug ?? ""} required />
+        <Input
+          id="slug"
+          name="slug"
+          defaultValue={content?.slug ?? ""}
+          required
+        />
         <p className="text-muted-foreground text-sm">
-          The URL: <code>{urlPrefix}/{content?.slug ?? "your-slug"}</code> —
-          announcements live under <code>/blog</code>, everything else under{" "}
+          The URL:{" "}
+          <code>
+            {urlPrefix}/{content?.slug ?? "your-slug"}
+          </code>{" "}
+          — announcements live under <code>/blog</code>, everything else under{" "}
           <code>/learn</code>. Changing a slug breaks existing links.
         </p>
       </div>
@@ -166,10 +182,13 @@ export function ContentForm({ content, action }: Props) {
       ) : null}
 
       <div className="flex items-center gap-3">
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" variant="pill" size="pill-sm" disabled={pending}>
           {pending ? "Saving…" : content ? "Save changes" : "Create article"}
         </Button>
-        <Link href="/admin/content" className={buttonVariants({ variant: "ghost" })}>
+        <Link
+          href="/admin/content"
+          className={buttonVariants({ variant: "ghost" })}
+        >
           Cancel
         </Link>
       </div>

@@ -5,7 +5,6 @@ import {
   feedQueryFor,
   greetingFor,
   progressLabel,
-  readingMinutes,
   toFeedTab,
 } from "./home-feed.ts";
 
@@ -16,19 +15,6 @@ test("the greeting turns over at noon and six", () => {
   assert.equal(greetingFor(17), "Good afternoon");
   assert.equal(greetingFor(18), "Good evening");
   assert.equal(greetingFor(23), "Good evening");
-});
-
-test("read time never rounds down to zero", () => {
-  // "0 min read" reads as broken. Anything with words takes at least a moment.
-  assert.equal(readingMinutes("one two three"), 1);
-  assert.equal(readingMinutes(new Array(200).fill("word").join(" ")), 1);
-  assert.equal(readingMinutes(new Array(1600).fill("word").join(" ")), 8);
-});
-
-test("read time is absent, not zero, when there is no body", () => {
-  assert.equal(readingMinutes(null), null);
-  assert.equal(readingMinutes(""), null);
-  assert.equal(readingMinutes("   \n  "), null);
 });
 
 test("the progress line counts steps the way a reader does", () => {

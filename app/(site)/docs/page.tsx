@@ -10,7 +10,7 @@ import { contentView } from "@/lib/resource-view";
 export const metadata: Metadata = {
   title: "Docs",
   description:
-    "How Viberation itself works: help for visitors and members, and guides for contributors and partners as they arrive.",
+    "How Viberation itself works. Help with your account, your bookmarks, the directory and the walkthrough, in plain English.",
 };
 
 /**
@@ -34,7 +34,7 @@ const AUDIENCE_SECTIONS = [
     key: "enduser",
     title: "For visitors and members",
     blurb:
-      "Using the site: accounts, bookmarks, the directory, the walkthrough, and what a free account changes.",
+      "Using the site: your account, bookmarks, the directory, the walkthrough, and what signing up actually changes.",
     live: true,
   },
   {
@@ -79,7 +79,7 @@ export default async function DocsPage() {
           Docs
         </h1>
         <p className="text-muted-foreground mt-3.5 max-w-[60ch] text-lg leading-relaxed">
-          How Viberation itself works. If you are looking for how to{" "}
+          How this site works, in plain English. If you want to know how to{" "}
           <em>build</em> things rather than how to use this site, that is the{" "}
           <Link
             href="/learn"
@@ -129,7 +129,7 @@ export default async function DocsPage() {
 
       <section className="bg-secondary mt-16 rounded-2xl p-8">
         <h2 className="font-heading text-lg font-bold tracking-tight">
-          Cannot find what you need?
+          Still stuck?
         </h2>
         <p className="text-muted-foreground mt-2 max-w-[60ch]">
           Email{" "}
@@ -139,7 +139,8 @@ export default async function DocsPage() {
           >
             hello@viberation.dev
           </a>{" "}
-          and the answer will usually end up on this page afterwards.
+          and the answer usually ends up on this page afterwards, so the next
+          person does not have to ask.
         </p>
       </section>
     </main>

@@ -10,7 +10,7 @@ import { listContent } from "@/lib/queries/content";
 export const metadata: Metadata = {
   title: "Blog",
   description:
-    "Announcements from Viberation — what shipped, what changed, and what is coming.",
+    "Product news from Viberation. What shipped, what changed, and what is coming next.",
 };
 
 /**
@@ -52,7 +52,8 @@ export default async function BlogPage({ searchParams }: Props) {
           Blog
         </h1>
         <p className="text-muted-foreground mt-3.5 text-lg leading-relaxed">
-          What shipped, what changed, and what is coming.
+          What shipped, what changed, and what is coming next. Short posts, only
+          when there is something to say.
         </p>
       </header>
 
@@ -112,7 +113,7 @@ export default async function BlogPage({ searchParams }: Props) {
             Nothing announced yet
           </h2>
           <p className="text-muted-foreground mt-2 leading-relaxed">
-            Product news will appear here. In the meantime,{" "}
+            Product news lands here as it happens. In the meantime,{" "}
             <Link
               href="/changelog"
               className="text-primary font-semibold hover:underline"

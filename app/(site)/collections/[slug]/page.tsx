@@ -6,7 +6,10 @@ import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { listBookmarks } from "@/lib/queries/bookmarks";
-import { getCollectionBySlug, getCollectionEntries } from "@/lib/queries/collections";
+import {
+  getCollectionBySlug,
+  getCollectionEntries,
+} from "@/lib/queries/collections";
 import { contentView, toolView } from "@/lib/resource-view";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -17,10 +20,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const collection = await getCollectionBySlug(supabase, slug);
 
   if (!collection) {
-    return { title: "Collection not found — Viberation" };
+    return { title: "Collection not found" };
   }
   return {
-    title: `${collection.title} — Viberation`,
+    title: collection.title,
     description: collection.description ?? undefined,
   };
 }
@@ -57,19 +60,28 @@ export default async function CollectionPage({ params }: Props) {
   const views = entries.map((entry) =>
     entry.kind === "tool" ? toolView(entry.tool) : contentView(entry.content),
   );
-  const bookmarkedIds = new Set(bookmarks.map((bookmark) => bookmark.target_id));
+  const bookmarkedIds = new Set(
+    bookmarks.map((bookmark) => bookmark.target_id),
+  );
 
   const returnTo = `/collections/${collection.slug}`;
 
   return (
     <main className="mx-auto w-full max-w-6xl p-6">
-      <Link href="/collections" className="text-sm text-muted-foreground hover:underline">
+      <Link
+        href="/collections"
+        className="text-sm text-muted-foreground hover:underline"
+      >
         ← All collections
       </Link>
 
-      <h1 className="mt-4 font-heading text-3xl font-semibold">{collection.title}</h1>
+      <h1 className="mt-4 font-heading text-3xl font-semibold">
+        {collection.title}
+      </h1>
       {collection.description ? (
-        <p className="mt-2 text-lg text-muted-foreground">{collection.description}</p>
+        <p className="mt-2 text-lg text-muted-foreground">
+          {collection.description}
+        </p>
       ) : null}
 
       {views.length ? (
@@ -98,7 +110,8 @@ export default async function CollectionPage({ params }: Props) {
         </ul>
       ) : (
         <p className="mt-8 text-muted-foreground">
-          Nothing in this collection yet — or everything in it has since been removed.
+          Nothing in this collection yet — or everything in it has since been
+          removed.
         </p>
       )}
     </main>

@@ -31,9 +31,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const wizard = await getWizardBySlug(supabase, slug);
 
   if (!wizard) {
-    return { title: "Wizard not found — Viberation" };
+    return { title: "Wizard not found" };
   }
-  return { title: `${wizard.title} — Viberation` };
+  return { title: wizard.title };
 }
 
 /**

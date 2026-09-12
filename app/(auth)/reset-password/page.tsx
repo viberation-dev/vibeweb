@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { createClient } from "@/lib/integrations/supabase/server";
 
-export const metadata: Metadata = { title: "Set a new password — Viberation" };
+export const metadata: Metadata = { title: "Set a new password" };
 
 export default async function ResetPasswordPage() {
   const supabase = await createClient();
@@ -35,7 +35,9 @@ export default async function ResetPasswordPage() {
     <Card className="w-full max-w-md">
       <CardHeader>
         <CardTitle className="text-2xl">Set a new password</CardTitle>
-        <CardDescription>Signing in elsewhere will need this new password.</CardDescription>
+        <CardDescription>
+          Signing in elsewhere will need this new password.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <ResetPasswordForm action={resetPasswordAction} />

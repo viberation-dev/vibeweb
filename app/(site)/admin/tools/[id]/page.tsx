@@ -8,7 +8,7 @@ import { createClient } from "@/lib/integrations/supabase/server";
 import { getToolById } from "@/lib/queries/tools";
 import { requireStaff } from "@/lib/staff";
 
-export const metadata: Metadata = { title: "Edit tool — Viberation" };
+export const metadata: Metadata = { title: "Edit tool" };
 
 export default async function EditToolPage({
   params,
@@ -37,8 +37,8 @@ export default async function EditToolPage({
           increment_tool_views() and the bookmark trigger — so show them here
           rather than leaving staff wondering where the numbers went. */}
       <p className="text-muted-foreground text-sm">
-        {tool.view_count} views · {tool.bookmark_count} bookmarks. Both are maintained
-        automatically and are not editable.
+        {tool.view_count} views · {tool.bookmark_count} bookmarks. Both are
+        maintained automatically and are not editable.
       </p>
       <ToolForm tool={tool} action={saveToolAction.bind(null, tool.id)} />
     </main>

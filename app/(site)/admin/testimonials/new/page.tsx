@@ -4,7 +4,7 @@ import { saveTestimonialAction } from "@/app/(site)/admin/testimonials/actions";
 import { TestimonialForm } from "@/components/features/admin/TestimonialForm";
 import { requireStaff } from "@/lib/staff";
 
-export const metadata: Metadata = { title: "New testimonial — Viberation" };
+export const metadata: Metadata = { title: "New testimonial" };
 
 export default async function NewTestimonialPage() {
   await requireStaff("/admin/testimonials/new");

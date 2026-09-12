@@ -11,7 +11,7 @@ import { listBookmarks } from "@/lib/queries/bookmarks";
 import { contentView, toolView } from "@/lib/resource-view";
 
 export const metadata: Metadata = {
-  title: "Search — Viberation",
+  title: "Search",
   description: "Search the tool directory, Learn, and curated collections.",
 };
 
@@ -39,16 +39,23 @@ export default async function SearchPage({ searchParams }: Props) {
     supabase.auth.getUser(),
   ]);
 
-  const bookmarks = auth.user ? await listBookmarks(supabase, auth.user.id) : [];
-  const bookmarkedIds = new Set(bookmarks.map((bookmark) => bookmark.target_id));
+  const bookmarks = auth.user
+    ? await listBookmarks(supabase, auth.user.id)
+    : [];
+  const bookmarkedIds = new Set(
+    bookmarks.map((bookmark) => bookmark.target_id),
+  );
 
-  const returnTo = results.query ? `/search?q=${encodeURIComponent(results.query)}` : "/search";
+  const returnTo = results.query
+    ? `/search?q=${encodeURIComponent(results.query)}`
+    : "/search";
 
   return (
     <main className="mx-auto w-full max-w-6xl p-6">
       <h1 className="font-heading text-2xl font-semibold">Search</h1>
       <p className="mt-1 text-muted-foreground">
-        Across the tool directory, Learn, and curated collections — including their tags.
+        Across the tool directory, Learn, and curated collections — including
+        their tags.
       </p>
 
       <SearchInput defaultValue={results.query} className="mt-6 max-w-xl" />
@@ -72,12 +79,18 @@ export default async function SearchPage({ searchParams }: Props) {
             if (hit.kind === "collection") {
               return (
                 <li key={`collection:${hit.collection.id}`}>
-                  <CollectionCard collection={hit.collection} eyebrow="Collection" />
+                  <CollectionCard
+                    collection={hit.collection}
+                    eyebrow="Collection"
+                  />
                 </li>
               );
             }
 
-            const view = hit.kind === "tool" ? toolView(hit.tool) : contentView(hit.content);
+            const view =
+              hit.kind === "tool"
+                ? toolView(hit.tool)
+                : contentView(hit.content);
             return (
               <li key={`${view.targetType}:${view.id}`}>
                 <ResourceCard

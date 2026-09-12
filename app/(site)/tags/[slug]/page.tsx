@@ -19,10 +19,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const tag = await getTagBySlug(supabase, slug);
 
   if (!tag) {
-    return { title: "Tag not found — Viberation" };
+    return { title: "Tag not found" };
   }
   return {
-    title: `${tag.name} — Viberation`,
+    title: tag.name,
     description: `Tools and guides tagged ${tag.name}.`,
   };
 }
@@ -54,16 +54,24 @@ export default async function TagPage({ params }: Props) {
     auth.user ? listBookmarks(supabase, auth.user.id) : Promise.resolve([]),
   ]);
 
-  const bookmarkedIds = new Set(bookmarks.map((bookmark) => bookmark.target_id));
+  const bookmarkedIds = new Set(
+    bookmarks.map((bookmark) => bookmark.target_id),
+  );
 
   // Tools first, then guides: a tag is most often a thing you want before it
   // is a thing you want to read about.
-  const views = [...tools.tools.map(toolView), ...content.items.map(contentView)];
+  const views = [
+    ...tools.tools.map(toolView),
+    ...content.items.map(contentView),
+  ];
   const total = tools.total + content.total;
 
   return (
     <main className="mx-auto w-full max-w-6xl p-6">
-      <Link href="/tools" className="text-sm text-muted-foreground hover:underline">
+      <Link
+        href="/tools"
+        className="text-sm text-muted-foreground hover:underline"
+      >
         ← All tools
       </Link>
 

@@ -8,7 +8,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { chooseLevelAction, finishOnboardingAction } from "@/app/(focused)/onboarding/actions";
+import {
+  chooseLevelAction,
+  finishOnboardingAction,
+} from "@/app/(focused)/onboarding/actions";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { getCurrentProfile } from "@/lib/queries/profiles";
@@ -24,7 +27,10 @@ import {
   wizardFraming,
   stepEyebrow,
 } from "@/lib/onboarding";
-import { getCollectionBySlug, type Collection } from "@/lib/queries/collections";
+import {
+  getCollectionBySlug,
+  type Collection,
+} from "@/lib/queries/collections";
 import { listTags, type Tag } from "@/lib/queries/tags";
 import { listTools, type Tool } from "@/lib/queries/tools";
 import { listWizards, type Wizard } from "@/lib/queries/wizards";
@@ -33,7 +39,7 @@ import { ROLE_LEVELS, toRoleLevel, type RoleLevel } from "@/lib/role-level";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Get set up — Viberation",
+  title: "Get set up",
 };
 
 type Props = {
@@ -133,7 +139,10 @@ export default async function OnboardingPage({ searchParams }: Props) {
       </p>
 
       {/* Dots, not a bar: three steps is few enough to show as places. */}
-      <nav aria-label="Progress" className="mt-3 flex items-center justify-center gap-2">
+      <nav
+        aria-label="Progress"
+        className="mt-3 flex items-center justify-center gap-2"
+      >
         {ONBOARDING_STEPS.map(({ step: n }) => (
           <span
             key={n}
@@ -171,8 +180,8 @@ function StepLevel() {
   return (
     <>
       <p className="text-muted-foreground mx-auto mt-3 max-w-md text-center">
-        This is the one setting that changes what you see. We keep beginner guides
-        clear of advanced noise — and the reverse.
+        This is the one setting that changes what you see. We keep beginner
+        guides clear of advanced noise — and the reverse.
       </p>
 
       {/*
@@ -215,7 +224,8 @@ function StepLevel() {
             form rather than being a second code path with its own default.
           */}
           <p className="text-muted-foreground text-sm">
-            Not sure? Continue as <span className="text-foreground">Beginner</span>.
+            Not sure? Continue as{" "}
+            <span className="text-foreground">Beginner</span>.
           </p>
         </div>
       </form>
@@ -227,8 +237,8 @@ function StepFocus({ level, tags }: { level: RoleLevel; tags: Tag[] }) {
   return (
     <>
       <p className="text-muted-foreground mx-auto mt-3 max-w-md text-center">
-        Optional — pick the one closest to what you are working on and we will lead
-        with it. Skip if you are just here to explore.
+        Optional — pick the one closest to what you are working on and we will
+        lead with it. Skip if you are just here to explore.
       </p>
 
       <form method="get" action="/onboarding" className="mt-6">
@@ -241,7 +251,12 @@ function StepFocus({ level, tags }: { level: RoleLevel; tags: Tag[] }) {
               key={tag.id}
               className="cursor-pointer rounded-full border px-3 py-1 text-sm transition-colors hover:bg-muted has-checked:border-transparent has-checked:bg-primary has-checked:text-primary-foreground"
             >
-              <input type="radio" name="focus" value={tag.slug} className="sr-only" />
+              <input
+                type="radio"
+                name="focus"
+                value={tag.slug}
+                className="sr-only"
+              />
               {tag.name}
             </label>
           ))}
@@ -298,7 +313,9 @@ function StepReveal({
             <p className="text-primary text-xs font-semibold tracking-widest uppercase">
               Start here
             </p>
-            <h2 className="font-heading mt-1 text-lg font-medium">{wizard.title}</h2>
+            <h2 className="font-heading mt-1 text-lg font-medium">
+              {wizard.title}
+            </h2>
             <p className="text-muted-foreground mt-1 text-sm">
               Guided wizard · {wizard.steps.length} steps · idea → live URL
             </p>
@@ -312,12 +329,17 @@ function StepReveal({
         {tools.length ? (
           <section className="bg-muted/40 rounded-xl border p-5 sm:col-span-2">
             <h2 className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
-              {tools.length === 1 ? "A tool to start with" : `${tools.length} tools to start with`}
+              {tools.length === 1
+                ? "A tool to start with"
+                : `${tools.length} tools to start with`}
             </h2>
             <ul className="mt-3 space-y-3">
               {tools.map(toolView).map((view) => (
                 <li key={view.id} className="flex items-baseline gap-3">
-                  <Link href={view.href} className="font-medium hover:underline">
+                  <Link
+                    href={view.href}
+                    className="font-medium hover:underline"
+                  >
                     {view.title}
                   </Link>
                   <span className="text-muted-foreground ml-auto text-xs">
@@ -343,7 +365,9 @@ function StepReveal({
               </Link>
             </h3>
             {collection.description ? (
-              <p className="text-muted-foreground mt-1 text-sm">{collection.description}</p>
+              <p className="text-muted-foreground mt-1 text-sm">
+                {collection.description}
+              </p>
             ) : null}
           </section>
         ) : null}
@@ -362,7 +386,12 @@ function StepReveal({
         <input type="hidden" name="role_level" value={level} />
         {wizard ? (
           <>
-            <Button type="submit" name="next" value={`/wizards/${wizard.slug}`} size="lg">
+            <Button
+              type="submit"
+              name="next"
+              value={`/wizards/${wizard.slug}`}
+              size="lg"
+            >
               Start {wizard.title}
             </Button>
             {/*

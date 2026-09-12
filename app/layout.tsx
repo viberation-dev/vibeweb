@@ -23,9 +23,18 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Viberation",
+  /*
+   * Every page sets just its own name; the suffix is applied here (VIB-119).
+   * It used to be hand-written on all 41 of them, with an em dash Ali does
+   * not want in visitor-facing copy, browser tabs and search results
+   * included.
+   */
+  title: {
+    default: "Viberation",
+    template: "%s · Viberation",
+  },
   description:
-    "The digital operating system for vibe coders — a curated AI tool library, role-aware guides, and a place to keep what works.",
+    "A curated AI tool library, role-aware guides, and a place to keep what works. Everything a vibe coder needs to ship something real.",
 };
 
 /**

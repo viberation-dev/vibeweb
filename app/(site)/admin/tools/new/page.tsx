@@ -4,7 +4,7 @@ import { saveToolAction } from "@/app/(site)/admin/tools/actions";
 import { ToolForm } from "@/components/features/admin/ToolForm";
 import { requireStaff } from "@/lib/staff";
 
-export const metadata: Metadata = { title: "New tool — Viberation" };
+export const metadata: Metadata = { title: "New tool" };
 
 export default async function NewToolPage() {
   await requireStaff("/admin/tools/new");

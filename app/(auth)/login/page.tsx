@@ -14,15 +14,17 @@ import {
 } from "@/components/ui/card";
 import { safeRedirect } from "@/lib/validation/auth";
 
-export const metadata: Metadata = { title: "Sign in — Viberation" };
+export const metadata: Metadata = { title: "Sign in" };
 
 /** Error codes the auth routes redirect back with. */
 const ERROR_MESSAGES: Record<string, string> = {
-  "oauth-cancelled": "That sign-in was cancelled. Try again when you are ready.",
+  "oauth-cancelled":
+    "That sign-in was cancelled. Try again when you are ready.",
   "oauth-failed": "We could not complete that sign-in. Please try again.",
   "unknown-provider": "That sign-in method is not supported.",
   "invalid-link": "That confirmation link was not valid.",
-  "expired-link": "That confirmation link has expired. Request a new one by signing up again.",
+  "expired-link":
+    "That confirmation link has expired. Request a new one by signing up again.",
 };
 
 /** Confirmations the auth flows redirect back with. */
@@ -33,7 +35,11 @@ const NOTICE_MESSAGES: Record<string, string> = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ redirectTo?: string; error?: string; notice?: string }>;
+  searchParams: Promise<{
+    redirectTo?: string;
+    error?: string;
+    notice?: string;
+  }>;
 }) {
   const { redirectTo, error, notice } = await searchParams;
   const safeTarget = safeRedirect(redirectTo);

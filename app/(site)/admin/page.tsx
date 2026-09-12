@@ -11,7 +11,7 @@ import {
 import { buttonVariants } from "@/components/ui/button";
 import { requireStaff } from "@/lib/staff";
 
-export const metadata: Metadata = { title: "Staff — Viberation" };
+export const metadata: Metadata = { title: "Staff" };
 
 /**
  * The staff area — VIB-53's gate, with VIB-59's two editors behind it.

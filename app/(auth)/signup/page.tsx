@@ -13,14 +13,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export const metadata: Metadata = { title: "Create an account — Viberation" };
+export const metadata: Metadata = { title: "Create an account" };
 
 export default function SignUpPage() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
         <CardTitle className="text-2xl">Create your account</CardTitle>
-        <CardDescription>Free — browse without one, save with one.</CardDescription>
+        <CardDescription>
+          Free — browse without one, save with one.
+        </CardDescription>
       </CardHeader>
       {/*
         Email form first, providers second (mockup screen 7). The earlier order

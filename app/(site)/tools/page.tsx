@@ -27,7 +27,7 @@ import { toolsHref } from "@/lib/tools-url";
 export const metadata: Metadata = {
   title: "Tools — Viberation",
   description:
-    "A curated directory of AI tools for vibe coders — models, agents, IDEs, CLIs, MCP servers and more.",
+    "Find the AI tool that fits what you are building. Models, agents, IDEs, CLIs and MCP servers, with honest tradeoffs and labelled affiliate links.",
 };
 
 type Props = {
@@ -80,8 +80,9 @@ export default async function ToolsPage({ searchParams }: Props) {
   /** "15 models · from $0.25 per 1M" for a model family's card; undefined otherwise. */
   const familyFor = (family: string | null) =>
     family && liveModels
-      ? familyLine(familyMembers(liveModels.values(), family).map((m) => m.price.input)) ||
-        undefined
+      ? familyLine(
+          familyMembers(liveModels.values(), family).map((m) => m.price.input),
+        ) || undefined
       : undefined;
 
   const bookmarkedIds = new Set(
@@ -95,7 +96,7 @@ export default async function ToolsPage({ searchParams }: Props) {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-heading text-2xl font-semibold">
-            {category ? toolCategoryLabel(category) : "Explore tools"}
+            {category ? toolCategoryLabel(category) : "Find the right AI tool"}
           </h1>
           {/*
             Real counts, queried — not the mockup's "46 tools", which predates

@@ -22,7 +22,7 @@ import { resolveRoleLevel, toLevelParam } from "@/lib/role-level";
 export const metadata: Metadata = {
   title: "Learn — Viberation",
   description:
-    "Guides, articles, cheatsheets and help for vibe coders, tuned to the level you are actually at.",
+    "Plain-English guides, articles and cheatsheets for building with AI, matched to the level you are actually at.",
 };
 
 type Props = {
@@ -54,26 +54,29 @@ export default async function LearnPage({ searchParams }: Props) {
   const profile = auth.user ? await getProfile(supabase, auth.user.id) : null;
   const effectiveLevel = resolveRoleLevel(level, profile?.role_level ?? null);
 
-  const [{ items, total, pageCount }, pillarCounts, bookmarks] = await Promise.all([
-    listContent(supabase, {
-      types: type ? [type] : LEARN_TYPE_VALUES,
-      roleLevel: effectiveLevel,
-      pillar,
-      sort,
-      page,
-    }),
-    /*
-     * Counts ignore the active filters on purpose: a chip row that renumbers
-     * itself as you filter cannot be read as "what is in this section", and
-     * picking one pillar would zero the other five.
-     */
-    countContentByPillar(supabase, LEARN_TYPE_VALUES),
-    // Signed-out visitors still see Save buttons; pressing one sends them to
-    // sign in. Only which ones read as saved needs a user.
-    auth.user ? listBookmarks(supabase, auth.user.id, "content") : [],
-  ]);
+  const [{ items, total, pageCount }, pillarCounts, bookmarks] =
+    await Promise.all([
+      listContent(supabase, {
+        types: type ? [type] : LEARN_TYPE_VALUES,
+        roleLevel: effectiveLevel,
+        pillar,
+        sort,
+        page,
+      }),
+      /*
+       * Counts ignore the active filters on purpose: a chip row that renumbers
+       * itself as you filter cannot be read as "what is in this section", and
+       * picking one pillar would zero the other five.
+       */
+      countContentByPillar(supabase, LEARN_TYPE_VALUES),
+      // Signed-out visitors still see Save buttons; pressing one sends them to
+      // sign in. Only which ones read as saved needs a user.
+      auth.user ? listBookmarks(supabase, auth.user.id, "content") : [],
+    ]);
 
-  const bookmarkedIds = new Set(bookmarks.map((bookmark) => bookmark.target_id));
+  const bookmarkedIds = new Set(
+    bookmarks.map((bookmark) => bookmark.target_id),
+  );
   // Come back to this exact filtered page after a signed-out visitor logs in.
   const returnTo = learnHref({ type, pillar, level, sort, page });
 
@@ -82,11 +85,12 @@ export default async function LearnPage({ searchParams }: Props) {
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h1 className="font-heading text-2xl font-semibold">Learn</h1>
         <span className="text-muted-foreground text-xs">
-          Role-adaptive · beginner content stays separate
+          Tuned to your level. Beginner guides stay beginner.
         </span>
       </div>
       <p className="text-muted-foreground mt-1">
-        Guides, articles and cheatsheets for getting things actually shipped.
+        Guides that do not skip the step you are stuck on, written in plain
+        English, with prompts you can copy.
       </p>
 
       <div className="mt-6">
@@ -141,7 +145,9 @@ export default async function LearnPage({ searchParams }: Props) {
             pageCount={pageCount}
             total={total}
             itemLabel="pieces"
-            href={(next) => learnHref({ type, pillar, level, sort, page: next })}
+            href={(next) =>
+              learnHref({ type, pillar, level, sort, page: next })
+            }
           />
         </>
       ) : (

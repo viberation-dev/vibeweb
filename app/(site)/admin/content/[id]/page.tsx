@@ -9,7 +9,7 @@ import { contentHref } from "@/lib/learn";
 import { getContentById } from "@/lib/queries/content";
 import { requireStaff } from "@/lib/staff";
 
-export const metadata: Metadata = { title: "Edit article — Viberation" };
+export const metadata: Metadata = { title: "Edit article" };
 
 export default async function EditContentPage({
   params,
@@ -32,11 +32,17 @@ export default async function EditContentPage({
         <h1 className="text-2xl font-semibold">Edit article</h1>
         {/* Staff can open a draft at its own URL — getContentBySlug does not
             filter status, so this previews unpublished prose. */}
-        <Link href={contentHref(content.type, content.slug)} className="text-sm hover:underline">
+        <Link
+          href={contentHref(content.type, content.slug)}
+          className="text-sm hover:underline"
+        >
           Preview →
         </Link>
       </div>
-      <ContentForm content={content} action={saveContentAction.bind(null, content.id)} />
+      <ContentForm
+        content={content}
+        action={saveContentAction.bind(null, content.id)}
+      />
     </main>
   );
 }

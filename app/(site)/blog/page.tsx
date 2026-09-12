@@ -8,7 +8,7 @@ import { toPageNumber } from "@/lib/pagination";
 import { listContent } from "@/lib/queries/content";
 
 export const metadata: Metadata = {
-  title: "Blog — Viberation",
+  title: "Blog",
   description:
     "Announcements from Viberation — what shipped, what changed, and what is coming.",
 };

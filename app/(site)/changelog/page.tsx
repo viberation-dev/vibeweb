@@ -8,7 +8,7 @@ import {
 } from "@/lib/changelog";
 
 export const metadata: Metadata = {
-  title: "Changelog — Viberation",
+  title: "Changelog",
   description:
     "What has shipped on Viberation, newest first — new features, improvements and fixes.",
 };

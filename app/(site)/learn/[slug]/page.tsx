@@ -24,9 +24,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const item = await getContentBySlug(supabase, slug);
 
   if (!item || item.type === "announcement") {
-    return { title: "Not found — Viberation" };
+    return { title: "Not found" };
   }
-  return { title: `${item.title} — Viberation` };
+  return { title: item.title };
 }
 
 /**

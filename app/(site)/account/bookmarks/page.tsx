@@ -30,7 +30,7 @@ const chip = (active: boolean) =>
   );
 
 export const metadata: Metadata = {
-  title: "Bookmarks — Viberation",
+  title: "Bookmarks",
   description: "Everything you have saved, organised into folders.",
 };
 
@@ -60,7 +60,9 @@ export default async function BookmarksPage({ searchParams }: Props) {
    */
   const [saved, models] = await Promise.all([
     resolveTargetViews(supabase, bookmarks),
-    bookmarks.some((bookmark) => bookmark.model_id) ? getOpenRouterModels() : null,
+    bookmarks.some((bookmark) => bookmark.model_id)
+      ? getOpenRouterModels()
+      : null,
   ]);
 
   const folders = bookmarkFolders(bookmarks);
@@ -133,7 +135,8 @@ export default async function BookmarksPage({ searchParams }: Props) {
             </div>
             <ul className="mt-3 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {entries.map(({ bookmark, target }) => {
-                const modelName = bookmark.model_id && models?.get(bookmark.model_id)?.name;
+                const modelName =
+                  bookmark.model_id && models?.get(bookmark.model_id)?.name;
                 const view = bookmark.model_id
                   ? modelBookmarkView(
                       target,

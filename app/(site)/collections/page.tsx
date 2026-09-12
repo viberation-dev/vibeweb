@@ -7,7 +7,7 @@ import {
 } from "@/lib/queries/collections";
 
 export const metadata: Metadata = {
-  title: "Collections — Viberation",
+  title: "Collections",
   description:
     "Starter stacks, already picked for you. Each one gathers the tools and guides for a single job, so you start from something instead of a blank page.",
 };

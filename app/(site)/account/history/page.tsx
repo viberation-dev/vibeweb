@@ -10,7 +10,7 @@ import { listHistory } from "@/lib/queries/history";
 import { resolveTargetViews } from "@/lib/queries/resources";
 
 export const metadata: Metadata = {
-  title: "History — Viberation",
+  title: "History",
   description: "The tools and guides you have looked at recently.",
 };
 
@@ -37,7 +37,9 @@ export default async function HistoryPage() {
 
   const viewed = await resolveTargetViews(supabase, items);
 
-  const bookmarkedIds = new Set(bookmarks.map((bookmark) => bookmark.target_id));
+  const bookmarkedIds = new Set(
+    bookmarks.map((bookmark) => bookmark.target_id),
+  );
 
   /*
    * Nothing deletes a history row when its tool goes away — no foreign key

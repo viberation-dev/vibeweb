@@ -8,7 +8,7 @@ import { listContent } from "@/lib/queries/content";
 import { contentView } from "@/lib/resource-view";
 
 export const metadata: Metadata = {
-  title: "Docs — Viberation",
+  title: "Docs",
   description:
     "How Viberation itself works: help for visitors and members, and guides for contributors and partners as they arrive.",
 };

@@ -7,15 +7,26 @@ import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
 import { CategoryIcon } from "@/components/features/tools/CategoryIcon";
 import { Fact } from "@/components/features/tools/Fact";
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
-import { ModelPicker, ModelSpecs } from "@/components/features/tools/ModelSpecs";
+import {
+  ModelPicker,
+  ModelSpecs,
+} from "@/components/features/tools/ModelSpecs";
 import { StarterPrompts } from "@/components/features/tools/StarterPrompts";
 import { ToolLinks } from "@/components/features/tools/ToolLinks";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { getOpenRouterEndpoints, getOpenRouterModels } from "@/lib/integrations/openrouter";
+import {
+  getOpenRouterEndpoints,
+  getOpenRouterModels,
+} from "@/lib/integrations/openrouter";
 import { createClient } from "@/lib/integrations/supabase/server";
-import { familyMembers, modelDisplayName, modelHref, pickMember } from "@/lib/model-facts";
+import {
+  familyMembers,
+  modelDisplayName,
+  modelHref,
+  pickMember,
+} from "@/lib/model-facts";
 import { outboundRel, safeOutboundUrl } from "@/lib/outbound";
 import { isBookmarked } from "@/lib/queries/bookmarks";
 import { countCollectionsContaining } from "@/lib/queries/collections";
@@ -57,10 +68,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const tool = await getToolBySlug(supabase, slug);
 
   if (!tool) {
-    return { title: "Tool not found — Viberation" };
+    return { title: "Tool not found" };
   }
   return {
-    title: `${tool.name} — Viberation`,
+    title: tool.name,
     description: tool.tagline ?? undefined,
   };
 }
@@ -101,27 +112,39 @@ export default async function ToolPage({ params, searchParams }: Props) {
     guides,
     liveModels,
   ] = await Promise.all([
-      getToolTags(supabase, tool.id),
-      auth.user
-        ? isBookmarked(supabase, auth.user.id, { targetType: "tool", targetId: tool.id })
-        : Promise.resolve(false),
-      countCollectionsContaining(supabase, { targetType: "tool", targetId: tool.id }),
-      // One extra so removing this tool from its own related list still fills it.
-      listTools(supabase, { category: tool.category, pageSize: RELATED_LIMIT + 1 }),
-      listToolLinks(supabase, tool.id),
-      listPromptsForTool(supabase, tool.id),
-      getWizardsForTool(supabase, tool.id),
-      /*
-       * The family's models ride the same wave (VIB-107): cached for an hour,
-       * and empty rather than throwing, so OpenRouter being down costs this
-       * section, never the page.
-       */
-      family ? getOpenRouterModels() : null,
-    ]);
+    getToolTags(supabase, tool.id),
+    auth.user
+      ? isBookmarked(supabase, auth.user.id, {
+          targetType: "tool",
+          targetId: tool.id,
+        })
+      : Promise.resolve(false),
+    countCollectionsContaining(supabase, {
+      targetType: "tool",
+      targetId: tool.id,
+    }),
+    // One extra so removing this tool from its own related list still fills it.
+    listTools(supabase, {
+      category: tool.category,
+      pageSize: RELATED_LIMIT + 1,
+    }),
+    listToolLinks(supabase, tool.id),
+    listPromptsForTool(supabase, tool.id),
+    getWizardsForTool(supabase, tool.id),
+    /*
+     * The family's models ride the same wave (VIB-107): cached for an hour,
+     * and empty rather than throwing, so OpenRouter being down costs this
+     * section, never the page.
+     */
+    family ? getOpenRouterModels() : null,
+  ]);
 
-  const related = sameCategory.filter((other) => other.id !== tool.id).slice(0, RELATED_LIMIT);
+  const related = sameCategory
+    .filter((other) => other.id !== tool.id)
+    .slice(0, RELATED_LIMIT);
 
-  const members = family && liveModels ? familyMembers(liveModels.values(), family) : [];
+  const members =
+    family && liveModels ? familyMembers(liveModels.values(), family) : [];
   // A stale or hand-typed ?model= falls back to the featured model, not a 404.
   // It is only ever compared against ids OpenRouter itself returned.
   const selected = pickMember(members, requestedModel, tool.openrouter_id);
@@ -136,7 +159,9 @@ export default async function ToolPage({ params, searchParams }: Props) {
    * Next's data cache after the first view each hour; fetch it speculatively
    * alongside the list if cold-cache latency ever shows up.
    */
-  const facetTagIds = tags.filter((tag) => tag.kind === "facet").map((tag) => tag.id);
+  const facetTagIds = tags
+    .filter((tag) => tag.kind === "facet")
+    .map((tag) => tag.id);
   // Related reading needs the tags, so it rides this wave with the endpoints
   // call rather than adding a round trip of its own on model pages.
   const [endpoints, reading, modelBookmarked] = await Promise.all([
@@ -180,7 +205,10 @@ export default async function ToolPage({ params, searchParams }: Props) {
   after(async () => {
     await incrementToolViews(supabase, tool.slug);
     if (auth.user) {
-      await recordVisit(supabase, auth.user.id, { targetType: "tool", targetId: tool.id });
+      await recordVisit(supabase, auth.user.id, {
+        targetType: "tool",
+        targetId: tool.id,
+      });
     }
   });
 
@@ -197,7 +225,10 @@ export default async function ToolPage({ params, searchParams }: Props) {
             ›
           </li>
           <li>
-            <Link href={toolsHref({ category: tool.category })} className="hover:underline">
+            <Link
+              href={toolsHref({ category: tool.category })}
+              className="hover:underline"
+            >
               {toolCategoryLabel(tool.category)}
             </Link>
           </li>
@@ -212,13 +243,18 @@ export default async function ToolPage({ params, searchParams }: Props) {
 
       <div className="mt-4 flex items-center gap-3">
         <span className="bg-muted flex size-11 shrink-0 items-center justify-center rounded-xl">
-          <CategoryIcon category={tool.category} className="text-primary size-6" />
+          <CategoryIcon
+            category={tool.category}
+            className="text-primary size-6"
+          />
         </span>
         <div>
           <h1 className="font-heading text-2xl font-semibold">{tool.name}</h1>
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
             <Link href={toolsHref({ category: tool.category })}>
-              <Badge variant="secondary">{toolCategoryLabel(tool.category)}</Badge>
+              <Badge variant="secondary">
+                {toolCategoryLabel(tool.category)}
+              </Badge>
             </Link>
             {/*
               Facets only. Audience is the "Best for" row below and pricing is
@@ -247,7 +283,9 @@ export default async function ToolPage({ params, searchParams }: Props) {
             <p className="text-muted-foreground text-lg">{tool.tagline}</p>
           ) : null}
           {tool.description ? (
-            <p className="mt-3 leading-relaxed whitespace-pre-line">{tool.description}</p>
+            <p className="mt-3 leading-relaxed whitespace-pre-line">
+              {tool.description}
+            </p>
           ) : null}
 
           {selected && defaultModelId && liveModels ? (
@@ -294,7 +332,9 @@ export default async function ToolPage({ params, searchParams }: Props) {
             gap with a guess.
           */}
           <dl className="mt-3">
-            {tool.pricing_tier ? <Fact label="Pricing" value={tool.pricing_tier} /> : null}
+            {tool.pricing_tier ? (
+              <Fact label="Pricing" value={tool.pricing_tier} />
+            ) : null}
             {platforms ? <Fact label="Platform" value={platforms} /> : null}
             <Fact label="Category" value={toolCategoryLabel(tool.category)} />
             {bestFor ? <Fact label="Best for" value={bestFor} /> : null}
@@ -302,7 +342,9 @@ export default async function ToolPage({ params, searchParams }: Props) {
 
           {guides.length ? (
             <>
-              <h2 className="font-heading mt-8 text-lg font-medium">Guided walkthroughs</h2>
+              <h2 className="font-heading mt-8 text-lg font-medium">
+                Guided walkthroughs
+              </h2>
               <ul className="mt-3 grid gap-3 sm:grid-cols-2">
                 {guides.map((wizard) => (
                   <li key={wizard.slug}>
@@ -320,7 +362,9 @@ export default async function ToolPage({ params, searchParams }: Props) {
 
           {reading.length ? (
             <>
-              <h2 className="font-heading mt-8 text-lg font-medium">Related reading</h2>
+              <h2 className="font-heading mt-8 text-lg font-medium">
+                Related reading
+              </h2>
               <ul className="mt-3 grid gap-3 sm:grid-cols-2">
                 {reading.map((item) => (
                   <li key={item.id}>
@@ -348,7 +392,10 @@ export default async function ToolPage({ params, searchParams }: Props) {
         </div>
 
         {/* Action rail — affiliate CTA + bookmark. */}
-        <aside aria-label="Actions" className="bg-muted/40 h-fit rounded-xl border p-4">
+        <aside
+          aria-label="Actions"
+          className="bg-muted/40 h-fit rounded-xl border p-4"
+        >
           {outbound ? (
             <>
               <a
@@ -357,7 +404,11 @@ export default async function ToolPage({ params, searchParams }: Props) {
                 href={`/go/${tool.slug}`}
                 target="_blank"
                 rel={outboundRel(tool.is_affiliate)}
-                className={buttonVariants({ variant: "outbound", size: "lg", className: "w-full" })}
+                className={buttonVariants({
+                  variant: "outbound",
+                  size: "lg",
+                  className: "w-full",
+                })}
               >
                 Visit {tool.name} ↗
               </a>
@@ -387,7 +438,10 @@ export default async function ToolPage({ params, searchParams }: Props) {
               tags. The tags are partial curation: 13 of 26 tools would have
               claimed "Free tier: No" incorrectly. See lib/tool-facts.ts.
             */}
-            <Fact label="Free tier" value={hasFreeTier(tool.pricing_tier) ? "Yes" : "No"} />
+            <Fact
+              label="Free tier"
+              value={hasFreeTier(tool.pricing_tier) ? "Yes" : "No"}
+            />
             <Fact
               label="Open source"
               value={isOpenSource(tool.pricing_tier, tagSlugs) ? "Yes" : "No"}
@@ -408,9 +462,13 @@ export default async function ToolPage({ params, searchParams }: Props) {
           */}
           {tool.is_affiliate && outbound ? (
             <p className="text-muted-foreground mt-4 border-t pt-3 text-xs">
-              We may earn a commission if you sign up through this link, at no extra cost to you. It
-              never affects whether or how a tool is listed —{" "}
-              <Link className="underline underline-offset-4" href="/terms#affiliate-disclosure">
+              We may earn a commission if you sign up through this link, at no
+              extra cost to you. It never affects whether or how a tool is
+              listed —{" "}
+              <Link
+                className="underline underline-offset-4"
+                href="/terms#affiliate-disclosure"
+              >
                 how this works
               </Link>
               .
@@ -427,7 +485,10 @@ function RelatedCard({ tool }: { tool: Tool }) {
     <Card className="hover:bg-muted/40 relative h-full transition-colors">
       <CardHeader>
         <CardTitle className="text-base">
-          <Link href={`/tools/${tool.slug}`} className="outline-none after:absolute after:inset-0">
+          <Link
+            href={`/tools/${tool.slug}`}
+            className="outline-none after:absolute after:inset-0"
+          >
             {tool.name}
           </Link>
         </CardTitle>

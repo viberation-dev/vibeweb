@@ -12,7 +12,7 @@ import { createClient } from "@/lib/integrations/supabase/server";
 import { listWizards } from "@/lib/queries/wizards";
 
 export const metadata: Metadata = {
-  title: "Wizards — Viberation",
+  title: "Wizards",
   description:
     "Guided builds that end with a live link you can send to anyone. Copy each prompt, paste it into your AI tool, and keep going.",
 };

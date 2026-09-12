@@ -8,7 +8,7 @@ import { listAllTools } from "@/lib/queries/tools";
 import { requireStaff } from "@/lib/staff";
 import { toolCategoryLabel } from "@/lib/tool-categories";
 
-export const metadata: Metadata = { title: "Tools — Viberation" };
+export const metadata: Metadata = { title: "Tools" };
 
 /** Every tool in the directory, most recently edited first (VIB-59). */
 export default async function AdminToolsPage() {
@@ -23,7 +23,8 @@ export default async function AdminToolsPage() {
         <div>
           <h1 className="text-2xl font-semibold">Tools</h1>
           <p className="text-muted-foreground text-sm">
-            {tools.length} {tools.length === 1 ? "tool" : "tools"} in the directory.
+            {tools.length} {tools.length === 1 ? "tool" : "tools"} in the
+            directory.
           </p>
         </div>
         <Link href="/admin/tools/new" className={buttonVariants()}>
@@ -33,9 +34,15 @@ export default async function AdminToolsPage() {
 
       <ul className="divide-border divide-y rounded-lg border">
         {tools.map((tool) => (
-          <li key={tool.id} className="flex items-center justify-between gap-4 p-4">
+          <li
+            key={tool.id}
+            className="flex items-center justify-between gap-4 p-4"
+          >
             <div className="min-w-0">
-              <Link href={`/admin/tools/${tool.id}`} className="font-medium hover:underline">
+              <Link
+                href={`/admin/tools/${tool.id}`}
+                className="font-medium hover:underline"
+              >
                 {tool.name}
               </Link>
               <p className="text-muted-foreground truncate text-sm">
@@ -43,7 +50,9 @@ export default async function AdminToolsPage() {
                 {tool.pricing_tier ? ` · ${tool.pricing_tier}` : ""}
               </p>
             </div>
-            {tool.is_affiliate ? <Badge variant="secondary">Affiliate</Badge> : null}
+            {tool.is_affiliate ? (
+              <Badge variant="secondary">Affiliate</Badge>
+            ) : null}
           </li>
         ))}
         {tools.length === 0 ? (

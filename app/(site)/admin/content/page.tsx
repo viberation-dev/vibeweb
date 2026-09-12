@@ -8,7 +8,7 @@ import { contentHref, contentPillarLabel, contentTypeLabel } from "@/lib/learn";
 import { listAllContent } from "@/lib/queries/content";
 import { requireStaff } from "@/lib/staff";
 
-export const metadata: Metadata = { title: "Learn content — Viberation" };
+export const metadata: Metadata = { title: "Learn content" };
 
 /** Every article, drafts included — the staff list (VIB-59). */
 export default async function AdminContentPage() {
@@ -23,7 +23,8 @@ export default async function AdminContentPage() {
         <div>
           <h1 className="text-2xl font-semibold">Learn content</h1>
           <p className="text-muted-foreground text-sm">
-            {items.length} {items.length === 1 ? "article" : "articles"}, drafts included.
+            {items.length} {items.length === 1 ? "article" : "articles"}, drafts
+            included.
           </p>
         </div>
         <Link href="/admin/content/new" className={buttonVariants()}>
@@ -33,24 +34,35 @@ export default async function AdminContentPage() {
 
       <ul className="divide-border divide-y rounded-lg border">
         {items.map((item) => (
-          <li key={item.id} className="flex items-center justify-between gap-4 p-4">
+          <li
+            key={item.id}
+            className="flex items-center justify-between gap-4 p-4"
+          >
             <div className="min-w-0">
-              <Link href={`/admin/content/${item.id}`} className="font-medium hover:underline">
+              <Link
+                href={`/admin/content/${item.id}`}
+                className="font-medium hover:underline"
+              >
                 {item.title}
               </Link>
               <p className="text-muted-foreground truncate text-sm">
                 {/* Announcements live at /blog, everything else at /learn. */}
-                {contentHref(item.type, item.slug)} · {contentTypeLabel(item.type)}
+                {contentHref(item.type, item.slug)} ·{" "}
+                {contentTypeLabel(item.type)}
                 {item.pillar ? ` · ${contentPillarLabel(item.pillar)}` : ""}
               </p>
             </div>
-            <Badge variant={item.status === "published" ? "secondary" : "outline"}>
+            <Badge
+              variant={item.status === "published" ? "secondary" : "outline"}
+            >
               {item.status === "published" ? "Published" : "Draft"}
             </Badge>
           </li>
         ))}
         {items.length === 0 ? (
-          <li className="text-muted-foreground p-4 text-sm">Nothing written yet.</li>
+          <li className="text-muted-foreground p-4 text-sm">
+            Nothing written yet.
+          </li>
         ) : null}
       </ul>
     </main>

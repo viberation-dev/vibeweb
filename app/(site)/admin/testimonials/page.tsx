@@ -8,7 +8,7 @@ import { listAllTestimonials } from "@/lib/queries/testimonials";
 import { initialsFrom } from "@/lib/testimonials";
 import { requireStaff } from "@/lib/staff";
 
-export const metadata: Metadata = { title: "Testimonials — Viberation" };
+export const metadata: Metadata = { title: "Testimonials" };
 
 /** Every testimonial, drafts included — the staff list (VIB-102). */
 export default async function AdminTestimonialsPage() {
@@ -51,7 +51,8 @@ export default async function AdminTestimonialsPage() {
                 &ldquo;{item.quote}&rdquo;
               </p>
               <p className="text-muted-foreground mt-1 text-xs">
-                {initialsFrom(item.author_name, item.initials)} · order {item.sort_order} · consent{" "}
+                {initialsFrom(item.author_name, item.initials)} · order{" "}
+                {item.sort_order} · consent{" "}
                 {new Date(item.consent_at).toISOString().slice(0, 10)}
               </p>
             </div>
@@ -63,8 +64,8 @@ export default async function AdminTestimonialsPage() {
         {items.length === 0 ? (
           <li className="text-muted-foreground p-4 text-sm">
             None yet. Until there is at least one published quote the homepage
-            keeps describing who the product is for, in the third person —
-            which is the honest thing to show when nobody has said anything.
+            keeps describing who the product is for, in the third person — which
+            is the honest thing to show when nobody has said anything.
           </li>
         ) : null}
       </ul>

@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export const metadata: Metadata = { title: "Reset your password — Viberation" };
+export const metadata: Metadata = { title: "Reset your password" };
 
 /** Sent here by /reset-password when the recovery session is missing or expired. */
 const ERROR_MESSAGES: Record<string, string> = {

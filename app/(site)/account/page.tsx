@@ -12,7 +12,7 @@ import {
 import { createClient } from "@/lib/integrations/supabase/server";
 import { getCurrentProfile } from "@/lib/queries/profiles";
 
-export const metadata: Metadata = { title: "Your account — Viberation" };
+export const metadata: Metadata = { title: "Your account" };
 
 const ROLE_LEVELS = {
   beginner: "Beginner",

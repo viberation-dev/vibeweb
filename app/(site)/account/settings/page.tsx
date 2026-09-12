@@ -14,7 +14,7 @@ import {
 import { createClient } from "@/lib/integrations/supabase/server";
 import { getCurrentProfile } from "@/lib/queries/profiles";
 
-export const metadata: Metadata = { title: "Settings — Viberation" };
+export const metadata: Metadata = { title: "Settings" };
 
 export default async function AccountSettingsPage() {
   const supabase = await createClient();

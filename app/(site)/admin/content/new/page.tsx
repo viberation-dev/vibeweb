@@ -4,7 +4,7 @@ import { saveContentAction } from "@/app/(site)/admin/content/actions";
 import { ContentForm } from "@/components/features/admin/ContentForm";
 import { requireStaff } from "@/lib/staff";
 
-export const metadata: Metadata = { title: "New article — Viberation" };
+export const metadata: Metadata = { title: "New article" };
 
 export default async function NewContentPage() {
   await requireStaff("/admin/content/new");

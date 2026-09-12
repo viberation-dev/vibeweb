@@ -11,7 +11,7 @@ import { createClient } from "@/lib/integrations/supabase/server";
 import { getTestimonialById } from "@/lib/queries/testimonials";
 import { requireStaff } from "@/lib/staff";
 
-export const metadata: Metadata = { title: "Edit testimonial — Viberation" };
+export const metadata: Metadata = { title: "Edit testimonial" };
 
 export default async function EditTestimonialPage({
   params,

@@ -20,7 +20,7 @@ import { contentView } from "@/lib/resource-view";
 import { resolveRoleLevel, toLevelParam } from "@/lib/role-level";
 
 export const metadata: Metadata = {
-  title: "Learn — Viberation",
+  title: "Learn",
   description:
     "Plain-English guides, articles and cheatsheets for building with AI, matched to the level you are actually at.",
 };

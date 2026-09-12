@@ -25,7 +25,7 @@ import { toToolSort } from "@/lib/tool-sorts";
 import { toolsHref } from "@/lib/tools-url";
 
 export const metadata: Metadata = {
-  title: "Tools — Viberation",
+  title: "Tools",
   description:
     "Find the AI tool that fits what you are building. Models, agents, IDEs, CLIs and MCP servers, with honest tradeoffs and labelled affiliate links.",
 };

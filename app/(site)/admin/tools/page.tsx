@@ -18,30 +18,35 @@ export default async function AdminToolsPage() {
   const tools = await listAllTools(supabase);
 
   return (
-    <main className="mx-auto w-full max-w-4xl space-y-6 p-6">
+    <main className="mx-auto w-full max-w-4xl space-y-6 px-[clamp(1.25rem,4vw,2.5rem)] py-10">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">Tools</h1>
+          <h1 className="font-heading text-3xl font-bold tracking-[-0.04em]">
+            Tools
+          </h1>
           <p className="text-muted-foreground text-sm">
             {tools.length} {tools.length === 1 ? "tool" : "tools"} in the
             directory.
           </p>
         </div>
-        <Link href="/admin/tools/new" className={buttonVariants()}>
+        <Link
+          href="/admin/tools/new"
+          className={buttonVariants({ variant: "pill", size: "pill-sm" })}
+        >
           New tool
         </Link>
       </div>
 
-      <ul className="divide-border divide-y rounded-lg border">
+      <ul className="bg-secondary divide-border/60 divide-y overflow-hidden rounded-[1.125rem]">
         {tools.map((tool) => (
           <li
             key={tool.id}
-            className="flex items-center justify-between gap-4 p-4"
+            className="flex items-center justify-between gap-4 p-5"
           >
             <div className="min-w-0">
               <Link
                 href={`/admin/tools/${tool.id}`}
-                className="font-medium hover:underline"
+                className="font-heading font-bold tracking-tight hover:underline"
               >
                 {tool.name}
               </Link>
@@ -56,7 +61,7 @@ export default async function AdminToolsPage() {
           </li>
         ))}
         {tools.length === 0 ? (
-          <li className="text-muted-foreground p-4 text-sm">No tools yet.</li>
+          <li className="text-muted-foreground p-5 text-sm">No tools yet.</li>
         ) : null}
       </ul>
     </main>

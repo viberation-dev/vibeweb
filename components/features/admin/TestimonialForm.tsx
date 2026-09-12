@@ -92,8 +92,8 @@ export function TestimonialForm({ testimonial, action }: Props) {
             placeholder="Auto"
           />
           <p className="text-muted-foreground text-sm">
-            For the avatar. Blank derives them from the name — set it for
-            names where that guesses wrong.
+            For the avatar. Blank derives them from the name — set it for names
+            where that guesses wrong.
           </p>
         </div>
 
@@ -192,7 +192,7 @@ export function TestimonialForm({ testimonial, action }: Props) {
       ) : null}
 
       <div className="flex items-center gap-3">
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" variant="pill" size="pill-sm" disabled={pending}>
           {pending
             ? "Saving…"
             : testimonial

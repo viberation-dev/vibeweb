@@ -37,9 +37,9 @@ export function ToolForm({ tool, action }: Props) {
         <Label htmlFor="slug">Slug</Label>
         <Input id="slug" name="slug" defaultValue={tool?.slug ?? ""} required />
         <p className="text-muted-foreground text-sm">
-          The URL: <code>/tools/{tool?.slug ?? "your-slug"}</code>, and the outbound
-          redirect <code>/go/{tool?.slug ?? "your-slug"}</code>. Changing it breaks
-          existing links.
+          The URL: <code>/tools/{tool?.slug ?? "your-slug"}</code>, and the
+          outbound redirect <code>/go/{tool?.slug ?? "your-slug"}</code>.
+          Changing it breaks existing links.
         </p>
       </div>
 
@@ -97,7 +97,8 @@ export function ToolForm({ tool, action }: Props) {
           ))}
         </select>
         <p className="text-muted-foreground text-sm">
-          The audience row on the tool page. Leave unstated rather than guessing.
+          The audience row on the tool page. Leave unstated rather than
+          guessing.
         </p>
       </div>
 
@@ -105,12 +106,17 @@ export function ToolForm({ tool, action }: Props) {
         <legend className="text-sm font-medium">Platform</legend>
         <div className="flex flex-wrap gap-x-6 gap-y-2">
           {TOOL_PLATFORMS.map((platform) => (
-            <label key={platform.value} className="flex items-center gap-2 text-sm">
+            <label
+              key={platform.value}
+              className="flex items-center gap-2 text-sm"
+            >
               <input
                 type="checkbox"
                 name="platform"
                 value={platform.value}
-                defaultChecked={tool?.platform?.includes(platform.value) ?? false}
+                defaultChecked={
+                  tool?.platform?.includes(platform.value) ?? false
+                }
                 className="border-input size-4 rounded border"
               />
               {platform.label}
@@ -118,15 +124,17 @@ export function ToolForm({ tool, action }: Props) {
           ))}
         </div>
         <p className="text-muted-foreground text-sm">
-          Where it runs. Tick nothing if you are not sure — an empty row is better
-          than a wrong one.
+          Where it runs. Tick nothing if you are not sure — an empty row is
+          better than a wrong one.
         </p>
       </fieldset>
 
       <div className="space-y-2">
         <Label htmlFor="tagline">Tagline</Label>
         <Input id="tagline" name="tagline" defaultValue={tool?.tagline ?? ""} />
-        <p className="text-muted-foreground text-sm">One line, shown on the card.</p>
+        <p className="text-muted-foreground text-sm">
+          One line, shown on the card.
+        </p>
       </div>
 
       <div className="space-y-2">
@@ -151,7 +159,8 @@ export function ToolForm({ tool, action }: Props) {
           placeholder="https://example.com"
         />
         <p className="text-muted-foreground text-sm">
-          Where <code>/go/[slug]</code> sends visitors. Leave blank until there is one.
+          Where <code>/go/[slug]</code> sends visitors. Leave blank until there
+          is one.
         </p>
       </div>
 
@@ -167,8 +176,9 @@ export function ToolForm({ tool, action }: Props) {
             autoCapitalize="none"
           />
           <p className="text-muted-foreground text-sm">
-            Models only. Every OpenRouter model whose ID starts with this is listed on the page,
-            newest first — new releases appear by themselves. Blank for everything else.
+            Models only. Every OpenRouter model whose ID starts with this is
+            listed on the page, newest first — new releases appear by
+            themselves. Blank for everything else.
           </p>
         </div>
 
@@ -183,8 +193,9 @@ export function ToolForm({ tool, action }: Props) {
             autoCapitalize="none"
           />
           <p className="text-muted-foreground text-sm">
-            Optional: the model shown first, from the part after <code>openrouter.ai/</code> in
-            its URL. Blank means the newest in the family.
+            Optional: the model shown first, from the part after{" "}
+            <code>openrouter.ai/</code> in its URL. Blank means the newest in
+            the family.
           </p>
         </div>
       </div>
@@ -200,8 +211,8 @@ export function ToolForm({ tool, action }: Props) {
         <div className="space-y-1">
           <Label htmlFor="is_affiliate">Affiliate link</Label>
           <p className="text-muted-foreground text-sm">
-            Adds <code>rel=&quot;sponsored&quot;</code> and the visible disclosure. Only
-            tick it when the link actually is paid.
+            Adds <code>rel=&quot;sponsored&quot;</code> and the visible
+            disclosure. Only tick it when the link actually is paid.
           </p>
         </div>
       </div>
@@ -213,10 +224,13 @@ export function ToolForm({ tool, action }: Props) {
       ) : null}
 
       <div className="flex items-center gap-3">
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" variant="pill" size="pill-sm" disabled={pending}>
           {pending ? "Saving…" : tool ? "Save changes" : "Create tool"}
         </Button>
-        <Link href="/admin/tools" className={buttonVariants({ variant: "ghost" })}>
+        <Link
+          href="/admin/tools"
+          className={buttonVariants({ variant: "ghost" })}
+        >
           Cancel
         </Link>
       </div>

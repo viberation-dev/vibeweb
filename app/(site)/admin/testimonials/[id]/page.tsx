@@ -9,6 +9,7 @@ import { TestimonialForm } from "@/components/features/admin/TestimonialForm";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { getTestimonialById } from "@/lib/queries/testimonials";
+import { Panel } from "@/components/ui/panel";
 import { requireStaff } from "@/lib/staff";
 
 export const metadata: Metadata = { title: "Edit testimonial" };
@@ -29,12 +30,16 @@ export default async function EditTestimonialPage({
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl space-y-6 p-6">
-      <h1 className="text-2xl font-semibold">Edit testimonial</h1>
-      <TestimonialForm
-        testimonial={testimonial}
-        action={saveTestimonialAction.bind(null, testimonial.id)}
-      />
+    <main className="mx-auto w-full max-w-3xl space-y-6 px-[clamp(1.25rem,4vw,2.5rem)] py-10">
+      <h1 className="font-heading text-3xl font-bold tracking-[-0.04em]">
+        Edit testimonial
+      </h1>
+      <Panel>
+        <TestimonialForm
+          testimonial={testimonial}
+          action={saveTestimonialAction.bind(null, testimonial.id)}
+        />
+      </Panel>
 
       {/*
         Deleting is its own form rather than a button inside the editor: a
@@ -43,7 +48,7 @@ export default async function EditTestimonialPage({
       */}
       <form
         action={deleteTestimonialAction.bind(null, testimonial.id)}
-        className="border-destructive/30 space-y-3 rounded-lg border p-4"
+        className="border-destructive/30 space-y-3 rounded-[1.125rem] border p-5"
       >
         <p className="text-sm font-medium">Delete this testimonial</p>
         <p className="text-muted-foreground text-sm">

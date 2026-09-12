@@ -83,7 +83,7 @@ export default function PrivacyPage() {
           <strong className="text-foreground">Things you save and do.</strong>{" "}
           Bookmarks (what you saved, the folder you filed it under, and when),
           recently viewed items (what you opened and when), and your progress
-          through a wizard (which step you reached and which boxes you ticked).
+          through a walkthrough (which step you reached and which boxes you ticked).
         </p>
         <p className="text-muted-foreground">
           <strong className="text-foreground">Outbound clicks.</strong> When you
@@ -102,7 +102,7 @@ export default function PrivacyPage() {
       <Section title="2. How we use it">
         <p className="text-muted-foreground">
           To give you an account and keep you signed in; to show you your own
-          bookmarks, history and wizard progress; to tailor which guides we
+          bookmarks, history and walkthrough progress; to tailor which guides we
           surface to the experience level you selected; to understand in
           aggregate which tools people find useful; and to keep the site
           running, secure and free of abuse.
@@ -164,7 +164,7 @@ export default function PrivacyPage() {
 
       <Section title="5. How long we keep it">
         <p className="text-muted-foreground">
-          Your profile, bookmarks and wizard progress are kept until you delete
+          Your profile, bookmarks and walkthrough progress are kept until you delete
           them or close your account. Your recently-viewed list is capped
           automatically — older entries are removed as new ones arrive, rather
           than accumulating indefinitely. Anonymous click records are kept as
@@ -177,7 +177,7 @@ export default function PrivacyPage() {
         <p className="text-muted-foreground">
           Traffic to the site is encrypted in transit. Access to your personal
           records is enforced in the database itself rather than only in
-          application code, so bookmarks, history and wizard progress are
+          application code, so bookmarks, history and walkthrough progress are
           readable only by the account that owns them. Passwords are handled by
           our authentication provider and are never stored by us in a readable
           form.
@@ -224,7 +224,7 @@ export default function PrivacyPage() {
           >
             {LEGAL_CONTACT_EMAIL}
           </a>
-          . Deletion removes your profile, bookmarks, history and wizard
+          . Deletion removes your profile, bookmarks, history and walkthrough
           progress. We will respond without undue delay, and within any period
           your local law requires.
         </p>

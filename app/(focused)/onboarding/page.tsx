@@ -24,7 +24,7 @@ import {
   revealSummary,
   starterSetSlug,
   STARTER_SET_FALLBACK_SLUG,
-  wizardFraming,
+  walkthroughFraming,
   stepEyebrow,
 } from "@/lib/onboarding";
 import {
@@ -33,7 +33,7 @@ import {
 } from "@/lib/queries/collections";
 import { listTags, type Tag } from "@/lib/queries/tags";
 import { listTools, type Tool } from "@/lib/queries/tools";
-import { listWizards, type Wizard } from "@/lib/queries/wizards";
+import { listWalkthroughs, type Walkthrough } from "@/lib/queries/walkthroughs";
 import { toolView } from "@/lib/resource-view";
 import { ROLE_LEVELS, toRoleLevel, type RoleLevel } from "@/lib/role-level";
 import { cn } from "@/lib/utils";
@@ -104,7 +104,7 @@ export default async function OnboardingPage({ searchParams }: Props) {
   const tags = step >= 2 ? await listTags(supabase) : [];
   const focusTag = tags.find((tag) => tag.slug === focus);
 
-  const [starterTools, starterCollection, wizards] =
+  const [starterTools, starterCollection, walkthroughs] =
     step === 3
       ? await Promise.all([
           // Narrowed to the focus when there is one. If that tag has fewer
@@ -126,7 +126,7 @@ export default async function OnboardingPage({ searchParams }: Props) {
             (found) =>
               found ?? getCollectionBySlug(supabase, STARTER_SET_FALLBACK_SLUG),
           ),
-          listWizards(supabase),
+          listWalkthroughs(supabase),
         ])
       : [[], null, []];
 
@@ -169,7 +169,7 @@ export default async function OnboardingPage({ searchParams }: Props) {
           focusTag={focusTag}
           tools={starterTools}
           collection={starterCollection ?? undefined}
-          wizard={wizards[0]}
+          walkthrough={walkthroughs[0]}
         />
       ) : null}
     </div>
@@ -287,13 +287,13 @@ function StepReveal({
   focusTag,
   tools,
   collection,
-  wizard,
+  walkthrough,
 }: {
   level: RoleLevel;
   focusTag?: Tag;
   tools: Tool[];
   collection?: Collection;
-  wizard?: Wizard;
+  walkthrough?: Walkthrough;
 }) {
   return (
     <>
@@ -302,11 +302,11 @@ function StepReveal({
       </p>
 
       {/*
-        The wizard is the headline offer, in its own accented panel — the
+        The walkthrough is the headline offer, in its own accented panel — the
         mockup's "START HERE". Everything below it is browsing; this is the
         one thing that ends with something built.
       */}
-      {wizard ? (
+      {walkthrough ? (
         <section className="border-primary bg-primary/5 mt-8 flex flex-wrap items-center gap-4 rounded-xl border p-5">
           <IconWand className="text-primary size-7 shrink-0" aria-hidden />
           <div className="min-w-40 flex-1">
@@ -314,13 +314,13 @@ function StepReveal({
               Start here
             </p>
             <h2 className="font-heading mt-1 text-lg font-medium">
-              {wizard.title}
+              {walkthrough.title}
             </h2>
             <p className="text-muted-foreground mt-1 text-sm">
-              Guided wizard · {wizard.steps.length} steps · idea → live URL
+              Guided walkthrough · {walkthrough.steps.length} steps · idea → live URL
             </p>
-            {/* Same wizard, pitched for who is reading it (VIB-94). */}
-            <p className="mt-2 text-sm">{wizardFraming(level)}</p>
+            {/* Same walkthrough, pitched for who is reading it (VIB-94). */}
+            <p className="mt-2 text-sm">{walkthroughFraming(level)}</p>
           </div>
         </section>
       ) : null}
@@ -374,7 +374,7 @@ function StepReveal({
       </div>
 
       {/*
-        §31: the flagship wizard is the primary action here, with the feed as
+        §31: the flagship walkthrough is the primary action here, with the feed as
         the secondary. The level is already saved by now (VIB-67); what these
         record is that onboarding is finished, so the home nudge stops. Both
         submit the same form and differ only in where you land.
@@ -384,15 +384,15 @@ function StepReveal({
         className="mt-8 flex flex-col items-center gap-3"
       >
         <input type="hidden" name="role_level" value={level} />
-        {wizard ? (
+        {walkthrough ? (
           <>
             <Button
               type="submit"
               name="next"
-              value={`/wizards/${wizard.slug}`}
+              value={`/walkthroughs/${walkthrough.slug}`}
               size="lg"
             >
-              Start {wizard.title}
+              Start {walkthrough.title}
             </Button>
             {/*
               A submit, not a link: skipping to the feed still has to write

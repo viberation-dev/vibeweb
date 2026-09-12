@@ -79,7 +79,7 @@ export async function getCollectionBySlug(
  *    as a hole. Nothing deletes a collection item when its tool goes away,
  *    so this is the place that notices.
  *
- * Kinds with no UI yet (prompts, wizards) are skipped for the same reason.
+ * Kinds with no UI yet (prompts, walkthroughs) are skipped for the same reason.
  */
 export async function getCollectionEntries(
   client: Client,

@@ -2,19 +2,19 @@ import { IconCheck } from "@tabler/icons-react";
 import Link from "next/link";
 
 import { cn } from "@/lib/utils";
-import type { WizardSteps } from "@/lib/validation/wizard";
-import { wizardHref, type WizardProgressSummary } from "@/lib/wizards";
+import type { WalkthroughSteps } from "@/lib/validation/walkthrough";
+import { walkthroughHref, type WalkthroughProgressSummary } from "@/lib/walkthroughs";
 
 type Props = {
   slug: string;
-  steps: WizardSteps;
+  steps: WalkthroughSteps;
   currentIndex: number;
-  progress: WizardProgressSummary;
+  progress: WalkthroughProgressSummary;
 };
 
 /**
  * Step navigation and overall progress (VIB-44, restyled for VIB-79 to
- * mockup screen 5's wizard panel).
+ * mockup screen 5's walkthrough panel).
  *
  * Every step is a link, not a disabled-until-unlocked gate: this is a guide,
  * not an exam, and someone who already knows step 2 should be able to jump
@@ -33,7 +33,7 @@ type Props = {
  *   is now the number beside it, so both facts survive in one row instead of
  *   two bars competing to mean "progress".
  */
-export function WizardStepper({ slug, steps, currentIndex, progress }: Props) {
+export function WalkthroughStepper({ slug, steps, currentIndex, progress }: Props) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -73,7 +73,7 @@ export function WizardStepper({ slug, steps, currentIndex, progress }: Props) {
           return (
             <li key={step.key}>
               <Link
-                href={wizardHref(slug, index)}
+                href={walkthroughHref(slug, index)}
                 aria-current={current ? "step" : undefined}
                 className="group hover:text-foreground focus-visible:outline-ring flex items-center gap-2 rounded-md text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
               >

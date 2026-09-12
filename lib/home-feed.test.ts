@@ -39,13 +39,13 @@ test("the progress line counts steps the way a reader does", () => {
 });
 
 test("progress cannot overrun its own total", () => {
-  // A wizard that loses a step leaves saved progress pointing past the end.
+  // A walkthrough that loses a step leaves saved progress pointing past the end.
   const { label, percent } = progressLabel(9, undefined, 4);
   assert.equal(label, "Step 4 of 4");
   assert.equal(percent, 100);
 });
 
-test("an unstarted wizard reads as step 1, nothing done", () => {
+test("an unstarted walkthrough reads as step 1, nothing done", () => {
   const { label, percent } = progressLabel(0, "Set up your editor", 4);
   assert.equal(label, "Step 1 of 4 · Set up your editor");
   assert.equal(percent, 0);

@@ -16,7 +16,7 @@ type Target = { target_type: Enums<"target_kind">; target_id: string };
  *
  * Bookmarks, History and the home rail all needed the same eight lines, so
  * it lives here once. Target ids are uuids, so one map across kinds cannot
- * collide, and kinds with no UI yet (prompts, collections, wizards) are
+ * collide, and kinds with no UI yet (prompts, collections, walkthroughs) are
  * simply absent from it.
  *
  * Callers drop entries whose target is missing rather than rendering holes:

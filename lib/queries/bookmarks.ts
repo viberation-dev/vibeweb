@@ -76,6 +76,8 @@ const TARGET_TABLES: Record<
   content: "content",
   prompt: "prompts",
   collection: "collections",
+  // The database still calls walkthroughs wizards (VIB-120): the rename was
+  // UI and code only, so the enum key and the table name stay as they are.
   wizard: "wizards",
 };
 
@@ -90,7 +92,10 @@ const TARGET_TABLES: Record<
  * live list: a model OpenRouter drops later is a stale bookmark the tool page
  * already handles, not something worth a network call on every save.
  */
-export async function targetExists(client: Client, target: BookmarkTarget): Promise<boolean> {
+export async function targetExists(
+  client: Client,
+  target: BookmarkTarget,
+): Promise<boolean> {
   if (target.modelId) {
     if (target.targetType !== "tool") return false;
     const { data, error } = await client
@@ -100,7 +105,9 @@ export async function targetExists(client: Client, target: BookmarkTarget): Prom
       .maybeSingle();
 
     if (error) {
-      throw new Error(`targetExists(tool/${target.targetId}): ${error.message}`);
+      throw new Error(
+        `targetExists(tool/${target.targetId}): ${error.message}`,
+      );
     }
     const family = data?.openrouter_family;
     return Boolean(family && target.modelId.startsWith(family));
@@ -113,7 +120,9 @@ export async function targetExists(client: Client, target: BookmarkTarget): Prom
     .maybeSingle();
 
   if (error) {
-    throw new Error(`targetExists(${target.targetType}/${target.targetId}): ${error.message}`);
+    throw new Error(
+      `targetExists(${target.targetType}/${target.targetId}): ${error.message}`,
+    );
   }
   return data !== null;
 }
@@ -131,13 +140,16 @@ export async function isBookmarked(
     .eq("target_type", target.targetType)
     .eq("target_id", target.targetId);
 
-  const { data, error } = await (target.modelId
-    ? query.eq("model_id", target.modelId)
-    : query.is("model_id", null)
+  const { data, error } = await (
+    target.modelId
+      ? query.eq("model_id", target.modelId)
+      : query.is("model_id", null)
   ).maybeSingle();
 
   if (error) {
-    throw new Error(`isBookmarked(${target.targetType}/${target.targetId}): ${error.message}`);
+    throw new Error(
+      `isBookmarked(${target.targetType}/${target.targetId}): ${error.message}`,
+    );
   }
   return data !== null;
 }
@@ -173,11 +185,16 @@ export async function addBookmark(
     // unique nulls not distinct (user_id, target_type, target_id, model_id)
     // is what makes this idempotent, for the tool itself (null) as much as for
     // a model; ignoreDuplicates keeps an existing folder assignment intact.
-    { onConflict: "user_id,target_type,target_id,model_id", ignoreDuplicates: true },
+    {
+      onConflict: "user_id,target_type,target_id,model_id",
+      ignoreDuplicates: true,
+    },
   );
 
   if (error) {
-    throw new Error(`addBookmark(${target.targetType}/${target.targetId}): ${error.message}`);
+    throw new Error(
+      `addBookmark(${target.targetType}/${target.targetId}): ${error.message}`,
+    );
   }
 }
 
@@ -201,7 +218,9 @@ export async function removeBookmark(
     : query.is("model_id", null));
 
   if (error) {
-    throw new Error(`removeBookmark(${target.targetType}/${target.targetId}): ${error.message}`);
+    throw new Error(
+      `removeBookmark(${target.targetType}/${target.targetId}): ${error.message}`,
+    );
   }
 }
 

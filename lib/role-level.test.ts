@@ -6,13 +6,13 @@ import { resolveRoleLevel, roleLevelFilter, toLevelParam, toRoleLevel } from "./
 test("untrusted level params narrow to real choices", () => {
   assert.equal(toLevelParam("expert"), "expert");
   assert.equal(toLevelParam("all"), "all");
-  assert.equal(toLevelParam("wizard"), undefined);
+  assert.equal(toLevelParam("walkthrough"), undefined);
   assert.equal(toLevelParam(undefined), undefined);
 });
 
 test("untrusted strings narrow to a real tier", () => {
   assert.equal(toRoleLevel("intermediate"), "intermediate");
-  assert.equal(toRoleLevel("wizard"), undefined);
+  assert.equal(toRoleLevel("walkthrough"), undefined);
   assert.equal(toRoleLevel(undefined), undefined);
 });
 

@@ -33,7 +33,7 @@ import { resolveTargetViews } from "@/lib/queries/resources";
 import { listPopularTags } from "@/lib/queries/tags";
 import { listPublishedTestimonials } from "@/lib/queries/testimonials";
 import { listTools } from "@/lib/queries/tools";
-import { getWizardProgress, listWizards } from "@/lib/queries/wizards";
+import { getWalkthroughProgress, listWalkthroughs } from "@/lib/queries/walkthroughs";
 import { TOOL_CATEGORIES } from "@/lib/tool-categories";
 import { toolsHref } from "@/lib/tools-url";
 
@@ -43,7 +43,7 @@ import { toolsHref } from "@/lib/tools-url";
  * Signed in this is the app shell's centre and right rail; the left zone is
  * the sidebar, which lives in the layout. Signed out it hands off to
  * MarketingHome. The queries are shared because both shapes want the same
- * rows — collections, latest content, popular tools, the flagship wizard —
+ * rows — collections, latest content, popular tools, the flagship walkthrough —
  * just arranged and framed differently.
  */
 type Props = { searchParams: Promise<{ feed?: string }> };
@@ -62,7 +62,7 @@ export default async function HomePage({ searchParams }: Props) {
     collections,
     { items: latest },
     { tools },
-    wizards,
+    walkthroughs,
     history,
   ] = await Promise.all([
     listFeaturedCollections(supabase),
@@ -76,14 +76,14 @@ export default async function HomePage({ searchParams }: Props) {
       pageSize: 3,
     }),
     listTools(supabase, { sort: "popular", pageSize: 6 }),
-    listWizards(supabase),
+    listWalkthroughs(supabase),
     // Four is what the rail has room for; the full list is the History tab.
     auth.user ? listHistory(supabase, auth.user.id, 4) : [],
   ]);
 
-  // §31 puts the flagship promo last. Nothing renders it when no wizard is
+  // §31 puts the flagship promo last. Nothing renders it when no walkthrough is
   // published, so the section cannot point at a route that 404s.
-  const flagship = wizards[0];
+  const flagship = walkthroughs[0];
 
   if (!auth.user) {
     // The marketing page shows no counts (VIB-116), so it no longer asks for
@@ -109,7 +109,7 @@ export default async function HomePage({ searchParams }: Props) {
       collections.map((collection) => collection.id),
     ),
     listPopularTags(supabase),
-    flagship ? getWizardProgress(supabase, auth.user.id, flagship.id) : null,
+    flagship ? getWalkthroughProgress(supabase, auth.user.id, flagship.id) : null,
   ]);
 
   /*
@@ -248,7 +248,7 @@ export default async function HomePage({ searchParams }: Props) {
             {flagship ? (
               <li>
                 <FeedCard
-                  href={`/wizards/${flagship.slug}`}
+                  href={`/walkthroughs/${flagship.slug}`}
                   eyebrow="Walkthrough"
                   title={flagship.title}
                   meta={`${flagship.steps.length} steps`}
@@ -293,7 +293,7 @@ export default async function HomePage({ searchParams }: Props) {
           {flagship && progress ? (
             <RailCard title="Continue where you left off">
               <Link
-                href={`/wizards/${flagship.slug}`}
+                href={`/walkthroughs/${flagship.slug}`}
                 className="hover:underline"
               >
                 <p className="text-muted-foreground text-sm">

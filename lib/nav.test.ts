@@ -26,9 +26,9 @@ test("extra params on the page do not break a match", () => {
 });
 
 test("an item with no query matches its whole subtree", () => {
-  assert.ok(active("/wizards", "", "/wizards"));
-  assert.ok(active("/wizards/ship-your-first-web-project", "", "/wizards"));
-  assert.equal(active("/wizardsly", "", "/wizards"), false);
+  assert.ok(active("/walkthroughs", "", "/walkthroughs"));
+  assert.ok(active("/walkthroughs/ship-your-first-web-project", "", "/walkthroughs"));
+  assert.equal(active("/walkthroughsly", "", "/walkthroughs"), false);
 });
 
 test("disabled items never match", () => {
@@ -69,7 +69,7 @@ test("the Directory label states its own count, and means it", () => {
 });
 
 test("the logged-out top nav stays flat and short", () => {
-  // Handoff §2: four items including search, no sidebar. Wizards belongs to
+  // Handoff §2: four items including search, no sidebar. Walkthroughs belongs to
   // the signed-in sidebar's Learn group, not here.
   assert.deepEqual(
     TOP_NAV.map((item) => item.label),

@@ -1,4 +1,4 @@
-import type { ChecklistState, WizardSteps } from "@/lib/validation/wizard";
+import type { ChecklistState, WalkthroughSteps } from "@/lib/validation/walkthrough";
 
 /**
  * Runner navigation and progress maths (VIB-44, VIB-45).
@@ -9,7 +9,7 @@ import type { ChecklistState, WizardSteps } from "@/lib/validation/wizard";
  */
 
 /**
- * Builds `/wizards/[slug]?step=` URLs for navigation *within* the runner —
+ * Builds `/walkthroughs/[slug]?step=` URLs for navigation *within* the runner —
  * the step chips and the Previous/Next buttons.
  *
  * Always emits `?step=`, including for step 1. It used to return the bare
@@ -19,11 +19,11 @@ import type { ChecklistState, WizardSteps } from "@/lib/validation/wizard";
  * Previous on step 2. Steps 2+ worked, which is why it survived review.
  *
  * The bare path still means "resume where I left off" — that is what the home
- * page, the wizard index and onboarding link to. Those build the URL inline
+ * page, the walkthrough index and onboarding link to. Those build the URL inline
  * and are deliberately not routed through here.
  */
-export function wizardHref(slug: string, stepIndex = 0): string {
-  return `/wizards/${slug}?step=${stepIndex + 1}`;
+export function walkthroughHref(slug: string, stepIndex = 0): string {
+  return `/walkthroughs/${slug}?step=${stepIndex + 1}`;
 }
 
 /**
@@ -35,7 +35,7 @@ export function wizardHref(slug: string, stepIndex = 0): string {
  *
  * With no `?step=`, a signed-in returner resumes where they stopped — that
  * is the whole save-and-resume feature (§31). Out-of-range values clamp
- * rather than 404: a stale bookmark from a wizard that has since lost a step
+ * rather than 404: a stale bookmark from a walkthrough that has since lost a step
  * should still open.
  */
 export function resolveStepIndex(
@@ -57,17 +57,17 @@ export function resolveStepIndex(
   return 0;
 }
 
-/** Every checklist task id in the wizard, in step order. */
-export function allTaskIds(steps: WizardSteps): string[] {
+/** Every checklist task id in the walkthrough, in step order. */
+export function allTaskIds(steps: WalkthroughSteps): string[] {
   return steps.flatMap((step) =>
     step.blocks.flatMap((block) => (block.kind === "checklist" ? block.tasks.map((t) => t.id) : [])),
   );
 }
 
-export type WizardProgressSummary = {
+export type WalkthroughProgressSummary = {
   done: number;
   total: number;
-  /** 0–100, for the progress bar. 100 when a wizard has no tasks at all. */
+  /** 0–100, for the progress bar. 100 when a walkthrough has no tasks at all. */
   percent: number;
   complete: boolean;
 };
@@ -77,13 +77,13 @@ export type WizardProgressSummary = {
  *
  * Counts only tasks that still exist in the authored steps, so a task
  * removed by an edit stops counting even though its old key may linger in
- * someone's saved `checklist_state`. Without that filter a wizard could read
+ * someone's saved `checklist_state`. Without that filter a walkthrough could read
  * as more than 100% complete.
  */
 export function summariseProgress(
-  steps: WizardSteps,
+  steps: WalkthroughSteps,
   state: ChecklistState,
-): WizardProgressSummary {
+): WalkthroughProgressSummary {
   const ids = allTaskIds(steps);
   const done = ids.filter((id) => state[id]).length;
   const total = ids.length;
@@ -97,7 +97,7 @@ export function summariseProgress(
 }
 
 /** Task ids belonging to one step, for a per-step "3 of 4 done" count. */
-export function stepTaskIds(steps: WizardSteps, index: number): string[] {
+export function stepTaskIds(steps: WalkthroughSteps, index: number): string[] {
   const step = steps[index];
   if (!step) return [];
 

@@ -9,7 +9,7 @@ Next.js/React is component + hook based, not class-based — these are OOP princ
 - **Never call `supabase.from(...)` directly from a component.** Every table gets typed query functions in `lib/queries/[table].ts` (e.g. `lib/queries/tools.ts`, `lib/queries/bookmarks.ts`). This is the encapsulation layer — if the schema changes, you change one file, not every component that touched that table.
 - **Folder structure:**
   - `components/ui/` — shadcn primitives. **May carry brand styling; must not carry product knowledge.** See below.
-  - `components/features/[domain]/` — composed components (e.g. `ResourceCard`, `WizardStepper`). One reusable card component across tools/learning/collections, not one per content type.
+  - `components/features/[domain]/` — composed components (e.g. `ResourceCard`, `WalkthroughStepper`). One reusable card component across tools/learning/collections, not one per content type.
   - `lib/queries/` — the query layer described above
   - `lib/integrations/` — third-party service adapters (see below)
   - `types/` — generated Supabase types + hand-written domain types

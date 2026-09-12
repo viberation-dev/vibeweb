@@ -212,8 +212,8 @@ export function HamburgerMenu() {
 }
 
 /**
- * The overlay's own list. TOP_NAV plus Wizards — the header keeps three
+ * The overlay's own list. TOP_NAV plus Walkthroughs — the header keeps three
  * links for room, but the overlay has space for the full set, which is part
  * of why it exists at desktop as well.
  */
-const MENU = [...TOP_NAV, { href: "/wizards", label: "Wizards" }] as const;
+const MENU = [...TOP_NAV, { href: "/walkthroughs", label: "Walkthroughs" }] as const;

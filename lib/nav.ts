@@ -72,7 +72,8 @@ export const SIDEBAR_GROUPS: ReadonlyArray<{ label?: string; items: readonly Nav
      *
      * These replace the earlier "Walkthroughs → ?type=guide" stand-in, which
      * pointed the mockup's pillar label at the closest content type because
-     * pillars had no column yet. Walkthroughs is now a real pillar.
+     * pillars had no column yet. That pillar is real now, and labelled
+     * "Build logs" so it does not collide with the guided builds (VIB-120).
      */
     label: `Pillars · ${CONTENT_PILLARS.length}`,
     items: CONTENT_PILLARS.map((pillar) => ({
@@ -85,7 +86,7 @@ export const SIDEBAR_GROUPS: ReadonlyArray<{ label?: string; items: readonly Nav
     items: [
       { href: "/learn", label: "Everything" },
       // Grouped under Learn but routed top-level, on purpose (§27 vs §31).
-      { href: "/wizards", label: "Wizards" },
+      { href: "/walkthroughs", label: "Walkthroughs" },
       { href: "/collections", label: "Collections" },
       { href: "#", label: "Setups", note: "1.5", disabled: true },
       { href: "#", label: "Paths", note: "1.5", disabled: true },

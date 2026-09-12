@@ -23,7 +23,7 @@ import type { Collection } from "@/lib/queries/collections";
 import type { Content } from "@/lib/queries/content";
 import type { Testimonial } from "@/lib/queries/testimonials";
 import type { Tool } from "@/lib/queries/tools";
-import type { Wizard } from "@/lib/queries/wizards";
+import type { Walkthrough } from "@/lib/queries/walkthroughs";
 import { initialsFrom } from "@/lib/testimonials";
 import { TOOL_CATEGORIES } from "@/lib/tool-categories";
 import { toolsHref } from "@/lib/tools-url";
@@ -38,7 +38,7 @@ type Props = {
    */
   testimonials: Testimonial[];
   latest: Content[];
-  flagship: Wizard | undefined;
+  flagship: Walkthrough | undefined;
   /** VIB-91's flag, resolved by the page — this component stays env-free. */
   newsletterEnabled: boolean;
 };
@@ -77,7 +77,7 @@ export function MarketingHome({
             visitor has no use for "categories retagged".
           */}
           {flagship ? (
-            <AnnouncementChip badge="New" href={`/wizards/${flagship.slug}`}>
+            <AnnouncementChip badge="New" href={`/walkthroughs/${flagship.slug}`}>
               {flagship.title}: free, guided, start to finish
             </AnnouncementChip>
           ) : null}
@@ -106,7 +106,7 @@ export function MarketingHome({
           */}
           <div className="mt-10 flex flex-wrap gap-3">
             <Link
-              href={flagship ? `/wizards/${flagship.slug}` : "/signup"}
+              href={flagship ? `/walkthroughs/${flagship.slug}` : "/signup"}
               className={buttonVariants({ variant: "pill", size: "pill" })}
             >
               <ButtonIcon>
@@ -181,14 +181,14 @@ export function MarketingHome({
               "Idea to live URL, one step at a time",
               /*
                 v3 says progress "saves as you go". The app deliberately does
-                not autosave — browsing a wizard must not overwrite real
+                not autosave — browsing a walkthrough must not overwrite real
                 progress — so that line is not reproduced (VIB-98 constraint 3).
               */
               "A copyable prompt at every step",
               "No coding experience assumed",
             ]}
             cta="Start the walkthrough"
-            href={flagship ? `/wizards/${flagship.slug}` : "/wizards"}
+            href={flagship ? `/walkthroughs/${flagship.slug}` : "/walkthroughs"}
           />
         </ul>
       </SectionTight>
@@ -438,7 +438,7 @@ export function MarketingHome({
         </div>
       </Section>
 
-      {/* ── Flagship wizard band ─────────────────────────────────────── */}
+      {/* ── Flagship walkthrough band ─────────────────────────────────────── */}
       {flagship ? (
         <Section>
           <div className="bg-highlight text-highlight-foreground grid items-center gap-10 rounded-3xl p-9 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:p-14">
@@ -474,7 +474,7 @@ export function MarketingHome({
                 --foreground and the inset badge carries the lime back.
               */}
               <Link
-                href={`/wizards/${flagship.slug}`}
+                href={`/walkthroughs/${flagship.slug}`}
                 /* v3's ink button on the lime field: the fill inverts to
                    --foreground and the inset badge carries the lime back. */
                 className={buttonVariants({
@@ -492,7 +492,7 @@ export function MarketingHome({
                 v3 adds "you can stop anywhere", which reads as a promise to
                 remember where you stopped. The app does not autosave, so the
                 line is left out rather than reworded into the same claim.
-                "No account needed to start" is true: the wizard page reads
+                "No account needed to start" is true: the walkthrough page reads
                 signed out; only saving progress redirects to login.
               */}
               <p className="mt-4 text-sm font-medium opacity-70">

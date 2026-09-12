@@ -34,7 +34,7 @@ export const onboardingFinishSchema = z.object({
    */
   next: z
     .string()
-    .regex(/^\/(wizards\/[a-z0-9-]+)?$/, "Unrecognised destination.")
+    .regex(/^\/(walkthroughs\/[a-z0-9-]+)?$/, "Unrecognised destination.")
     .optional(),
 });
 

@@ -1,18 +1,18 @@
 import Link from "next/link";
 
-import { toggleTaskAction } from "@/app/(site)/wizards/[slug]/actions";
-import { CopyButton } from "@/components/features/wizards/CopyButton";
+import { toggleTaskAction } from "@/app/(site)/walkthroughs/[slug]/actions";
+import { CopyButton } from "@/components/features/walkthroughs/CopyButton";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { ChecklistState, WizardBlock } from "@/lib/validation/wizard";
-import { wizardHref } from "@/lib/wizards";
+import type { ChecklistState, WalkthroughBlock } from "@/lib/validation/walkthrough";
+import { walkthroughHref } from "@/lib/walkthroughs";
 
 type Props = {
-  block: WizardBlock;
-  wizardSlug: string;
+  block: WalkthroughBlock;
+  walkthroughSlug: string;
   stepIndex: number;
   checklistState: ChecklistState;
-  /** Signed-out visitors can run a wizard but not save ticks (VIB-45). */
+  /** Signed-out visitors can run a walkthrough but not save ticks (VIB-45). */
   canSave: boolean;
 };
 
@@ -35,9 +35,9 @@ const CALLOUT_LABELS = {
  * registry would be indirection for one consumer. The discriminated union
  * means adding a kind fails the typecheck here until it is handled.
  */
-export function WizardBlockView({
+export function WalkthroughBlockView({
   block,
-  wizardSlug,
+  walkthroughSlug,
   stepIndex,
   checklistState,
   canSave,
@@ -124,8 +124,8 @@ export function WizardBlockView({
                   <form action={toggleTaskAction}>
                     <input
                       type="hidden"
-                      name="wizard_slug"
-                      value={wizardSlug}
+                      name="walkthrough_slug"
+                      value={walkthroughSlug}
                     />
                     <input type="hidden" name="step_index" value={stepIndex} />
                     <input type="hidden" name="task_id" value={task.id} />
@@ -174,7 +174,7 @@ export function WizardBlockView({
           {canSave ? null : (
             <li className="text-sm text-muted-foreground">
               <Link
-                href={`/login?redirectTo=/wizards/${wizardSlug}`}
+                href={`/login?redirectTo=/walkthroughs/${walkthroughSlug}`}
                 className="underline"
               >
                 Sign in
@@ -188,7 +188,7 @@ export function WizardBlockView({
 }
 
 /** Prev / next control for the runner. Links, so each step is a real URL. */
-export function WizardNav({
+export function WalkthroughNav({
   slug,
   stepIndex,
   stepCount,
@@ -205,14 +205,14 @@ export function WizardNav({
 
   return (
     <nav
-      aria-label="Wizard steps"
+      aria-label="Walkthrough steps"
       className="mt-10 flex items-center justify-between gap-4 border-t pt-6"
     >
       {prev === null ? (
         <span />
       ) : (
         <Link
-          href={wizardHref(slug, prev)}
+          href={walkthroughHref(slug, prev)}
           rel="prev"
           className={buttonVariants({ variant: "outline" })}
         >
@@ -225,7 +225,7 @@ export function WizardNav({
         <span />
       ) : (
         <Link
-          href={wizardHref(slug, next)}
+          href={walkthroughHref(slug, next)}
           rel="next"
           className={buttonVariants()}
         >

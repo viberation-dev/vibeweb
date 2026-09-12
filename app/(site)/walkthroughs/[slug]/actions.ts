@@ -6,14 +6,14 @@ import { z } from "zod";
 
 import { createClient } from "@/lib/integrations/supabase/server";
 import {
-  getWizardBySlug,
-  getWizardProgress,
-  saveWizardProgress,
-} from "@/lib/queries/wizards";
-import { allTaskIds } from "@/lib/wizards";
+  getWalkthroughBySlug,
+  getWalkthroughProgress,
+  saveWalkthroughProgress,
+} from "@/lib/queries/walkthroughs";
+import { allTaskIds } from "@/lib/walkthroughs";
 
 const toggleSchema = z.object({
-  wizard_slug: z.string().min(1),
+  walkthrough_slug: z.string().min(1),
   task_id: z.string().min(1),
   step_index: z.coerce.number().int().min(0),
   done: z.enum(["true", "false"]).transform((value) => value === "true"),
@@ -27,30 +27,30 @@ const toggleSchema = z.object({
  */
 export async function toggleTaskAction(formData: FormData): Promise<void> {
   const parsed = toggleSchema.safeParse({
-    wizard_slug: formData.get("wizard_slug"),
+    walkthrough_slug: formData.get("walkthrough_slug"),
     task_id: formData.get("task_id"),
     step_index: formData.get("step_index"),
     done: formData.get("done"),
   });
 
   if (!parsed.success) {
-    redirect("/wizards");
+    redirect("/walkthroughs");
   }
 
-  const { wizard_slug: slug, task_id: taskId, step_index: stepIndex, done } = parsed.data;
+  const { walkthrough_slug: slug, task_id: taskId, step_index: stepIndex, done } = parsed.data;
 
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
 
   if (!auth.user) {
-    // Signed-out visitors can run a wizard but not save (VIB-45). The UI does
+    // Signed-out visitors can run a walkthrough but not save (VIB-45). The UI does
     // not render these forms for them; this covers a hand-posted request.
-    redirect(`/login?redirectTo=/wizards/${slug}`);
+    redirect(`/login?redirectTo=/walkthroughs/${slug}`);
   }
 
-  const wizard = await getWizardBySlug(supabase, slug);
-  if (!wizard) {
-    redirect("/wizards");
+  const walkthrough = await getWalkthroughBySlug(supabase, slug);
+  if (!walkthrough) {
+    redirect("/walkthroughs");
   }
 
   /*
@@ -58,11 +58,11 @@ export async function toggleTaskAction(formData: FormData): Promise<void> {
    * a hand-posted form could stuff arbitrary keys into checklist_state —
    * RLS scopes the row to its owner, but it does not police its contents.
    */
-  if (!allTaskIds(wizard.steps).includes(taskId)) {
-    redirect(`/wizards/${slug}`);
+  if (!allTaskIds(walkthrough.steps).includes(taskId)) {
+    redirect(`/walkthroughs/${slug}`);
   }
 
-  const existing = await getWizardProgress(supabase, auth.user.id, wizard.id);
+  const existing = await getWalkthroughProgress(supabase, auth.user.id, walkthrough.id);
   const checklistState = { ...(existing?.checklistState ?? {}) };
 
   if (done) {
@@ -74,18 +74,18 @@ export async function toggleTaskAction(formData: FormData): Promise<void> {
     delete checklistState[taskId];
   }
 
-  await saveWizardProgress(supabase, auth.user.id, wizard.id, {
+  await saveWalkthroughProgress(supabase, auth.user.id, walkthrough.id, {
     // Ticking a task on the step you are reading is also how "resume where I
     // was" learns where you were.
     stepIndex,
     checklistState,
   });
 
-  revalidatePath(`/wizards/${slug}`);
+  revalidatePath(`/walkthroughs/${slug}`);
 }
 
 const resumeSchema = z.object({
-  wizard_slug: z.string().min(1),
+  walkthrough_slug: z.string().min(1),
   step_index: z.coerce.number().int().min(0),
 });
 
@@ -93,38 +93,38 @@ const resumeSchema = z.object({
  * Records which step someone is on, without touching their checklist.
  *
  * Used by the "save my place" control. Navigation itself does not write —
- * paging through a wizard to look at it should not overwrite the step you
+ * paging through a walkthrough to look at it should not overwrite the step you
  * had actually reached.
  */
 export async function saveStepAction(formData: FormData): Promise<void> {
   const parsed = resumeSchema.safeParse({
-    wizard_slug: formData.get("wizard_slug"),
+    walkthrough_slug: formData.get("walkthrough_slug"),
     step_index: formData.get("step_index"),
   });
 
   if (!parsed.success) {
-    redirect("/wizards");
+    redirect("/walkthroughs");
   }
 
-  const { wizard_slug: slug, step_index: stepIndex } = parsed.data;
+  const { walkthrough_slug: slug, step_index: stepIndex } = parsed.data;
 
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
 
   if (!auth.user) {
-    redirect(`/login?redirectTo=/wizards/${slug}`);
+    redirect(`/login?redirectTo=/walkthroughs/${slug}`);
   }
 
-  const wizard = await getWizardBySlug(supabase, slug);
-  if (!wizard) {
-    redirect("/wizards");
+  const walkthrough = await getWalkthroughBySlug(supabase, slug);
+  if (!walkthrough) {
+    redirect("/walkthroughs");
   }
 
-  const existing = await getWizardProgress(supabase, auth.user.id, wizard.id);
-  await saveWizardProgress(supabase, auth.user.id, wizard.id, {
-    stepIndex: Math.min(stepIndex, wizard.steps.length - 1),
+  const existing = await getWalkthroughProgress(supabase, auth.user.id, walkthrough.id);
+  await saveWalkthroughProgress(supabase, auth.user.id, walkthrough.id, {
+    stepIndex: Math.min(stepIndex, walkthrough.steps.length - 1),
     checklistState: existing?.checklistState ?? {},
   });
 
-  revalidatePath(`/wizards/${slug}`);
+  revalidatePath(`/walkthroughs/${slug}`);
 }

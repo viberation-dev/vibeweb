@@ -10,7 +10,7 @@ import {
   stepEyebrow,
   starterSetSlug,
   STARTER_SET_FALLBACK_SLUG,
-  wizardFraming,
+  walkthroughFraming,
 } from "./onboarding.ts";
 
 test("skipping the level question defaults to beginner, not expert", () => {
@@ -84,11 +84,11 @@ test("the fallback is a real seeded slug, not a guess", () => {
   assert.equal(STARTER_SET_FALLBACK_SLUG, starterSetSlug("beginner"));
 });
 
-test("the wizard is framed differently for each tier", () => {
-  // One wizard, three pitches. Identical copy would make the tier question
+test("the walkthrough is framed differently for each tier", () => {
+  // One walkthrough, three pitches. Identical copy would make the tier question
   // pointless on the one screen that just asked it.
   const framings = ["beginner", "intermediate", "expert"].map((level) =>
-    wizardFraming(level as Parameters<typeof wizardFraming>[0]),
+    walkthroughFraming(level as Parameters<typeof walkthroughFraming>[0]),
   );
   assert.equal(new Set(framings).size, 3);
   for (const framing of framings) {

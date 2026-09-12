@@ -40,6 +40,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
  */
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    date: "2026-09-12",
+    kind: "improved",
+    title: "Wizards are now Walkthroughs",
+    body: "The guided builds are called walkthroughs everywhere now, which is what the homepage already called them. Old /wizards links still work and land in the right place.",
+  },
+  {
     date: "2026-09-11",
     kind: "improved",
     title: "A clearer homepage",
@@ -55,7 +61,7 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
     date: "2026-09-11",
     kind: "added",
     title: "Starter prompts on model pages",
-    body: "Claude, GPT and Gemini pages now have starter prompts to copy — for planning, context files, design and debugging — and tool pages link to the wizards and Learn reading that cover them.",
+    body: "Claude, GPT and Gemini pages now have starter prompts to copy — for planning, context files, design and debugging — and tool pages link to the walkthroughs and Learn reading that cover them.",
   },
   {
     date: "2026-09-11",
@@ -97,7 +103,7 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
     date: "2026-09-10",
     kind: "added",
     title: "Redesigned homepage",
-    body: "A new layout for the signed-out homepage: a split hero with a live look at the directory, a category index with real counts, and a clearer route into the Learn hub and the wizard.",
+    body: "A new layout for the signed-out homepage: a split hero with a live look at the directory, a category index with real counts, and a clearer route into the Learn hub and the walkthrough.",
   },
   {
     date: "2026-09-10",

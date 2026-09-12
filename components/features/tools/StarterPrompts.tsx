@@ -1,8 +1,8 @@
-import { CopyButton } from "@/components/features/wizards/CopyButton";
+import { CopyButton } from "@/components/features/walkthroughs/CopyButton";
 import type { Prompt } from "@/lib/queries/prompts";
 
 /**
- * Copyable starter prompts on a tool page (VIB-111). Same block as a wizard's
+ * Copyable starter prompts on a tool page (VIB-111). Same block as a walkthrough's
  * prompt step, so a prompt looks and copies the same wherever it appears.
  * Renders nothing when the tool has none.
  */

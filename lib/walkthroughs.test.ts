@@ -6,9 +6,9 @@ import {
   resolveStepIndex,
   stepTaskIds,
   summariseProgress,
-  wizardHref,
-} from "./wizards.ts";
-import type { WizardSteps } from "./validation/wizard.ts";
+  walkthroughHref,
+} from "./walkthroughs.ts";
+import type { WalkthroughSteps } from "./validation/walkthrough.ts";
 
 const STEPS = [
   {
@@ -29,14 +29,14 @@ const STEPS = [
     title: "Deploy",
     blocks: [{ kind: "text", body: "Ship it." }],
   },
-] as unknown as WizardSteps;
+] as unknown as WalkthroughSteps;
 
 test("every runner href names its step, including step 1", () => {
   // Regression: step 1 used to be the bare path, which resolveStepIndex reads
   // as "resume", so a returner on step 4 could never navigate back to step 1.
-  assert.equal(wizardHref("ship-it", 0), "/wizards/ship-it?step=1");
-  assert.equal(wizardHref("ship-it"), "/wizards/ship-it?step=1");
-  assert.equal(wizardHref("ship-it", 2), "/wizards/ship-it?step=3");
+  assert.equal(walkthroughHref("ship-it", 0), "/walkthroughs/ship-it?step=1");
+  assert.equal(walkthroughHref("ship-it"), "/walkthroughs/ship-it?step=1");
+  assert.equal(walkthroughHref("ship-it", 2), "/walkthroughs/ship-it?step=3");
 });
 
 test("an explicit step beats saved progress, so step 1 stays reachable", () => {
@@ -51,7 +51,7 @@ test("?step= is 1-based on the way in, 0-based on the way out", () => {
 });
 
 test("out-of-range steps clamp instead of erroring", () => {
-  // A stale bookmark from a wizard that has since lost a step should open.
+  // A stale bookmark from a walkthrough that has since lost a step should open.
   assert.equal(resolveStepIndex("99", null, 3), 2);
   assert.equal(resolveStepIndex("0", null, 3), 0);
   assert.equal(resolveStepIndex("-4", null, 3), 0);
@@ -92,7 +92,7 @@ test("progress counts ticked tasks", () => {
 });
 
 test("state left over from a deleted task cannot push progress past 100%", () => {
-  // Nothing clears checklist_state when a wizard is edited, so a stale key
+  // Nothing clears checklist_state when a walkthrough is edited, so a stale key
   // survives. Counting it would report 4 of 3 done.
   const summary = summariseProgress(STEPS, {
     "idea-a": true,

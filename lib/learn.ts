@@ -20,7 +20,14 @@ export const CONTENT_PILLARS = [
   { value: "context_engineering", label: "Context engineering" },
   { value: "prompt_engineering", label: "Prompt engineering" },
   { value: "tool_reviews", label: "Tool reviews" },
-  { value: "walkthroughs", label: "Walkthroughs" },
+  /*
+   * Labelled "Build logs" since VIB-120, when the guided builds took the
+   * name Walkthroughs. Two sidebar entries reading "Walkthroughs" and
+   * pointing at different things is worse than either name. The enum value
+   * stays `walkthroughs`, so no migration and no content is refiled: this
+   * pillar is written accounts of a build, which is what a build log is.
+   */
+  { value: "walkthroughs", label: "Build logs" },
   { value: "founder_playbook", label: "Founder playbook" },
 ] as const satisfies ReadonlyArray<{ value: ContentPillar; label: string }>;
 

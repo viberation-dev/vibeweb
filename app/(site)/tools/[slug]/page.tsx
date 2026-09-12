@@ -34,9 +34,9 @@ import { listContentSharingTags } from "@/lib/queries/content";
 import { recordVisit } from "@/lib/queries/history";
 import { listPromptsForTool } from "@/lib/queries/prompts";
 import { listToolLinks } from "@/lib/queries/tool-links";
-import { getWizardsForTool } from "@/lib/queries/wizards";
+import { getWalkthroughsForTool } from "@/lib/queries/walkthroughs";
 import { contentView } from "@/lib/resource-view";
-import { wizardHref } from "@/lib/wizards";
+import { walkthroughHref } from "@/lib/walkthroughs";
 import {
   getToolBySlug,
   getToolTags,
@@ -130,7 +130,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
     }),
     listToolLinks(supabase, tool.id),
     listPromptsForTool(supabase, tool.id),
-    getWizardsForTool(supabase, tool.id),
+    getWalkthroughsForTool(supabase, tool.id),
     /*
      * The family's models ride the same wave (VIB-107): cached for an hour,
      * and empty rather than throwing, so OpenRouter being down costs this
@@ -346,13 +346,13 @@ export default async function ToolPage({ params, searchParams }: Props) {
                 Guided walkthroughs
               </h2>
               <ul className="mt-3 grid gap-3 sm:grid-cols-2">
-                {guides.map((wizard) => (
-                  <li key={wizard.slug}>
+                {guides.map((walkthrough) => (
+                  <li key={walkthrough.slug}>
                     <ResourceCard
-                      href={wizardHref(wizard.slug)}
-                      title={wizard.title}
-                      eyebrow="Wizard"
-                      difficulty={wizard.role_level ?? undefined}
+                      href={walkthroughHref(walkthrough.slug)}
+                      title={walkthrough.title}
+                      eyebrow="Walkthrough"
+                      difficulty={walkthrough.role_level ?? undefined}
                     />
                   </li>
                 ))}

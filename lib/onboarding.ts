@@ -122,13 +122,13 @@ export function starterSetSlug(level: RoleLevel): string {
 export const STARTER_SET_FALLBACK_SLUG = "starter-set";
 
 /**
- * How the flagship wizard is pitched, per tier (VIB-83's second open item).
+ * How the flagship walkthrough is pitched, per tier (VIB-83's second open item).
  *
- * The same wizard, framed for who is reading. A beginner needs to know it
+ * The same walkthrough, framed for who is reading. A beginner needs to know it
  * ends with something real; someone who has shipped before needs to know it
  * is not going to waste their afternoon.
  */
-export function wizardFraming(level: RoleLevel): string {
+export function walkthroughFraming(level: RoleLevel): string {
   return {
     beginner: "Start here. It ends with a real URL you can send to someone.",
     intermediate: "A quick pass end to end — useful for the deployment half if you already know the build half.",

@@ -53,7 +53,7 @@ export type ContentPage = {
  *
  * RLS on `content` (migration 14) hides drafts from everyone but staff, so
  * this works signed out. The status filter here is for the index's intent,
- * not security — mirroring listWizards(): a staff member browsing Learn wants
+ * not security — mirroring listWalkthroughs(): a staff member browsing Learn wants
  * the published list, and reaches a draft by its own URL to preview it.
  */
 export async function listContent(
@@ -184,7 +184,7 @@ async function contentIdsWithTag(
  * A draft returns null for everyone except staff — that is RLS filtering the
  * row out, not a check in this function. Do not add one: the policy is the
  * boundary (§34). Staff previewing a draft at its own URL is the intended
- * behaviour, exactly as with getWizardBySlug().
+ * behaviour, exactly as with getWalkthroughBySlug().
  */
 export async function getContentBySlug(
   client: Client,

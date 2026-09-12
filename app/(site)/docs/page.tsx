@@ -34,7 +34,7 @@ const AUDIENCE_SECTIONS = [
     key: "enduser",
     title: "For visitors and members",
     blurb:
-      "Using the site: accounts, bookmarks, the directory, the wizard, and what a free account changes.",
+      "Using the site: accounts, bookmarks, the directory, the walkthrough, and what a free account changes.",
     live: true,
   },
   {

@@ -109,7 +109,7 @@ function VisitorHeader() {
           The hamburger now shows at every width, matching demo5's pairing of
           `desktop-hamburger` and `mobile-hamburger` (both `-left`). It earns
           the desktop slot because the overlay carries more than the header
-          nav does — Wizards, contact, socials — so it is not a duplicate of
+          nav does — Walkthroughs, contact, socials — so it is not a duplicate of
           the links already on screen.
 
           This replaces the <details> disclosure that shipped in VIB-98: a
@@ -194,7 +194,7 @@ const FOOTER_COLUMNS = [
       { label: "Directory", href: "/tools" },
       { label: "Learn hub", href: "/learn" },
       { label: "Collections", href: "/collections" },
-      { label: "Wizards", href: "/wizards" },
+      { label: "Walkthroughs", href: "/walkthroughs" },
     ],
   },
   {

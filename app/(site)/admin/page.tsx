@@ -16,7 +16,7 @@ export const metadata: Metadata = { title: "Staff" };
 /**
  * The staff area — VIB-53's gate, with VIB-59's two editors behind it.
  *
- * Three editors and nothing else, deliberately: tags, collections, wizards
+ * Three editors and nothing else, deliberately: tags, collections, walkthroughs
  * and role changes stay in the Supabase dashboard (or VIB-58's RPC) until one
  * of them becomes a weekly job the way tools and articles are. Testimonials
  * joined them in VIB-102 — they are visitor-facing claims about real people,

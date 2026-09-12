@@ -9,7 +9,7 @@ const ok = (next: string | undefined) =>
 test("the reveal's own destinations are accepted", () => {
   assert.ok(ok(undefined));
   assert.ok(ok("/"));
-  assert.ok(ok("/wizards/ship-your-first-web-project"));
+  assert.ok(ok("/walkthroughs/ship-your-first-web-project"));
 });
 
 test("a protocol-relative path cannot smuggle an off-site redirect", () => {
@@ -24,12 +24,12 @@ test("other internal paths are rejected too", () => {
   // Not because they are dangerous, but because the reveal never offers them
   // — anything else arriving here is a tampered form.
   assert.equal(ok("/profile"), false);
-  assert.equal(ok("/wizards"), false);
-  assert.equal(ok("/wizards/Bad_Slug"), false);
+  assert.equal(ok("/walkthroughs"), false);
+  assert.equal(ok("/walkthroughs/Bad_Slug"), false);
 });
 
 test("an unknown role level is rejected", () => {
-  assert.equal(onboardingFinishSchema.safeParse({ role_level: "wizard" }).success, false);
+  assert.equal(onboardingFinishSchema.safeParse({ role_level: "walkthrough" }).success, false);
 });
 
 const level = (value: unknown) => onboardingLevelSchema.safeParse({ role_level: value }).success;

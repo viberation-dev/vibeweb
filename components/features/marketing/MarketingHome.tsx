@@ -19,7 +19,6 @@ import { NewsletterForm } from "@/components/features/marketing/NewsletterForm";
 import { ProductPanel } from "@/components/features/marketing/ProductPanel";
 import { CategoryIcon } from "@/components/features/tools/CategoryIcon";
 import { ButtonIcon, buttonVariants } from "@/components/ui/button";
-import { readingMinutes } from "@/lib/home-feed";
 import type { Collection } from "@/lib/queries/collections";
 import type { Content } from "@/lib/queries/content";
 import type { Testimonial } from "@/lib/queries/testimonials";
@@ -96,8 +95,8 @@ export function MarketingHome({
 
           <p className="text-muted-foreground mt-7 text-lg leading-relaxed">
             Viberation shows you which AI tools to use, what to type into them,
-            and how to get your project live. Step by step, in plain English.
-            No coding background needed.
+            and how to get your project live. Step by step, in plain English. No
+            coding background needed.
           </p>
 
           {/*
@@ -202,7 +201,10 @@ export function MarketingHome({
         only as data labels on the category tiles and collection covers.
       */}
       <SectionTight>
-        <SectionHead eyebrow="How it works" title="Idea in. Live project out." />
+        <SectionHead
+          eyebrow="How it works"
+          title="Idea in. Live project out."
+        />
         <ol className="bg-secondary grid gap-8 rounded-[1.125rem] p-8 md:grid-cols-3 md:gap-0 md:divide-x md:divide-muted-foreground/25 lg:p-11">
           {STEPS.map((step, i) => (
             <li key={step.title} className="md:px-6">
@@ -331,42 +333,28 @@ export function MarketingHome({
             action={{ label: "All guides", href: "/learn" }}
           />
           <ul className="grid gap-4 md:grid-cols-2">
-            {latest.map((item) => {
-              const minutes = readingMinutes(item.body);
-              return (
-                <li key={item.id}>
-                  <Link
-                    href={`/learn/${item.slug}`}
-                    className="motion-lift bg-secondary flex h-full items-start gap-5 rounded-[1.125rem] p-6"
-                  >
-                    <IconTile size="lg">
-                      <IconBook2 aria-hidden className="size-6" />
-                    </IconTile>
-                    <span className="min-w-0">
-                      <span className="font-heading block text-lg font-bold tracking-tight">
-                        {item.title}
-                      </span>
-                      <span className="mt-3 flex flex-wrap items-center gap-3">
-                        {item.role_level ? (
-                          <TagPill>{item.role_level}</TagPill>
-                        ) : null}
-                        {/*
-                          The mockup puts an author byline here ("Alex R."),
-                          and `content` has no author column — so there is
-                          nobody to name. Read time is real and stands in
-                          its place.
-                        */}
-                        {minutes ? (
-                          <span className="text-muted-foreground text-sm">
-                            {minutes} min read
-                          </span>
-                        ) : null}
-                      </span>
+            {latest.map((item) => (
+              <li key={item.id}>
+                <Link
+                  href={`/learn/${item.slug}`}
+                  className="motion-lift bg-secondary flex h-full items-start gap-5 rounded-[1.125rem] p-6"
+                >
+                  <IconTile size="lg">
+                    <IconBook2 aria-hidden className="size-6" />
+                  </IconTile>
+                  <span className="min-w-0">
+                    <span className="font-heading block text-lg font-bold tracking-tight">
+                      {item.title}
                     </span>
-                  </Link>
-                </li>
-              );
-            })}
+                    <span className="mt-3 flex flex-wrap items-center gap-3">
+                      {item.role_level ? (
+                        <TagPill>{item.role_level}</TagPill>
+                      ) : null}
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            ))}
           </ul>
         </Section>
       ) : null}
@@ -466,9 +454,8 @@ export function MarketingHome({
                 {flagship.title}
               </h2>
               <p className="mt-4 text-lg leading-relaxed opacity-75">
-                From blank page to a live link you can send to anyone. Copy
-                each prompt, paste it into your AI tool, check the result, move
-                on.
+                From blank page to a live link you can send to anyone. Copy each
+                prompt, paste it into your AI tool, check the result, move on.
               </p>
               <ul className="mt-7 flex flex-wrap gap-x-7 gap-y-2.5 border-t border-current/20 pt-6">
                 {flagship.steps.map((step, i) => (
@@ -596,8 +583,8 @@ export function MarketingHome({
                 new form; there was no need to build one.
               */}
               <p className="text-muted-foreground mx-auto mt-4 max-w-xl text-lg leading-relaxed">
-                One email a week: the AI tools worth your time, and one thing
-                to build next.
+                One email a week: the AI tools worth your time, and one thing to
+                build next.
               </p>
               <NewsletterForm />
             </>
@@ -835,7 +822,7 @@ const CONTRAST = [
     with: "A prompt written for the step you're on",
   },
   {
-    without: "Tools picked from sponsored top-10 lists",
+    without: "Tools picked from sponsored roundups",
     with: "Honest tradeoffs, affiliate links labelled",
   },
   {

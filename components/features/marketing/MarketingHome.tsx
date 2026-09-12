@@ -548,8 +548,9 @@ export function MarketingHome({
       {/* ── Founder note ─────────────────────────────────────────────── */}
       {/*
         The honest trust signal while there are no testimonials (VIB-115).
-        Bible §01's brand story: the platform is built with the tools it
-        teaches. Ali's own words belong here — edit freely.
+        A signed statement of intent rather than a founder bio: Ali asked on
+        2026-09-12 for no biography and no build story, so it argues for the
+        reader's next move instead of for us.
       */}
       <Section>
         <div className="grid items-center gap-8 md:grid-cols-[auto_minmax(0,1fr)]">
@@ -565,13 +566,24 @@ export function MarketingHome({
               Why this exists
             </p>
             <h2 className="font-heading mt-3.5 text-3xl font-bold tracking-[-0.04em] lg:text-4xl">
-              Built with the tools on this site.
+              You don&rsquo;t need permission to build.
             </h2>
             <p className="text-muted-foreground mt-3.5 max-w-[62ch] text-lg leading-relaxed">
-              Viberation is built by one founder, Ali Rizwan, from Pakistan,
-              using the same AI coding tools you&rsquo;ll find in the
-              directory. No agency, no dev team. If something is on this site,
-              it&rsquo;s because I needed it while building this one.
+              Getting from an idea to a working product used to take years of
+              training. It doesn&rsquo;t any more. What stops most people now
+              isn&rsquo;t talent or money — it&rsquo;s not knowing which tool
+              to open, what to type into it, and what to do when it breaks.
+            </p>
+            <p className="text-muted-foreground mt-4 max-w-[62ch] text-lg leading-relaxed">
+              That is the whole reason this site exists. No gatekeeping, no
+              hype, no pretending it is easier than it is — just the next step,
+              and then the one after it.
+            </p>
+            <p className="mt-5 max-w-[62ch] text-lg leading-relaxed font-bold">
+              Pick one idea. Start it today. Ship it before you feel ready.
+            </p>
+            <p className="text-muted-foreground mt-5 text-sm font-bold">
+              Ali Rizwan · Founder
             </p>
           </div>
         </div>

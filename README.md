@@ -1,22 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Viberation
 
-## Getting Started
+The AI coding tool directory, Learn hub and guided walkthroughs. Next.js App
+Router, Supabase, Tailwind.
 
-First, run the development server:
+## Running it
+
+Against the shared Supabase project, which is what `.env.local` points at by
+default:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Everything a visitor can see works this way. What does not is anything behind
+a session: `/account`, onboarding and `/admin` all need a signed-in user, and
+the shared project is production data.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Local stack, for gated screens
+
+Use this when the change is behind a login. It runs Postgres, GoTrue and the
+rest in Docker, applies the migrations in `supabase/migrations`, and seeds a
+staff account that exists only on your machine.
+
+```bash
+npx supabase start          # once per machine, pulls images
+npx supabase db reset       # applies migrations + seeds
+```
+
+Point the app at it by replacing the two values in `.env.local` with the
+`API_URL` and `ANON_KEY` that `npx supabase status` prints, then restart
+`npm run dev`. Keep the shared values somewhere; swapping back is the same two
+lines.
+
+Then sign in:
+
+```bash
+npm run dev:login           # prints a one-time link, open it
+```
+
+The seeded account (`staff@local.test`) has **no password**. The script mints a
+login link through the local stack's service-role key, so there is no
+credential in the repo to leak and nothing to type into a form. It refuses to
+run against any host but localhost.
+
+`npx supabase db reset` reseeds and clears anything you did locally. The seed
+lives in `supabase/seed-dev-staff.sql`, deliberately outside `seed.sql` so the
+shared project can never pick it up.
+
+## Checks
+
+```bash
+npm run typecheck
+npm run lint
+npm test
+npm run build
+```
+
+Conventions, architecture and what is deliberately out of scope live in
+`CLAUDE.md`.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 

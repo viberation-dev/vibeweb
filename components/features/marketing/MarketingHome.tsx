@@ -32,9 +32,6 @@ import { toolsHref } from "@/lib/tools-url";
 type Props = {
   previewTools: Tool[];
   collections: Collection[];
-  collectionCounts: Map<string, number>;
-  /** Per-category tool totals for the taxonomy tiles (VIB-101). */
-  categoryCounts: Map<string, number>;
   /**
    * Published testimonials (VIB-102). Empty is the normal state until real
    * people have said something — the proof section falls back to describing
@@ -55,10 +52,10 @@ type Props = {
  * This is the only screen besides the Learn hub where the motion treatment
  * applies (handoff §4), and it is CSS-only — see `.reveal` in globals.css.
  *
- * Every number here is still queried, including the per-category tile totals.
- * The v3 mockup hardcodes 46 tools / 13 categories / 6 pillars; a number that
- * contradicts the directory one click away is worse than no number at all
- * (VIB-98 constraint 1).
+ * No counts anywhere (VIB-116). The v3 mockup hardcodes 46 tools / 13
+ * categories / 6 pillars; rather than query those totals to keep them honest
+ * (VIB-98 constraint 1), the copy now sells the outcome and the page shows no
+ * number a visitor could check. Signed-in surfaces still count.
  *
  * Type weight follows the mockup rather than the shadcn default: headings are
  * 700 and the hero is 800, where the shipped page had been 600 throughout.
@@ -66,8 +63,6 @@ type Props = {
 export function MarketingHome({
   previewTools,
   collections,
-  collectionCounts,
-  categoryCounts,
   testimonials,
   latest,
   flagship,
@@ -151,12 +146,7 @@ export function MarketingHome({
           separate browser-chrome "product preview" section further down. They
           are the same mock, so it is drawn once, here, rather than twice.
         */}
-        {previewTools.length ? (
-          <ProductPanel
-            tools={previewTools}
-            categoryCount={TOOL_CATEGORIES.length}
-          />
-        ) : null}
+        {previewTools.length ? <ProductPanel tools={previewTools} /> : null}
       </section>
 
       {/* ── Feature cards — exactly one filled ───────────────────────── */}
@@ -274,13 +264,6 @@ export function MarketingHome({
                 <span className="truncate font-bold tracking-tight">
                   {category.label}
                 </span>
-                {/*
-                  Real totals, queried per category. A tile promising 6 Models
-                  that opens on 4 is worse than a tile with no number.
-                */}
-                <span className="text-muted-foreground ml-auto shrink-0 font-mono text-[0.8125rem]">
-                  {categoryCounts.get(category.value) ?? 0}
-                </span>
               </Link>
             </li>
           ))}
@@ -317,18 +300,6 @@ export function MarketingHome({
                         <Glyph aria-hidden className="size-10 opacity-90" />
                       );
                     })()}
-                    {/*
-                      Bordered rather than tinted. v3 darkens this chip with a
-                      translucent black, which on the blue cover drags the fill
-                      under its own ink label — 3.76:1. The three covers have
-                      opposite polarity (ink on blue and lime, paper on deep),
-                      so no single tint helps all three. With no fill the label
-                      keeps the cover's own on-colour pairing, which is AA by
-                      construction.
-                    */}
-                    <span className="absolute top-4 right-4 rounded-full border border-current/40 px-3 py-1 font-mono text-xs font-semibold">
-                      {collectionCounts.get(collection.id) ?? 0} tools
-                    </span>
                   </span>
                   <span className="flex flex-1 flex-col p-6">
                     <span className="font-heading text-lg font-bold tracking-tight">

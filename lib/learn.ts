@@ -188,24 +188,6 @@ export function learnSortOrder(sort: LearnSort) {
   return LEARN_SORTS.find((s) => s.value === sort)!;
 }
 
-/** Words a minute, for the card's "5 min" meta. Ordinary prose, read online. */
-const WORDS_PER_MINUTE = 200;
-
-/**
- * Rough minutes to read one piece, from its body.
- *
- * The mockup's card meta reads "5 min · Alex R.". There is no author column
- * on `content`, so the byline half is not built; the minutes half is derived
- * here rather than stored, which keeps it honest when a body is edited and
- * costs no schema change.
- *
- * Null for an empty body — a card with no preview text should not claim to
- * take a minute to read.
- */
-export function readingMinutes(body: string | null): number | null {
-  const words = body?.trim().split(/\s+/).filter(Boolean).length ?? 0;
-  return words ? Math.max(1, Math.round(words / WORDS_PER_MINUTE)) : null;
-}
 
 /**
  * Every content type, in the editor's display order (VIB-59).

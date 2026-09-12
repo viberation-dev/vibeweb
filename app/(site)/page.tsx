@@ -16,7 +16,6 @@ import {
   feedQueryFor,
   greetingFor,
   progressLabel,
-  readingMinutes,
   toFeedTab,
 } from "@/lib/home-feed";
 import { createClient } from "@/lib/integrations/supabase/server";
@@ -263,11 +262,7 @@ export default async function HomePage({ searchParams }: Props) {
                     .filter(Boolean)
                     .join(" · ")}
                   title={item.title}
-                  meta={
-                    readingMinutes(item.body)
-                      ? `${readingMinutes(item.body)} min read`
-                      : null
-                  }
+                  meta={null}
                 />
               </li>
             ))}

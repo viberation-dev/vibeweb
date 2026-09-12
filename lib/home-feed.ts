@@ -59,21 +59,6 @@ export function greetingFor(hour: number): string {
 }
 
 /**
- * Rough read time in minutes, for the feed card's "8 min read".
- *
- * 200 words a minute is the usual prose figure. Never returns 0 — "0 min
- * read" reads as broken, and anything with a body takes at least a moment.
- */
-export function readingMinutes(body: string | null): number | null {
-  if (!body) return null;
-
-  const words = body.trim().split(/\s+/).filter(Boolean).length;
-  if (!words) return null;
-
-  return Math.max(1, Math.round(words / 200));
-}
-
-/**
  * The mockup's progress line: "Step 2 of 4 · Pick your stack".
  *
  * `stepIndex` is 0-based in the database and 1-based to a reader, which is

@@ -1,4 +1,4 @@
-import { contentPillarLabel, contentPreview, contentTypeLabel, readingMinutes } from "@/lib/learn";
+import { contentPillarLabel, contentPreview, contentTypeLabel } from "@/lib/learn";
 import type { Content } from "@/lib/queries/content";
 import type { Tool } from "@/lib/queries/tools";
 import type { RoleLevel } from "@/lib/role-level";
@@ -44,8 +44,6 @@ export function toolView(tool: Tool): ResourceView {
 }
 
 export function contentView(item: Content): ResourceView {
-  const minutes = readingMinutes(item.body);
-
   return {
     targetType: "content",
     id: item.id,
@@ -65,6 +63,5 @@ export function contentView(item: Content): ResourceView {
     // design-system surface with a fixed hue per level, and a raw lowercase
     // "expert" in a grey pill was never what the badge set is for.
     difficulty: item.role_level ?? undefined,
-    meta: minutes ? `${minutes} min` : undefined,
   };
 }

@@ -6,7 +6,6 @@ import {
   contentTypeLabel,
   learnHref,
   LEARN_TYPE_VALUES,
-  readingMinutes,
   toContentPillar,
   toContentType,
   toLearnSort,
@@ -84,14 +83,6 @@ test("the default sort stays out of the URL", () => {
   // the canonical /learn URL in two.
   assert.equal(learnHref({ sort: "title" }), "/learn?sort=title");
   assert.equal(learnHref({ type: "guide", sort: "title" }), "/learn?type=guide&sort=title");
-});
-
-test("reading time rounds to whole minutes, never to zero", () => {
-  assert.equal(readingMinutes(null), null);
-  assert.equal(readingMinutes("   "), null);
-  // A one-line cheatsheet still takes a minute, not none.
-  assert.equal(readingMinutes("git status"), 1);
-  assert.equal(readingMinutes("word ".repeat(1000)), 5);
 });
 
 test("learnHref carries the pillar and drops it when cleared", () => {

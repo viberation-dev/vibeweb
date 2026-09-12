@@ -61,7 +61,7 @@ export default async function HomePage({ searchParams }: Props) {
   const [
     collections,
     { items: latest },
-    { tools, total: toolCount },
+    { tools },
     wizards,
     history,
   ] = await Promise.all([
@@ -101,7 +101,6 @@ export default async function HomePage({ searchParams }: Props) {
     ]);
     return (
       <MarketingHome
-        toolCount={toolCount}
         previewTools={tools.slice(0, 3)}
         collections={collections}
         collectionCounts={counts}

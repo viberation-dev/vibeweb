@@ -41,6 +41,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-11",
+    kind: "improved",
+    title: "A clearer homepage",
+    body: "The homepage now says plainly what Viberation is for, shows how it works in three steps, and answers the common questions — starting with whether you need to code (you don't).",
+  },
+  {
+    date: "2026-09-11",
     kind: "added",
     title: "Save a single model",
     body: "On a model family page like Gemini or Claude you can now save the exact model you are looking at, as well as the whole family. Saved models show up in your bookmarks and open straight to that model.",

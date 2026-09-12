@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { DirectoryPager } from "@/components/features/resource/DirectoryPager";
-import { readingMinutes } from "@/lib/home-feed";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { toPageNumber } from "@/lib/pagination";
 import { listContent } from "@/lib/queries/content";
@@ -60,38 +59,34 @@ export default async function BlogPage({ searchParams }: Props) {
       {items.length ? (
         <>
           <ul className="mt-12 space-y-10">
-            {items.map((item) => {
-              const minutes = readingMinutes(item.body);
-              return (
-                <li key={item.id} className="border-border border-b pb-10">
-                  <p className="text-muted-foreground font-mono text-sm">
-                    <time dateTime={item.created_at}>
-                      {formatPostDate(item.created_at)}
-                    </time>
-                    {minutes ? ` · ${minutes} min read` : ""}
-                  </p>
-                  <h2 className="font-heading mt-3 text-2xl font-bold tracking-tight">
-                    <Link
-                      href={`/blog/${item.slug}`}
-                      className="hover:text-primary transition-colors"
-                    >
-                      {item.title}
-                    </Link>
-                  </h2>
-                  {item.body ? (
-                    <p className="text-muted-foreground mt-3 leading-relaxed">
-                      {excerpt(item.body)}
-                    </p>
-                  ) : null}
+            {items.map((item) => (
+              <li key={item.id} className="border-border border-b pb-10">
+                <p className="text-muted-foreground font-mono text-sm">
+                  <time dateTime={item.created_at}>
+                    {formatPostDate(item.created_at)}
+                  </time>
+                </p>
+                <h2 className="font-heading mt-3 text-2xl font-bold tracking-tight">
                   <Link
                     href={`/blog/${item.slug}`}
-                    className="text-primary mt-4 inline-block text-sm font-bold hover:underline"
+                    className="hover:text-primary transition-colors"
                   >
-                    Read it &rarr;
+                    {item.title}
                   </Link>
-                </li>
-              );
-            })}
+                </h2>
+                {item.body ? (
+                  <p className="text-muted-foreground mt-3 leading-relaxed">
+                    {excerpt(item.body)}
+                  </p>
+                ) : null}
+                <Link
+                  href={`/blog/${item.slug}`}
+                  className="text-primary mt-4 inline-block text-sm font-bold hover:underline"
+                >
+                  Read it &rarr;
+                </Link>
+              </li>
+            ))}
           </ul>
           <DirectoryPager
             page={current}

@@ -17,13 +17,17 @@ import { Button } from "@/components/ui/button";
 export function OAuthButtons({ redirectTo }: { redirectTo?: string }) {
   return (
     <form action={signInWithProviderAction} className="grid grid-cols-2 gap-3">
-      {redirectTo ? <input type="hidden" name="redirectTo" value={redirectTo} /> : null}
+      {redirectTo ? (
+        <input type="hidden" name="redirectTo" value={redirectTo} />
+      ) : null}
 
       <Button
         type="submit"
         name="provider"
         value="github"
-        variant="outline"
+        variant="pill-soft"
+        size="pill-sm"
+        className="bg-card hover:bg-accent justify-center px-5"
         aria-label="Continue with GitHub"
       >
         <IconBrandGithub aria-hidden />
@@ -34,7 +38,9 @@ export function OAuthButtons({ redirectTo }: { redirectTo?: string }) {
         type="submit"
         name="provider"
         value="google"
-        variant="outline"
+        variant="pill-soft"
+        size="pill-sm"
+        className="bg-card hover:bg-accent justify-center px-5"
         aria-label="Continue with Google"
       >
         <IconBrandGoogle aria-hidden />

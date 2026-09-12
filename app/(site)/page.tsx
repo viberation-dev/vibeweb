@@ -1,16 +1,15 @@
-import { IconArrowRight, IconSearch } from "@tabler/icons-react";
+import {
+  IconArrowRight,
+  IconArrowUpRight,
+  IconSearch,
+} from "@tabler/icons-react";
 import Link from "next/link";
 
 import { MarketingHome } from "@/components/features/marketing/MarketingHome";
 import { CategoryIcon } from "@/components/features/tools/CategoryIcon";
 import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { ButtonIcon, buttonVariants } from "@/components/ui/button";
+import { Panel } from "@/components/ui/panel";
 import {
   FEED_TABS,
   feedQueryFor,
@@ -32,7 +31,10 @@ import { resolveTargetViews } from "@/lib/queries/resources";
 import { listPopularTags } from "@/lib/queries/tags";
 import { listPublishedTestimonials } from "@/lib/queries/testimonials";
 import { listTools } from "@/lib/queries/tools";
-import { getWalkthroughProgress, listWalkthroughs } from "@/lib/queries/walkthroughs";
+import {
+  getWalkthroughProgress,
+  listWalkthroughs,
+} from "@/lib/queries/walkthroughs";
 import { TOOL_CATEGORIES } from "@/lib/tool-categories";
 import { toolsHref } from "@/lib/tools-url";
 
@@ -57,28 +59,23 @@ export default async function HomePage({ searchParams }: Props) {
   // those queries run.
   const profile = auth.user ? await getProfile(supabase, auth.user.id) : null;
 
-  const [
-    collections,
-    { items: latest },
-    { tools },
-    walkthroughs,
-    history,
-  ] = await Promise.all([
-    listFeaturedCollections(supabase),
-    listContent(supabase, {
-      types: LEARN_TYPE_VALUES,
-      /*
-       * Which tier and which order each tab wants lives in feedQueryFor, so
-       * the tabs cannot quietly disagree with their own labels.
-       */
-      ...feedQueryFor(tab, profile?.role_level ?? undefined),
-      pageSize: 3,
-    }),
-    listTools(supabase, { sort: "popular", pageSize: 6 }),
-    listWalkthroughs(supabase),
-    // Four is what the rail has room for; the full list is the History tab.
-    auth.user ? listHistory(supabase, auth.user.id, 4) : [],
-  ]);
+  const [collections, { items: latest }, { tools }, walkthroughs, history] =
+    await Promise.all([
+      listFeaturedCollections(supabase),
+      listContent(supabase, {
+        types: LEARN_TYPE_VALUES,
+        /*
+         * Which tier and which order each tab wants lives in feedQueryFor, so
+         * the tabs cannot quietly disagree with their own labels.
+         */
+        ...feedQueryFor(tab, profile?.role_level ?? undefined),
+        pageSize: 3,
+      }),
+      listTools(supabase, { sort: "popular", pageSize: 6 }),
+      listWalkthroughs(supabase),
+      // Four is what the rail has room for; the full list is the History tab.
+      auth.user ? listHistory(supabase, auth.user.id, 4) : [],
+    ]);
 
   // §31 puts the flagship promo last. Nothing renders it when no walkthrough is
   // published, so the section cannot point at a route that 404s.
@@ -108,7 +105,9 @@ export default async function HomePage({ searchParams }: Props) {
       collections.map((collection) => collection.id),
     ),
     listPopularTags(supabase),
-    flagship ? getWalkthroughProgress(supabase, auth.user.id, flagship.id) : null,
+    flagship
+      ? getWalkthroughProgress(supabase, auth.user.id, flagship.id)
+      : null,
   ]);
 
   /*
@@ -126,7 +125,7 @@ export default async function HomePage({ searchParams }: Props) {
   return (
     <div className="mx-auto w-full max-w-6xl p-6">
       <section className="mx-auto max-w-2xl text-center">
-        <h1 className="font-heading text-2xl font-semibold">
+        <h1 className="font-heading text-3xl font-bold tracking-[-0.04em]">
           {greetingFor(new Date().getHours())}
           {greeting ? `, ${greeting}` : ""} — what are you building?
         </h1>
@@ -138,7 +137,7 @@ export default async function HomePage({ searchParams }: Props) {
           <label htmlFor="search-intent" className="sr-only">
             Describe what you want to build
           </label>
-          <div className="focus-within:border-ring flex items-center gap-2 rounded-lg border px-4 py-2.5">
+          <div className="bg-secondary focus-within:ring-ring/50 flex h-14 items-center gap-3 rounded-full pr-2 pl-5 focus-within:ring-3">
             <IconSearch
               aria-hidden
               className="text-muted-foreground size-4 shrink-0"
@@ -148,14 +147,14 @@ export default async function HomePage({ searchParams }: Props) {
               type="search"
               name="q"
               placeholder="Describe what you want to build, or find a tool…"
-              className="placeholder:text-muted-foreground w-full bg-transparent text-sm outline-none"
+              className="placeholder:text-muted-foreground w-full bg-transparent text-[0.9375rem] outline-none"
             />
             <button
               type="submit"
               aria-label="Search"
-              className="bg-primary text-primary-foreground flex size-7 shrink-0 items-center justify-center rounded-md"
+              className="bg-primary text-primary-foreground flex size-10 shrink-0 items-center justify-center rounded-full"
             >
-              <IconArrowRight aria-hidden className="size-4" />
+              <IconArrowRight aria-hidden className="size-[1.1rem]" />
             </button>
           </div>
         </form>
@@ -168,7 +167,7 @@ export default async function HomePage({ searchParams }: Props) {
             <li key={category.value}>
               <Link
                 href={toolsHref({ category: category.value })}
-                className="hover:bg-accent hover:text-accent-foreground flex flex-col items-center gap-1.5 rounded-lg border px-2 py-3 text-center text-xs"
+                className="bg-secondary hover:bg-primary/10 flex flex-col items-center gap-2 rounded-2xl px-2 py-3.5 text-center text-xs font-bold transition-colors"
               >
                 <CategoryIcon category={category.value} className="size-4" />
                 {category.label}
@@ -191,14 +190,14 @@ export default async function HomePage({ searchParams }: Props) {
               {hub.href ? (
                 <Link
                   href={hub.href}
-                  className="border-primary hover:bg-accent/40 block h-full rounded-xl border-2 p-4"
+                  className="bg-secondary hover:bg-primary/10 motion-lift block h-full rounded-[1.125rem] p-5 transition-colors"
                 >
                   <HubBody {...hub} />
                 </Link>
               ) : (
                 <div
                   aria-disabled
-                  className="text-muted-foreground/60 h-full rounded-xl border p-4"
+                  className="bg-secondary/50 text-muted-foreground/60 h-full rounded-[1.125rem] p-5"
                 >
                   <HubBody {...hub} />
                 </div>
@@ -211,14 +210,14 @@ export default async function HomePage({ searchParams }: Props) {
       <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
         <div>
           <h2 className="sr-only">Your feed</h2>
-          <div className="mb-4 flex gap-4 border-b text-sm">
+          <div className="bg-secondary mb-5 inline-flex flex-wrap gap-1 rounded-full p-1.5 text-sm">
             {FEED_TABS.map((feedTab) =>
               "disabled" in feedTab && feedTab.disabled ? (
                 <span
                   key={feedTab.value}
                   aria-disabled="true"
                   title="Needs a popularity signal that does not exist yet"
-                  className="text-muted-foreground/50 cursor-default pb-2"
+                  className="text-muted-foreground/50 cursor-default rounded-full px-4 py-2 font-bold"
                 >
                   {feedTab.label}
                 </span>
@@ -233,8 +232,8 @@ export default async function HomePage({ searchParams }: Props) {
                   aria-current={tab === feedTab.value ? "page" : undefined}
                   className={
                     tab === feedTab.value
-                      ? "border-primary -mb-px border-b-2 pb-2 font-medium"
-                      : "text-muted-foreground hover:text-foreground -mb-px border-b-2 border-transparent pb-2"
+                      ? "bg-primary text-primary-foreground rounded-full px-4 py-2 font-bold"
+                      : "text-muted-foreground hover:text-foreground hover:bg-card rounded-full px-4 py-2 font-bold transition-colors"
                   }
                 >
                   {feedTab.label}
@@ -423,8 +422,8 @@ function HubBody({
 }) {
   return (
     <>
-      <h3 className="font-heading text-sm font-medium">{title}</h3>
-      <p className="text-muted-foreground mt-0.5 text-xs">{blurb}</p>
+      <h3 className="font-heading font-bold tracking-tight">{title}</h3>
+      <p className="text-muted-foreground mt-1 text-xs">{blurb}</p>
       <Badge
         variant={pill === "MVP" ? "default" : "secondary"}
         className="mt-2"
@@ -447,22 +446,19 @@ function FeedCard({
   meta: string | null;
 }) {
   return (
-    <Card className="hover:bg-muted/40 relative transition-colors">
-      <CardHeader>
-        <p className="text-muted-foreground text-xs">{eyebrow}</p>
-        <CardTitle className="text-base">
-          <Link
-            href={href}
-            className="outline-none after:absolute after:inset-0"
-          >
-            {title}
-          </Link>
-        </CardTitle>
-        {meta ? (
-          <CardDescription className="text-xs">{meta}</CardDescription>
-        ) : null}
-      </CardHeader>
-    </Card>
+    <div className="bg-secondary hover:bg-primary/10 focus-within:ring-ring relative rounded-[1.125rem] p-5 transition-colors focus-within:ring-2">
+      <p className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
+        {eyebrow}
+      </p>
+      <h3 className="font-heading mt-2 text-lg font-bold tracking-tight">
+        <Link href={href} className="outline-none after:absolute after:inset-0">
+          {title}
+        </Link>
+      </h3>
+      {meta ? (
+        <p className="text-muted-foreground mt-1.5 text-xs">{meta}</p>
+      ) : null}
+    </div>
   );
 }
 
@@ -476,9 +472,9 @@ function RailCard({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-xl border p-4">
-      <div className="mb-2 flex items-baseline justify-between gap-2">
-        <h2 className="font-heading text-sm font-medium">{title}</h2>
+    <Panel className="p-5 sm:p-5">
+      <div className="mb-3 flex items-baseline justify-between gap-2">
+        <h2 className="font-heading font-bold tracking-tight">{title}</h2>
         {href ? (
           <Link
             href={href}
@@ -489,7 +485,7 @@ function RailCard({
         ) : null}
       </div>
       {children}
-    </section>
+    </Panel>
   );
 }
 
@@ -498,20 +494,27 @@ function OnboardingNudge({ profile }: { profile: Profile | null }) {
   if (!profile || profile.onboarding_completed) return null;
 
   return (
-    <section className="bg-muted/40 mt-8 rounded-xl border p-5">
-      <h2 className="font-heading text-lg font-medium">
+    <Panel className="mt-8">
+      <h2 className="font-heading text-xl font-bold tracking-tight">
         Set yourself up in under a minute
       </h2>
-      <p className="text-muted-foreground mt-1 text-sm">
+      <p className="text-muted-foreground mt-2.5 leading-relaxed">
         Tell us the level you are at and we will tune what you see across the
         site.
       </p>
       <Link
         href="/onboarding"
-        className={buttonVariants({ className: "mt-4" })}
+        className={buttonVariants({
+          variant: "pill",
+          size: "pill-sm",
+          className: "mt-6",
+        })}
       >
+        <ButtonIcon size="sm">
+          <IconArrowUpRight />
+        </ButtonIcon>
         Get started
       </Link>
-    </section>
+    </Panel>
   );
 }

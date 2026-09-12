@@ -9,7 +9,11 @@ import { Logo } from "@/components/features/nav/Logo";
  * a full nav invites someone mid-signup to wander off. The logo stays a link
  * home so it is not a dead end.
  */
-export default function AuthLayout({ children }: { children: React.ReactNode }) {
+export default function AuthLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex min-h-svh flex-col">
       <header className="flex justify-center p-6">

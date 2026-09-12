@@ -50,7 +50,11 @@ export async function signInAction(
   }
 
   const supabase = await createClient();
-  const result = await signInWithPassword(supabase, parsed.data.email, parsed.data.password);
+  const result = await signInWithPassword(
+    supabase,
+    parsed.data.email,
+    parsed.data.password,
+  );
 
   if (!result.ok) {
     return { error: result.message };
@@ -96,7 +100,8 @@ export async function signUpAction(
    * account-existence oracle.
    */
   return {
-    notice: "Check your inbox — we have sent you a link to confirm your email address.",
+    notice:
+      "Check your inbox — we have sent you a link to confirm your email address.",
   };
 }
 
@@ -104,7 +109,9 @@ export async function forgotPasswordAction(
   _previous: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> {
-  const parsed = forgotPasswordSchema.safeParse({ email: formData.get("email") });
+  const parsed = forgotPasswordSchema.safeParse({
+    email: formData.get("email"),
+  });
 
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message };
@@ -140,7 +147,8 @@ export async function forgotPasswordAction(
    * oracle, and this one would be readable by anyone.
    */
   return {
-    notice: "If that address has an account, we have sent it a link to reset the password.",
+    notice:
+      "If that address has an account, we have sent it a link to reset the password.",
   };
 }
 
@@ -184,7 +192,9 @@ export async function signOutAction(): Promise<void> {
  * value, so it is validated rather than trusted — this ends up in a redirect,
  * and an unvalidated value has no business steering that.
  */
-export async function signInWithProviderAction(formData: FormData): Promise<void> {
+export async function signInWithProviderAction(
+  formData: FormData,
+): Promise<void> {
   const parsed = oauthProviderSchema.safeParse(formData.get("provider"));
 
   if (!parsed.success) {

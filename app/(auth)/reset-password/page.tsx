@@ -3,13 +3,8 @@ import { redirect } from "next/navigation";
 
 import { resetPasswordAction } from "@/app/(auth)/actions";
 import { ResetPasswordForm } from "@/components/features/auth/ResetPasswordForm";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Panel } from "@/components/ui/panel";
+import { SectionHead } from "@/components/ui/section-head";
 import { createClient } from "@/lib/integrations/supabase/server";
 
 export const metadata: Metadata = { title: "Set a new password" };
@@ -32,16 +27,15 @@ export default async function ResetPasswordPage() {
   }
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle className="text-2xl">Set a new password</CardTitle>
-        <CardDescription>
-          Signing in elsewhere will need this new password.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ResetPasswordForm action={resetPasswordAction} />
-      </CardContent>
-    </Card>
+    <Panel size="lg" className="w-full max-w-md p-8 lg:p-10">
+      <SectionHead
+        level="h1"
+        align="center"
+        title="Set a new password"
+        lede="Signing in elsewhere will need this new password."
+        className="mb-8"
+      />
+      <ResetPasswordForm action={resetPasswordAction} />
+    </Panel>
   );
 }

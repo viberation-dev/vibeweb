@@ -5,31 +5,27 @@ import { signUpAction } from "@/app/(auth)/actions";
 import { AuthDivider } from "@/components/features/auth/AuthDivider";
 import { AuthForm } from "@/components/features/auth/AuthForm";
 import { OAuthButtons } from "@/components/features/auth/OAuthButtons";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Panel } from "@/components/ui/panel";
+import { SectionHead } from "@/components/ui/section-head";
 
 export const metadata: Metadata = { title: "Create an account" };
 
 export default function SignUpPage() {
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle className="text-2xl">Create your account</CardTitle>
-        <CardDescription>
-          Free — browse without one, save with one.
-        </CardDescription>
-      </CardHeader>
+    <Panel size="lg" className="w-full max-w-md p-8 lg:p-10">
+      <SectionHead
+        level="h1"
+        align="center"
+        title="Create your account"
+        lede="Free. Browsing needs no account; saving does."
+        className="mb-8"
+      />
       {/*
         Email form first, providers second (mockup screen 7). The earlier order
         led with OAuth, which reads as the intended path — it is the shortcut,
         not the default.
       */}
-      <CardContent className="space-y-6">
+      <div className="space-y-6">
         <AuthForm mode="signup" action={signUpAction} />
 
         <AuthDivider />
@@ -48,7 +44,7 @@ export default function SignUpPage() {
             Sign in
           </Link>
         </p>
-      </CardContent>
-    </Card>
+      </div>
+    </Panel>
   );
 }

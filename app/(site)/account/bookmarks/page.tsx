@@ -1,3 +1,4 @@
+import { IconBook2, IconCompass } from "@tabler/icons-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -8,6 +9,9 @@ import {
   RenameFolderForm,
 } from "@/components/features/bookmarks/FolderForm";
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
+import { ButtonIcon, buttonVariants } from "@/components/ui/button";
+import { Panel } from "@/components/ui/panel";
+import { SectionHead } from "@/components/ui/section-head";
 import {
   bookmarkFolders,
   groupBookmarksByFolder,
@@ -23,10 +27,10 @@ import { cn } from "@/lib/utils";
 
 const chip = (active: boolean) =>
   cn(
-    "rounded-full border px-3 py-1 text-xs transition-colors",
+    "rounded-full px-3.5 py-1.5 text-xs font-bold transition-colors",
     active
-      ? "border-transparent bg-primary text-primary-foreground"
-      : "hover:bg-muted",
+      ? "bg-primary text-primary-foreground"
+      : "bg-secondary text-muted-foreground hover:text-foreground hover:bg-primary/10",
   );
 
 export const metadata: Metadata = {
@@ -77,12 +81,16 @@ export default async function BookmarksPage({ searchParams }: Props) {
 
   return (
     <>
-      <h1 className="font-heading text-2xl font-semibold">Bookmarks</h1>
-      <p className="text-muted-foreground mt-1">
-        {bookmarks.length
-          ? "Everything you have saved. Type a folder name on a card to organise it."
-          : "Nothing saved yet."}
-      </p>
+      <SectionHead
+        level="h1"
+        title="Bookmarks"
+        lede={
+          bookmarks.length
+            ? "Everything you have saved. Type a folder name on a card to file it."
+            : "Nothing saved yet."
+        }
+        className="mb-7"
+      />
 
       {folders.length > 1 ? (
         /*
@@ -129,7 +137,9 @@ export default async function BookmarksPage({ searchParams }: Props) {
               heading it renames. It belongs next to the folder name.
             */}
             <div className="flex flex-wrap items-center gap-3">
-              <h2 className="font-heading text-lg font-medium">{folder}</h2>
+              <h2 className="font-heading text-lg font-bold tracking-tight">
+                {folder}
+              </h2>
               {/* Unfiled is the absence of a folder, so there is nothing to rename. */}
               {folder === UNFILED ? null : <RenameFolderForm folder={folder} />}
             </div>
@@ -176,17 +186,39 @@ export default async function BookmarksPage({ searchParams }: Props) {
           </section>
         ))
       ) : (
-        <p className="mt-8 text-muted-foreground">
-          Browse the{" "}
-          <Link href="/tools" className="underline">
-            tools directory
-          </Link>{" "}
-          or{" "}
-          <Link href="/learn" className="underline">
-            Learn
-          </Link>{" "}
-          and hit Save on anything worth coming back to.
-        </p>
+        <Panel className="text-center">
+          <h2 className="font-heading text-xl font-bold tracking-tight">
+            Nothing saved yet
+          </h2>
+          <p className="text-muted-foreground mx-auto mt-3 max-w-[46ch] leading-relaxed">
+            Press Save on any tool or guide and it lands here. Name a folder on
+            a card and you have somewhere to put the next one.
+          </p>
+          <div className="mt-7 flex flex-wrap justify-center gap-3">
+            <Link
+              href="/tools"
+              className={buttonVariants({ variant: "pill", size: "pill-sm" })}
+            >
+              <ButtonIcon size="sm">
+                <IconCompass />
+              </ButtonIcon>
+              Find a tool
+            </Link>
+            <Link
+              href="/learn"
+              className={buttonVariants({
+                variant: "pill-soft",
+                size: "pill-sm",
+                className: "bg-card hover:bg-accent",
+              })}
+            >
+              <ButtonIcon tone="on-soft" size="sm" className="bg-secondary">
+                <IconBook2 />
+              </ButtonIcon>
+              Read a guide
+            </Link>
+          </div>
+        </Panel>
       )}
     </>
   );

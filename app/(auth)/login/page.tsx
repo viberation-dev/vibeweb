@@ -5,13 +5,8 @@ import { signInAction } from "@/app/(auth)/actions";
 import { AuthDivider } from "@/components/features/auth/AuthDivider";
 import { AuthForm } from "@/components/features/auth/AuthForm";
 import { OAuthButtons } from "@/components/features/auth/OAuthButtons";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Panel } from "@/components/ui/panel";
+import { SectionHead } from "@/components/ui/section-head";
 import { safeRedirect } from "@/lib/validation/auth";
 
 export const metadata: Metadata = { title: "Sign in" };
@@ -47,12 +42,15 @@ export default async function LoginPage({
   const noticeMessage = notice ? NOTICE_MESSAGES[notice] : undefined;
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle className="text-2xl">Welcome back</CardTitle>
-        <CardDescription>Sign in to sync your library.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <Panel size="lg" className="w-full max-w-md p-8 lg:p-10">
+      <SectionHead
+        level="h1"
+        align="center"
+        title="Welcome back"
+        lede="Sign in to pick up your saved tools and reading."
+        className="mb-8"
+      />
+      <div className="space-y-6">
         {errorMessage ? (
           <p role="alert" className="text-destructive text-sm">
             {errorMessage}
@@ -78,7 +76,7 @@ export default async function LoginPage({
             Create account
           </Link>
         </p>
-      </CardContent>
-    </Card>
+      </div>
+    </Panel>
   );
 }

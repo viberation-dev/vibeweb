@@ -20,13 +20,7 @@ import { TOOL_CATEGORIES } from "@/lib/tool-categories";
  * contradicts the directory one click away. The rows cost nothing extra;
  * they are the same three the page already had in hand.
  */
-export function ProductPanel({
-  tools,
-  categoryCount,
-}: {
-  tools: Tool[];
-  categoryCount: number;
-}) {
+export function ProductPanel({ tools }: { tools: Tool[] }) {
   return (
     <div aria-hidden className="relative select-none">
       {/* Soft accent field behind the panel — v3's blob, kept restrained. */}
@@ -50,7 +44,7 @@ export function ProductPanel({
               stacking a full category list above the rows. */}
           <div className="bg-secondary border-b p-4 sm:border-r sm:border-b-0">
             <p className="text-muted-foreground mb-2 hidden px-2 text-[0.65rem] font-medium tracking-widest uppercase sm:block">
-              Directory · {categoryCount}
+              Directory
             </p>
             <div className="flex gap-1.5 overflow-hidden sm:flex-col">
               <span className="bg-primary text-primary-foreground rounded-md px-2 py-1.5 text-[0.8rem] font-semibold whitespace-nowrap">

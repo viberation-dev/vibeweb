@@ -32,7 +32,7 @@ import { getProfile, type Profile } from "@/lib/queries/profiles";
 import { resolveTargetViews } from "@/lib/queries/resources";
 import { listPopularTags } from "@/lib/queries/tags";
 import { listPublishedTestimonials } from "@/lib/queries/testimonials";
-import { countToolsByCategory, listTools } from "@/lib/queries/tools";
+import { listTools } from "@/lib/queries/tools";
 import { getWizardProgress, listWizards } from "@/lib/queries/wizards";
 import { TOOL_CATEGORIES } from "@/lib/tool-categories";
 import { toolsHref } from "@/lib/tools-url";
@@ -86,25 +86,14 @@ export default async function HomePage({ searchParams }: Props) {
   const flagship = wizards[0];
 
   if (!auth.user) {
-    const [counts, categoryCounts, testimonials] = await Promise.all([
-      countCollectionItems(
-        supabase,
-        collections.map((collection) => collection.id),
-      ),
-      // The category tiles carry real totals (VIB-101), same rule as the
-      // stat block: a number that contradicts the directory is worse than
-      // no number.
-      countToolsByCategory(supabase),
-      // Real quotes, or none — the proof section falls back to describing who
-      // the product is for rather than inventing anyone (VIB-102).
-      listPublishedTestimonials(supabase),
-    ]);
+    // The marketing page shows no counts (VIB-116), so it no longer asks for
+    // any. Real quotes, or none — the proof section falls back to describing
+    // who the product is for rather than inventing anyone (VIB-102).
+    const testimonials = await listPublishedTestimonials(supabase);
     return (
       <MarketingHome
         previewTools={tools.slice(0, 3)}
         collections={collections}
-        collectionCounts={counts}
-        categoryCounts={categoryCounts}
         testimonials={testimonials}
         latest={latest}
         flagship={flagship}

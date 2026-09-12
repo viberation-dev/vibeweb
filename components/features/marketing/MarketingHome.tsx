@@ -84,7 +84,7 @@ export function MarketingHome({
           */}
           {flagship ? (
             <AnnouncementChip badge="New" href={`/wizards/${flagship.slug}`}>
-              {flagship.title} — free, guided, start to finish
+              {flagship.title}: free, guided, start to finish
             </AnnouncementChip>
           ) : null}
 
@@ -118,7 +118,7 @@ export function MarketingHome({
               <ButtonIcon>
                 <IconArrowUpRight />
               </ButtonIcon>
-              {flagship ? "Start the free walkthrough" : "Get started — it’s free"}
+              {flagship ? "Start the free walkthrough" : "Get started for free"}
             </Link>
             <Link
               href="/tools"
@@ -571,12 +571,12 @@ export function MarketingHome({
             <p className="text-muted-foreground mt-3.5 max-w-[62ch] text-lg leading-relaxed">
               Getting from an idea to a working product used to take years of
               training. It doesn&rsquo;t any more. What stops most people now
-              isn&rsquo;t talent or money — it&rsquo;s not knowing which tool
-              to open, what to type into it, and what to do when it breaks.
+              isn&rsquo;t talent or money. It&rsquo;s not knowing which tool to
+              open, what to type into it, and what to do when it breaks.
             </p>
             <p className="text-muted-foreground mt-4 max-w-[62ch] text-lg leading-relaxed">
               That is the whole reason this site exists. No gatekeeping, no
-              hype, no pretending it is easier than it is — just the next step,
+              hype, no pretending it is easier than it is. Just the next step,
               and then the one after it.
             </p>
             <p className="mt-5 max-w-[62ch] text-lg leading-relaxed font-bold">
@@ -644,7 +644,7 @@ export function MarketingHome({
                   <ButtonIcon>
                     <IconArrowUpRight />
                   </ButtonIcon>
-                  Get started — it&rsquo;s free
+                  Get started for free
                 </Link>
                 <Link
                   href="/learn"
@@ -697,7 +697,7 @@ const AUDIENCES = [
     tier: "Just starting",
     headline: "You've used ChatGPT. Now you want to build something real.",
     blurb:
-      "Plain-English explanations of context windows, tokens and system prompts — without the condescension — plus prompts you can actually copy.",
+      "Plain-English explanations of context windows, tokens and system prompts, without the condescension, plus prompts you can actually copy.",
   },
   {
     tier: "Already shipping",

@@ -19,6 +19,9 @@ import { NewsletterForm } from "@/components/features/marketing/NewsletterForm";
 import { ProductPanel } from "@/components/features/marketing/ProductPanel";
 import { CategoryIcon } from "@/components/features/tools/CategoryIcon";
 import { ButtonIcon, buttonVariants } from "@/components/ui/button";
+import { IconTile } from "@/components/ui/icon-tile";
+import { SectionHead } from "@/components/ui/section-head";
+import { TagPill } from "@/components/ui/tag-pill";
 import type { Collection } from "@/lib/queries/collections";
 import type { Content } from "@/lib/queries/content";
 import type { Testimonial } from "@/lib/queries/testimonials";
@@ -686,83 +689,6 @@ function SectionTight({ children }: { children: React.ReactNode }) {
     <section className="reveal mt-[clamp(2.25rem,4.5vw,4rem)]">
       {children}
     </section>
-  );
-}
-
-/**
- * The square icon plate used by the category tiles and article cards.
- *
- * v3 draws these as a --card plate with a blue glyph; Ali asked for the
- * inverse — blue plate, light glyph — on 2026-09-10. The glyph is
- * --primary-foreground rather than lime: `--highlight` is a fill-only colour
- * (VIB-99) and a stroke is not a fill, so lime here would be the first break
- * of that rule. --primary-foreground is also the token that already resolves
- * against a --primary fill in both modes.
- */
-function IconTile({
-  size = "md",
-  children,
-}: {
-  size?: "md" | "lg";
-  children: React.ReactNode;
-}) {
-  return (
-    <span
-      className={`bg-primary text-primary-foreground flex shrink-0 items-center justify-center ${
-        size === "lg" ? "size-13 rounded-2xl" : "size-10 rounded-xl"
-      }`}
-    >
-      {children}
-    </span>
-  );
-}
-
-/** v3's `.tag`: a wash of the accent with the accent as its text. */
-function TagPill({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="bg-primary/10 text-primary rounded-full px-3 py-1 text-xs font-bold capitalize">
-      {children}
-    </span>
-  );
-}
-
-function SectionHead({
-  eyebrow,
-  title,
-  lede,
-  action,
-}: {
-  eyebrow: string;
-  title: string;
-  lede?: string;
-  action?: { label: string; href: string };
-}) {
-  return (
-    <div className="mb-10 flex flex-wrap items-end justify-between gap-7">
-      <div>
-        <p className="text-primary flex items-center gap-2.5 text-xs font-bold tracking-widest uppercase">
-          <span aria-hidden className="bg-primary h-0.5 w-5 rounded-full" />
-          {eyebrow}
-        </p>
-        <h2 className="font-heading mt-3.5 text-3xl font-bold tracking-[-0.04em] lg:text-4xl">
-          {title}
-        </h2>
-        {lede ? (
-          <p className="text-muted-foreground mt-3.5 max-w-[56ch] text-lg leading-relaxed">
-            {lede}
-          </p>
-        ) : null}
-      </div>
-      {action ? (
-        <Link
-          href={action.href}
-          className="text-primary flex shrink-0 items-center gap-2 text-[0.9375rem] font-bold hover:underline"
-        >
-          {action.label}
-          <IconArrowRight aria-hidden className="size-4" />
-        </Link>
-      ) : null}
-    </div>
   );
 }
 

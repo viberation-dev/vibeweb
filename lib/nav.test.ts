@@ -36,7 +36,7 @@ test("disabled items never match", () => {
 });
 
 test("exactly one category is active on a category page", () => {
-  const directory = SIDEBAR_GROUPS.find((group) => group.label === "Directory · 13")!;
+  const directory = SIDEBAR_GROUPS.find((group) => group.label === "Directory · 14")!;
 
   for (const item of directory.items.filter((i) => i.href !== "/tools")) {
     const query = item.href.split("?")[1];
@@ -61,11 +61,11 @@ test('"All tools" and a category are never active at the same time', () => {
 });
 
 test("the Directory label states its own count, and means it", () => {
-  // "Directory · 13" is the mockup's label. If a category is ever added to
+  // "Directory · 14" is the mockup's label. If a category is ever added to
   // the enum, the label and the list must not drift apart silently.
-  // 13 categories plus the "All tools" entry that fronts them.
-  const directory = SIDEBAR_GROUPS.find((group) => group.label === "Directory · 13")!;
-  assert.equal(directory.items.filter((item) => item.href !== "/tools").length, 13);
+  // 14 categories plus the "All tools" entry that fronts them.
+  const directory = SIDEBAR_GROUPS.find((group) => group.label === "Directory · 14")!;
+  assert.equal(directory.items.filter((item) => item.href !== "/tools").length, 14);
 });
 
 test("the logged-out top nav stays flat and short", () => {

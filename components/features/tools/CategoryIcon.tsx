@@ -1,5 +1,6 @@
 import {
   IconAdjustments,
+  IconApps,
   IconAward,
   IconBox,
   IconCode,
@@ -33,6 +34,7 @@ import type { ToolCategory } from "@/lib/tool-categories";
 const ICONS: Record<ToolCategory, Icon> = {
   models: IconBox,
   chats: IconMessage2,
+  app_builders: IconApps,
   agents: IconRobot,
   ides: IconCode,
   clis: IconTerminal,

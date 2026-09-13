@@ -14,16 +14,14 @@ import { contentView, toolView } from "@/lib/resource-view";
 import { SkillCategoryIcon } from "@/components/features/skills/SkillCategoryIcon";
 import { SkillFilters } from "@/components/features/skills/SkillFilters";
 import {
-  bySkillPopularity,
-  parseSkillSource,
-  skillRepo,
   HUB_GROUPS,
   hubGroupFor,
+  parseSkillSource,
   SELL_SKILLS_TAG,
   SKILLS_HUB_TAG,
-  skillLine,
+  skillRepo,
 } from "@/lib/skill-facts";
-import { getSkillCardFacts } from "@/lib/skill-live";
+import { listRankedSkills } from "@/lib/skill-live";
 import {
   categoryCounts,
   matchesSkillFilters,
@@ -60,30 +58,24 @@ export default async function SkillsPage({ searchParams }: Props) {
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
 
-  const [{ tools: skillRows }, { tools: tagged }, { tools: marketplaces }, { items: guides }, bookmarks] =
+  const [ranked, { tools: tagged }, { tools: marketplaces }, { items: guides }, bookmarks] =
     await Promise.all([
-      listTools(supabase, { category: "skills", pageSize: HUB_LIMIT }),
+      // Same ranking the homepage uses (VIB-131): cached per skill for an hour.
+      listRankedSkills(supabase),
       listTools(supabase, { tag: SKILLS_HUB_TAG, pageSize: HUB_LIMIT }),
       listTools(supabase, { tag: SELL_SKILLS_TAG, pageSize: HUB_LIMIT }),
       listContent(supabase, { tag: SKILLS_HUB_TAG, pageSize: HUB_LIMIT }),
       auth.user ? listBookmarks(supabase, auth.user.id, "tool") : [],
     ]);
 
-  // Cached per skill for an hour, and null rather than throwing (VIB-130).
-  const allSkills = (
-    await Promise.all(
-      skillRows.map(async (tool) => ({
-        tool,
-        name: tool.name,
-        // Filter fields (VIB-132). The creator is the GitHub owner, the same
-        // repository the stars come from.
-        category: tool.skill_category,
-        agentsExcluded: tool.skill_agents_excluded,
-        creator: skillRepo(parseSkillSource(tool.skills_sh_source), tool.outbound_url)?.owner ?? null,
-        ...(await getSkillCardFacts(tool)),
-      })),
-    )
-  ).sort(bySkillPopularity);
+  // Filter fields (VIB-132). The creator is the GitHub owner, the same
+  // repository the stars come from.
+  const allSkills = ranked.map((skill) => ({
+    ...skill,
+    category: skill.tool.skill_category,
+    agentsExcluded: skill.tool.skill_agents_excluded,
+    creator: skillRepo(parseSkillSource(skill.tool.skills_sh_source), skill.tool.outbound_url)?.owner ?? null,
+  }));
 
   // Filtered in memory: every skill is already loaded for its live facts, and
   // the list is small. Move this into listTools if the category grows past a page.
@@ -148,7 +140,7 @@ export default async function SkillsPage({ searchParams }: Props) {
 
         {skills.length ? (
           <ul className="mt-8 grid items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {skills.map(({ tool, installs, stars }) => (
+            {skills.map(({ tool, line }) => (
               <li key={tool.id}>
                 <ResourceCard
                   href={`/tools/${tool.slug}`}
@@ -162,7 +154,7 @@ export default async function SkillsPage({ searchParams }: Props) {
                   }
                   eyebrow={tool.skill_category ? skillCategoryLabel(tool.skill_category) : undefined}
                   description={tool.tagline}
-                  meta={skillLine(installs, stars) || undefined}
+                  meta={line || undefined}
                   action={
                     <>
                       <BookmarkButton

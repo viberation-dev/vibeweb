@@ -31,6 +31,7 @@ import { resolveTargetViews } from "@/lib/queries/resources";
 import { listPopularTags } from "@/lib/queries/tags";
 import { listPublishedTestimonials } from "@/lib/queries/testimonials";
 import { listTools } from "@/lib/queries/tools";
+import { listRankedSkills } from "@/lib/skill-live";
 import {
   getWalkthroughProgress,
   listWalkthroughs,
@@ -59,7 +60,7 @@ export default async function HomePage({ searchParams }: Props) {
   // those queries run.
   const profile = auth.user ? await getProfile(supabase, auth.user.id) : null;
 
-  const [collections, { items: latest }, { tools }, walkthroughs, history] =
+  const [collections, { items: latest }, { tools }, walkthroughs, history, topSkills] =
     await Promise.all([
       listFeaturedCollections(supabase),
       listContent(supabase, {
@@ -75,6 +76,9 @@ export default async function HomePage({ searchParams }: Props) {
       listWalkthroughs(supabase),
       // Four is what the rail has room for; the full list is the History tab.
       auth.user ? listHistory(supabase, auth.user.id, 4) : [],
+      // Both homepages point at the skills hub (VIB-131). Cached per skill for
+      // an hour, and ordered by stars when skills.sh is unavailable.
+      listRankedSkills(supabase, 3),
     ]);
 
   // §31 puts the flagship promo last. Nothing renders it when no walkthrough is
@@ -92,6 +96,7 @@ export default async function HomePage({ searchParams }: Props) {
         collections={collections}
         testimonials={testimonials}
         latest={latest}
+        topSkills={topSkills.map(({ tool }) => tool)}
         flagship={flagship}
         newsletterEnabled={newsletterFormEnabled()}
       />
@@ -179,7 +184,7 @@ export default async function HomePage({ searchParams }: Props) {
 
       <section className="mt-6">
         <h2 className="sr-only">Hubs</h2>
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {HUBS.map((hub) => (
             <li key={hub.title}>
               {/*
@@ -365,6 +370,28 @@ export default async function HomePage({ searchParams }: Props) {
             </RailCard>
           ) : null}
 
+          {topSkills.length ? (
+            <RailCard title="Popular skills" href="/skills">
+              <ul className="space-y-1.5">
+                {topSkills.map(({ tool, line }) => (
+                  <li key={tool.id}>
+                    <Link
+                      href={`/tools/${tool.slug}`}
+                      className="text-sm hover:underline"
+                    >
+                      {tool.name}
+                    </Link>
+                    {line ? (
+                      <span className="text-muted-foreground block text-xs">
+                        {line}
+                      </span>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </RailCard>
+          ) : null}
+
           {tags.length ? (
             /*
              * Genuinely ordered by use, not alphabetically: `tags` has no
@@ -402,6 +429,12 @@ const HUBS = [
     blurb: "Curated tool sets",
     pill: "MVP",
     href: "/collections",
+  },
+  {
+    title: "Skills",
+    blurb: "Teach your agent a method",
+    pill: "MVP",
+    href: "/skills",
   },
   {
     title: "Library",

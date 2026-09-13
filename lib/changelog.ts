@@ -43,7 +43,7 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
     date: "2026-09-14",
     kind: "added",
     title: "App Builders category",
-    body: "A new directory category for tools that build an app or website from a description. Lovable and Replit move into it, joined by Bolt, Base44, v0, Emergent, Mocha, Rork, Bubble, FlutterFlow, Softr, Relume, Framer, Webflow and Durable.",
+    body: "A new directory category for tools that build an app or website from a description. Lovable and Replit move into it, joined by Bolt, Base44, v0, Figma Make, Google AI Studio, Emergent, Mocha, Rork, Bubble, FlutterFlow, Softr, Relume, Framer, Webflow and Durable.",
   },
   {
     date: "2026-09-14",

@@ -41,6 +41,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-14",
+    kind: "improved",
+    title: "App builders on the homepage",
+    body: "The homepage now introduces App Builders, the tools that turn a description into a working app, with three to try. Signed in, they sit in the side rail beside Trending tools.",
+  },
+  {
+    date: "2026-09-14",
     kind: "added",
     title: "Five skills in every category",
     body: "Every skill category now has five to choose from, including the official Supabase skill, Emil Kowalski's design engineering, Superpowers' planning and verification skills, and AWS, Azure and Cloudflare deployment skills. Skills built for one stack say so up front.",

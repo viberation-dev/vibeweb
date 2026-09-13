@@ -60,7 +60,7 @@ export default async function HomePage({ searchParams }: Props) {
   // those queries run.
   const profile = auth.user ? await getProfile(supabase, auth.user.id) : null;
 
-  const [collections, { items: latest }, { tools }, walkthroughs, history, topSkills] =
+  const [collections, { items: latest }, { tools }, walkthroughs, history, topSkills, { tools: appBuilders }] =
     await Promise.all([
       listFeaturedCollections(supabase),
       listContent(supabase, {
@@ -79,6 +79,8 @@ export default async function HomePage({ searchParams }: Props) {
       // Both homepages point at the skills hub (VIB-131). Cached per skill for
       // an hour, and ordered by stars when skills.sh is unavailable.
       listRankedSkills(supabase, 3),
+      // Both homepages point at App Builders too (VIB-139).
+      listTools(supabase, { category: "app_builders", sort: "popular", pageSize: 3 }),
     ]);
 
   // §31 puts the flagship promo last. Nothing renders it when no walkthrough is
@@ -97,6 +99,7 @@ export default async function HomePage({ searchParams }: Props) {
         testimonials={testimonials}
         latest={latest}
         topSkills={topSkills.map(({ tool }) => tool)}
+        appBuilders={appBuilders}
         flagship={flagship}
         newsletterEnabled={newsletterFormEnabled()}
       />
@@ -364,6 +367,28 @@ export default async function HomePage({ searchParams }: Props) {
                     >
                       {tool.name}
                     </Link>
+                  </li>
+                ))}
+              </ul>
+            </RailCard>
+          ) : null}
+
+          {appBuilders.length ? (
+            <RailCard title="App builders" href={toolsHref({ category: "app_builders" })}>
+              <ul className="space-y-1.5">
+                {appBuilders.map((tool) => (
+                  <li key={tool.id}>
+                    <Link
+                      href={`/tools/${tool.slug}`}
+                      className="text-sm hover:underline"
+                    >
+                      {tool.name}
+                    </Link>
+                    {tool.tagline ? (
+                      <span className="text-muted-foreground block text-xs">
+                        {tool.tagline}
+                      </span>
+                    ) : null}
                   </li>
                 ))}
               </ul>

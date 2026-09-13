@@ -16,7 +16,7 @@ import {
 } from "./skill-taxonomy.ts";
 
 const migration = readFileSync(
-  new URL("../supabase/migrations/20260913150000_tool_skill_category_agents.sql", import.meta.url),
+  new URL("../supabase/migrations/20260913185959_tool_skill_category_agents.sql", import.meta.url),
   "utf8",
 );
 

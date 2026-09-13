@@ -9,6 +9,7 @@ import {
   isCodingAgentsOnly,
   worksInSummary,
   categoryCounts,
+  emptyAgentReason,
   matchesSkillFilters,
   SKILL_AGENT_IDS,
   SKILL_AGENTS,
@@ -109,4 +110,17 @@ test("a skill that cannot run in a chat app is coding agents only", () => {
     worksInSummary(["claude-ai", "chatgpt"]),
     "Coding agents such as Claude Code, Codex and Cursor; not Claude.ai or ChatGPT",
   );
+});
+
+test("an empty chat-app filter explains itself, and only when the agent is the cause", () => {
+  const skills = [
+    { category: "devops_deploy", agentsExcluded: ["claude-ai", "chatgpt"], creator: "vercel-labs" },
+    { category: "design_ui", agentsExcluded: [], creator: "anthropics" },
+  ] as const;
+
+  assert.match(emptyAgentReason(skills, { category: "devops_deploy", agent: "chatgpt" })!, /ChatGPT does not have/);
+  // Folder agents run a terminal, so the limit is not the reason.
+  assert.equal(emptyAgentReason(skills, { category: "devops_deploy", agent: "cursor" }), null);
+  // Nothing matches even without the agent: the creator emptied it, not ChatGPT.
+  assert.equal(emptyAgentReason(skills, { category: "devops_deploy", agent: "chatgpt", creator: "obra" }), null);
 });

@@ -25,6 +25,7 @@ import {
 import { listRankedSkills } from "@/lib/skill-live";
 import {
   categoryCounts,
+  emptyAgentReason,
   matchesSkillFilters,
   skillCardExtras,
   skillCategoryLabel,
@@ -192,7 +193,7 @@ export default async function SkillsPage({ searchParams }: Props) {
         ) : (
           <p className="text-muted-foreground mt-6">
             {allSkills.length
-              ? "No skills match those filters yet. Try clearing one."
+              ? (emptyAgentReason(allSkills, filters) ?? "No skills match those filters yet. Try clearing one.")
               : "No skills are listed yet."}
           </p>
         )}

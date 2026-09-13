@@ -73,6 +73,6 @@ test("the logged-out top nav stays flat and short", () => {
   // the signed-in sidebar's Learn group, not here.
   assert.deepEqual(
     TOP_NAV.map((item) => item.label),
-    ["Explore", "Learn", "Collections"],
+    ["Explore", "Skills", "Learn", "Collections"],
   );
 });

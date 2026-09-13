@@ -44,6 +44,7 @@ export async function saveToolAction(
     is_affiliate: formData.get("is_affiliate"),
     openrouter_family: formData.get("openrouter_family"),
     openrouter_id: formData.get("openrouter_id"),
+    skills_sh_source: formData.get("skills_sh_source"),
   });
 
   if (!parsed.success) {
@@ -67,6 +68,7 @@ export async function saveToolAction(
 
   // The directory, the tool's own page and the home feed can all show it.
   revalidatePath("/tools", "layout");
+  revalidatePath("/skills");
   revalidatePath("/");
   revalidatePath("/admin/tools");
 

@@ -35,6 +35,7 @@ export type NavItem = {
 /** Logged-out top nav. Four items, no sidebar. */
 export const TOP_NAV: readonly NavItem[] = [
   { href: "/tools", label: "Explore" },
+  { href: "/skills", label: "Skills" },
   { href: "/learn", label: "Learn" },
   { href: "/collections", label: "Collections" },
 ];
@@ -88,6 +89,8 @@ export const SIDEBAR_GROUPS: ReadonlyArray<{ label?: string; items: readonly Nav
       // Grouped under Learn but routed top-level, on purpose (§27 vs §31).
       { href: "/walkthroughs", label: "Walkthroughs" },
       { href: "/collections", label: "Collections" },
+      // The skills hub (VIB-130): skills plus how to install and find more.
+      { href: "/skills", label: "Skills hub" },
       { href: "#", label: "Setups", note: "1.5", disabled: true },
       { href: "#", label: "Paths", note: "1.5", disabled: true },
     ],

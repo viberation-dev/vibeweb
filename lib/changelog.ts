@@ -40,6 +40,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
  */
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    date: "2026-09-13",
+    kind: "added",
+    title: "A home for agent skills",
+    body: "The new Skills page ranks skills by real installs, and each skill's page now shows its install command, GitHub stars, independent security checks and the files inside. It also lists the package managers, directories and guides for going further.",
+  },
+  {
     date: "2026-09-12",
     kind: "improved",
     title: "Wizards are now Walkthroughs",

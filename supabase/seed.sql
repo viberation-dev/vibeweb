@@ -1131,3 +1131,157 @@ join tools t on t.slug = v.tool
 where not exists (
   select 1 from prompts p where p.tool_id = t.id and p.title = v.title
 );
+
+-- ---------------------------------------------------------------------------
+-- The skills hub (VIB-130)
+--
+-- Package managers, directories and guides for agent skills, surfaced on
+-- /skills through the `skills-ecosystem` tag. Every entry was checked against
+-- its own site or repository on 2026-09-13. Pricing is stated only where the
+-- site states it.
+insert into tags (name, slug) values
+  ('Skills ecosystem', 'skills-ecosystem')
+on conflict (slug) do update set name = excluded.name;
+
+insert into tools (name, slug, category, tagline, description, pricing_tier, outbound_url) values
+  ('skills CLI', 'skills-cli', 'clis',
+   'Install any agent skill with one npx command.',
+   'The open-source command behind skills.sh. Run npx skills add with a GitHub repository and it copies the skill into Claude Code, Cursor, Codex, Copilot or whichever agents you pick, and can list, update and remove them later.',
+   'Open source', 'https://github.com/vercel-labs/skills'),
+  ('SkillKit', 'skillkit', 'clis',
+   'Install skills once and use them in every agent.',
+   'An open-source CLI that installs, translates and shares skills across coding agents, so a skill written for Claude Code also works in Cursor, Codex and Copilot without rewriting it by hand.',
+   'Open source', 'https://skillkit.sh'),
+  ('skild', 'skild', 'clis',
+   'A package manager for skills, with versions and team sync.',
+   'Think npm for agent skills: install, update, sync and publish skills from the terminal, with versions so a whole team runs the same ones. MIT licensed, with a public hub for finding skills.',
+   'Open source', 'https://skild.sh'),
+
+  ('skills.sh', 'skills-sh', 'utilities',
+   'The open leaderboard of agent skills, with security audits.',
+   'Ranks skills by real installs from the skills CLI and runs each one past independent scanners such as Snyk and Socket. The install counts and security checks on Viberation''s skill pages come from here.',
+   'Free', 'https://skills.sh'),
+  ('SkillsMP', 'skillsmp', 'utilities',
+   'Search a very large index of open-source skills.',
+   'A marketplace that indexes SKILL.md files from public GitHub repositories, searchable by keyword, category and occupation, with stars and last activity on each result.',
+   'Free', 'https://skillsmp.com'),
+  ('Awesome Skills', 'awesome-skills', 'utilities',
+   'A skills marketplace with a risk score on every entry.',
+   'Browse skills for Claude, Codex and ChatGPT by category, with a security score that flags risky patterns such as sudo in a SKILL.md before you install anything.',
+   null, 'https://awesomeskill.ai'),
+  ('SkillsLLM', 'skillsllm', 'utilities',
+   'Browse security-vetted skills for Claude Code and Codex.',
+   'A directory of open-source agent skills, MCP servers and CLI tools for Claude Code, Codex CLI and ChatGPT, with a vetting pass on what it lists.',
+   null, 'https://skillsllm.com'),
+  ('Awesome Claude Skills', 'awesome-claude-skills', 'utilities',
+   'A long, curated GitHub list of skills and skill resources.',
+   'A community-maintained list of Claude skills, tutorials and tools, sorted by what they help with. A good place to browse when you know the job but not the skill.',
+   'Open source', 'https://github.com/ComposioHQ/awesome-claude-skills'),
+
+  ('Anthropic Skills', 'anthropic-skills', 'skills',
+   'Anthropic''s own skills, from frontend design to documents.',
+   'The official skills repository from Anthropic: frontend design, skill creation, Word, PowerPoint, Excel and PDF handling, and more. Also the clearest set of examples to copy when you write your own.',
+   'Open source', 'https://github.com/anthropics/skills')
+on conflict (slug) do update set
+  name         = excluded.name,
+  category     = excluded.category,
+  tagline      = excluded.tagline,
+  description  = excluded.description,
+  pricing_tier = excluded.pricing_tier,
+  outbound_url = excluded.outbound_url,
+  updated_at   = now();
+
+insert into tool_tags (tool_id, tag_id)
+select t.id, g.id
+from (values
+  ('skills-cli','skills-ecosystem'), ('skills-cli','open-source'),
+  ('skillkit','skills-ecosystem'), ('skillkit','open-source'),
+  ('skild','skills-ecosystem'), ('skild','open-source'),
+  ('skills-sh','skills-ecosystem'),
+  ('skillsmp','skills-ecosystem'),
+  ('awesome-skills','skills-ecosystem'),
+  ('skillsllm','skills-ecosystem'),
+  ('awesome-claude-skills','skills-ecosystem'), ('awesome-claude-skills','open-source'),
+  ('anthropic-skills','skills-ecosystem'), ('anthropic-skills','design'), ('anthropic-skills','open-source')
+) as m(tool_slug, tag_slug)
+join tools t on t.slug = m.tool_slug
+join tags  g on g.slug = m.tag_slug
+on conflict do nothing;
+
+-- Live installs, audits and files (VIB-130). A repository alone is a pack:
+-- installs are summed across its skills and there is no single SKILL.md.
+-- graphify is listed on skills.sh under its old owner; GitHub redirects that
+-- to Graphify-Labs, so the facts are the same repository's.
+update tools t set skills_sh_source = v.source
+from (values
+  ('superpowers', 'obra/superpowers'),
+  ('ui-ux-pro-max', 'nextlevelbuilder/ui-ux-pro-max-skill/ui-ux-pro-max'),
+  ('taste-skill', 'Leonxlnx/taste-skill'),
+  ('gstack', 'garrytan/gstack'),
+  ('graphify', 'safishamsi/graphify/graphify'),
+  ('anthropic-skills', 'anthropics/skills')
+) as v(slug, source)
+where t.slug = v.slug;
+
+insert into content (type, title, slug, body, role_level, audience, status, pillar) values
+  ('guide', 'What an agent skill is', 'what-an-agent-skill-is',
+   'A skill is a folder with a SKILL.md file in it. The file starts with a name and a one-line description, followed by instructions written for the agent.
+
+Your agent reads only the descriptions up front. When a task matches one, it loads that skill''s full instructions, plus any scripts or reference files in the folder. So you can install dozens of skills without filling the context window.
+
+Why bother? A skill turns "how we do this here" into something the agent follows every time. A good design skill stops the generic look. A good debugging skill makes it find the cause before it edits anything. You stop re-explaining the same method each session.
+
+Skills started with Claude and are now an open format. Codex, Cursor, GitHub Copilot and other agents read the same SKILL.md, so one skill works across tools.
+
+Where to start: pick one skill for the thing your agent does worst, install it, and watch whether the results change. Add the next one only when that one earns its place.',
+   'beginner', null, 'published', 'context_engineering'),
+
+  ('guide', 'Installing skills safely', 'installing-skills-safely',
+   'A skill is instructions your agent will follow, and sometimes scripts it will run with your permissions. Treat installing one like adding a dependency, not like bookmarking a page.
+
+Before you install:
+
+1. Read the SKILL.md. It is usually short. If it tells the agent to run commands, fetch URLs or touch files outside your project, make sure that is what you expect.
+
+2. Look inside the folder. Scripts are where real risk lives. A skill that is only text is far lower risk than one that ships a shell script.
+
+3. Check the security results. skills.sh runs every listed skill past independent scanners and shows pass, warning or fail on the skill''s page. A warning is a reason to read closer, not an automatic no.
+
+4. Prefer maintained sources. Recent commits, an open licence and an author you can identify all count. An abandoned fork of a popular skill does not inherit its reputation.
+
+To install, the skills CLI does the copying for you:
+
+npx skills add https://github.com/owner/repo --skill skill-name
+
+It asks which agents to add the skill to. Project skills live in the repository, so your team gets them through git and can review changes like any other code. Personal skills live in your home folder and only affect you.
+
+After an update, read the diff before you trust it again. The skill you checked is not automatically the skill you have today.',
+   'intermediate', null, 'published', 'context_engineering'),
+
+  ('guide', 'Writing your first skill', 'writing-your-first-skill',
+   'You already have a skill in you: the thing you keep typing into every session. Write it down once.
+
+1. Make a folder named after the job, such as release-notes, and put a SKILL.md inside it.
+
+2. Start the file with a short header: a name, and a description that says when to use it. The description is what the agent matches tasks against, so be specific. "Use when writing release notes from merged pull requests" beats "Helps with docs".
+
+3. Below the header, write the method as steps. Say what good output looks like, what to check before finishing, and what never to do. Write for a capable colleague who has never seen your project.
+
+4. Keep it short. Move long reference material into separate files in the folder and point to them, so the agent loads them only when it needs them.
+
+5. Test it on a real task. When the agent goes wrong, fix the instruction that let it, not just the output.
+
+Put project skills in the repository so the whole team shares them. Anthropic''s skills repository has well-written examples to copy, including a skill whose whole job is helping you write new skills.',
+   'intermediate', null, 'published', 'context_engineering')
+on conflict (slug) do nothing;
+
+insert into content_tags (content_id, tag_id)
+select c.id, g.id
+from (values
+  ('what-an-agent-skill-is','skills-ecosystem'), ('what-an-agent-skill-is','beginner-friendly'),
+  ('installing-skills-safely','skills-ecosystem'),
+  ('writing-your-first-skill','skills-ecosystem'), ('writing-your-first-skill','automation')
+) as m(content_slug, tag_slug)
+join content c on c.slug = m.content_slug
+join tags    g on g.slug = m.tag_slug
+on conflict do nothing;

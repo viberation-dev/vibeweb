@@ -357,6 +357,7 @@ export type ToolWrite = Pick<
   | "is_affiliate"
   | "openrouter_family"
   | "openrouter_id"
+  | "skills_sh_source"
 >;
 
 export async function createTool(

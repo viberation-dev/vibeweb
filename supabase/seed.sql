@@ -1708,3 +1708,41 @@ from (values
 join tools t on t.slug = m.tool_slug
 join tags  g on g.slug = m.tag_slug
 on conflict do nothing;
+
+-- Two more app builders, and a level for the two that moved in (VIB-137).
+-- Checked against Figma's and Google's docs on 2026-09-14.
+insert into tools (name, slug, category, tagline, description, pricing_tier, outbound_url) values
+  ('Figma Make', 'figma-make', 'app_builders',
+   'Prompt a working prototype or web app inside Figma.',
+   'Figma Make turns a description or an existing Figma design into an interactive app with real React and Tailwind code, and can publish it to its own URL. A natural next step for designers who already work in Figma.',
+   'Freemium', 'https://www.figma.com/make/'),
+  ('Google AI Studio', 'google-ai-studio', 'app_builders',
+   'Describe an app and Gemini builds it in the browser.',
+   'Google AI Studio''s Build mode generates a full-stack app from a prompt, previews it live, and can set up Firebase logins and a database for you before deploying to Cloud Run. It can also build native Android apps.',
+   'Freemium', 'https://aistudio.google.com/apps')
+on conflict (slug) do update set
+  name         = excluded.name,
+  category     = excluded.category,
+  tagline      = excluded.tagline,
+  description  = excluded.description,
+  pricing_tier = excluded.pricing_tier,
+  outbound_url = excluded.outbound_url,
+  updated_at   = now();
+
+update tools t set platform = array['web'], best_for = v.best_for::role_level
+from (values
+  ('figma-make','beginner'), ('google-ai-studio','beginner')
+) as v(slug, best_for)
+where t.slug = v.slug;
+
+update tools set best_for = 'beginner' where slug in ('lovable', 'replit');
+
+insert into tool_tags (tool_id, tag_id)
+select t.id, g.id
+from (values
+  ('figma-make','design'), ('figma-make','frontend'), ('figma-make','free-tier'),
+  ('google-ai-studio','web-apps'), ('google-ai-studio','code-generation'), ('google-ai-studio','free-tier')
+) as m(tool_slug, tag_slug)
+join tools t on t.slug = m.tool_slug
+join tags  g on g.slug = m.tag_slug
+on conflict do nothing;

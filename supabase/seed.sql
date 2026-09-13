@@ -70,7 +70,7 @@ insert into tools (name, slug, category, tagline, description, pricing_tier, out
    'Aider edits files in your local git repo and commits as it goes, so every AI change is a reviewable commit.',
    'Open source', 'https://aider.chat'),
 
-  ('Agent Skills', 'agent-skills', 'skills',
+  ('Agent Skills', 'agent-skills', 'utilities', -- docs, not a skill (VIB-133)
    'Package a repeatable workflow as a folder an agent can load.',
    'A skill is a directory of instructions (and optional scripts) that an agent loads when the task matches. The cleanest way to make "how we do X here" reusable instead of re-explaining it every session.',
    'Free', 'https://docs.claude.com/en/docs/agents-and-tools/agent-skills/overview'),
@@ -1202,7 +1202,8 @@ from (values
   ('awesome-skills','skills-ecosystem'),
   ('skillsllm','skills-ecosystem'),
   ('awesome-claude-skills','skills-ecosystem'), ('awesome-claude-skills','open-source'),
-  ('anthropic-skills','skills-ecosystem'), ('anthropic-skills','design'), ('anthropic-skills','open-source')
+  ('anthropic-skills','skills-ecosystem'), ('anthropic-skills','design'), ('anthropic-skills','open-source'),
+  ('agent-skills','skills-ecosystem')
 ) as m(tool_slug, tag_slug)
 join tools t on t.slug = m.tool_slug
 join tags  g on g.slug = m.tag_slug

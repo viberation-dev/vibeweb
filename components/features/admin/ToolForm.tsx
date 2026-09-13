@@ -8,6 +8,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Tool } from "@/lib/queries/tools";
+import { SKILL_AGENTS, SKILL_CATEGORIES } from "@/lib/skill-taxonomy";
 import { TOOL_CATEGORIES } from "@/lib/tool-categories";
 import { PRICING_TIERS } from "@/lib/tool-facts";
 import { TOOL_PLATFORMS } from "@/lib/tool-platforms";
@@ -217,6 +218,48 @@ export function ToolForm({ tool, action }: Props) {
           else.
         </p>
       </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="skill_category">Skill category</Label>
+        <select
+          id="skill_category"
+          name="skill_category"
+          defaultValue={tool?.skill_category ?? ""}
+          className={selectClass}
+        >
+          <option value="">Not filed</option>
+          {SKILL_CATEGORIES.map((category) => (
+            <option key={category.value} value={category.value}>
+              {category.label}
+            </option>
+          ))}
+        </select>
+        <p className="text-muted-foreground text-sm">
+          Skills only. Which tile it sits under on /skills.
+        </p>
+      </div>
+
+      <fieldset className="space-y-2">
+        <legend className="text-sm font-medium">Doesn&apos;t work in</legend>
+        <div className="flex flex-wrap gap-x-6 gap-y-2">
+          {SKILL_AGENTS.map((agent) => (
+            <label key={agent.id} className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                name="skill_agents_excluded"
+                value={agent.id}
+                defaultChecked={tool?.skill_agents_excluded?.includes(agent.id) ?? false}
+                className="border-input size-4 rounded border"
+              />
+              {agent.label}
+            </label>
+          ))}
+        </div>
+        <p className="text-muted-foreground text-sm">
+          Skills only. Every skill is listed for every agent unless ticked here,
+          for example one that needs a terminal will not run in ChatGPT.
+        </p>
+      </fieldset>
 
       <div className="flex items-start gap-3">
         <input

@@ -3,6 +3,7 @@ import { getVercelOidcToken } from "@vercel/oidc";
 import {
   parseAudits,
   parseSkillDetail,
+  parseSkillFiles,
   sumPackInstalls,
   type SkillAudit,
   type SkillDetail,
@@ -84,6 +85,16 @@ const skillPath = (source: SkillSource) =>
 export async function getSkillDetail(source: SkillSource): Promise<SkillDetail | null> {
   if (!source.skill) return null;
   return parseSkillDetail(await getJson(`/${skillPath(source)}`, true));
+}
+
+/**
+ * One skill's files with contents, for the ZIP download (VIB-132). Same
+ * cached request as getSkillDetail, parsed differently. Empty for a pack or
+ * when unknown.
+ */
+export async function getSkillFiles(source: SkillSource): Promise<{ path: string; contents: string }[]> {
+  if (!source.skill) return [];
+  return parseSkillFiles(await getJson(`/${skillPath(source)}`, true));
 }
 
 /**

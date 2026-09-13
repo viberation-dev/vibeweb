@@ -521,6 +521,8 @@ export type Database = {
           platform: string[]
           pricing_tier: string | null
           search_vector: unknown
+          skill_agents_excluded: string[]
+          skill_category: Database["public"]["Enums"]["skill_category"] | null
           skills_sh_source: string | null
           slug: string
           tagline: string | null
@@ -543,6 +545,8 @@ export type Database = {
           platform?: string[]
           pricing_tier?: string | null
           search_vector?: unknown
+          skill_agents_excluded?: string[]
+          skill_category?: Database["public"]["Enums"]["skill_category"] | null
           skills_sh_source?: string | null
           slug: string
           tagline?: string | null
@@ -565,6 +569,8 @@ export type Database = {
           platform?: string[]
           pricing_tier?: string | null
           search_vector?: unknown
+          skill_agents_excluded?: string[]
+          skill_category?: Database["public"]["Enums"]["skill_category"] | null
           skills_sh_source?: string | null
           slug?: string
           tagline?: string | null
@@ -734,6 +740,20 @@ export type Database = {
       role_level: "beginner" | "intermediate" | "expert"
       tag_kind: "facet" | "audience" | "pricing"
       target_kind: "tool" | "content" | "prompt" | "collection" | "wizard"
+      skill_category:
+        | "design_ui"
+        | "frontend"
+        | "backend_apis"
+        | "testing_qa"
+        | "code_review"
+        | "debugging"
+        | "planning_workflow"
+        | "docs_writing"
+        | "data_analysis"
+        | "devops_deploy"
+        | "security"
+        | "marketing_content"
+        | "documents_office"
       tool_category:
         | "models"
         | "agents"
@@ -903,6 +923,21 @@ export const Constants = {
       role_level: ["beginner", "intermediate", "expert"],
       tag_kind: ["facet", "audience", "pricing"],
       target_kind: ["tool", "content", "prompt", "collection", "wizard"],
+      skill_category: [
+        "design_ui",
+        "frontend",
+        "backend_apis",
+        "testing_qa",
+        "code_review",
+        "debugging",
+        "planning_workflow",
+        "docs_writing",
+        "data_analysis",
+        "devops_deploy",
+        "security",
+        "marketing_content",
+        "documents_office",
+      ],
       tool_category: [
         "models",
         "agents",

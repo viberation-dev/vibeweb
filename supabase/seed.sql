@@ -1285,3 +1285,55 @@ from (values
 join content c on c.slug = m.content_slug
 join tags    g on g.slug = m.tag_slug
 on conflict do nothing;
+
+-- ---------------------------------------------------------------------------
+-- Skill categories and places to sell skills (VIB-132)
+--
+-- Categories are editorial: neither skills.sh nor SkillsMP publishes one.
+-- Agent Skills is a docs page, not a skill, so it stays unfiled. No skill is
+-- marked as excluded from any agent: that is only set once someone has
+-- actually seen it fail there.
+update tools t set skill_category = v.category::skill_category
+from (values
+  ('superpowers', 'planning_workflow'),
+  ('gstack', 'planning_workflow'),
+  ('ui-ux-pro-max', 'design_ui'),
+  ('taste-skill', 'design_ui'),
+  ('graphify', 'data_analysis'),
+  ('anthropic-skills', 'documents_office')
+) as v(slug, category)
+where t.slug = v.slug;
+
+-- External marketplaces, linked out to. Viberation does not sell skills
+-- itself. Checked against each site on 2026-09-13.
+insert into tags (name, slug) values
+  ('Sell skills', 'sell-skills')
+on conflict (slug) do update set name = excluded.name;
+
+insert into tools (name, slug, category, tagline, description, pricing_tier, outbound_url) values
+  ('PromptBase', 'promptbase', 'utilities',
+   'Sell your prompts and agent skills to other builders.',
+   'A marketplace for AI prompts that also sells agent skills as SKILL.md files. Sales through the marketplace carry a 20% commission; sales through your own link carry none. Payouts go through Stripe.',
+   null, 'https://promptbase.com/sell'),
+  ('Capafy', 'capafy', 'utilities',
+   'Publish a skill and earn from every subscription or run.',
+   'A skills marketplace where your skill runs on Capafy''s servers, so buyers get the results without seeing your prompts or scripts. Works from Claude Code and Codex, with pricing by subscription, rental or download.',
+   null, 'https://capafy.ai/earn/')
+on conflict (slug) do update set
+  name         = excluded.name,
+  category     = excluded.category,
+  tagline      = excluded.tagline,
+  description  = excluded.description,
+  pricing_tier = excluded.pricing_tier,
+  outbound_url = excluded.outbound_url,
+  updated_at   = now();
+
+insert into tool_tags (tool_id, tag_id)
+select t.id, g.id
+from (values
+  ('promptbase','sell-skills'),
+  ('capafy','sell-skills')
+) as m(tool_slug, tag_slug)
+join tools t on t.slug = m.tool_slug
+join tags  g on g.slug = m.tag_slug
+on conflict do nothing;

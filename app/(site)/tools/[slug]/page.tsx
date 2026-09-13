@@ -325,7 +325,13 @@ export default async function ToolPage({ params, searchParams }: Props) {
             </>
           ) : null}
 
-          {skillFacts ? <SkillFacts facts={skillFacts} /> : null}
+          {skillFacts ? (
+            <SkillFacts
+              facts={skillFacts}
+              slug={tool.slug}
+              agentsExcluded={tool.skill_agents_excluded}
+            />
+          ) : null}
 
           <ToolLinks outgoing={links.outgoing} incoming={links.incoming} />
 

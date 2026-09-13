@@ -47,6 +47,12 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   },
   {
     date: "2026-09-13",
+    kind: "improved",
+    title: "Skills on the homepage",
+    body: "The homepage now points to the Skills page, with the most installed skills up front. Signed in, they sit beside Trending tools, and Skills joins the hubs row.",
+  },
+  {
+    date: "2026-09-13",
     kind: "added",
     title: "A home for agent skills",
     body: "The new Skills page ranks skills by real installs, and each skill's page now shows its install command, GitHub stars, independent security checks and the files inside. It also lists the package managers, directories and guides for going further.",

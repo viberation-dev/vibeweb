@@ -1,7 +1,8 @@
 import { getRepoFacts } from "@/lib/integrations/github";
 import { getSkillAudits, getSkillDetail, getSkillInstalls } from "@/lib/integrations/skills-sh";
-import type { Tool } from "@/lib/queries/tools";
+import { listTools, type Tool } from "@/lib/queries/tools";
 import {
+  bySkillPopularity,
   installCommand,
   parseSkillSource,
   skillLine,
@@ -20,6 +21,7 @@ import {
  */
 
 type SkillRow = Pick<Tool, "category" | "skills_sh_source" | "outbound_url">;
+type Client = Parameters<typeof listTools>[0];
 
 export type SkillCardFacts = { installs: number | null; stars: number | null };
 
@@ -51,6 +53,28 @@ export async function getSkillCardLines(
   );
   return new Map(lines.filter(([, line]) => line !== ""));
 }
+
+export type RankedSkill = SkillCardFacts & { tool: Tool; name: string; line: string };
+
+/**
+ * Every skill, most installed first, with its card facts (VIB-131). The
+ * /skills hub shows them all; the homepage takes the head of the list. When
+ * skills.sh is unavailable the order falls back to stars, then name.
+ */
+export async function listRankedSkills(client: Client, limit?: number): Promise<RankedSkill[]> {
+  const { tools } = await listTools(client, { category: "skills", pageSize: SKILL_LIST_LIMIT });
+  const ranked = await Promise.all(
+    tools.map(async (tool) => {
+      const facts = await getSkillCardFacts(tool);
+      return { tool, name: tool.name, ...facts, line: skillLine(facts.installs, facts.stars) };
+    }),
+  );
+  ranked.sort(bySkillPopularity);
+  return limit === undefined ? ranked : ranked.slice(0, limit);
+}
+
+/** Every skill fits on one page today; the directory paginates if this is ever outgrown. */
+const SKILL_LIST_LIMIT = 100;
 
 export type SkillPageFacts = {
   /** The parsed skills.sh pointer, for per-agent install text (VIB-132). */

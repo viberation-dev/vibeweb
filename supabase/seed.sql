@@ -1370,7 +1370,7 @@ insert into tools (name, slug, category, tagline, description, pricing_tier, out
   ('Doc Co-authoring', 'doc-coauthoring', 'skills',
    'Write specs, proposals and docs with your agent, step by step.',
    'Anthropic''s structured workflow for co-writing documentation, proposals, technical specs and decision docs: it gathers context from you, refines the draft over rounds, and checks the result.',
-   'Open source', 'https://github.com/anthropics/skills'),
+   'Free', 'https://github.com/anthropics/skills'),
   ('Deploy to Vercel', 'deploy-to-vercel', 'skills',
    'Ask your agent to deploy, and get the live link back.',
    'Vercel''s skill for deploying apps and websites. Say "deploy my app", "push this live" or "create a preview deployment" and your agent runs the deployment for you.',
@@ -1428,3 +1428,185 @@ on conflict do nothing;
 -- Neither can run inside Claude.ai or ChatGPT (VIB-134).
 update tools set skill_agents_excluded = array['claude-ai', 'chatgpt']
 where slug in ('webapp-testing', 'deploy-to-vercel');
+
+-- ---------------------------------------------------------------------------
+-- Three skills in every category (VIB-135)
+--
+-- Same bar as VIB-134: on the skills.sh leaderboard, no failing security
+-- audit, tagline and description taken from the skill's own SKILL.md, checked
+-- 2026-09-14. Six first choices were dropped for a failing audit.
+--
+-- Pricing follows each skill's licence. Anthropic's Word, Excel and
+-- PowerPoint skills are source-available, not open source, so they say
+-- "Free"; so does Doc Co-authoring, whose folder carries no licence.
+insert into tools (name, slug, category, tagline, description, pricing_tier, outbound_url) values
+  ('Frontend Design', 'frontend-design', 'skills',
+   'Distinctive UI instead of templated defaults, from Anthropic.',
+   'Anthropic''s guidance for intentional visual design when building a new interface or reshaping an existing one: aesthetic direction, typography, and choices that do not read as generic.',
+   'Open source', 'https://github.com/anthropics/skills'),
+  ('shadcn/ui Skill', 'shadcn-skill', 'skills',
+   'Add, fix and style shadcn/ui components with the right context.',
+   'The official shadcn skill. Your agent manages shadcn components and projects, from adding and searching components to debugging, styling and composing UI, with component docs and usage examples to hand.',
+   'Open source', 'https://github.com/shadcn-ui/ui'),
+  ('Web Design Guidelines', 'web-design-guidelines', 'skills',
+   'Check your UI against Vercel''s interface guidelines.',
+   'Vercel''s skill for reviewing UI code against its Web Interface Guidelines. Ask your agent to review your UI, check accessibility or audit the UX, and it reports what to fix.',
+   'Free', 'https://github.com/vercel-labs/agent-skills'),
+  ('FastAPI', 'fastapi-skill', 'skills',
+   'FastAPI''s own conventions, kept current.',
+   'Best practices from the FastAPI project for APIs, Pydantic models, dependencies and streaming responses, so the code your agent writes uses the latest features and patterns.',
+   'Open source', 'https://github.com/fastapi/fastapi'),
+  ('Prisma Database Setup', 'prisma-database-setup', 'skills',
+   'Connect Prisma to Postgres, MySQL, SQLite or MongoDB.',
+   'Prisma''s official guide to configuring a database provider. Your agent uses it when starting a project, switching databases or fixing connection problems.',
+   'Open source', 'https://github.com/prisma/skills'),
+  ('Test-Driven Development', 'test-driven-development', 'skills',
+   'Write the failing test first, then the code.',
+   'From Superpowers. Before your agent implements a feature or a bug fix, it writes a test that fails, then the code that makes it pass.',
+   'Open source', 'https://github.com/obra/superpowers'),
+  ('QA Session', 'qa-session', 'skills',
+   'Report bugs as you find them and get GitHub issues filed.',
+   'From Matt Pocock''s skills. You describe bugs and issues in conversation, and your agent explores the codebase and files them as GitHub issues.',
+   'Open source', 'https://github.com/mattpocock/skills'),
+  ('Requesting Code Review', 'requesting-code-review', 'skills',
+   'Check finished work against its requirements before merging.',
+   'From Superpowers. When a task or major feature is done, and before merging, your agent has the work reviewed to confirm it does what was asked.',
+   'Open source', 'https://github.com/obra/superpowers'),
+  ('CodeRabbit Review', 'coderabbit-code-review', 'skills',
+   'Run CodeRabbit reviews from inside your agent.',
+   'CodeRabbit''s skill for running its CLI reviews on committed or uncommitted changes, fetching saved fix prompts for GitHub pull requests, and making sense of the results. Needs the CodeRabbit CLI.',
+   'Open source', 'https://github.com/coderabbitai/skills'),
+  ('Systematic Debugging', 'systematic-debugging', 'skills',
+   'Find the root cause before proposing a fix.',
+   'From Superpowers. On any bug, failing test or unexpected behaviour, your agent investigates systematically and finds the cause before it changes any code.',
+   'Open source', 'https://github.com/obra/superpowers'),
+  ('Sentry Fix Issues', 'sentry-fix-issues', 'skills',
+   'Fix the production errors Sentry reports.',
+   'Sentry''s skill for finding and fixing issues through the Sentry MCP server. Your agent reads stack traces, breadcrumbs and traces to reach the root cause of production errors.',
+   'Open source', 'https://github.com/getsentry/sentry-for-ai'),
+  ('Grill Me', 'grill-me', 'skills',
+   'A relentless interview to sharpen a plan or design.',
+   'From Matt Pocock''s skills. Before you build, your agent questions your plan or design hard, so the gaps show up in conversation instead of in the code.',
+   'Open source', 'https://github.com/mattpocock/skills'),
+  ('Writing for Agents', 'writing-for-agents', 'skills',
+   'Write skills, AGENTS.md and CLAUDE.md that agents actually follow.',
+   'From Matt Pocock''s skills. Guidance for writing documents meant for agents, used when creating or editing skills or changing AGENTS.md and CLAUDE.md.',
+   'Open source', 'https://github.com/mattpocock/skills'),
+  ('Internal Comms', 'internal-comms', 'skills',
+   'Status reports, leadership updates and newsletters in your format.',
+   'Anthropic''s skill for writing internal communications such as status reports, leadership updates and company newsletters, in the formats your company prefers.',
+   'Open source', 'https://github.com/anthropics/skills'),
+  ('Excel (xlsx)', 'xlsx-skill', 'skills',
+   'Read, fix and build spreadsheets with formulas and charts.',
+   'Anthropic''s spreadsheet skill, used whenever a spreadsheet is the input or output: opening and fixing .xlsx or .csv files, adding columns, computing formulas, formatting and charting. Source-available, not open source.',
+   'Free', 'https://github.com/anthropics/skills'),
+  ('Just Scrape', 'just-scrape', 'skills',
+   'Scrape, crawl and pull structured data from the web.',
+   'ScrapeGraphAI''s skill for searching the web, scraping pages, crawling documentation and extracting JSON from sites. Needs the ScrapeGraph AI CLI.',
+   'Open source', 'https://github.com/scrapegraphai/just-scrape'),
+  ('Wrangler', 'wrangler', 'skills',
+   'Build and deploy Cloudflare Workers from your agent.',
+   'Cloudflare''s skill for running and troubleshooting Wrangler CLI commands and configuring Worker projects for local development, deployment and managing Cloudflare resources.',
+   'Open source', 'https://github.com/cloudflare/skills'),
+  ('AWS Deployment Pipelines', 'aws-deployment', 'skills',
+   'Set up CI/CD on AWS with CodePipeline and CodeBuild.',
+   'From the AWS agent toolkit. Your agent configures CI/CD pipelines with CodePipeline, CodeBuild, CodeDeploy, CodeConnections and CodeArtifact.',
+   'Open source', 'https://github.com/aws/agent-toolkit-for-aws'),
+  ('Security Audit', 'cloudflare-security-audit', 'skills',
+   'Find, verify and prioritise vulnerabilities in your code.',
+   'Cloudflare''s security audit skill. Your agent finds vulnerabilities grounded in the source code, validates and prioritises them, and describes the fixes, for web apps, APIs, services and libraries.',
+   'Open source', 'https://github.com/cloudflare/security-audit-skill'),
+  ('Supply Chain Risk Auditor', 'supply-chain-risk-auditor', 'skills',
+   'Audit your dependencies for supply-chain risk.',
+   'From Trail of Bits. Checks direct and lockfile dependencies against advisories, flags abandoned or archived upstreams and install-time scripts, and reports the risk.',
+   'Open source', 'https://github.com/trailofbits/skills'),
+  ('Copywriting', 'copywriting', 'skills',
+   'Write or rewrite the copy on any marketing page.',
+   'From Corey Haines'' marketing skills. Your agent writes and improves copy for homepages, landing pages, pricing pages, feature pages and product pages.',
+   'Open source', 'https://github.com/coreyhaines31/marketingskills'),
+  ('Page CRO', 'page-cro', 'skills',
+   'Get more conversions from a landing or pricing page.',
+   'From Corey Haines'' marketing skills. Your agent reviews a marketing page, such as a homepage, landing page or pricing page, and suggests changes to lift conversions.',
+   'Open source', 'https://github.com/coreyhaines31/marketingskills'),
+  ('PowerPoint (pptx)', 'pptx-skill', 'skills',
+   'Create and edit slide decks.',
+   'Anthropic''s presentation skill, used whenever a .pptx file is involved: building slide decks and pitch decks, or reading and extracting text from existing ones. Source-available, not open source.',
+   'Free', 'https://github.com/anthropics/skills'),
+  ('Word (docx)', 'docx-skill', 'skills',
+   'Create and edit Word documents with proper formatting.',
+   'Anthropic''s Word skill for creating, reading and editing .docx documents and templates with professional formatting. Source-available, not open source.',
+   'Free', 'https://github.com/anthropics/skills')
+on conflict (slug) do update set
+  name         = excluded.name,
+  category     = excluded.category,
+  tagline      = excluded.tagline,
+  description  = excluded.description,
+  pricing_tier = excluded.pricing_tier,
+  outbound_url = excluded.outbound_url,
+  updated_at   = now();
+
+update tools t set skills_sh_source = v.source, skill_category = v.category::skill_category
+from (values
+  ('frontend-design', 'anthropics/skills/frontend-design', 'design_ui'),
+  ('shadcn-skill', 'shadcn/ui/shadcn', 'frontend'),
+  ('web-design-guidelines', 'vercel-labs/agent-skills/web-design-guidelines', 'frontend'),
+  ('fastapi-skill', 'fastapi/fastapi/fastapi', 'backend_apis'),
+  ('prisma-database-setup', 'prisma/skills/prisma-database-setup', 'backend_apis'),
+  ('test-driven-development', 'obra/superpowers/test-driven-development', 'testing_qa'),
+  ('qa-session', 'mattpocock/skills/qa', 'testing_qa'),
+  ('requesting-code-review', 'obra/superpowers/requesting-code-review', 'code_review'),
+  ('coderabbit-code-review', 'coderabbitai/skills/code-review', 'code_review'),
+  ('systematic-debugging', 'obra/superpowers/systematic-debugging', 'debugging'),
+  ('sentry-fix-issues', 'getsentry/sentry-for-ai/sentry-fix-issues', 'debugging'),
+  ('grill-me', 'mattpocock/skills/grill-me', 'planning_workflow'),
+  ('writing-for-agents', 'mattpocock/skills/writing-for-agents', 'docs_writing'),
+  ('internal-comms', 'anthropics/skills/internal-comms', 'docs_writing'),
+  ('xlsx-skill', 'anthropics/skills/xlsx', 'data_analysis'),
+  ('just-scrape', 'scrapegraphai/just-scrape/just-scrape', 'data_analysis'),
+  ('wrangler', 'cloudflare/skills/wrangler', 'devops_deploy'),
+  ('aws-deployment', 'aws/agent-toolkit-for-aws/aws-deployment', 'devops_deploy'),
+  ('cloudflare-security-audit', 'cloudflare/security-audit-skill/security-audit', 'security'),
+  ('supply-chain-risk-auditor', 'trailofbits/skills/supply-chain-risk-auditor', 'security'),
+  ('copywriting', 'coreyhaines31/marketingskills/copywriting', 'marketing_content'),
+  ('page-cro', 'coreyhaines31/marketingskills/page-cro', 'marketing_content'),
+  ('pptx-skill', 'anthropics/skills/pptx', 'documents_office'),
+  ('docx-skill', 'anthropics/skills/docx', 'documents_office')
+) as v(slug, source, category)
+where t.slug = v.slug;
+
+-- These drive a command-line tool on your own machine, which a chat app
+-- cannot run.
+update tools set skill_agents_excluded = array['claude-ai', 'chatgpt']
+where slug in ('coderabbit-code-review', 'just-scrape', 'wrangler', 'aws-deployment');
+
+-- Correction to VIB-134: this folder carries no licence.
+update tools set pricing_tier = 'Free' where slug = 'doc-coauthoring';
+
+insert into tool_tags (tool_id, tag_id)
+select t.id, g.id
+from (values
+  ('frontend-design','design'), ('frontend-design','frontend'), ('frontend-design','open-source'),
+  ('shadcn-skill','frontend'), ('shadcn-skill','design'), ('shadcn-skill','open-source'),
+  ('web-design-guidelines','frontend'), ('web-design-guidelines','design'),
+  ('fastapi-skill','backend'), ('fastapi-skill','open-source'),
+  ('prisma-database-setup','database'), ('prisma-database-setup','backend'), ('prisma-database-setup','open-source'),
+  ('test-driven-development','testing'), ('test-driven-development','open-source'),
+  ('qa-session','testing'), ('qa-session','open-source'),
+  ('requesting-code-review','code-generation'), ('requesting-code-review','open-source'),
+  ('coderabbit-code-review','code-generation'), ('coderabbit-code-review','open-source'),
+  ('systematic-debugging','testing'), ('systematic-debugging','open-source'),
+  ('sentry-fix-issues','testing'), ('sentry-fix-issues','open-source'),
+  ('grill-me','open-source'),
+  ('writing-for-agents','automation'), ('writing-for-agents','open-source'),
+  ('internal-comms','open-source'),
+  ('just-scrape','automation'), ('just-scrape','open-source'),
+  ('wrangler','deployment'), ('wrangler','open-source'),
+  ('aws-deployment','deployment'), ('aws-deployment','open-source'),
+  ('cloudflare-security-audit','testing'), ('cloudflare-security-audit','open-source'),
+  ('supply-chain-risk-auditor','testing'), ('supply-chain-risk-auditor','open-source'),
+  ('copywriting','web-apps'), ('copywriting','open-source'),
+  ('page-cro','web-apps'), ('page-cro','open-source')
+) as m(tool_slug, tag_slug)
+join tools t on t.slug = m.tool_slug
+join tags  g on g.slug = m.tag_slug
+on conflict do nothing;

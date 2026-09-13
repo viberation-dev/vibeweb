@@ -114,6 +114,33 @@ export function parseSkillDetail(raw: unknown): SkillDetail | null {
   };
 }
 
+/**
+ * The skill's own files with their contents, for the ZIP download (VIB-132).
+ *
+ * Paths are made relative to the folder holding SKILL.md, whether skills.sh
+ * lists them that way already or from the repository root, and anything
+ * outside that folder is dropped: the download is the skill, not its
+ * neighbours. Empty when there is no SKILL.md or the shape is unknown.
+ */
+export function parseSkillFiles(raw: unknown): { path: string; contents: string }[] {
+  const parsed = SkillDetailSchema.safeParse(raw);
+  if (!parsed.success) return [];
+  const files = (parsed.data.files ?? []).flatMap((file) =>
+    typeof file.contents === "string" ? [{ path: file.path, contents: file.contents }] : [],
+  );
+
+  const skillMd = files
+    .map((file) => file.path)
+    .filter((path) => /(^|\/)SKILL\.md$/.test(path))
+    .sort((a, b) => a.split("/").length - b.split("/").length)[0];
+  if (skillMd === undefined) return [];
+
+  const prefix = skillMd.slice(0, skillMd.length - "SKILL.md".length);
+  return files
+    .filter((file) => file.path.startsWith(prefix))
+    .map((file) => ({ path: file.path.slice(prefix.length), contents: file.contents }));
+}
+
 const SearchRowSchema = z.object({ source: z.string(), installs: z.number().nullish() });
 
 /**
@@ -261,7 +288,13 @@ export function bySkillPopularity<T extends { name: string; installs: number | n
 /** Facet tag that puts a tool or guide on the /skills hub's resources. */
 export const SKILLS_HUB_TAG = "skills-ecosystem";
 
-export type HubGroupKey = "install" | "discover";
+export type HubGroupKey = "install" | "discover" | "sell";
+
+/**
+ * Facet tag for external marketplaces where people sell their own skills
+ * (VIB-132). Viberation links out; it does not sell anything itself.
+ */
+export const SELL_SKILLS_TAG = "sell-skills";
 
 export const HUB_GROUPS: ReadonlyArray<{ key: HubGroupKey; title: string; blurb: string }> = [
   {
@@ -273,6 +306,11 @@ export const HUB_GROUPS: ReadonlyArray<{ key: HubGroupKey; title: string; blurb:
     key: "discover",
     title: "Find more skills",
     blurb: "Directories, leaderboards and curated lists, most with security checks on each skill.",
+  },
+  {
+    key: "sell",
+    title: "Sell your skills",
+    blurb: "Marketplaces where you can list a skill you wrote and get paid for it. Each sets its own fees and terms.",
   },
 ];
 

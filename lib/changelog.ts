@@ -41,6 +41,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-13",
+    kind: "improved",
+    title: "Filter skills, install them anywhere, download them",
+    body: "The Skills page filters by category, by the agent you use and by who made each skill. Every skill page now has install steps for Claude Code, Claude.ai, ChatGPT, Codex, Cursor, GitHub Copilot, Antigravity and Gemini CLI, plus a ZIP download. The Skills page also links to marketplaces where you can sell skills you write.",
+  },
+  {
+    date: "2026-09-13",
     kind: "added",
     title: "A home for agent skills",
     body: "The new Skills page ranks skills by real installs, and each skill's page now shows its install command, GitHub stars, independent security checks and the files inside. It also lists the package managers, directories and guides for going further.",

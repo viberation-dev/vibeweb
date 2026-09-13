@@ -358,6 +358,8 @@ export type ToolWrite = Pick<
   | "openrouter_family"
   | "openrouter_id"
   | "skills_sh_source"
+  | "skill_category"
+  | "skill_agents_excluded"
 >;
 
 export async function createTool(

@@ -45,6 +45,8 @@ export async function saveToolAction(
     openrouter_family: formData.get("openrouter_family"),
     openrouter_id: formData.get("openrouter_id"),
     skills_sh_source: formData.get("skills_sh_source"),
+    skill_category: formData.get("skill_category"),
+    skill_agents_excluded: formData.getAll("skill_agents_excluded"),
   });
 
   if (!parsed.success) {

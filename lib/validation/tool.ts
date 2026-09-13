@@ -5,6 +5,7 @@ import { z } from "zod";
 import { OPENROUTER_FAMILY, OPENROUTER_ID } from "../model-facts.ts";
 import { safeOutboundUrl } from "../outbound.ts";
 import { SKILLS_SH_SOURCE } from "../skill-facts.ts";
+import { SKILL_AGENT_IDS, SKILL_CATEGORY_VALUES } from "../skill-taxonomy.ts";
 import { PRICING_TIERS } from "../tool-facts.ts";
 import { TOOL_PLATFORM_VALUES } from "../tool-platforms.ts";
 
@@ -109,6 +110,16 @@ export const toolEditorSchema = z.object({
         "skills.sh sources look like owner/repo/skill, e.g. anthropics/skills/frontend-design, or owner/repo for a pack.",
     })
     .transform((value) => (value === "" ? null : value)),
+  /** Skill hub category (VIB-132). Empty is unfiled. */
+  skill_category: z
+    .union([z.enum(SKILL_CATEGORY_VALUES as [string, ...string[]]), z.literal("")])
+    .nullish()
+    .transform((value) => (value ? (value as (typeof SKILL_CATEGORY_VALUES)[number]) : null)),
+  /** Checkboxes, like `platform`: unknown values dropped, and the CHECK is the backstop. */
+  skill_agents_excluded: z
+    .array(z.string())
+    .nullish()
+    .transform((values) => (values ?? []).filter((v) => (SKILL_AGENT_IDS as readonly string[]).includes(v))),
 })
   // Mirrors tools_openrouter_id_in_family: featuring a GPT on the Claude page
   // would be a wrong fact, not a style choice.

@@ -9,6 +9,7 @@ import {
   type RepoFacts,
   type SkillAudit,
   type SkillDetail,
+  type SkillSource,
 } from "@/lib/skill-facts";
 
 /*
@@ -52,6 +53,8 @@ export async function getSkillCardLines(
 }
 
 export type SkillPageFacts = {
+  /** The parsed skills.sh pointer, for per-agent install text (VIB-132). */
+  source: SkillSource | null;
   command: string | null;
   installs: number | null;
   repo: { owner: string; repo: string } | null;
@@ -77,6 +80,7 @@ export async function getSkillPageFacts(tool: SkillRow): Promise<SkillPageFacts 
   ]);
 
   return {
+    source,
     command: source ? installCommand(source) : null,
     installs: detail?.installs ?? packInstalls,
     repo,

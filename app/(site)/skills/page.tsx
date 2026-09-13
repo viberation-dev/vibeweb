@@ -11,14 +11,25 @@ import { listBookmarks } from "@/lib/queries/bookmarks";
 import { listContent } from "@/lib/queries/content";
 import { listTools } from "@/lib/queries/tools";
 import { contentView, toolView } from "@/lib/resource-view";
+import { SkillCategoryIcon } from "@/components/features/skills/SkillCategoryIcon";
+import { SkillFilters } from "@/components/features/skills/SkillFilters";
 import {
   bySkillPopularity,
+  parseSkillSource,
+  skillRepo,
   HUB_GROUPS,
   hubGroupFor,
+  SELL_SKILLS_TAG,
   SKILLS_HUB_TAG,
   skillLine,
 } from "@/lib/skill-facts";
 import { getSkillCardFacts } from "@/lib/skill-live";
+import {
+  categoryCounts,
+  matchesSkillFilters,
+  skillCategoryLabel,
+  toSkillFilters,
+} from "@/lib/skill-taxonomy";
 import { toolsHref } from "@/lib/tools-url";
 
 export const metadata: Metadata = {
@@ -39,28 +50,57 @@ const HUB_LIMIT = 100;
  * guides are `content` rows with the same tag, so they also appear in Learn.
  * Staff edit all of it in /admin like anything else.
  */
-export default async function SkillsPage() {
+type Props = {
+  searchParams: Promise<{ category?: string; agent?: string; creator?: string }>;
+};
+
+export default async function SkillsPage({ searchParams }: Props) {
+  // Unknown values are dropped rather than 404'd, as on /tools (VIB-132).
+  const filters = toSkillFilters(await searchParams);
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
 
-  const [{ tools: skillRows }, { tools: tagged }, { items: guides }, bookmarks] =
+  const [{ tools: skillRows }, { tools: tagged }, { tools: marketplaces }, { items: guides }, bookmarks] =
     await Promise.all([
       listTools(supabase, { category: "skills", pageSize: HUB_LIMIT }),
       listTools(supabase, { tag: SKILLS_HUB_TAG, pageSize: HUB_LIMIT }),
+      listTools(supabase, { tag: SELL_SKILLS_TAG, pageSize: HUB_LIMIT }),
       listContent(supabase, { tag: SKILLS_HUB_TAG, pageSize: HUB_LIMIT }),
       auth.user ? listBookmarks(supabase, auth.user.id, "tool") : [],
     ]);
 
   // Cached per skill for an hour, and null rather than throwing (VIB-130).
-  const skills = (
+  const allSkills = (
     await Promise.all(
-      skillRows.map(async (tool) => ({ tool, name: tool.name, ...(await getSkillCardFacts(tool)) })),
+      skillRows.map(async (tool) => ({
+        tool,
+        name: tool.name,
+        // Filter fields (VIB-132). The creator is the GitHub owner, the same
+        // repository the stars come from.
+        category: tool.skill_category,
+        agentsExcluded: tool.skill_agents_excluded,
+        creator: skillRepo(parseSkillSource(tool.skills_sh_source), tool.outbound_url)?.owner ?? null,
+        ...(await getSkillCardFacts(tool)),
+      })),
     )
   ).sort(bySkillPopularity);
 
+  // Filtered in memory: every skill is already loaded for its live facts, and
+  // the list is small. Move this into listTools if the category grows past a page.
+  const skills = allSkills.filter((skill) => matchesSkillFilters(skill, filters));
+  const counts = categoryCounts(allSkills, filters);
+  const creators = [
+    ...new Map(
+      allSkills.flatMap((skill) => (skill.creator ? [[skill.creator.toLowerCase(), skill.creator]] : [])),
+    ).values(),
+  ].sort((a, b) => a.localeCompare(b, "en", { sensitivity: "base" }));
+
   const groups = HUB_GROUPS.map((group) => ({
     ...group,
-    tools: tagged.filter((tool) => hubGroupFor(tool.category) === group.key),
+    tools:
+      group.key === "sell"
+        ? marketplaces
+        : tagged.filter((tool) => hubGroupFor(tool.category) === group.key),
   })).filter((group) => group.tools.length);
 
   const bookmarkedIds = new Set(bookmarks.map((bookmark) => bookmark.target_id));
@@ -87,7 +127,9 @@ export default async function SkillsPage() {
           <h2 id="skills-list" className="font-heading text-xl font-bold tracking-tight">
             Popular skills
           </h2>
-          <Badge variant="secondary">{skills.length}</Badge>
+          <Badge variant="secondary">
+            {skills.length === allSkills.length ? skills.length : `${skills.length} of ${allSkills.length}`}
+          </Badge>
         </div>
         <p className="text-muted-foreground mt-2 max-w-[60ch]">
           Install counts from skills.sh and stars from GitHub, refreshed hourly.{" "}
@@ -100,14 +142,25 @@ export default async function SkillsPage() {
           .
         </p>
 
+        <div className="mt-6">
+          <SkillFilters filters={filters} counts={counts} creators={creators} />
+        </div>
+
         {skills.length ? (
-          <ul className="mt-6 grid items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-8 grid items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
             {skills.map(({ tool, installs, stars }) => (
               <li key={tool.id}>
                 <ResourceCard
                   href={`/tools/${tool.slug}`}
                   title={tool.name}
-                  icon={<CategoryIcon category={tool.category} className="text-primary size-4" />}
+                  icon={
+                    tool.skill_category ? (
+                      <SkillCategoryIcon category={tool.skill_category} className="size-4" />
+                    ) : (
+                      <CategoryIcon category={tool.category} className="size-4" />
+                    )
+                  }
+                  eyebrow={tool.skill_category ? skillCategoryLabel(tool.skill_category) : undefined}
                   description={tool.tagline}
                   meta={skillLine(installs, stars) || undefined}
                   action={
@@ -131,7 +184,11 @@ export default async function SkillsPage() {
             ))}
           </ul>
         ) : (
-          <p className="text-muted-foreground mt-6">No skills are listed yet.</p>
+          <p className="text-muted-foreground mt-6">
+            {allSkills.length
+              ? "No skills match those filters yet. Try clearing one."
+              : "No skills are listed yet."}
+          </p>
         )}
       </section>
 

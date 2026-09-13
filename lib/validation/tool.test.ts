@@ -164,3 +164,19 @@ test("skills.sh source is optional, keeps its case, and is shaped when given", (
     );
   }
 });
+
+test("skill category and excluded agents are optional and closed", () => {
+  const plain = toolEditorSchema.parse(valid);
+  assert.equal(plain.skill_category, null);
+  assert.deepEqual(plain.skill_agents_excluded, []);
+
+  const skill = toolEditorSchema.parse({
+    ...valid,
+    skill_category: "design_ui",
+    skill_agents_excluded: ["chatgpt", "not-an-agent"],
+  });
+  assert.equal(skill.skill_category, "design_ui");
+  assert.deepEqual(skill.skill_agents_excluded, ["chatgpt"]);
+
+  assert.equal(toolEditorSchema.safeParse({ ...valid, skill_category: "cooking" }).success, false);
+});

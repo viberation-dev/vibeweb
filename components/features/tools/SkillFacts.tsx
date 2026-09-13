@@ -1,11 +1,15 @@
 import {
   IconAlertTriangle,
+  IconBrandGithub,
   IconChevronDown,
   IconCircleCheck,
   IconCircleX,
+  IconDownload,
 } from "@tabler/icons-react";
 
+import { SkillInstall } from "@/components/features/skills/SkillInstall";
 import { Fact } from "@/components/features/tools/Fact";
+import { buttonVariants } from "@/components/ui/button";
 import { CopyButton } from "@/components/features/walkthroughs/CopyButton";
 import { formatCount, formatDay, type AuditStatus } from "@/lib/skill-facts";
 import type { SkillPageFacts } from "@/lib/skill-live";
@@ -25,9 +29,28 @@ const STATUS: Record<AuditStatus, { label: string; icon: typeof IconCircleCheck;
  * and an unknown row is dropped rather than printed as "—", the same rule the
  * tool page's Key info follows.
  */
-export function SkillFacts({ facts }: { facts: SkillPageFacts }) {
-  const { command, installs, repo, repoFacts, detail, audits, isPack } = facts;
+type Props = {
+  facts: SkillPageFacts;
+  slug: string;
+  /** `tools.skill_agents_excluded` (VIB-132). */
+  agentsExcluded: readonly string[];
+};
+
+export function SkillFacts({ facts, slug, agentsExcluded }: Props) {
+  const { source, command, installs, repo, repoFacts, detail, audits, isPack } = facts;
   const updated = formatDay(repoFacts?.pushedAt ?? null);
+
+  /*
+   * Our ZIP only when skills.sh gave us the skill's own SKILL.md; the route
+   * checks again and falls back to GitHub itself. A pack is many skills, so
+   * it goes to the repository rather than a guess at which one to zip.
+   */
+  const download =
+    !isPack && detail?.skillMd
+      ? { href: `/tools/${slug}/download`, label: "Download skill (.zip)", zip: true }
+      : repo
+        ? { href: `https://github.com/${repo.owner}/${repo.repo}`, label: "Download from GitHub", zip: false }
+        : null;
 
   return (
     <section aria-labelledby="skill-facts">
@@ -48,6 +71,32 @@ export function SkillFacts({ facts }: { facts: SkillPageFacts }) {
           Runs the open-source skills CLI in your own terminal. It asks which agents to add the
           skill to. Read what it tells your agent to do before you install it.
         </p>
+      ) : null}
+
+      {download ? (
+        <div className="mt-4">
+          {download.zip ? (
+            // A same-origin route, so `download` names the file; the route sets it too.
+            <a href={download.href} download className={buttonVariants({ variant: "default", size: "sm" })}>
+              <IconDownload aria-hidden />
+              {download.label}
+            </a>
+          ) : (
+            <a
+              href={download.href}
+              target="_blank"
+              rel="noopener"
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              <IconBrandGithub aria-hidden />
+              {download.label} ↗
+            </a>
+          )}
+        </div>
+      ) : null}
+
+      {source && download ? (
+        <SkillInstall source={source} agentsExcluded={agentsExcluded} download={download} />
       ) : null}
 
       <dl className="mt-4">

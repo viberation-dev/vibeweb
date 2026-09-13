@@ -42,6 +42,12 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-14",
     kind: "added",
+    title: "Five skills in every category",
+    body: "Every skill category now has five to choose from, including the official Supabase skill, Emil Kowalski's design engineering, Superpowers' planning and verification skills, and AWS, Azure and Cloudflare deployment skills. Skills built for one stack say so up front.",
+  },
+  {
+    date: "2026-09-14",
+    kind: "added",
     title: "App Builders category",
     body: "A new directory category for tools that build an app or website from a description. Lovable and Replit move into it, joined by Bolt, Base44, v0, Figma Make, Google AI Studio, Emergent, Mocha, Rork, Bubble, FlutterFlow, Softr, Relume, Framer, Webflow and Durable.",
   },

@@ -40,6 +40,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
  */
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    date: "2026-09-14",
+    kind: "added",
+    title: "A skill in every category",
+    body: "The Skills page now has at least one skill in every category, from Vercel's React Best Practices and Supabase's Postgres rules to Trail of Bits' security review and an SEO audit.",
+  },
+  {
     date: "2026-09-13",
     kind: "improved",
     title: "Filter skills, install them anywhere, download them",

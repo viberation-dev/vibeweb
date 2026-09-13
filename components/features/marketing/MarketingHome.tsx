@@ -46,6 +46,8 @@ type Props = {
    * shown without them: this page carries no numbers (VIB-116).
    */
   topSkills: Tool[];
+  /** The most popular app builders (VIB-139). Shown without numbers, like skills. */
+  appBuilders: Tool[];
   flagship: Walkthrough | undefined;
   /** VIB-91's flag, resolved by the page — this component stays env-free. */
   newsletterEnabled: boolean;
@@ -73,6 +75,7 @@ export function MarketingHome({
   testimonials,
   latest,
   topSkills,
+  appBuilders,
   flagship,
   newsletterEnabled,
 }: Props) {
@@ -281,6 +284,19 @@ export function MarketingHome({
         </ul>
       </Section>
 
+      {/* ── App builders ─────────────────────────────────────────────── */}
+      {appBuilders.length ? (
+        <Section>
+          <SectionHead
+            eyebrow="App builders"
+            title="Describe an app and watch it get built."
+            lede="The quickest way to start: tools that turn a plain-English description into a working app or website, no editor needed."
+            action={{ label: "Explore app builders", href: toolsHref({ category: "app_builders" }) }}
+          />
+          <ToolTiles tools={appBuilders} cta="See the builder" />
+        </Section>
+      ) : null}
+
       {/* ── Skills ───────────────────────────────────────────────────── */}
       {topSkills.length ? (
         <Section>
@@ -290,32 +306,7 @@ export function MarketingHome({
             lede="A skill is a folder of instructions your agent loads when a task matches, so it follows a proven method instead of improvising. These are the most installed."
             action={{ label: "Explore skills", href: "/skills" }}
           />
-          <ul className="grid gap-5 md:grid-cols-3">
-            {topSkills.map((tool) => (
-              <li key={tool.id}>
-                <Link
-                  href={`/tools/${tool.slug}`}
-                  className="motion-lift bg-secondary flex h-full flex-col rounded-[1.125rem] p-6"
-                >
-                  <IconTile>
-                    <CategoryIcon category={tool.category} className="size-5" />
-                  </IconTile>
-                  <span className="font-heading mt-4 text-lg font-bold tracking-tight">
-                    {tool.name}
-                  </span>
-                  {tool.tagline ? (
-                    <span className="text-muted-foreground mt-2 text-sm leading-relaxed">
-                      {tool.tagline}
-                    </span>
-                  ) : null}
-                  <span className="text-primary mt-auto flex items-center gap-2 pt-5 text-sm font-bold">
-                    See the skill
-                    <IconArrowRight aria-hidden className="size-4" />
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <ToolTiles tools={topSkills} cta="See the skill" />
         </Section>
       ) : null}
 
@@ -719,6 +710,38 @@ const AUDIENCES = [
 ] as const;
 
 /** v3's `.sec` rhythm: clamp(56px, 7vw, 104px). */
+/** Three tool cards linking to their detail pages (App builders, Skills). */
+function ToolTiles({ tools, cta }: { tools: Tool[]; cta: string }) {
+  return (
+    <ul className="grid gap-5 md:grid-cols-3">
+      {tools.map((tool) => (
+        <li key={tool.id}>
+          <Link
+            href={`/tools/${tool.slug}`}
+            className="motion-lift bg-secondary flex h-full flex-col rounded-[1.125rem] p-6"
+          >
+            <IconTile>
+              <CategoryIcon category={tool.category} className="size-5" />
+            </IconTile>
+            <span className="font-heading mt-4 text-lg font-bold tracking-tight">
+              {tool.name}
+            </span>
+            {tool.tagline ? (
+              <span className="text-muted-foreground mt-2 text-sm leading-relaxed">
+                {tool.tagline}
+              </span>
+            ) : null}
+            <span className="text-primary mt-auto flex items-center gap-2 pt-5 text-sm font-bold">
+              {cta}
+              <IconArrowRight aria-hidden className="size-4" />
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function Section({ children }: { children: React.ReactNode }) {
   return (
     <section className="reveal mt-[clamp(3.5rem,7vw,6.5rem)]">

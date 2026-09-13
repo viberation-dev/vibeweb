@@ -848,11 +848,11 @@ insert into tools (name, slug, category, tagline, description, pricing_tier, out
    'An MIT-licensed gateway that puts hundreds of providers behind one local OpenAI-compatible endpoint, falling back automatically when one runs out of quota. Works with Claude Code, Codex, Cursor and OpenCode.',
    'Open source', 'https://github.com/diegosouzapw/OmniRoute'),
 
-  ('Lovable', 'lovable', 'tools',
+  ('Lovable', 'lovable', 'app_builders',
    'Describe an app, get a working full-stack build.',
    'A browser-based app builder: you describe what you want and refine it in conversation until it matches. Built on Claude. The quickest route from idea to something clickable if you would rather not touch an editor yet.',
    'Freemium', 'https://lovable.dev'),
-  ('Replit', 'replit', 'tools',
+  ('Replit', 'replit', 'app_builders',
    'Build, run and deploy from the browser with Replit Agent.',
    'A browser IDE with hosting built in. Replit Agent, powered by Claude, builds an app from a description and deploys it without you setting up anything locally.',
    'Freemium', 'https://replit.com'),
@@ -1606,6 +1606,104 @@ from (values
   ('supply-chain-risk-auditor','testing'), ('supply-chain-risk-auditor','open-source'),
   ('copywriting','web-apps'), ('copywriting','open-source'),
   ('page-cro','web-apps'), ('page-cro','open-source')
+) as m(tool_slug, tag_slug)
+join tools t on t.slug = m.tool_slug
+join tags  g on g.slug = m.tag_slug
+on conflict do nothing;
+
+-- App builders (VIB-136). Lovable and Replit move here from `tools`; the
+-- rest are new. Checked against each vendor's site on 2026-09-14.
+update tools set category = 'app_builders', updated_at = now()
+where slug in ('lovable', 'replit');
+
+insert into tools (name, slug, category, tagline, description, pricing_tier, outbound_url) values
+  ('Bolt', 'bolt', 'app_builders',
+   'Prompt, run and edit a full-stack app in a browser tab.',
+   'Bolt runs a real Node.js environment inside your browser, so the app it generates is running code you can edit, not a mockup. Pick the framework you want, from React and Next.js to Vue, Svelte or Astro.',
+   'Freemium', 'https://bolt.new'),
+  ('Base44', 'base44', 'app_builders',
+   'One prompt builds the app, database, logins and hosting.',
+   'Base44 generates a full-stack web app on its own managed platform, with data storage, user logins and permissions set up behind the scenes. Owned by Wix since 2025 and run as its own product.',
+   'Freemium', 'https://base44.com'),
+  ('v0', 'v0', 'app_builders',
+   'Vercel''s app builder for React and Next.js.',
+   'Describe a page or app and v0 builds it in Next.js with shadcn/ui, then deploys it to Vercel. The natural choice if your project already lives on that stack.',
+   'Freemium', 'https://v0.app'),
+  ('Emergent', 'emergent', 'app_builders',
+   'Build web and mobile apps by describing them.',
+   'A Y Combinator-backed builder whose agents generate full-stack apps with logins, a database, hosting and payments from a plain-English brief. Credit-based, with a small free allowance to try it.',
+   'Freemium', 'https://emergent.sh'),
+  ('Mocha', 'mocha', 'app_builders',
+   'No-code app builder with auth, database and hosting built in.',
+   'Mocha builds and publishes full-stack web apps from a description, with sign-in, a database and hosting included so there are no separate services to connect. Keeps separate development and production databases.',
+   'Freemium', 'https://getmocha.com'),
+  ('Rork', 'rork', 'app_builders',
+   'Describe a mobile app, get a native iOS and Android build.',
+   'Rork generates React Native (Expo) apps that compile to real native code rather than a web view, and can publish to the App Store for you. A separate Max plan builds native Swift apps for Apple devices.',
+   'Freemium', 'https://rork.com'),
+  ('Bubble', 'bubble', 'app_builders',
+   'Visual no-code builder for web and mobile apps, with AI.',
+   'Bubble generates a starting app from a prompt, then you keep building in its visual editor, with its own database, workflows and hosting. The app lives on Bubble rather than as code you export.',
+   'Freemium', 'https://bubble.io'),
+  ('FlutterFlow', 'flutterflow', 'app_builders',
+   'Visual builder for Flutter mobile and web apps.',
+   'Design screens visually or with AI, connect Firebase or Supabase, and export clean Flutter code whenever you want to leave. Popular for cross-platform mobile apps.',
+   'Freemium', 'https://flutterflow.io'),
+  ('Softr', 'softr', 'app_builders',
+   'Turn your spreadsheet or database into a working app.',
+   'Softr builds client portals, internal tools and directories on top of data you already have in Airtable, Google Sheets and similar sources, with user logins and permissions. AI can generate the first version.',
+   'Freemium', 'https://www.softr.io'),
+  ('Relume', 'relume', 'app_builders',
+   'AI sitemaps and wireframes for websites, before you build.',
+   'Relume plans a website rather than building an app: it generates a sitemap, wireframes and copy from a brief, then exports them to Webflow, Figma or React. Useful for agencies and designers speeding up site structure.',
+   'Freemium', 'https://www.relume.io'),
+  ('Framer', 'framer', 'app_builders',
+   'Design and publish polished websites, with AI to start you off.',
+   'A visual website builder with hosting, a CMS and animations built in. Its AI can draft a first page from a prompt, and designers use it to ship marketing sites without handing off to a developer.',
+   'Freemium', 'https://www.framer.com'),
+  ('Webflow', 'webflow', 'app_builders',
+   'Visual website builder with full design control and a CMS.',
+   'Webflow gives you the layout power of hand-written HTML and CSS in a visual editor, plus a CMS, hosting and AI assistance. Relume''s wireframes export straight into it.',
+   'Freemium', 'https://webflow.com'),
+  ('Durable', 'durable', 'app_builders',
+   'A small-business website generated in under a minute.',
+   'Answer a few questions about your business and Durable writes and publishes a complete site, with booking, invoicing and a simple CRM alongside. Built for speed over custom design.',
+   'Freemium', 'https://durable.com')
+on conflict (slug) do update set
+  name         = excluded.name,
+  category     = excluded.category,
+  tagline      = excluded.tagline,
+  description  = excluded.description,
+  pricing_tier = excluded.pricing_tier,
+  outbound_url = excluded.outbound_url,
+  updated_at   = now();
+
+update tools t set platform = array['web'], best_for = v.best_for::role_level
+from (values
+  ('bolt','beginner'), ('base44','beginner'), ('v0','intermediate'),
+  ('emergent','beginner'), ('mocha','beginner'), ('rork','beginner'),
+  ('bubble','beginner'), ('flutterflow','intermediate'), ('softr','beginner'),
+  ('relume','intermediate'), ('framer','beginner'), ('webflow','intermediate'),
+  ('durable','beginner')
+) as v(slug, best_for)
+where t.slug = v.slug;
+
+insert into tool_tags (tool_id, tag_id)
+select t.id, g.id
+from (values
+  ('bolt','web-apps'), ('bolt','code-generation'), ('bolt','free-tier'),
+  ('base44','web-apps'), ('base44','backend'), ('base44','free-tier'),
+  ('v0','web-apps'), ('v0','frontend'), ('v0','code-generation'), ('v0','free-tier'),
+  ('emergent','web-apps'), ('emergent','backend'), ('emergent','free-tier'),
+  ('mocha','web-apps'), ('mocha','backend'), ('mocha','database'), ('mocha','free-tier'),
+  ('rork','code-generation'), ('rork','free-tier'),
+  ('bubble','web-apps'), ('bubble','database'), ('bubble','free-tier'),
+  ('flutterflow','frontend'), ('flutterflow','code-generation'), ('flutterflow','free-tier'),
+  ('softr','web-apps'), ('softr','database'), ('softr','free-tier'),
+  ('relume','design'), ('relume','free-tier'),
+  ('framer','design'), ('framer','frontend'), ('framer','free-tier'),
+  ('webflow','design'), ('webflow','frontend'), ('webflow','free-tier'),
+  ('durable','web-apps'), ('durable','free-tier')
 ) as m(tool_slug, tag_slug)
 join tools t on t.slug = m.tool_slug
 join tags  g on g.slug = m.tag_slug

@@ -33,6 +33,7 @@ export const toolEditorSchema = z.object({
     "models",
     "agents",
     "chats",
+    "app_builders",
     "skills",
     "mcp_servers",
     "plugins",

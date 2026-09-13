@@ -758,6 +758,7 @@ export type Database = {
         | "models"
         | "agents"
         | "chats"
+        | "app_builders"
         | "skills"
         | "mcp_servers"
         | "plugins"
@@ -942,6 +943,7 @@ export const Constants = {
         "models",
         "agents",
         "chats",
+        "app_builders",
         "skills",
         "mcp_servers",
         "plugins",

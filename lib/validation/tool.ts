@@ -4,6 +4,7 @@ import { z } from "zod";
 // `node --test` file, which resolves no "@/" alias.
 import { OPENROUTER_FAMILY, OPENROUTER_ID } from "../model-facts.ts";
 import { safeOutboundUrl } from "../outbound.ts";
+import { SKILLS_SH_SOURCE } from "../skill-facts.ts";
 import { PRICING_TIERS } from "../tool-facts.ts";
 import { TOOL_PLATFORM_VALUES } from "../tool-platforms.ts";
 
@@ -95,6 +96,19 @@ export const toolEditorSchema = z.object({
     OPENROUTER_ID,
     "OpenRouter IDs look like vendor/model, e.g. anthropic/claude-sonnet-5.",
   ),
+  /*
+   * skills.sh pointer (VIB-130). Case kept, unlike the OpenRouter ids: GitHub
+   * owners are mixed-case (`Leonxlnx`) and skills.sh addresses them as typed.
+   */
+  skills_sh_source: z
+    .string()
+    .nullish()
+    .transform((value) => (value ?? "").trim())
+    .refine((value) => value === "" || SKILLS_SH_SOURCE.test(value), {
+      message:
+        "skills.sh sources look like owner/repo/skill, e.g. anthropics/skills/frontend-design, or owner/repo for a pack.",
+    })
+    .transform((value) => (value === "" ? null : value)),
 })
   // Mirrors tools_openrouter_id_in_family: featuring a GPT on the Claude page
   // would be a wrong fact, not a style choice.

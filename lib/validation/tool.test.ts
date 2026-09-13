@@ -143,3 +143,24 @@ test("a featured model must belong to its family", () => {
   // A family alone is fine: the page then leads with the newest model.
   assert.ok(toolEditorSchema.safeParse({ ...valid, openrouter_family: "anthropic/claude" }).success);
 });
+
+test("skills.sh source is optional, keeps its case, and is shaped when given", () => {
+  assert.equal(toolEditorSchema.parse(valid).skills_sh_source, null);
+  assert.equal(
+    toolEditorSchema.parse({ ...valid, skills_sh_source: " Leonxlnx/taste-skill " }).skills_sh_source,
+    "Leonxlnx/taste-skill",
+  );
+  assert.equal(
+    toolEditorSchema.parse({ ...valid, skills_sh_source: "anthropics/skills/frontend-design" })
+      .skills_sh_source,
+    "anthropics/skills/frontend-design",
+  );
+  // The adapter puts this in a URL, so nothing that could walk out of /skills/.
+  for (const source of ["skills", "../admin/x", "a/b/c/d", "https://skills.sh/a/b"]) {
+    assert.equal(
+      toolEditorSchema.safeParse({ ...valid, skills_sh_source: source }).success,
+      false,
+      `expected ${source} to be rejected`,
+    );
+  }
+});

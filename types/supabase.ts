@@ -521,6 +521,7 @@ export type Database = {
           platform: string[]
           pricing_tier: string | null
           search_vector: unknown
+          skills_sh_source: string | null
           slug: string
           tagline: string | null
           updated_at: string
@@ -542,6 +543,7 @@ export type Database = {
           platform?: string[]
           pricing_tier?: string | null
           search_vector?: unknown
+          skills_sh_source?: string | null
           slug: string
           tagline?: string | null
           updated_at?: string
@@ -563,6 +565,7 @@ export type Database = {
           platform?: string[]
           pricing_tier?: string | null
           search_vector?: unknown
+          skills_sh_source?: string | null
           slug?: string
           tagline?: string | null
           updated_at?: string

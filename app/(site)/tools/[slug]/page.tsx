@@ -11,6 +11,7 @@ import {
   ModelPicker,
   ModelSpecs,
 } from "@/components/features/tools/ModelSpecs";
+import { SkillFacts } from "@/components/features/tools/SkillFacts";
 import { StarterPrompts } from "@/components/features/tools/StarterPrompts";
 import { ToolLinks } from "@/components/features/tools/ToolLinks";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,7 @@ import { listPromptsForTool } from "@/lib/queries/prompts";
 import { listToolLinks } from "@/lib/queries/tool-links";
 import { getWalkthroughsForTool } from "@/lib/queries/walkthroughs";
 import { contentView } from "@/lib/resource-view";
+import { getSkillPageFacts } from "@/lib/skill-live";
 import { walkthroughHref } from "@/lib/walkthroughs";
 import {
   getToolBySlug,
@@ -111,6 +113,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
     prompts,
     guides,
     liveModels,
+    skillFacts,
   ] = await Promise.all([
     getToolTags(supabase, tool.id),
     auth.user
@@ -137,6 +140,9 @@ export default async function ToolPage({ params, searchParams }: Props) {
      * section, never the page.
      */
     family ? getOpenRouterModels() : null,
+    // Skills get the same treatment from skills.sh and GitHub (VIB-130):
+    // cached, and null rather than throwing.
+    getSkillPageFacts(tool),
   ]);
 
   const related = sameCategory
@@ -318,6 +324,8 @@ export default async function ToolPage({ params, searchParams }: Props) {
               />
             </>
           ) : null}
+
+          {skillFacts ? <SkillFacts facts={skillFacts} /> : null}
 
           <ToolLinks outgoing={links.outgoing} incoming={links.incoming} />
 

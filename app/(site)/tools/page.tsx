@@ -21,6 +21,7 @@ import {
   toToolCategory,
   toolCategoryLabel,
 } from "@/lib/tool-categories";
+import { getSkillCardLines } from "@/lib/skill-live";
 import { toToolSort } from "@/lib/tool-sorts";
 import { toolsHref } from "@/lib/tools-url";
 
@@ -66,7 +67,7 @@ export default async function ToolsPage({ searchParams }: Props) {
     auth.user ? listBookmarks(supabase, auth.user.id, "tool") : [],
   ]);
 
-  const [toolTags, liveModels] = await Promise.all([
+  const [toolTags, liveModels, skillLines] = await Promise.all([
     // One round trip for the whole grid's tag pills rather than one per card.
     getToolTagsByIds(
       supabase,
@@ -75,6 +76,9 @@ export default async function ToolsPage({ searchParams }: Props) {
     // Only when this page shows a model with live specs; cached for an hour
     // and empty rather than throwing when OpenRouter is down (VIB-107).
     tools.some((tool) => tool.openrouter_family) ? getOpenRouterModels() : null,
+    // "881K installs · 176K stars" for skill cards (VIB-130); empty map when
+    // this page has no skills, and missing lines rather than errors.
+    getSkillCardLines(tools),
   ]);
 
   /** "15 models · from $0.25 per 1M" for a model family's card; undefined otherwise. */
@@ -180,7 +184,7 @@ export default async function ToolsPage({ searchParams }: Props) {
                     />
                   }
                   description={tool.tagline}
-                  meta={familyFor(tool.openrouter_family)}
+                  meta={familyFor(tool.openrouter_family) ?? skillLines.get(tool.id)}
                   badges={[
                     toolCategoryLabel(tool.category),
                     ...(toolTags.get(tool.id) ?? [])

@@ -200,6 +200,24 @@ export function ToolForm({ tool, action }: Props) {
         </div>
       </div>
 
+      <div className="space-y-2">
+        <Label htmlFor="skills_sh_source">skills.sh source</Label>
+        <Input
+          id="skills_sh_source"
+          name="skills_sh_source"
+          defaultValue={tool?.skills_sh_source ?? ""}
+          placeholder="anthropics/skills/frontend-design"
+          spellCheck={false}
+          autoCapitalize="none"
+        />
+        <p className="text-muted-foreground text-sm">
+          Skills only. The part after <code>skills.sh/</code> in the skill&apos;s
+          URL, for live installs, security audits and files. Use just{" "}
+          <code>owner/repo</code> for a pack of skills. Blank for everything
+          else.
+        </p>
+      </div>
+
       <div className="flex items-start gap-3">
         <input
           id="is_affiliate"

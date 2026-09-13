@@ -42,6 +42,12 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-14",
     kind: "added",
+    title: "More skills in every category",
+    body: "Every skill category now has three to choose from, including Anthropic's Frontend Design, the official shadcn/ui and FastAPI skills, Cloudflare's Wrangler and security audit, and Superpowers' test-driven development and systematic debugging.",
+  },
+  {
+    date: "2026-09-14",
+    kind: "added",
     title: "A skill in every category",
     body: "The Skills page now has at least one skill in every category, from Vercel's React Best Practices and Supabase's Postgres rules to Trail of Bits' security review and an SEO audit.",
   },

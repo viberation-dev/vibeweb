@@ -1937,3 +1937,95 @@ from (values
 join tools t on t.slug = m.tool_slug
 join tags  g on g.slug = m.tag_slug
 on conflict do nothing;
+
+-- Hosting (VIB-140). Vercel moves here from `tools`; the rest are new, plus
+-- ChatGPT Sites in App Builders. Checked against vendor sites and pricing
+-- pages on 2026-09-14.
+insert into tools (name, slug, category, tagline, description, pricing_tier, outbound_url) values
+  ('Vercel', 'vercel', 'hosting',
+   'Deploy Next.js with a preview URL per pull request.',
+   'Push a branch, get a live URL. The preview-per-PR workflow is what makes reviewing a change practical, and the free Hobby plan covers personal projects.',
+   'Freemium', 'https://vercel.com'),
+  ('Netlify', 'netlify', 'hosting',
+   'Connect a Git repo and every push goes live.',
+   'One of the original Git-based hosts for static sites and front-end frameworks, with deploy previews, serverless functions and forms built in. A free plan covers small sites.',
+   'Freemium', 'https://www.netlify.com'),
+  ('Cloudflare Workers', 'cloudflare-workers', 'hosting',
+   'Host a site and its API on Cloudflare''s global network.',
+   'Workers now serves static files as well as code, and it is what Cloudflare recommends for new projects over the older Pages product. Static requests are free, and a generous free plan covers the rest for small apps.',
+   'Freemium', 'https://workers.cloudflare.com'),
+  ('GitHub Pages', 'github-pages', 'hosting',
+   'Free hosting for a static site, straight from a repository.',
+   'Turn on Pages in a repository''s settings and GitHub publishes its HTML, or a built site, at a github.io address. Static only, so no server code or database, but ideal for portfolios, docs and landing pages.',
+   'Free', 'https://pages.github.com'),
+  ('Hostinger', 'hostinger', 'hosting',
+   'Budget web hosting with domains, email and an AI builder.',
+   'Classic shared, WordPress and VPS hosting at low monthly prices, with a domain and email bundled on most plans. Its Horizons plans add an AI builder that creates and hosts a site from a prompt.',
+   'Paid', 'https://www.hostinger.com'),
+  ('Firebase Hosting', 'firebase-hosting', 'hosting',
+   'Google''s hosting for web apps built on Firebase.',
+   'Fast static hosting on Google''s CDN, with App Hosting alongside it for server-rendered Next.js and Angular apps. The obvious pick if your app already uses Firebase logins or Firestore.',
+   'Freemium', 'https://firebase.google.com/products/hosting'),
+  ('Render', 'render', 'hosting',
+   'Run web services, databases and cron jobs from Git.',
+   'A friendly step up from front-end hosts: Render runs a real back end, Postgres and background workers without you managing servers. Free web services sleep after 15 minutes idle and take about a minute to wake.',
+   'Freemium', 'https://render.com'),
+  ('Railway', 'railway', 'hosting',
+   'Deploy an app and its database in a few clicks.',
+   'Railway spins up services, Postgres, Redis and more on one canvas and bills for the resources they actually use. New accounts get a one-time trial credit, then a small monthly free allowance.',
+   'Freemium', 'https://railway.com'),
+  ('Fly.io', 'fly-io', 'hosting',
+   'Run your app in containers close to your users.',
+   'Fly.io runs Docker-packaged apps on machines in regions around the world, which suits back ends that need low latency. Pay as you go after a short trial; there is no free tier for new accounts.',
+   'Paid', 'https://fly.io'),
+  ('DigitalOcean App Platform', 'digitalocean-app-platform', 'hosting',
+   'Managed hosting for apps, from DigitalOcean.',
+   'Point App Platform at a repository and it builds and runs your app, with databases available alongside. Up to three static sites are free; apps with server code start at a few dollars a month.',
+   'Freemium', 'https://www.digitalocean.com/products/app-platform'),
+  ('AWS Amplify', 'aws-amplify', 'hosting',
+   'Host full-stack web apps on AWS from a Git repo.',
+   'Amplify Hosting builds and deploys front ends and server-rendered Next.js apps, and can add logins and data backed by AWS. Covered by the AWS free tier to start, and a gentler way into AWS than configuring it by hand.',
+   'Freemium', 'https://aws.amazon.com/amplify/hosting/'),
+
+  ('ChatGPT Sites', 'chatgpt-sites', 'app_builders',
+   'Ask ChatGPT for a website and it builds and hosts it.',
+   'Describe a site in chat and ChatGPT writes it, publishes it and gives you a link to share, with simple data storage for lightweight apps. In beta for paid ChatGPT plans, and not yet available in the UK, EU or Switzerland.',
+   'Paid', 'https://chatgpt.com')
+on conflict (slug) do update set
+  name         = excluded.name,
+  category     = excluded.category,
+  tagline      = excluded.tagline,
+  description  = excluded.description,
+  pricing_tier = excluded.pricing_tier,
+  outbound_url = excluded.outbound_url,
+  updated_at   = now();
+
+update tools t set platform = array['web'], best_for = v.best_for::role_level
+from (values
+  ('netlify','beginner'), ('cloudflare-workers','intermediate'),
+  ('github-pages','beginner'), ('hostinger','beginner'),
+  ('firebase-hosting','intermediate'), ('render','intermediate'),
+  ('railway','intermediate'), ('fly-io','expert'),
+  ('digitalocean-app-platform','intermediate'), ('aws-amplify','intermediate'),
+  ('chatgpt-sites','beginner')
+) as v(slug, best_for)
+where t.slug = v.slug;
+
+insert into tool_tags (tool_id, tag_id)
+select t.id, g.id
+from (values
+  ('netlify','deployment'), ('netlify','web-apps'), ('netlify','free-tier'),
+  ('cloudflare-workers','deployment'), ('cloudflare-workers','backend'), ('cloudflare-workers','free-tier'),
+  ('github-pages','deployment'), ('github-pages','free-tier'), ('github-pages','beginner-friendly'),
+  ('hostinger','deployment'), ('hostinger','beginner-friendly'),
+  ('firebase-hosting','deployment'), ('firebase-hosting','web-apps'), ('firebase-hosting','free-tier'),
+  ('render','deployment'), ('render','backend'), ('render','database'), ('render','free-tier'),
+  ('railway','deployment'), ('railway','backend'), ('railway','database'), ('railway','free-tier'),
+  ('fly-io','deployment'), ('fly-io','backend'),
+  ('digitalocean-app-platform','deployment'), ('digitalocean-app-platform','backend'), ('digitalocean-app-platform','free-tier'),
+  ('aws-amplify','deployment'), ('aws-amplify','web-apps'), ('aws-amplify','free-tier'),
+  ('chatgpt-sites','web-apps'), ('chatgpt-sites','deployment')
+) as m(tool_slug, tag_slug)
+join tools t on t.slug = m.tool_slug
+join tags  g on g.slug = m.tag_slug
+on conflict do nothing;

@@ -42,6 +42,12 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-14",
     kind: "added",
+    title: "Hosting category",
+    body: "A new directory category for putting what you build online. Vercel moves into it, joined by Netlify, Cloudflare Workers, GitHub Pages, Hostinger, Firebase Hosting, Render, Railway, Fly.io, DigitalOcean App Platform and AWS Amplify. ChatGPT Sites joins App Builders.",
+  },
+  {
+    date: "2026-09-14",
+    kind: "added",
     title: "Five skills in every category",
     body: "Every skill category now has five to choose from, including the official Supabase skill, Emil Kowalski's design engineering, Superpowers' planning and verification skills, and AWS, Azure and Cloudflare deployment skills. Skills built for one stack say so up front.",
   },

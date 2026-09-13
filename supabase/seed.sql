@@ -1338,3 +1338,87 @@ from (values
 join tools t on t.slug = m.tool_slug
 join tags  g on g.slug = m.tag_slug
 on conflict do nothing;
+
+-- ---------------------------------------------------------------------------
+-- One skill for each empty category (VIB-134)
+--
+-- Every entry is on the skills.sh leaderboard, has no failing security audit
+-- there, and its tagline and description come from its own SKILL.md, checked
+-- on 2026-09-14. Pricing: "Open source" where the repository has a licence;
+-- Vercel's skills repository has none, so those two say "Free".
+insert into tools (name, slug, category, tagline, description, pricing_tier, outbound_url) values
+  ('React Best Practices', 'vercel-react-best-practices', 'skills',
+   'Vercel''s React and Next.js performance rules for your agent.',
+   'Performance guidelines from Vercel Engineering that your agent applies while writing, reviewing or refactoring React and Next.js code: components, pages, data fetching and bundle size.',
+   'Free', 'https://github.com/vercel-labs/agent-skills'),
+  ('Postgres Best Practices', 'supabase-postgres-best-practices', 'skills',
+   'Supabase''s rules for schemas, migrations and queries.',
+   'Postgres best practices maintained by Supabase, for Postgres running anywhere. Your agent loads it before creating tables, choosing column types, writing migrations or RLS policies, so the database is right the first time.',
+   'Open source', 'https://github.com/supabase/agent-skills'),
+  ('Webapp Testing', 'webapp-testing', 'skills',
+   'Test your local web app in a real browser with Playwright.',
+   'Anthropic''s skill for checking a web app you are running locally: it drives Playwright to verify frontend behaviour, debug the UI, take screenshots and read browser logs.',
+   'Open source', 'https://github.com/anthropics/skills'),
+  ('Code Review', 'sentry-code-review', 'skills',
+   'Review pull requests the way Sentry''s engineers do.',
+   'Code review following Sentry engineering practices, for pull requests and code changes. Covers security, performance, testing and design, and gives feedback on code quality.',
+   'Open source', 'https://github.com/getsentry/skills'),
+  ('Diagnosing Bugs', 'diagnosing-bugs', 'skills',
+   'A diagnosis loop for hard bugs and slowdowns.',
+   'From Matt Pocock''s skills. When something is broken, throwing, failing or slow, your agent works through a structured diagnosis loop instead of guessing at fixes.',
+   'Open source', 'https://github.com/mattpocock/skills'),
+  ('Doc Co-authoring', 'doc-coauthoring', 'skills',
+   'Write specs, proposals and docs with your agent, step by step.',
+   'Anthropic''s structured workflow for co-writing documentation, proposals, technical specs and decision docs: it gathers context from you, refines the draft over rounds, and checks the result.',
+   'Open source', 'https://github.com/anthropics/skills'),
+  ('Deploy to Vercel', 'deploy-to-vercel', 'skills',
+   'Ask your agent to deploy, and get the live link back.',
+   'Vercel''s skill for deploying apps and websites. Say "deploy my app", "push this live" or "create a preview deployment" and your agent runs the deployment for you.',
+   'Free', 'https://github.com/vercel-labs/agent-skills'),
+  ('Differential Review', 'differential-review', 'skills',
+   'A security-focused review of every change, from Trail of Bits.',
+   'Security review of code changes by the auditing firm Trail of Bits. It scales to the codebase, uses git blame for context, measures the blast radius of each change, checks test coverage and writes a report.',
+   'Open source', 'https://github.com/trailofbits/skills'),
+  ('SEO Audit', 'seo-audit', 'skills',
+   'Find out why a page is not ranking, and what to fix.',
+   'From Corey Haines'' marketing skills. Your agent audits technical and on-page SEO, such as meta tags and site health, when traffic drops or a page is not showing up in Google.',
+   'Open source', 'https://github.com/coreyhaines31/marketingskills')
+on conflict (slug) do update set
+  name         = excluded.name,
+  category     = excluded.category,
+  tagline      = excluded.tagline,
+  description  = excluded.description,
+  pricing_tier = excluded.pricing_tier,
+  outbound_url = excluded.outbound_url,
+  updated_at   = now();
+
+update tools t set skills_sh_source = v.source, skill_category = v.category::skill_category
+from (values
+  ('vercel-react-best-practices', 'vercel-labs/agent-skills/vercel-react-best-practices', 'frontend'),
+  ('supabase-postgres-best-practices', 'supabase/agent-skills/supabase-postgres-best-practices', 'backend_apis'),
+  ('webapp-testing', 'anthropics/skills/webapp-testing', 'testing_qa'),
+  ('sentry-code-review', 'getsentry/skills/code-review', 'code_review'),
+  ('diagnosing-bugs', 'mattpocock/skills/diagnosing-bugs', 'debugging'),
+  ('doc-coauthoring', 'anthropics/skills/doc-coauthoring', 'docs_writing'),
+  ('deploy-to-vercel', 'vercel-labs/agent-skills/deploy-to-vercel', 'devops_deploy'),
+  ('differential-review', 'trailofbits/skills/differential-review', 'security'),
+  ('seo-audit', 'coreyhaines31/marketingskills/seo-audit', 'marketing_content')
+) as v(slug, source, category)
+where t.slug = v.slug;
+
+insert into tool_tags (tool_id, tag_id)
+select t.id, g.id
+from (values
+  ('vercel-react-best-practices','frontend'),
+  ('supabase-postgres-best-practices','database'), ('supabase-postgres-best-practices','backend'), ('supabase-postgres-best-practices','open-source'),
+  ('webapp-testing','testing'), ('webapp-testing','frontend'), ('webapp-testing','open-source'),
+  ('sentry-code-review','code-generation'), ('sentry-code-review','open-source'),
+  ('diagnosing-bugs','testing'), ('diagnosing-bugs','open-source'),
+  ('doc-coauthoring','open-source'),
+  ('deploy-to-vercel','deployment'),
+  ('differential-review','testing'), ('differential-review','open-source'),
+  ('seo-audit','web-apps'), ('seo-audit','open-source')
+) as m(tool_slug, tag_slug)
+join tools t on t.slug = m.tool_slug
+join tags  g on g.slug = m.tag_slug
+on conflict do nothing;

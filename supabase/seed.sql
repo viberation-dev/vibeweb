@@ -1422,3 +1422,9 @@ from (values
 join tools t on t.slug = m.tool_slug
 join tags  g on g.slug = m.tag_slug
 on conflict do nothing;
+
+-- Both need a terminal on your own machine: Webapp Testing drives Playwright
+-- against a locally running app, and Deploy to Vercel runs the Vercel CLI.
+-- Neither can run inside Claude.ai or ChatGPT (VIB-134).
+update tools set skill_agents_excluded = array['claude-ai', 'chatgpt']
+where slug in ('webapp-testing', 'deploy-to-vercel');

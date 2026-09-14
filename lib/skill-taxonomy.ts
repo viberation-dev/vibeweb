@@ -282,6 +282,21 @@ export function matchesSkillFilters(skill: FilterableSkill, filters: SkillFilter
 }
 
 /**
+ * Why a filtered list came back empty, when the agent filter is the reason
+ * (VIB-138). Chat apps cannot run a terminal or act on a cloud account, so a
+ * category such as DevOps can have nothing for them, and a bare "no matches"
+ * reads like missing data rather than a real limit. Null when the agent is
+ * not a chat app or is not what emptied the list.
+ */
+export function emptyAgentReason(skills: readonly FilterableSkill[], filters: SkillFilters): string | null {
+  const agent = SKILL_AGENTS.find((a) => a.id === filters.agent);
+  if (!agent || agent.kind !== "upload") return null;
+  const withoutAgent = skills.some((skill) => matchesSkillFilters(skill, { ...filters, agent: undefined }));
+  if (!withoutAgent) return null;
+  return `Every skill here needs a terminal or access to a cloud account, which ${agent.label} does not have. Try the same filters with Claude Code, Codex or Cursor.`;
+}
+
+/**
  * Count per category for the tiles, within the other active filters — so a
  * tile's number is what clicking it would show.
  */

@@ -35,6 +35,16 @@ export const CARD_TAGS: Readonly<Record<string, readonly string[]>> = {
     "flutter",
     "database",
   ],
+  // Every IDE has an agent now, so the card shows what separates them:
+  // the editor it is built on, and whose models you can bring (VIB-143).
+  ides: [
+    "vs-code-based",
+    "jetbrains",
+    "mobile-apps",
+    "byok",
+    "local-models",
+    "open-source",
+  ],
 };
 
 /** Tags beyond the pricing badges, so a card stays one or two lines. */

@@ -41,6 +41,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-14",
+    kind: "added",
+    title: "Seven more IDEs, with useful tags",
+    body: "Google Antigravity, Kiro, Zed, Trae, IntelliJ IDEA, Android Studio and Xcode join the IDEs category. IDE cards now show pricing and what sets each apart, such as whether it is built on VS Code or JetBrains and whether you can use your own API key or local models. Each IDE's page lists its free plan, starting price, models and what it is best for.",
+  },
+  {
+    date: "2026-09-14",
     kind: "improved",
     title: "App Builder cards say what each builder makes",
     body: "App Builder cards now show pricing and what each builder makes, such as web apps, mobile apps or websites, and whether you can take the code with you. Each builder's page lists its free plan, starting price, the code it writes, its backend, hosting and custom domains. Mocha is removed, as it shut down on 1 August.",

@@ -28,7 +28,7 @@ import type { Testimonial } from "@/lib/queries/testimonials";
 import type { Tool } from "@/lib/queries/tools";
 import type { Walkthrough } from "@/lib/queries/walkthroughs";
 import { initialsFrom } from "@/lib/testimonials";
-import { TOOL_CATEGORIES } from "@/lib/tool-categories";
+import { TOOL_CATEGORIES, type ToolCategory } from "@/lib/tool-categories";
 import { toolsHref } from "@/lib/tools-url";
 
 type Props = {
@@ -265,18 +265,27 @@ export function MarketingHome({
           lede="Browse by type: models, IDEs, agents, MCP servers and more. Each tool says what it does and who it's best for."
           action={{ label: "View all tools", href: "/tools" }}
         />
-        <ul className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-4">
+        {/*
+          One bordered panel split by hairlines, Framer's solutions grid. Each
+          cell pulls its top/left border 1px under the panel's own border, and
+          overflow-hidden clips it, so only the inner dividers show.
+        */}
+        <ul className="grid overflow-hidden rounded-2xl border sm:grid-cols-2 lg:grid-cols-4">
           {TOOL_CATEGORIES.map((category) => (
-            <li key={category.value}>
+            <li key={category.value} className="-mt-px -ml-px border-t border-l">
               <Link
                 href={toolsHref({ category: category.value })}
-                className="bg-secondary hover:bg-primary/10 flex items-center gap-3.5 rounded-2xl px-5 py-[1.125rem] transition-all hover:-translate-y-0.5"
+                className="hover:bg-secondary flex h-full flex-col p-7 transition-colors"
               >
-                <IconTile>
-                  <CategoryIcon category={category.value} className="size-5" />
-                </IconTile>
-                <span className="truncate font-bold tracking-tight">
+                <CategoryIcon
+                  category={category.value}
+                  className="size-5 stroke-[1.75]"
+                />
+                <span className="mt-6 font-medium tracking-tight">
                   {category.label}
+                </span>
+                <span className="text-muted-foreground mt-0.5 text-[0.9375rem] leading-snug">
+                  {CATEGORY_BLURBS[category.value]}
                 </span>
               </Link>
             </li>
@@ -793,6 +802,25 @@ function ContrastList({
     </div>
   );
 }
+
+/** One line per directory category. Keyed by the enum so a new category fails the build until it has one. */
+const CATEGORY_BLURBS: Record<ToolCategory, string> = {
+  models: "The AI behind every tool. See what each one is good at.",
+  chats: "Ask, plan and draft code with an AI in your browser.",
+  app_builders: "Describe an app in plain English and get a working one.",
+  hosting: "Put your project online with a real link to share.",
+  agents: "AI that plans and carries out coding tasks for you.",
+  ides: "Code editors with AI built in, for when you open the code.",
+  clis: "AI coding assistants that run in your terminal.",
+  skills: "Instructions your agent loads to follow a proven method.",
+  mcp_servers: "Connect your AI to the apps and data you already use.",
+  plugins: "Add-ons that extend the AI tools you already have.",
+  frameworks: "Solid foundations to build on, so the AI invents less.",
+  templates: "Starter projects, so you begin from something that works.",
+  workflows: "Proven ways of working with AI, step by step.",
+  tools: "Focused helpers that do one job in your build well.",
+  utilities: "Small extras that smooth out everyday AI coding.",
+};
 
 const STEPS = [
   {

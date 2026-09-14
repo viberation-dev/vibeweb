@@ -40,6 +40,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
  */
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    date: "2026-09-15",
+    kind: "improved",
+    title: "Tool types explained on the homepage",
+    body: "The directory section on the homepage now gives every tool type a one-line description, so you can tell an agent from a CLI before you click.",
+  },
+  {
     date: "2026-09-14",
     kind: "improved",
     title: "Plugin cards say where they work",

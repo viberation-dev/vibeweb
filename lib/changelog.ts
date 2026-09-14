@@ -41,6 +41,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-14",
+    kind: "added",
+    title: "Agents, explained",
+    body: "The Agents category now opens with a plain-English guide to what an AI agent is, the three kinds, and which one you need. Cloud agents Devin, Jules and GitHub Copilot's coding agent join, along with the OpenAI Agents SDK, LangGraph, CrewAI, Mastra, Google ADK and Microsoft Agent Framework. Each agent's page says what it is, whether you need to code, what it costs and what you get back.",
+  },
+  {
+    date: "2026-09-14",
     kind: "improved",
     title: "CLI cards say what each tool is",
     body: "CLI cards now show pricing, whether a tool is a coding agent or a skills manager, and whether it runs your own API key or local models. Each CLI's page lists how to install it, what it costs to use, its models and the agents it works with.",

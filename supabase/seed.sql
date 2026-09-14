@@ -2029,3 +2029,175 @@ from (values
 join tools t on t.slug = m.tool_slug
 join tags  g on g.slug = m.tag_slug
 on conflict do nothing;
+
+-- Hosting tags and key facts (VIB-141). Checked against vendor pricing and
+-- docs on 2026-09-14. No `windows` tag: none of these hosts offers Windows
+-- servers (Hostinger's VPS is Linux only).
+insert into tags (name, slug, kind) values
+  ('Static sites', 'static-sites', 'facet'),
+  ('Serverless',   'serverless',   'facet'),
+  ('Containers',   'containers',   'facet'),
+  ('VPS',          'vps',          'facet'),
+  ('WordPress',    'wordpress',    'facet'),
+  ('Next.js',      'nextjs',       'facet'),
+  ('React',        'react',        'facet'),
+  ('Email',        'email',        'facet'),
+  ('Cloud',        'cloud',        'facet'),
+  ('Linux',        'linux',        'facet'),
+  ('Free trial',   'free-trial',   'pricing')
+on conflict (slug) do update set name = excluded.name, kind = excluded.kind;
+
+-- AWS dropped always-free Amplify hosting for new accounts in July 2025;
+-- what is left is a credit trial, so it is Paid with a free trial.
+update tools set pricing_tier = 'Paid',
+  description = 'Amplify Hosting builds and deploys front ends and server-rendered Next.js apps, and can add logins and data backed by AWS. New AWS accounts get free credits to start, and it is a gentler way into AWS than configuring it by hand.',
+  updated_at = now()
+where slug = 'aws-amplify';
+
+delete from tool_tags
+where tool_id = (select id from tools where slug = 'aws-amplify')
+  and tag_id = (select id from tags where slug = 'free-tier');
+
+insert into tool_tags (tool_id, tag_id)
+select t.id, g.id
+from (values
+  ('vercel','static-sites'), ('vercel','serverless'), ('vercel','nextjs'), ('vercel','react'),
+  ('netlify','static-sites'), ('netlify','serverless'), ('netlify','nextjs'), ('netlify','react'),
+  ('cloudflare-workers','static-sites'), ('cloudflare-workers','serverless'), ('cloudflare-workers','nextjs'),
+  ('cloudflare-workers','react'), ('cloudflare-workers','database'), ('cloudflare-workers','cloud'),
+  ('github-pages','static-sites'), ('github-pages','react'),
+  ('hostinger','vps'), ('hostinger','wordpress'), ('hostinger','nextjs'), ('hostinger','database'),
+  ('hostinger','email'), ('hostinger','cloud'), ('hostinger','linux'),
+  ('firebase-hosting','static-sites'), ('firebase-hosting','serverless'), ('firebase-hosting','nextjs'),
+  ('firebase-hosting','react'), ('firebase-hosting','database'), ('firebase-hosting','cloud'),
+  ('render','containers'), ('render','static-sites'), ('render','nextjs'), ('render','react'),
+  ('railway','containers'), ('railway','nextjs'), ('railway','free-trial'),
+  ('fly-io','containers'), ('fly-io','database'), ('fly-io','free-trial'),
+  ('digitalocean-app-platform','containers'), ('digitalocean-app-platform','static-sites'),
+  ('digitalocean-app-platform','nextjs'), ('digitalocean-app-platform','react'),
+  ('digitalocean-app-platform','cloud'), ('digitalocean-app-platform','free-trial'),
+  ('aws-amplify','static-sites'), ('aws-amplify','serverless'), ('aws-amplify','nextjs'),
+  ('aws-amplify','react'), ('aws-amplify','cloud'), ('aws-amplify','free-trial')
+) as m(tool_slug, tag_slug)
+join tools t on t.slug = m.tool_slug
+join tags  g on g.slug = m.tag_slug
+on conflict do nothing;
+
+update tools t set key_facts = v.facts::jsonb, updated_at = now()
+from (values
+  ('vercel', '[
+    {"label": "Free plan", "value": "Hobby plan, for personal and non-commercial projects"},
+    {"label": "Paid plans from", "value": "$20 per user a month (Pro)"},
+    {"label": "Hosts", "value": "Static sites and serverless functions"},
+    {"label": "Frameworks", "value": "Next.js, React, Astro, SvelteKit, Nuxt and more"},
+    {"label": "Databases", "value": "Postgres, Redis and more through the Vercel Marketplace"},
+    {"label": "Custom domains", "value": "Yes, and you can buy domains in Vercel"},
+    {"label": "Email hosting", "value": "No"},
+    {"label": "Deploy from", "value": "GitHub, GitLab, Bitbucket or the CLI"}
+  ]'),
+  ('netlify', '[
+    {"label": "Free plan", "value": "300 credits a month; sites pause when they run out"},
+    {"label": "Paid plans from", "value": "$9 a month (Personal)"},
+    {"label": "Hosts", "value": "Static sites and serverless functions"},
+    {"label": "Frameworks", "value": "Next.js, React, Astro, Nuxt, SvelteKit and more"},
+    {"label": "Databases", "value": "Bring your own, such as Supabase or Neon"},
+    {"label": "Custom domains", "value": "Yes"},
+    {"label": "Email hosting", "value": "No"},
+    {"label": "Deploy from", "value": "Git, drag and drop, or the CLI"}
+  ]'),
+  ('cloudflare-workers', '[
+    {"label": "Free plan", "value": "100,000 requests a day; static files are free"},
+    {"label": "Paid plans from", "value": "$5 a month"},
+    {"label": "Hosts", "value": "Static sites, APIs and full-stack apps on a global network"},
+    {"label": "Frameworks", "value": "Next.js, React, Astro, SvelteKit, React Router and more"},
+    {"label": "Databases", "value": "D1 (SQLite), KV and R2 storage, or connect to Postgres"},
+    {"label": "Custom domains", "value": "Yes, and domains are sold at cost"},
+    {"label": "Email hosting", "value": "Forwarding only, through Email Routing"},
+    {"label": "Deploy from", "value": "Git or the Wrangler CLI"}
+  ]'),
+  ('github-pages', '[
+    {"label": "Free plan", "value": "Free for public repositories"},
+    {"label": "Paid plans from", "value": "GitHub Pro ($4 a month) to publish from a private repository"},
+    {"label": "Hosts", "value": "Static sites only"},
+    {"label": "Frameworks", "value": "Any static build: plain HTML, React, Astro, Jekyll and more"},
+    {"label": "Databases", "value": "None"},
+    {"label": "Custom domains", "value": "Yes"},
+    {"label": "Email hosting", "value": "No"},
+    {"label": "Deploy from", "value": "A GitHub repository or GitHub Actions"}
+  ]'),
+  ('hostinger', '[
+    {"label": "Free plan", "value": "None, but a 30-day money-back guarantee"},
+    {"label": "Paid plans from", "value": "A few dollars a month on long-term plans"},
+    {"label": "Hosts", "value": "Shared and WordPress hosting, Node.js apps, cloud hosting and Linux VPS"},
+    {"label": "Frameworks", "value": "WordPress and PHP, plus Next.js and other Node.js apps on Business and Cloud plans"},
+    {"label": "Databases", "value": "MySQL included"},
+    {"label": "Custom domains", "value": "Yes, with a free domain for the first year on most yearly plans"},
+    {"label": "Email hosting", "value": "Yes, included on most plans"},
+    {"label": "Deploy from", "value": "GitHub, a file upload or the control panel"}
+  ]'),
+  ('firebase-hosting', '[
+    {"label": "Free plan", "value": "Spark plan covers small static sites"},
+    {"label": "Paid plans from", "value": "Pay as you go (Blaze), which App Hosting needs"},
+    {"label": "Hosts", "value": "Static sites, plus server-rendered apps on App Hosting"},
+    {"label": "Frameworks", "value": "Next.js, Angular, React and any static build"},
+    {"label": "Databases", "value": "Firestore, Realtime Database, and Postgres through Data Connect"},
+    {"label": "Custom domains", "value": "Yes"},
+    {"label": "Email hosting", "value": "No"},
+    {"label": "Deploy from", "value": "GitHub or the Firebase CLI"}
+  ]'),
+  ('render', '[
+    {"label": "Free plan", "value": "Web services that sleep after 15 minutes idle, static sites, and a Postgres database that expires after 30 days"},
+    {"label": "Paid plans from", "value": "$7 a month per always-on service"},
+    {"label": "Hosts", "value": "Web services, static sites, background workers and cron jobs"},
+    {"label": "Frameworks", "value": "Next.js, Node.js, Python, Ruby, Go, Rust or any Docker image"},
+    {"label": "Databases", "value": "Managed Postgres and Redis-compatible Key Value"},
+    {"label": "Custom domains", "value": "Yes"},
+    {"label": "Email hosting", "value": "No"},
+    {"label": "Deploy from", "value": "GitHub, GitLab, Bitbucket or a Docker registry"}
+  ]'),
+  ('railway', '[
+    {"label": "Free plan", "value": "$1 of usage a month after the trial"},
+    {"label": "Free trial", "value": "$5 of credit for 30 days, no card needed"},
+    {"label": "Paid plans from", "value": "$5 a month (Hobby), including $5 of usage"},
+    {"label": "Hosts", "value": "Web services, workers, cron jobs and Docker images"},
+    {"label": "Frameworks", "value": "Most languages detected automatically, or any Dockerfile"},
+    {"label": "Databases", "value": "Postgres, MySQL, Redis and MongoDB in one click"},
+    {"label": "Custom domains", "value": "Yes"},
+    {"label": "Email hosting", "value": "No"},
+    {"label": "Deploy from", "value": "GitHub, the CLI or a template"}
+  ]'),
+  ('fly-io', '[
+    {"label": "Free plan", "value": "None for new accounts"},
+    {"label": "Free trial", "value": "A short trial, then pay as you go"},
+    {"label": "Paid plans from", "value": "Billed per second; a small always-on app is a few dollars a month"},
+    {"label": "Hosts", "value": "Docker containers on machines in regions worldwide"},
+    {"label": "Frameworks", "value": "Anything that runs in a container"},
+    {"label": "Databases", "value": "Managed Postgres"},
+    {"label": "Custom domains", "value": "Yes"},
+    {"label": "Email hosting", "value": "No"},
+    {"label": "Deploy from", "value": "The flyctl CLI or GitHub Actions"}
+  ]'),
+  ('digitalocean-app-platform', '[
+    {"label": "Free plan", "value": "Up to three static sites"},
+    {"label": "Free trial", "value": "Promotional credit for new accounts, often $200 over 60 days"},
+    {"label": "Paid plans from", "value": "$5 a month per service"},
+    {"label": "Hosts", "value": "Static sites, web services, workers and Docker images"},
+    {"label": "Frameworks", "value": "Next.js, React, Node.js, Python, Go, PHP and more"},
+    {"label": "Databases", "value": "Managed Postgres, MySQL, MongoDB and Valkey"},
+    {"label": "Custom domains", "value": "Yes"},
+    {"label": "Email hosting", "value": "No"},
+    {"label": "Deploy from", "value": "GitHub, GitLab or a container registry"}
+  ]'),
+  ('aws-amplify', '[
+    {"label": "Free plan", "value": "No always-free plan for new AWS accounts"},
+    {"label": "Free trial", "value": "Up to $200 of AWS credits for six months on new accounts"},
+    {"label": "Paid plans from", "value": "Pay as you go for builds, storage and traffic"},
+    {"label": "Hosts", "value": "Static sites and server-rendered apps"},
+    {"label": "Frameworks", "value": "Next.js, React, Vue, Angular, Nuxt and more"},
+    {"label": "Databases", "value": "DynamoDB through Amplify Data, or any AWS database"},
+    {"label": "Custom domains", "value": "Yes"},
+    {"label": "Email hosting", "value": "No"},
+    {"label": "Deploy from", "value": "GitHub, GitLab, Bitbucket or a manual upload"}
+  ]')
+) as v(slug, facts)
+where t.slug = v.slug;

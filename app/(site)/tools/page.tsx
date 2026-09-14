@@ -12,7 +12,8 @@ import { createClient } from "@/lib/integrations/supabase/server";
 import { familyLine, familyMembers } from "@/lib/model-facts";
 import { toPageNumber } from "@/lib/pagination";
 import { listBookmarks } from "@/lib/queries/bookmarks";
-import { listTags } from "@/lib/queries/tags";
+import { hostingCardBadges } from "@/lib/hosting";
+import { listCategoryTags, listTags } from "@/lib/queries/tags";
 import { getToolTagsByIds, listTools } from "@/lib/queries/tools";
 import { normaliseQuery } from "@/lib/search-query";
 import { toPricingFilter } from "@/lib/tool-facts";
@@ -61,7 +62,7 @@ export default async function ToolsPage({ searchParams }: Props) {
 
   const [{ tools, total, pageCount }, tags, bookmarks] = await Promise.all([
     listTools(supabase, { category, tag, sort, q, pricing, page }),
-    listTags(supabase),
+    category ? listCategoryTags(supabase, category) : listTags(supabase),
     // Signed-out visitors still see Save buttons; pressing one sends them to
     // sign in. Only which ones read as saved needs a user.
     auth.user ? listBookmarks(supabase, auth.user.id, "tool") : [],
@@ -185,12 +186,21 @@ export default async function ToolsPage({ searchParams }: Props) {
                   }
                   description={tool.tagline}
                   meta={familyFor(tool.openrouter_family) ?? skillLines.get(tool.id)}
-                  badges={[
-                    toolCategoryLabel(tool.category),
-                    ...(toolTags.get(tool.id) ?? [])
-                      .slice(0, 1)
-                      .map((t) => `#${t.slug}`),
-                  ]}
+                  badges={
+                    // Hosts are chosen by price, trial and what they run
+                    // (VIB-141), so their cards carry those instead.
+                    tool.category === "hosting"
+                      ? hostingCardBadges(
+                          tool.pricing_tier,
+                          toolTags.get(tool.id) ?? [],
+                        )
+                      : [
+                          toolCategoryLabel(tool.category),
+                          ...(toolTags.get(tool.id) ?? [])
+                            .slice(0, 1)
+                            .map((t) => `#${t.slug}`),
+                        ]
+                  }
                   action={
                     <>
                       <BookmarkButton

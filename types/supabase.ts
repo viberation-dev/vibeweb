@@ -514,6 +514,7 @@ export type Database = {
           description: string | null
           id: string
           is_affiliate: boolean
+          key_facts: Json
           name: string
           openrouter_family: string | null
           openrouter_id: string | null
@@ -538,6 +539,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_affiliate?: boolean
+          key_facts?: Json
           name: string
           openrouter_family?: string | null
           openrouter_id?: string | null
@@ -562,6 +564,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_affiliate?: boolean
+          key_facts?: Json
           name?: string
           openrouter_family?: string | null
           openrouter_id?: string | null

@@ -41,6 +41,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-14",
+    kind: "improved",
+    title: "CLI cards say what each tool is",
+    body: "CLI cards now show pricing, whether a tool is a coding agent or a skills manager, and whether it runs your own API key or local models. Each CLI's page lists how to install it, what it costs to use, its models and the agents it works with.",
+  },
+  {
+    date: "2026-09-14",
     kind: "added",
     title: "Seven more IDEs, with useful tags",
     body: "Google Antigravity, Kiro, Zed, Trae, IntelliJ IDEA, Android Studio and Xcode join the IDEs category. IDE cards now show pricing and what sets each apart, such as whether it is built on VS Code or JetBrains and whether you can use your own API key or local models. Each IDE's page lists its free plan, starting price, models and what it is best for.",

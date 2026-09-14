@@ -2605,3 +2605,100 @@ from (values
   ]')
 ) as v(slug, facts)
 where t.slug = v.slug;
+
+-- CLI tags and key facts (VIB-144). Checked against vendor docs, npm and
+-- GitHub on 2026-09-14.
+update tools t set platform = '{macos,windows,linux}', best_for = v.best_for::role_level
+from (values
+  ('codex', 'intermediate'), ('gemini-cli', 'beginner'), ('opencode', 'intermediate'),
+  ('skild', 'intermediate'), ('skillkit', 'intermediate'), ('skills-cli', 'intermediate')
+) as v(slug, best_for)
+where t.slug = v.slug;
+
+insert into tags (name, slug, kind) values
+  ('Coding agent', 'coding-agent', 'facet')
+on conflict (slug) do update set name = excluded.name, kind = excluded.kind;
+
+insert into tool_tags (tool_id, tag_id)
+select t.id, g.id
+from (values
+  ('claude-code','coding-agent'), ('claude-code','byok'),
+  ('codex','coding-agent'), ('codex','byok'), ('codex','local-models'),
+  ('gemini-cli','coding-agent'), ('gemini-cli','byok'),
+  ('opencode','coding-agent'), ('opencode','byok'), ('opencode','local-models'),
+  ('aider','coding-agent'), ('aider','byok'), ('aider','local-models')
+) as m(tool_slug, tag_slug)
+join tools t on t.slug = m.tool_slug
+join tags  g on g.slug = m.tag_slug
+on conflict do nothing;
+
+update tools t set key_facts = v.facts::jsonb, updated_at = now()
+from (values
+  ('claude-code', '[
+    {"label": "Free plan", "value": "None; needs a paid Claude plan or API credits"},
+    {"label": "Paid plans from", "value": "$20 a month (Claude Pro), or pay per token with an API key"},
+    {"label": "Install", "value": "curl -fsSL https://claude.ai/install.sh | bash (Windows: irm https://claude.ai/install.ps1 | iex)"},
+    {"label": "Models", "value": "Claude"},
+    {"label": "Your own API key", "value": "Yes, an Anthropic key, or Amazon Bedrock, Google Vertex AI or Microsoft Foundry"},
+    {"label": "Local models", "value": "No"},
+    {"label": "Good for", "value": "Handing multi-step coding tasks to an agent that runs commands and edits files"}
+  ]'),
+  ('codex', '[
+    {"label": "Free plan", "value": "The CLI is free and open source; usage needs a ChatGPT plan or API credits"},
+    {"label": "Paid plans from", "value": "Included with ChatGPT Plus, or pay per token with an API key"},
+    {"label": "Install", "value": "npm install -g @openai/codex"},
+    {"label": "Models", "value": "OpenAI''s GPT models"},
+    {"label": "Your own API key", "value": "Yes, an OpenAI key"},
+    {"label": "Local models", "value": "Yes, open-weight models through Ollama"},
+    {"label": "Good for", "value": "ChatGPT subscribers who want an agent in the terminal"}
+  ]'),
+  ('gemini-cli', '[
+    {"label": "Free plan", "value": "1,000 requests a day with a personal Google account"},
+    {"label": "Paid plans from", "value": "Pay per token with a Gemini API key, or a Gemini Code Assist plan"},
+    {"label": "Install", "value": "npm install -g @google/gemini-cli"},
+    {"label": "Models", "value": "Gemini"},
+    {"label": "Your own API key", "value": "Yes, a Gemini API key or Vertex AI"},
+    {"label": "Local models", "value": "No"},
+    {"label": "Good for", "value": "Trying a terminal agent for free"}
+  ]'),
+  ('opencode', '[
+    {"label": "Free plan", "value": "Free and open source; bring your own provider"},
+    {"label": "Paid plans from", "value": "Optional: OpenCode Zen models from $10 a month"},
+    {"label": "Install", "value": "curl -fsSL https://opencode.ai/install | bash"},
+    {"label": "Models", "value": "75+ providers, including OpenAI, Google and open models"},
+    {"label": "Your own API key", "value": "Yes"},
+    {"label": "Local models", "value": "Yes, through Ollama"},
+    {"label": "Good for", "value": "One terminal agent that is not tied to a single model company"}
+  ]'),
+  ('aider', '[
+    {"label": "Free plan", "value": "Free and open source; you pay your model provider"},
+    {"label": "Install", "value": "python -m pip install aider-install, then aider-install"},
+    {"label": "Models", "value": "Claude, GPT, Gemini, DeepSeek and dozens more"},
+    {"label": "Your own API key", "value": "Yes, required"},
+    {"label": "Local models", "value": "Yes, through Ollama"},
+    {"label": "Git", "value": "Commits every change with a written message"},
+    {"label": "Good for", "value": "Careful pair programming where every edit is a reviewable commit"}
+  ]'),
+  ('skills-cli', '[
+    {"label": "Free plan", "value": "Free and open source (MIT)"},
+    {"label": "Install", "value": "No install: npx skills add owner/repo"},
+    {"label": "Works with", "value": "75+ agents, including Claude Code, Codex, Cursor and GitHub Copilot"},
+    {"label": "Commands", "value": "add, list, find, update, remove and init"},
+    {"label": "Good for", "value": "Installing a skill from GitHub into whichever agents you use"}
+  ]'),
+  ('skild', '[
+    {"label": "Free plan", "value": "Free and open source (MIT)"},
+    {"label": "Install", "value": "npm i -g skild"},
+    {"label": "Works with", "value": "Claude, Cursor, Windsurf, OpenCode, Copilot and Antigravity"},
+    {"label": "Commands", "value": "install, update, sync, push, publish and search"},
+    {"label": "Good for", "value": "Teams keeping the same skill versions across every developer"}
+  ]'),
+  ('skillkit', '[
+    {"label": "Free plan", "value": "Free and open source"},
+    {"label": "Install", "value": "npm install -g skillkit"},
+    {"label": "Works with", "value": "46 agents, including Claude Code, Cursor, Codex and Gemini CLI"},
+    {"label": "Commands", "value": "init, recommend, add and sync"},
+    {"label": "Good for", "value": "Using one set of skills across agents with different formats"}
+  ]')
+) as v(slug, facts)
+where t.slug = v.slug;

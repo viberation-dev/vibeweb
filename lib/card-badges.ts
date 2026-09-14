@@ -45,6 +45,15 @@ export const CARD_TAGS: Readonly<Record<string, readonly string[]>> = {
     "local-models",
     "open-source",
   ],
+  // What kind of CLI it is first (an agent, or a skills tool), then whose
+  // models it runs (VIB-144).
+  clis: [
+    "coding-agent",
+    "skills-ecosystem",
+    "byok",
+    "local-models",
+    "open-source",
+  ],
 };
 
 /** Tags beyond the pricing badges, so a card stays one or two lines. */

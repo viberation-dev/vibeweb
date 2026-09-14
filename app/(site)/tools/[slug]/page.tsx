@@ -71,14 +71,13 @@ const RELATED_LIMIT = 4;
 const READING_LIMIT = 4;
 
 /** Key info rows drawn from columns; editorial key facts cannot repeat them. */
-const FIXED_FACT_LABELS = new Set([
-  "Pricing",
-  "Platform",
-  "Category",
-  "Skill category",
-  "Works in",
-  "Best for",
-]);
+const FIXED_FACT_LABELS = new Set(["Pricing", "Platform", "Category", "Best for"]);
+
+/**
+ * Rows only skill pages draw from columns (VIB-146). Kept apart so a plugin's
+ * own "Works in" fact is not hidden on pages that never print this one.
+ */
+const SKILL_FACT_LABELS = new Set(["Skill category", "Works in"]);
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -380,7 +379,11 @@ export default async function ToolPage({ params, searchParams }: Props) {
             {/* Editorial rows per tool — free plan, frameworks, email (VIB-141). */}
             {/* A fact reusing a fixed row's label would print it twice (VIB-143). */}
             {toKeyFacts(tool.key_facts)
-              .filter((fact) => !FIXED_FACT_LABELS.has(fact.label))
+              .filter(
+                (fact) =>
+                  !FIXED_FACT_LABELS.has(fact.label) &&
+                  !(tool.category === "skills" && SKILL_FACT_LABELS.has(fact.label)),
+              )
               .map((fact) => (
                 <Fact key={fact.label} label={fact.label} value={fact.value} />
               ))}

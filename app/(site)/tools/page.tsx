@@ -25,6 +25,7 @@ import {
   toolCategoryLabel,
 } from "@/lib/tool-categories";
 import { getSkillCardLines } from "@/lib/skill-live";
+import { skillCardExtras } from "@/lib/skill-taxonomy";
 import { toToolSort } from "@/lib/tool-sorts";
 import { toolsHref } from "@/lib/tools-url";
 
@@ -201,6 +202,7 @@ export default async function ToolsPage({ searchParams }: Props) {
                       tool.category,
                       tool.pricing_tier,
                       toolTags.get(tool.id) ?? [],
+                      tool.category === "skills" ? skillCardExtras(tool) : [],
                     ) ?? [
                       toolCategoryLabel(tool.category),
                       ...(toolTags.get(tool.id) ?? [])

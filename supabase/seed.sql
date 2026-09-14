@@ -2896,3 +2896,137 @@ from (values
   ]')
 ) as v(slug, facts)
 where t.slug = v.slug;
+
+-- Skill tags, levels and key facts (VIB-146). "Official" means published by
+-- the company whose product the skill is for. Made by is the GitHub owner of
+-- the skills.sh source. Needs lists only real requirements.
+insert into tags (name, slug, kind) values
+  ('Official',   'official',   'facet'),
+  ('Python',     'python',     'facet'),
+  ('.NET',       'dotnet',     'facet'),
+  ('Go',         'go',         'facet'),
+  ('Supabase',   'supabase',   'facet'),
+  ('Postgres',   'postgres',   'facet'),
+  ('AWS',        'aws',        'facet'),
+  ('Azure',      'azure',      'facet'),
+  ('Cloudflare', 'cloudflare', 'facet'),
+  ('Vercel',     'vercel',     'facet')
+on conflict (slug) do update set name = excluded.name, kind = excluded.kind;
+
+insert into tool_tags (tool_id, tag_id)
+select t.id, g.id
+from (values
+  ('react-native-best-practices','react-native'), ('react-native-best-practices','react'),
+  ('shadcn-skill','official'), ('shadcn-skill','react'),
+  ('vercel-composition-patterns','react'),
+  ('vercel-react-best-practices','react'), ('vercel-react-best-practices','nextjs'),
+  ('fastapi-skill','official'), ('fastapi-skill','python'),
+  ('neon-postgres-skill','official'), ('neon-postgres-skill','postgres'),
+  ('prisma-database-setup','official'), ('prisma-database-setup','postgres'),
+  ('supabase-postgres-best-practices','official'), ('supabase-postgres-best-practices','supabase'), ('supabase-postgres-best-practices','postgres'),
+  ('supabase-skill','official'), ('supabase-skill','supabase'), ('supabase-skill','postgres'),
+  ('test-anti-patterns','dotnet'),
+  ('webapp-testing','python'),
+  ('coderabbit-code-review','official'),
+  ('dotnet-performance','dotnet'),
+  ('sentry-fix-issues','official'),
+  ('go-documentation','go'),
+  ('athena-data-lake','official'), ('athena-data-lake','aws'),
+  ('redshift-guide','official'), ('redshift-guide','aws'),
+  ('just-scrape','official'),
+  ('aws-deployment','official'), ('aws-deployment','aws'),
+  ('aws-serverless','official'), ('aws-serverless','aws'),
+  ('azure-kubernetes','official'), ('azure-kubernetes','azure'),
+  ('deploy-to-vercel','official'), ('deploy-to-vercel','vercel'),
+  ('wrangler','official'), ('wrangler','cloudflare'),
+  ('aws-secrets','official'), ('aws-secrets','aws'),
+  ('turnstile-spin','official'), ('turnstile-spin','cloudflare'),
+  ('product-launch-video','official'),
+  ('hyperframes-slideshow','official')
+) as m(tool_slug, tag_slug)
+join tools t on t.slug = m.tool_slug
+join tags  g on g.slug = m.tag_slug
+on conflict do nothing;
+
+update tools set best_for = case skill_category
+    when 'design_ui' then 'beginner'
+    when 'planning_workflow' then 'beginner'
+    when 'docs_writing' then 'beginner'
+    when 'marketing_content' then 'beginner'
+    when 'documents_office' then 'beginner'
+    else 'intermediate'
+  end::role_level
+where category = 'skills' and best_for is null;
+
+update tools set best_for = 'expert'
+where slug in ('dotnet-performance', 'test-anti-patterns', 'azure-kubernetes', 'differential-review', 'supply-chain-risk-auditor');
+
+update tools t set key_facts = v.facts::jsonb, updated_at = now()
+from (values
+  ('emil-design-eng', '[{"label":"Made by","value":"Emil Kowalski, design engineer (community)"},{"label":"Use it when","value":"Your UI works but feels flat, and you want polish and motion"}]'),
+  ('frontend-design', '[{"label":"Made by","value":"Anthropic"},{"label":"Use it when","value":"You are building a page or component and want it to look designed, not generated"}]'),
+  ('impeccable', '[{"label":"Made by","value":"Paul Bakaus (community)"},{"label":"Use it when","value":"You want your agent to design, critique and refine an interface in one pass"}]'),
+  ('taste-skill', '[{"label":"Made by","value":"Leonxlnx (community)"},{"label":"Use it when","value":"Your agent keeps producing the same generic-looking layouts"}]'),
+  ('ui-ux-pro-max', '[{"label":"Made by","value":"nextlevelbuilder (community)"},{"label":"Use it when","value":"You want your agent to pick styles, palettes and fonts from a large design library"}]'),
+  ('react-native-best-practices', '[{"label":"Made by","value":"Vercel"},{"label":"Use it when","value":"You are building a React Native or Expo app and want it fast"}]'),
+  ('shadcn-skill', '[{"label":"Made by","value":"shadcn (official)"},{"label":"Use it when","value":"Your project uses shadcn/ui components"}]'),
+  ('vercel-composition-patterns', '[{"label":"Made by","value":"Vercel"},{"label":"Use it when","value":"Your React components are getting tangled and hard to reuse"}]'),
+  ('vercel-react-best-practices', '[{"label":"Made by","value":"Vercel"},{"label":"Use it when","value":"You are writing React or Next.js and want it to load and run fast"}]'),
+  ('web-design-guidelines', '[{"label":"Made by","value":"Vercel"},{"label":"Use it when","value":"You want your interface checked for accessibility and usability issues"}]'),
+  ('fastapi-skill', '[{"label":"Made by","value":"The FastAPI project (official)"},{"label":"Use it when","value":"You are building a Python API with FastAPI"}]'),
+  ('neon-postgres-skill', '[{"label":"Made by","value":"Neon (official)"},{"label":"Use it when","value":"Your app''s database is on Neon"},{"label":"Needs","value":"A Neon account"}]'),
+  ('prisma-database-setup', '[{"label":"Made by","value":"Prisma (official)"},{"label":"Use it when","value":"You are connecting Prisma to a database for the first time"}]'),
+  ('supabase-postgres-best-practices', '[{"label":"Made by","value":"Supabase (official)"},{"label":"Use it when","value":"You are designing tables, writing migrations or speeding up queries on Supabase"}]'),
+  ('supabase-skill', '[{"label":"Made by","value":"Supabase (official)"},{"label":"Use it when","value":"Your app uses Supabase for logins, data, files or functions"},{"label":"Needs","value":"A Supabase project"}]'),
+  ('qa-session', '[{"label":"Made by","value":"Matt Pocock, TypeScript educator (community)"},{"label":"Use it when","value":"You are clicking through your app and want each bug written up as you go"},{"label":"Needs","value":"A GitHub repository for the issues"}]'),
+  ('test-anti-patterns', '[{"label":"Made by","value":"Microsoft''s .NET team"},{"label":"Use it when","value":"You suspect your tests pass without checking anything"}]'),
+  ('test-driven-development', '[{"label":"Made by","value":"Jesse Vincent''s Superpowers (community)"},{"label":"Use it when","value":"You want your agent to prove code works with a test before writing it"}]'),
+  ('verification-before-completion', '[{"label":"Made by","value":"Jesse Vincent''s Superpowers (community)"},{"label":"Use it when","value":"Your agent keeps saying it is done when it is not"}]'),
+  ('webapp-testing', '[{"label":"Made by","value":"Anthropic"},{"label":"Use it when","value":"You want your agent to open your app in a real browser and check it works"},{"label":"Needs","value":"Python and Playwright on your computer"}]'),
+  ('caveman-review', '[{"label":"Made by","value":"Julius Brussee (community)"},{"label":"Use it when","value":"You want short, scannable code review findings"}]'),
+  ('coderabbit-code-review', '[{"label":"Made by","value":"CodeRabbit (official)"},{"label":"Use it when","value":"You want an AI code review before you commit or open a pull request"},{"label":"Needs","value":"The CodeRabbit CLI and account"}]'),
+  ('receiving-code-review', '[{"label":"Made by","value":"Jesse Vincent''s Superpowers (community)"},{"label":"Use it when","value":"You got review comments and want your agent to check them before changing code"}]'),
+  ('requesting-code-review', '[{"label":"Made by","value":"Jesse Vincent''s Superpowers (community)"},{"label":"Use it when","value":"A feature is finished and you want it checked against what was asked"}]'),
+  ('sentry-code-review', '[{"label":"Made by","value":"Sentry"},{"label":"Use it when","value":"You want pull requests reviewed for bugs, security and performance"}]'),
+  ('diagnosing-bugs', '[{"label":"Made by","value":"Matt Pocock, TypeScript educator (community)"},{"label":"Use it when","value":"A bug or slowdown has survived your first few fixes"}]'),
+  ('dotnet-performance', '[{"label":"Made by","value":"Microsoft''s .NET team"},{"label":"Use it when","value":"Your .NET code is slow or using too much memory"}]'),
+  ('sentry-fix-issues', '[{"label":"Made by","value":"Sentry (official)"},{"label":"Use it when","value":"Sentry is reporting errors from your live app"},{"label":"Needs","value":"A Sentry account connected to your app"}]'),
+  ('systematic-debugging', '[{"label":"Made by","value":"Jesse Vincent''s Superpowers (community)"},{"label":"Use it when","value":"Your agent keeps guessing at fixes instead of finding the cause"}]'),
+  ('zoom-out', '[{"label":"Made by","value":"Matt Pocock, TypeScript educator (community)"},{"label":"Use it when","value":"You are lost in code you did not write"}]'),
+  ('grill-me', '[{"label":"Made by","value":"Matt Pocock, TypeScript educator (community)"},{"label":"Use it when","value":"You have an idea or plan and want its gaps found before you build"}]'),
+  ('gstack', '[{"label":"Made by","value":"Garry Tan, Y Combinator (community)"},{"label":"Use it when","value":"You want your agent to take on roles such as product lead, reviewer and QA"}]'),
+  ('superpowers', '[{"label":"Made by","value":"Jesse Vincent (community)"},{"label":"Use it when","value":"You want a full working method: plan, test, debug and review"}]'),
+  ('to-prd', '[{"label":"Made by","value":"Matt Pocock, TypeScript educator (community)"},{"label":"Use it when","value":"You have talked an idea through and want it written up as a product spec"},{"label":"Needs","value":"An issue tracker such as GitHub Issues"}]'),
+  ('writing-plans', '[{"label":"Made by","value":"Jesse Vincent''s Superpowers (community)"},{"label":"Use it when","value":"You know what to build and want a step-by-step plan first"}]'),
+  ('doc-coauthoring', '[{"label":"Made by","value":"Anthropic"},{"label":"Use it when","value":"You need to write a spec, proposal or document with your agent"}]'),
+  ('go-documentation', '[{"label":"Made by","value":"Samuel Berthe (community)"},{"label":"Use it when","value":"Your Go project needs docs, a README or a changelog"}]'),
+  ('internal-comms', '[{"label":"Made by","value":"Anthropic"},{"label":"Use it when","value":"You write regular updates, reports or newsletters"}]'),
+  ('ubiquitous-language', '[{"label":"Made by","value":"Matt Pocock, TypeScript educator (community)"},{"label":"Use it when","value":"You and your agent keep using different words for the same thing"}]'),
+  ('writing-for-agents', '[{"label":"Made by","value":"Matt Pocock, TypeScript educator (community)"},{"label":"Use it when","value":"You are writing a skill or CLAUDE.md and want your agent to follow it"}]'),
+  ('athena-data-lake', '[{"label":"Made by","value":"AWS (official)"},{"label":"Use it when","value":"Your data sits in an AWS data lake and you want answers in SQL"},{"label":"Needs","value":"An AWS account with Athena"}]'),
+  ('graphify', '[{"label":"Made by","value":"safishamsi (community)"},{"label":"Use it when","value":"Your codebase is too big for your agent to keep in its head"}]'),
+  ('just-scrape', '[{"label":"Made by","value":"ScrapeGraphAI (official)"},{"label":"Use it when","value":"You need data pulled from websites"},{"label":"Needs","value":"A ScrapeGraphAI API key"}]'),
+  ('redshift-guide', '[{"label":"Made by","value":"AWS (official)"},{"label":"Use it when","value":"You query Amazon Redshift and your agent writes Postgres SQL instead"},{"label":"Needs","value":"An AWS account with Redshift"}]'),
+  ('xlsx-skill', '[{"label":"Made by","value":"Anthropic"},{"label":"Use it when","value":"You need a spreadsheet read, fixed or built with working formulas"}]'),
+  ('aws-deployment', '[{"label":"Made by","value":"AWS (official)"},{"label":"Use it when","value":"You want automatic builds and deploys on AWS"},{"label":"Needs","value":"An AWS account"}]'),
+  ('aws-serverless', '[{"label":"Made by","value":"AWS (official)"},{"label":"Use it when","value":"You are building an app on AWS Lambda"},{"label":"Needs","value":"An AWS account"}]'),
+  ('azure-kubernetes', '[{"label":"Made by","value":"Microsoft Azure (official)"},{"label":"Use it when","value":"You are setting up Kubernetes on Azure"},{"label":"Needs","value":"An Azure subscription"}]'),
+  ('deploy-to-vercel', '[{"label":"Made by","value":"Vercel (official)"},{"label":"Use it when","value":"You want your agent to put your project online"},{"label":"Needs","value":"A Vercel account"}]'),
+  ('wrangler', '[{"label":"Made by","value":"Cloudflare (official)"},{"label":"Use it when","value":"You are building or deploying on Cloudflare Workers"},{"label":"Needs","value":"A Cloudflare account"}]'),
+  ('aws-secrets', '[{"label":"Made by","value":"AWS (official)"},{"label":"Use it when","value":"Your app needs passwords or API keys stored safely on AWS"},{"label":"Needs","value":"An AWS account"}]'),
+  ('cloudflare-security-audit', '[{"label":"Made by","value":"Cloudflare"},{"label":"Use it when","value":"You want your code checked for security holes before launch"}]'),
+  ('differential-review', '[{"label":"Made by","value":"Trail of Bits, a security firm"},{"label":"Use it when","value":"You want every change reviewed for security problems"}]'),
+  ('supply-chain-risk-auditor', '[{"label":"Made by","value":"Trail of Bits, a security firm"},{"label":"Use it when","value":"You want to know if any of your dependencies are risky"}]'),
+  ('turnstile-spin', '[{"label":"Made by","value":"Cloudflare (official)"},{"label":"Use it when","value":"Bots are submitting your sign-up or contact forms"},{"label":"Needs","value":"A Cloudflare account"}]'),
+  ('copywriting', '[{"label":"Made by","value":"Corey Haines, marketer (community)"},{"label":"Use it when","value":"Your landing page copy needs writing or sharpening"}]'),
+  ('page-cro', '[{"label":"Made by","value":"Corey Haines, marketer (community)"},{"label":"Use it when","value":"People visit your landing or pricing page but do not sign up"}]'),
+  ('product-launch-video', '[{"label":"Made by","value":"HeyGen''s HyperFrames project (official)"},{"label":"Use it when","value":"You want a launch video made from your product page or a script"}]'),
+  ('seo-audit', '[{"label":"Made by","value":"Corey Haines, marketer (community)"},{"label":"Use it when","value":"A page is not showing up in Google"}]'),
+  ('seo-local', '[{"label":"Made by","value":"agricidaniel (community)"},{"label":"Use it when","value":"You run or build for a local business that needs to show up nearby"}]'),
+  ('anthropic-skills', '[{"label":"Made by","value":"Anthropic"},{"label":"Use it when","value":"You want Anthropic''s full set of skills, from design to documents, in one install"}]'),
+  ('canvas-design', '[{"label":"Made by","value":"Anthropic"},{"label":"Use it when","value":"You need a poster or visual piece as a PNG or PDF"}]'),
+  ('docx-skill', '[{"label":"Made by","value":"Anthropic"},{"label":"Use it when","value":"You need a Word document created or edited with proper formatting"}]'),
+  ('hyperframes-slideshow', '[{"label":"Made by","value":"HeyGen''s HyperFrames project (official)"},{"label":"Use it when","value":"You need a pitch deck or presentation"}]'),
+  ('pptx-skill', '[{"label":"Made by","value":"Anthropic"},{"label":"Use it when","value":"You need slides created or edited"}]')
+) as v(slug, facts)
+where t.slug = v.slug;

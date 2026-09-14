@@ -52,6 +52,16 @@ test("a tag repeating the pricing tier is not shown twice", () => {
   );
 });
 
+test("derived labels sit between pricing and tags", () => {
+  assert.deepEqual(
+    cardBadges("skills", "Open source", [tag("aws", "AWS"), tag("official", "Official")], [
+      "DevOps & deploy",
+      "Coding agents only",
+    ]),
+    ["Open source", "DevOps & deploy", "Coding agents only", "Official", "AWS"],
+  );
+});
+
 test("a category without a tag order keeps the default card", () => {
   assert.equal(cardBadges("models", "Free", [tag("react", "React")]), undefined);
 });

@@ -175,6 +175,41 @@ export function agentsFor(excluded: readonly string[]): SkillAgentId[] {
   return SKILL_AGENT_IDS.filter((id) => !excluded.includes(id));
 }
 
+/**
+ * True when a chat app (an `upload` agent such as Claude.ai) is excluded,
+ * which in practice means the skill needs a shell or files (VIB-146). Cards
+ * say "Coding agents only" so chat users see it before they click.
+ */
+export function isCodingAgentsOnly(excluded: readonly string[]): boolean {
+  return SKILL_AGENTS.some((agent) => agent.kind === "upload" && excluded.includes(agent.id));
+}
+
+/**
+ * A skill card's labels drawn from columns rather than tags (VIB-146): its
+ * category, and "Coding agents only" when a chat app cannot run it.
+ */
+export function skillCardExtras(
+  skill: { skill_category: string | null; skill_agents_excluded: readonly string[] },
+  { withCategory = true } = {},
+): string[] {
+  const category = withCategory ? toSkillCategory(skill.skill_category) : undefined;
+  return [
+    ...(category ? [skillCategoryLabel(category)] : []),
+    ...(isCodingAgentsOnly(skill.skill_agents_excluded) ? ["Coding agents only"] : []),
+  ];
+}
+
+/** The Key info "Works in" row: every agent, or every agent except the excluded ones. */
+export function worksInSummary(excluded: readonly string[]): string {
+  const missing = SKILL_AGENTS.filter((agent) => excluded.includes(agent.id)).map((a) => a.label);
+  if (!missing.length) return "Every agent listed here, including Claude.ai and ChatGPT";
+  const list =
+    missing.length === 1 ? missing[0] : `${missing.slice(0, -1).join(", ")} or ${missing.at(-1)}`;
+  return isCodingAgentsOnly(excluded) && !excluded.some((id) => ["claude-code", "codex", "cursor"].includes(id))
+    ? `Coding agents such as Claude Code, Codex and Cursor; not ${list}`
+    : `Every agent listed here except ${list}`;
+}
+
 // ---------------------------------------------------------------------------
 // Install text
 

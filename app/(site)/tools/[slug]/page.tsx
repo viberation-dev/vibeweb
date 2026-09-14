@@ -39,6 +39,11 @@ import { listToolLinks } from "@/lib/queries/tool-links";
 import { getWalkthroughsForTool } from "@/lib/queries/walkthroughs";
 import { contentView } from "@/lib/resource-view";
 import { getSkillPageFacts } from "@/lib/skill-live";
+import {
+  skillCategoryLabel,
+  toSkillCategory,
+  worksInSummary,
+} from "@/lib/skill-taxonomy";
 import { walkthroughHref } from "@/lib/walkthroughs";
 import {
   getToolBySlug,
@@ -66,7 +71,14 @@ const RELATED_LIMIT = 4;
 const READING_LIMIT = 4;
 
 /** Key info rows drawn from columns; editorial key facts cannot repeat them. */
-const FIXED_FACT_LABELS = new Set(["Pricing", "Platform", "Category", "Best for"]);
+const FIXED_FACT_LABELS = new Set([
+  "Pricing",
+  "Platform",
+  "Category",
+  "Skill category",
+  "Works in",
+  "Best for",
+]);
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -200,6 +212,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
     ? ROLE_LEVELS.find((l) => l.value === tool.best_for)!.label
     : "";
   const tagSlugs = new Set(tags.map((tag) => tag.slug));
+  const skillCategory = toSkillCategory(tool.skill_category);
   const outbound = safeOutboundUrl(tool.outbound_url);
 
   /*
@@ -355,6 +368,14 @@ export default async function ToolPage({ params, searchParams }: Props) {
             ) : null}
             {platforms ? <Fact label="Platform" value={platforms} /> : null}
             <Fact label="Category" value={toolCategoryLabel(tool.category)} />
+            {tool.category === "skills" ? (
+              <>
+                {skillCategory ? (
+                  <Fact label="Skill category" value={skillCategoryLabel(skillCategory)} />
+                ) : null}
+                <Fact label="Works in" value={worksInSummary(tool.skill_agents_excluded)} />
+              </>
+            ) : null}
             {bestFor ? <Fact label="Best for" value={bestFor} /> : null}
             {/* Editorial rows per tool — free plan, frameworks, email (VIB-141). */}
             {/* A fact reusing a fixed row's label would print it twice (VIB-143). */}

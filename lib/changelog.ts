@@ -42,6 +42,12 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-14",
     kind: "improved",
+    title: "Hosting cards say what each host runs",
+    body: "Hosting cards now show pricing, free trials and what each host runs, such as VPS, containers, static sites, Next.js or email. Each host's page lists its free plan, starting price, frameworks, databases, domains and email hosting. Tag filters on a category page only offer tags that category uses.",
+  },
+  {
+    date: "2026-09-14",
+    kind: "improved",
     title: "App builders on the homepage",
     body: "The homepage now introduces App Builders, the tools that turn a description into a working app, with three to try. Signed in, they sit in the side rail beside Trending tools.",
   },

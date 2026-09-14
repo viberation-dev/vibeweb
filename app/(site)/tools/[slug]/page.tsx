@@ -28,6 +28,7 @@ import {
   modelHref,
   pickMember,
 } from "@/lib/model-facts";
+import { toKeyFacts } from "@/lib/key-facts";
 import { outboundRel, safeOutboundUrl } from "@/lib/outbound";
 import { isBookmarked } from "@/lib/queries/bookmarks";
 import { countCollectionsContaining } from "@/lib/queries/collections";
@@ -352,6 +353,10 @@ export default async function ToolPage({ params, searchParams }: Props) {
             {platforms ? <Fact label="Platform" value={platforms} /> : null}
             <Fact label="Category" value={toolCategoryLabel(tool.category)} />
             {bestFor ? <Fact label="Best for" value={bestFor} /> : null}
+            {/* Editorial rows per tool — free plan, frameworks, email (VIB-141). */}
+            {toKeyFacts(tool.key_facts).map((fact) => (
+              <Fact key={fact.label} label={fact.label} value={fact.value} />
+            ))}
           </dl>
 
           {guides.length ? (

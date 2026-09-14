@@ -35,6 +35,30 @@ export async function listTags(
   return data;
 }
 
+/**
+ * Facet tags carried by at least one tool in `category`, alphabetical.
+ *
+ * The directory's chip row on a category page (VIB-141). Hosting brought
+ * tags like `vps` and `nextjs` that mean nothing on the Skills or Models
+ * page, and a chip that filters a category down to zero is a dead end.
+ */
+export async function listCategoryTags(
+  client: Client,
+  category: Enums<"tool_category">,
+): Promise<Tag[]> {
+  const { data, error } = await client
+    .from("tool_tags")
+    .select("tags!inner(*), tools!inner(category)")
+    .eq("tools.category", category)
+    .eq("tags.kind", "facet");
+
+  if (error) {
+    throw new Error(`listCategoryTags(${category}): ${error.message}`);
+  }
+  const byId = new Map(data.map((row) => [row.tags.id, row.tags]));
+  return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name));
+}
+
 /** One tag by its URL slug. Null when it does not exist. */
 export async function getTagBySlug(
   client: Client,

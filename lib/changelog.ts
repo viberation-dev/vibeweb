@@ -42,6 +42,12 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-14",
     kind: "improved",
+    title: "MCP servers, explained",
+    body: "The MCP Servers category now opens with a plain-English guide to what an MCP server is, remote versus local servers, and how to use them safely. Cards show whether a server is official, where it runs and how you sign in, and each server's page gives the address or command to add it and what your agent can do with it.",
+  },
+  {
+    date: "2026-09-14",
+    kind: "improved",
     title: "Skill cards say who made them and where they work",
     body: "Skill cards now show when a skill is official, the stack it is for, and when it only works in coding agents rather than Claude.ai or ChatGPT. Each skill's page lists its category, where it works, who made it, when to use it and anything it needs, such as an AWS account.",
   },

@@ -3030,3 +3030,109 @@ from (values
   ('pptx-skill', '[{"label":"Made by","value":"Anthropic"},{"label":"Use it when","value":"You need slides created or edited"}]')
 ) as v(slug, facts)
 where t.slug = v.slug;
+
+-- MCP server tags and key facts (VIB-147). Addresses and sign-in checked
+-- against each vendor's MCP docs on 2026-09-14.
+insert into tags (name, slug, kind) values
+  ('Remote',          'remote-mcp',     'facet'),
+  ('Runs locally',    'local-mcp',      'facet'),
+  ('Sign in',         'oauth',          'facet'),
+  ('API key',         'api-key',        'facet'),
+  ('Read-only mode',  'read-only-mode', 'facet')
+on conflict (slug) do update set name = excluded.name, kind = excluded.kind;
+
+update tools set best_for = 'intermediate'
+where category = 'mcp_servers' and best_for is null;
+
+insert into tool_tags (tool_id, tag_id)
+select t.id, g.id
+from (values
+  ('firecrawl-mcp','official'), ('firecrawl-mcp','remote-mcp'), ('firecrawl-mcp','local-mcp'), ('firecrawl-mcp','api-key'),
+  ('github-mcp-server','official'), ('github-mcp-server','remote-mcp'), ('github-mcp-server','local-mcp'),
+  ('github-mcp-server','oauth'), ('github-mcp-server','read-only-mode'),
+  ('linear-mcp','official'), ('linear-mcp','remote-mcp'), ('linear-mcp','oauth'),
+  ('netlify-mcp','official'), ('netlify-mcp','remote-mcp'), ('netlify-mcp','local-mcp'), ('netlify-mcp','oauth'),
+  ('notion-mcp','official'), ('notion-mcp','remote-mcp'), ('notion-mcp','oauth'),
+  ('playwright-mcp','official'), ('playwright-mcp','local-mcp'),
+  ('supabase-mcp-server','official'), ('supabase-mcp-server','remote-mcp'), ('supabase-mcp-server','oauth'),
+  ('supabase-mcp-server','read-only-mode'),
+  ('vercel-mcp','official'), ('vercel-mcp','remote-mcp'), ('vercel-mcp','oauth')
+) as m(tool_slug, tag_slug)
+join tools t on t.slug = m.tool_slug
+join tags  g on g.slug = m.tag_slug
+on conflict do nothing;
+
+update tools t set key_facts = v.facts::jsonb, updated_at = now()
+from (values
+  ('firecrawl-mcp', '[
+    {"label": "Connects your agent to", "value": "The web, through Firecrawl''s search and scraping"},
+    {"label": "Runs", "value": "Remote, or on your computer with npx"},
+    {"label": "Add it with", "value": "https://mcp.firecrawl.dev/v2/mcp"},
+    {"label": "Sign-in", "value": "Search and scraping work without a key, rate-limited; crawling needs a Firecrawl API key"},
+    {"label": "Your agent can", "value": "Search the web and read pages as clean Markdown"},
+    {"label": "Cost", "value": "1,000 free credits a month, then paid Firecrawl plans"},
+    {"label": "Good for", "value": "Reading current docs instead of guessing from memory"}
+  ]'),
+  ('github-mcp-server', '[
+    {"label": "Connects your agent to", "value": "Your GitHub repositories"},
+    {"label": "Runs", "value": "Remote, or on your computer with Docker"},
+    {"label": "Add it with", "value": "https://api.githubcopilot.com/mcp/"},
+    {"label": "Sign-in", "value": "GitHub sign-in in the browser, or a personal access token"},
+    {"label": "Your agent can", "value": "Read code, manage issues and pull requests, and check why an Actions run failed"},
+    {"label": "Safety", "value": "Only gets the permissions you approve; a read-only mode is available"},
+    {"label": "Cost", "value": "Free"}
+  ]'),
+  ('linear-mcp', '[
+    {"label": "Connects your agent to", "value": "Your Linear workspace"},
+    {"label": "Runs", "value": "Remote"},
+    {"label": "Add it with", "value": "https://mcp.linear.app/mcp"},
+    {"label": "Sign-in", "value": "Linear sign-in in the browser, or an API key"},
+    {"label": "Your agent can", "value": "Find, create and update issues, projects and comments"},
+    {"label": "Cost", "value": "Free with a Linear account"}
+  ]'),
+  ('netlify-mcp', '[
+    {"label": "Connects your agent to", "value": "Your Netlify sites"},
+    {"label": "Runs", "value": "Remote, or on your computer with npx @netlify/mcp"},
+    {"label": "Add it with", "value": "https://netlify-mcp.netlify.app/mcp"},
+    {"label": "Sign-in", "value": "Netlify sign-in, or a personal access token"},
+    {"label": "Your agent can", "value": "Create and deploy sites, and change their settings"},
+    {"label": "Needs", "value": "A Netlify account; Node.js 22 or later to run it locally"},
+    {"label": "Cost", "value": "Free"}
+  ]'),
+  ('notion-mcp', '[
+    {"label": "Connects your agent to", "value": "Your Notion workspace"},
+    {"label": "Runs", "value": "Remote"},
+    {"label": "Add it with", "value": "https://mcp.notion.com/mcp"},
+    {"label": "Sign-in", "value": "Notion sign-in in the browser; API tokens are not supported"},
+    {"label": "Your agent can", "value": "Search, read and update the pages and databases you can access"},
+    {"label": "Worth knowing", "value": "You need to be there to sign in, so it does not suit agents that run on their own"},
+    {"label": "Cost", "value": "Free with a Notion account"}
+  ]'),
+  ('playwright-mcp', '[
+    {"label": "Connects your agent to", "value": "A real browser on your computer"},
+    {"label": "Runs", "value": "On your computer"},
+    {"label": "Add it with", "value": "npx @playwright/mcp@latest"},
+    {"label": "Sign-in", "value": "None"},
+    {"label": "Your agent can", "value": "Open pages, click, type and read what is on screen"},
+    {"label": "Needs", "value": "Node.js"},
+    {"label": "Good for", "value": "Letting your agent check that your app actually works"}
+  ]'),
+  ('supabase-mcp-server', '[
+    {"label": "Connects your agent to", "value": "Your Supabase projects"},
+    {"label": "Runs", "value": "Remote"},
+    {"label": "Add it with", "value": "https://mcp.supabase.com/mcp"},
+    {"label": "Sign-in", "value": "Supabase sign-in in the browser, or a personal access token"},
+    {"label": "Your agent can", "value": "Read tables, run SQL, apply migrations and check logs"},
+    {"label": "Safety", "value": "Turn on read-only and limit it to one project; otherwise it can change real data"},
+    {"label": "Cost", "value": "Free"}
+  ]'),
+  ('vercel-mcp', '[
+    {"label": "Connects your agent to", "value": "Your Vercel projects"},
+    {"label": "Runs", "value": "Remote"},
+    {"label": "Add it with", "value": "https://mcp.vercel.com"},
+    {"label": "Sign-in", "value": "Vercel sign-in in the browser; searching the docs works without it"},
+    {"label": "Your agent can", "value": "Search Vercel docs, manage projects and deployments, and read logs"},
+    {"label": "Cost", "value": "Free"}
+  ]')
+) as v(slug, facts)
+where t.slug = v.slug;

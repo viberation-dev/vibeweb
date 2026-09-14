@@ -45,6 +45,15 @@ export const CARD_TAGS: Readonly<Record<string, readonly string[]>> = {
     "local-models",
     "open-source",
   ],
+  // What kind of CLI it is first (an agent, or a skills tool), then whose
+  // models it runs (VIB-144).
+  clis: [
+    "coding-agent",
+    "skills-ecosystem",
+    "byok",
+    "local-models",
+    "open-source",
+  ],
 };
 
 /** Tags beyond the pricing badges, so a card stays one or two lines. */
@@ -65,7 +74,8 @@ export function cardBadges(
 
   const bySlug = new Map(tags.map((tag) => [tag.slug, tag.name]));
   const picked = order
-    .filter((slug) => bySlug.has(slug))
+    // A tool priced "Open source" would otherwise show it twice (VIB-144).
+    .filter((slug) => bySlug.has(slug) && bySlug.get(slug) !== pricingTier)
     .slice(0, MAX_CARD_TAGS)
     .map((slug) => bySlug.get(slug)!);
 

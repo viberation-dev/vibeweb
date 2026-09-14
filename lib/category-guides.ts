@@ -50,4 +50,29 @@ export const CATEGORY_GUIDES: Readonly<Record<string, CategoryGuide>> = {
     choose:
       "Building an app with AI? Start with an agent in your editor or terminal. Want tasks done while you are away? Try a cloud agent. Adding an AI feature for your own users? That is when you need a framework.",
   },
+  // VIB-147. "MCP" is jargon most vibe coders meet in a setup guide first.
+  mcp_servers: {
+    title: "What is an MCP server?",
+    intro:
+      "Your agent can only work with what it can reach. An MCP server connects it to one more thing, such as your database, your GitHub repos or a real browser, so it can look things up and take action there instead of asking you to copy and paste. MCP is the shared standard, so one server works with Claude Code, Cursor, Codex and most other agents.",
+    kinds: [
+      {
+        name: "Remote servers",
+        body: "A web address you add to your agent, then sign in with your account in the browser. Nothing to install. Most services you already use offer one.",
+        links: [{ label: "Show remote servers", category: "mcp_servers", tag: "remote-mcp" }],
+      },
+      {
+        name: "Local servers",
+        body: "Run on your own computer with one command, usually starting npx. Used for things on your machine, such as controlling a browser.",
+        links: [{ label: "Show local servers", category: "mcp_servers", tag: "local-mcp" }],
+      },
+      {
+        name: "Staying safe",
+        body: "A server acts with your permissions. Use read-only mode where it exists, point it at a test project rather than live data, never paste API keys into chat, and only add servers from companies you trust.",
+        links: [],
+      },
+    ],
+    choose:
+      "Add a server for each service your project already uses, such as your database or where you deploy. Start with one, check what your agent does with it, then add the next.",
+  },
 };

@@ -18,17 +18,19 @@ export function CategoryGuide({ guide }: { guide: Guide }) {
           <li key={kind.name}>
             <h3 className="font-medium">{kind.name}</h3>
             <p className="text-muted-foreground mt-1 text-sm">{kind.body}</p>
-            <p className="mt-2 flex flex-wrap gap-3 text-sm">
-              {kind.links.map((link) => (
-                <Link
-                  key={link.label}
-                  href={toolsHref({ category: link.category, tag: link.tag })}
-                  className="text-primary font-medium underline-offset-4 hover:underline"
-                >
-                  {link.label} →
-                </Link>
-              ))}
-            </p>
+            {kind.links.length ? (
+              <p className="mt-2 flex flex-wrap gap-3 text-sm">
+                {kind.links.map((link) => (
+                  <Link
+                    key={link.label}
+                    href={toolsHref({ category: link.category, tag: link.tag })}
+                    className="text-primary font-medium underline-offset-4 hover:underline"
+                  >
+                    {link.label} →
+                  </Link>
+                ))}
+              </p>
+            ) : null}
           </li>
         ))}
       </ul>

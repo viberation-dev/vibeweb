@@ -82,6 +82,15 @@ export const CARD_TAGS: Readonly<Record<string, readonly string[]>> = {
     "cloudflare",
     "vercel",
   ],
+  // Who runs it, where it runs, and how it gets your permission (VIB-147).
+  mcp_servers: [
+    "official",
+    "remote-mcp",
+    "local-mcp",
+    "oauth",
+    "api-key",
+    "read-only-mode",
+  ],
 };
 
 /** Tags beyond the pricing badges, so a card stays one or two lines. */

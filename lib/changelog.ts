@@ -42,6 +42,12 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-14",
     kind: "improved",
+    title: "Plugin cards say where they work",
+    body: "Plugin cards now show which editors each plugin works in and whether you can use your own API key or local models. Each plugin's page lists its free plan, starting price, models and how to install it. Continue is marked as no longer updated, since Cursor acquired it.",
+  },
+  {
+    date: "2026-09-14",
+    kind: "improved",
     title: "MCP servers, explained",
     body: "The MCP Servers category now opens with a plain-English guide to what an MCP server is, remote versus local servers, and how to use them safely. Cards show whether a server is official, where it runs and how you sign in, and each server's page gives the address or command to add it and what your agent can do with it.",
   },

@@ -2514,14 +2514,14 @@ from (values
     {"label": "Models", "value": "Claude, GPT, Gemini and Cursor''s own models"},
     {"label": "Your own API key", "value": "Yes: OpenAI, Anthropic, Google, Azure and Bedrock"},
     {"label": "Local models", "value": "No"},
-    {"label": "Best for", "value": "Everyday AI coding on any stack"}
+    {"label": "Good for", "value": "Everyday AI coding on any stack"}
   ]'),
   ('devin-desktop', '[
     {"label": "Free plan", "value": "A usage allowance that refreshes daily and weekly"},
     {"label": "Paid plans from", "value": "$20 a month (Pro)"},
     {"label": "Built on", "value": "A fork of VS Code; renamed from Windsurf in June 2026"},
     {"label": "Agent", "value": "Devin Local, which replaced Cascade in July 2026"},
-    {"label": "Best for", "value": "People moving over from Windsurf, or already using Devin"}
+    {"label": "Good for", "value": "People moving over from Windsurf, or already using Devin"}
   ]'),
   ('vs-code', '[
     {"label": "Free plan", "value": "The editor is free; GitHub Copilot Free adds 2,000 completions and 50 chat messages a month"},
@@ -2530,7 +2530,7 @@ from (values
     {"label": "Models", "value": "Claude, GPT and Gemini through GitHub Copilot"},
     {"label": "Your own API key", "value": "On Copilot Business and Enterprise"},
     {"label": "Extensions", "value": "The largest marketplace, and the first place most AI tools ship"},
-    {"label": "Best for", "value": "A free, flexible editor that works with every AI extension"}
+    {"label": "Good for", "value": "A free, flexible editor that works with every AI extension"}
   ]'),
   ('webstorm', '[
     {"label": "Free plan", "value": "Free for non-commercial use"},
@@ -2540,7 +2540,7 @@ from (values
     {"label": "AI", "value": "JetBrains AI Free and the Junie agent included; AI Pro is $100 a year"},
     {"label": "Your own API key", "value": "Yes, through JetBrains AI''s third-party providers"},
     {"label": "Local models", "value": "Yes, through Ollama or LM Studio"},
-    {"label": "Best for", "value": "JavaScript, TypeScript, React, Vue and Node.js"}
+    {"label": "Good for", "value": "JavaScript, TypeScript, React, Vue and Node.js"}
   ]'),
   ('google-antigravity', '[
     {"label": "Free plan", "value": "Individual: agent access with weekly limits, unlimited Tab completions"},
@@ -2548,7 +2548,7 @@ from (values
     {"label": "Built on", "value": "A fork of VS Code"},
     {"label": "Models", "value": "Gemini, plus Claude Sonnet and GPT-OSS"},
     {"label": "Your own API key", "value": "No"},
-    {"label": "Best for", "value": "Handing whole tasks to agents and reviewing the result"}
+    {"label": "Good for", "value": "Handing whole tasks to agents and reviewing the result"}
   ]'),
   ('kiro', '[
     {"label": "Free plan", "value": "50 credits a month"},
@@ -2557,7 +2557,7 @@ from (values
     {"label": "Built on", "value": "Code OSS, with extensions from Open VSX"},
     {"label": "Models", "value": "Claude, through Amazon Bedrock"},
     {"label": "Your own API key", "value": "No"},
-    {"label": "Best for", "value": "Planning a feature properly before any code is written"}
+    {"label": "Good for", "value": "Planning a feature properly before any code is written"}
   ]'),
   ('zed', '[
     {"label": "Free plan", "value": "The editor is free, with 2,000 accepted AI edit predictions a month"},
@@ -2566,14 +2566,14 @@ from (values
     {"label": "Models", "value": "Zed''s hosted models, or external agents such as Claude Code"},
     {"label": "Your own API key", "value": "Yes, on the free plan"},
     {"label": "Local models", "value": "Yes, through Ollama"},
-    {"label": "Best for", "value": "A fast, lightweight editor that works with the agent you already use"}
+    {"label": "Good for", "value": "A fast, lightweight editor that works with the agent you already use"}
   ]'),
   ('trae', '[
     {"label": "Free plan", "value": "A monthly allowance of completions and premium model requests"},
     {"label": "Paid plans from", "value": "$10 a month (Pro)"},
     {"label": "Built on", "value": "A fork of VS Code"},
     {"label": "Models", "value": "Claude, GPT, Gemini and DeepSeek, no API keys needed"},
-    {"label": "Best for", "value": "Trying an agentic IDE without paying"}
+    {"label": "Good for", "value": "Trying an agentic IDE without paying"}
   ]'),
   ('intellij-idea', '[
     {"label": "Free plan", "value": "Core Java and Kotlin features, free for commercial use too"},
@@ -2583,7 +2583,7 @@ from (values
     {"label": "AI", "value": "JetBrains AI Free and the Junie agent included; AI Pro is $100 a year"},
     {"label": "Your own API key", "value": "Yes, through JetBrains AI''s third-party providers"},
     {"label": "Local models", "value": "Yes, through Ollama or LM Studio"},
-    {"label": "Best for", "value": "Java, Kotlin and Spring back ends"}
+    {"label": "Good for", "value": "Java, Kotlin and Spring back ends"}
   ]'),
   ('android-studio', '[
     {"label": "Free plan", "value": "Free, with Gemini included at no cost"},
@@ -2592,7 +2592,7 @@ from (values
     {"label": "Models", "value": "Gemini by default, or GPT and Claude with your own key"},
     {"label": "Your own API key", "value": "Yes"},
     {"label": "Local models", "value": "Yes, through Ollama or LM Studio"},
-    {"label": "Best for", "value": "Native Android apps in Kotlin"}
+    {"label": "Good for", "value": "Native Android apps in Kotlin"}
   ]'),
   ('xcode', '[
     {"label": "Free plan", "value": "Free"},
@@ -2601,7 +2601,7 @@ from (values
     {"label": "Models", "value": "ChatGPT and Claude built in, or other providers"},
     {"label": "Your own API key", "value": "Yes"},
     {"label": "Local models", "value": "Yes"},
-    {"label": "Best for", "value": "iPhone, iPad and Mac apps in Swift"}
+    {"label": "Good for", "value": "iPhone, iPad and Mac apps in Swift"}
   ]')
 ) as v(slug, facts)
 where t.slug = v.slug;

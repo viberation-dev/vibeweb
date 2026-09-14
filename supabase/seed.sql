@@ -2702,3 +2702,197 @@ from (values
   ]')
 ) as v(slug, facts)
 where t.slug = v.slug;
+
+-- Agents: cloud agents, frameworks, tags and key facts (VIB-145). Checked
+-- against vendor docs, pricing pages and reviews on 2026-09-14.
+insert into tools (name, slug, category, tagline, description, pricing_tier, outbound_url) values
+  ('Devin', 'devin', 'agents',
+   'A cloud agent you assign tickets to, like a junior engineer.',
+   'Describe a task in the web app, Slack or Jira, and Devin plans it, writes the code and tests it on its own machine in the cloud, then opens a pull request. It answers review comments too. Billed by work done, so costs track how much you hand over.',
+   'Freemium', 'https://devin.ai'),
+  ('Jules', 'jules', 'agents',
+   'Google''s cloud coding agent that works on your GitHub repo.',
+   'Pick a repository, describe a task, and Jules works on it in the background with Gemini, then opens a pull request for you to review. Free to start with a daily task limit; a Google AI plan raises it.',
+   'Freemium', 'https://jules.google.com'),
+  ('GitHub Copilot coding agent', 'copilot-coding-agent', 'agents',
+   'Assign a GitHub issue to Copilot and get a pull request back.',
+   'Copilot''s cloud agent picks up an issue, plans the work, writes the code, runs the tests and opens a pull request, then revises it from your review comments. Included with paid Copilot plans, and handy if your work already lives in GitHub issues.',
+   'Paid', 'https://docs.github.com/copilot/concepts/agents/coding-agent/about-coding-agent'),
+  ('OpenAI Agents SDK', 'openai-agents-sdk', 'agents',
+   'OpenAI''s lightweight framework for multi-agent workflows.',
+   'An open-source library for building agents that use tools, hand work to each other and check inputs with guardrails. Works with OpenAI and over 100 other models, in Python or TypeScript.',
+   'Open source', 'https://openai.github.io/openai-agents-python/'),
+  ('LangGraph', 'langgraph', 'agents',
+   'Build agents as controllable step-by-step graphs.',
+   'From the LangChain team. You define each step an agent can take and how it moves between them, which makes complex agents easier to debug and run in production. Open source in Python and TypeScript, with optional paid hosting through LangSmith.',
+   'Open source', 'https://www.langchain.com/langgraph'),
+  ('CrewAI', 'crewai', 'agents',
+   'Teams of role-based agents that work together.',
+   'Give each agent a role and a goal, such as researcher and writer, and CrewAI coordinates them on a task. One of the quickest frameworks to learn. Open source in Python, with a paid platform for teams.',
+   'Open source', 'https://www.crewai.com'),
+  ('Mastra', 'mastra', 'agents',
+   'A TypeScript framework for agents, workflows and RAG.',
+   'Built for JavaScript and TypeScript developers who want to add agents to a web app. Includes workflows, memory, evals and a local studio for testing. The core is open source under Apache 2.0.',
+   'Open source', 'https://mastra.ai'),
+  ('Google ADK', 'google-adk', 'agents',
+   'Google''s Agent Development Kit, in four languages.',
+   'An open-source framework for building, testing and deploying agents, optimised for Gemini and Google Cloud but able to use other models. Available in Python, TypeScript, Go and Java.',
+   'Open source', 'https://adk.dev'),
+  ('Microsoft Agent Framework', 'microsoft-agent-framework', 'agents',
+   'Microsoft''s agent framework for Python and .NET, successor to AutoGen.',
+   'Combines AutoGen''s multi-agent ideas with Semantic Kernel''s enterprise tooling. Reached 1.0 in April 2026, is open source under MIT, and is where Microsoft points new projects.',
+   'Open source', 'https://github.com/microsoft/agent-framework'),
+  ('AutoGen', 'autogen', 'agents',
+   'Microsoft''s early multi-agent framework, now in maintenance mode.',
+   'An open-source framework for several agents that talk to each other to solve a task. Since October 2025 it only gets bug and security fixes; Microsoft recommends Microsoft Agent Framework for new projects.',
+   'Open source', 'https://microsoft.github.io/autogen/')
+on conflict (slug) do update set
+  name         = excluded.name,
+  category     = excluded.category,
+  tagline      = excluded.tagline,
+  description  = excluded.description,
+  pricing_tier = excluded.pricing_tier,
+  outbound_url = excluded.outbound_url,
+  updated_at   = now();
+
+update tools t set platform = v.platform::text[], best_for = v.best_for::role_level
+from (values
+  ('devin', '{web}', 'intermediate'),
+  ('jules', '{web}', 'beginner'),
+  ('copilot-coding-agent', '{web}', 'beginner'),
+  ('openai-agents-sdk', '{}', 'expert'),
+  ('langgraph', '{}', 'expert'),
+  ('crewai', '{}', 'intermediate'),
+  ('mastra', '{}', 'expert'),
+  ('google-adk', '{}', 'expert'),
+  ('microsoft-agent-framework', '{}', 'expert')
+) as v(slug, platform, best_for)
+where t.slug = v.slug;
+
+insert into tags (name, slug, kind) values
+  ('Cloud agent',         'cloud-agent',     'facet'),
+  ('Agent framework',     'agent-framework', 'facet'),
+  ('Opens pull requests', 'opens-prs',       'facet'),
+  ('Python',              'python',          'facet'),
+  ('TypeScript',          'typescript',      'facet'),
+  ('Multi-agent',         'multi-agent',     'facet')
+on conflict (slug) do update set name = excluded.name, kind = excluded.kind;
+
+insert into tool_tags (tool_id, tag_id)
+select t.id, g.id
+from (values
+  ('devin','cloud-agent'), ('devin','opens-prs'), ('devin','automation'), ('devin','free-tier'),
+  ('jules','cloud-agent'), ('jules','opens-prs'), ('jules','automation'), ('jules','free-tier'),
+  ('copilot-coding-agent','cloud-agent'), ('copilot-coding-agent','opens-prs'), ('copilot-coding-agent','automation'),
+  ('claude-agent-sdk','agent-framework'), ('claude-agent-sdk','python'), ('claude-agent-sdk','typescript'),
+  ('openai-agents-sdk','agent-framework'), ('openai-agents-sdk','python'), ('openai-agents-sdk','typescript'),
+  ('openai-agents-sdk','multi-agent'), ('openai-agents-sdk','open-source'), ('openai-agents-sdk','backend'),
+  ('langgraph','agent-framework'), ('langgraph','python'), ('langgraph','typescript'),
+  ('langgraph','multi-agent'), ('langgraph','open-source'), ('langgraph','backend'),
+  ('crewai','agent-framework'), ('crewai','python'), ('crewai','multi-agent'), ('crewai','open-source'), ('crewai','backend'),
+  ('mastra','agent-framework'), ('mastra','typescript'), ('mastra','open-source'), ('mastra','backend'),
+  ('google-adk','agent-framework'), ('google-adk','python'), ('google-adk','typescript'),
+  ('google-adk','multi-agent'), ('google-adk','open-source'), ('google-adk','backend'),
+  ('microsoft-agent-framework','agent-framework'), ('microsoft-agent-framework','python'),
+  ('microsoft-agent-framework','multi-agent'), ('microsoft-agent-framework','open-source'), ('microsoft-agent-framework','backend'),
+  ('autogen','agent-framework'), ('autogen','python'), ('autogen','multi-agent')
+) as m(tool_slug, tag_slug)
+join tools t on t.slug = m.tool_slug
+join tags  g on g.slug = m.tag_slug
+on conflict do nothing;
+
+update tools t set key_facts = v.facts::jsonb, updated_at = now()
+from (values
+  ('devin', '[
+    {"label": "What it is", "value": "A cloud agent: it works on its own computer while you do something else"},
+    {"label": "Do you need to code?", "value": "No, but you should be able to review the code it writes"},
+    {"label": "Free plan", "value": "A light agent allowance; Devin''s cloud agents need a paid plan"},
+    {"label": "Paid plans from", "value": "Core: pay as you go from $20, about $2.25 per unit of work (roughly 15 minutes)"},
+    {"label": "How you give it work", "value": "The web app, Slack or Jira"},
+    {"label": "What you get back", "value": "A pull request on GitHub, and replies to your review comments"},
+    {"label": "Good for", "value": "Handing off well-defined tickets"}
+  ]'),
+  ('jules', '[
+    {"label": "What it is", "value": "A cloud agent: it works on your GitHub repo in the background"},
+    {"label": "Do you need to code?", "value": "No, but you should be able to review the code it writes"},
+    {"label": "Free plan", "value": "A daily task limit"},
+    {"label": "Paid plans from", "value": "More tasks and newer Gemini models with a Google AI Pro or Ultra plan"},
+    {"label": "How you give it work", "value": "Choose a GitHub repository and describe the task"},
+    {"label": "What you get back", "value": "A pull request on a new branch"},
+    {"label": "Models", "value": "Gemini"},
+    {"label": "Good for", "value": "Bug fixes, tests and small features while you work on something else"}
+  ]'),
+  ('copilot-coding-agent', '[
+    {"label": "What it is", "value": "A cloud agent built into GitHub"},
+    {"label": "Do you need to code?", "value": "No, but you should be able to review the code it writes"},
+    {"label": "Free plan", "value": "Not included in Copilot Free"},
+    {"label": "Paid plans from", "value": "GitHub Copilot Pro, $10 a month"},
+    {"label": "How you give it work", "value": "Assign a GitHub issue to Copilot, or mention @copilot on a pull request"},
+    {"label": "What you get back", "value": "A pull request, revised from your review comments"},
+    {"label": "Good for", "value": "Projects that already track work in GitHub issues"}
+  ]'),
+  ('claude-agent-sdk', '[
+    {"label": "What it is", "value": "A framework: a code library for building your own agent"},
+    {"label": "Do you need to code?", "value": "Yes, in Python or TypeScript"},
+    {"label": "Cost", "value": "The library is free; you pay for Claude usage with an API key or your Claude plan''s Agent SDK credit"},
+    {"label": "Models", "value": "Claude, also through Amazon Bedrock, Google Vertex AI or Microsoft Foundry"},
+    {"label": "Install", "value": "pip install claude-agent-sdk, or npm install @anthropic-ai/claude-agent-sdk"},
+    {"label": "Good for", "value": "Building an agent with the same tools and permissions Claude Code uses"}
+  ]'),
+  ('openai-agents-sdk', '[
+    {"label": "What it is", "value": "A framework: a code library for building your own agents"},
+    {"label": "Do you need to code?", "value": "Yes, in Python or TypeScript"},
+    {"label": "Cost", "value": "Free and open source; you pay your model provider"},
+    {"label": "Models", "value": "OpenAI, plus over 100 other models"},
+    {"label": "Install", "value": "pip install openai-agents, or npm install @openai/agents"},
+    {"label": "Good for", "value": "Agents that hand work to each other, with guardrails and tracing"}
+  ]'),
+  ('langgraph', '[
+    {"label": "What it is", "value": "A framework: a code library for building your own agents"},
+    {"label": "Do you need to code?", "value": "Yes, in Python or TypeScript"},
+    {"label": "Cost", "value": "Free and open source; optional paid hosting and monitoring through LangSmith"},
+    {"label": "Models", "value": "Any, through LangChain''s integrations"},
+    {"label": "Install", "value": "pip install langgraph, or npm install @langchain/langgraph"},
+    {"label": "Good for", "value": "Complex agents that need every step to be controllable in production"}
+  ]'),
+  ('crewai', '[
+    {"label": "What it is", "value": "A framework: a code library for teams of agents"},
+    {"label": "Do you need to code?", "value": "Yes, in Python"},
+    {"label": "Cost", "value": "Free and open source; optional paid platform for teams"},
+    {"label": "Models", "value": "Most providers, including local models"},
+    {"label": "Install", "value": "pip install crewai"},
+    {"label": "Good for", "value": "Getting several role-based agents working together quickly"}
+  ]'),
+  ('mastra', '[
+    {"label": "What it is", "value": "A framework: a code library for agents and AI workflows"},
+    {"label": "Do you need to code?", "value": "Yes, in TypeScript"},
+    {"label": "Cost", "value": "Free and open source (Apache 2.0); optional hosted cloud"},
+    {"label": "Models", "value": "Many providers"},
+    {"label": "Install", "value": "npm create mastra@latest"},
+    {"label": "Good for", "value": "Adding agents to a JavaScript or Next.js app"}
+  ]'),
+  ('google-adk', '[
+    {"label": "What it is", "value": "A framework: a code library for building, testing and deploying agents"},
+    {"label": "Do you need to code?", "value": "Yes, in Python, TypeScript, Go or Java"},
+    {"label": "Cost", "value": "Free and open source (Apache 2.0); you pay your model provider"},
+    {"label": "Models", "value": "Optimised for Gemini; OpenAI, Anthropic and others through LiteLLM"},
+    {"label": "Install", "value": "pip install google-adk"},
+    {"label": "Good for", "value": "Agents that will run on Google Cloud"}
+  ]'),
+  ('microsoft-agent-framework', '[
+    {"label": "What it is", "value": "A framework: a code library for agents and multi-agent workflows"},
+    {"label": "Do you need to code?", "value": "Yes, in Python or C#"},
+    {"label": "Cost", "value": "Free and open source (MIT); you pay your model provider"},
+    {"label": "Models", "value": "Several providers, including Azure OpenAI"},
+    {"label": "Install", "value": "pip install agent-framework, or the .NET packages from NuGet"},
+    {"label": "Good for", "value": ".NET teams, and anyone moving on from AutoGen"}
+  ]'),
+  ('autogen', '[
+    {"label": "What it is", "value": "A framework for agents that talk to each other"},
+    {"label": "Status", "value": "Maintenance mode since October 2025: bug and security fixes only"},
+    {"label": "Do you need to code?", "value": "Yes, in Python"},
+    {"label": "Cost", "value": "Free and open source; you pay your model provider"},
+    {"label": "Good for", "value": "Existing AutoGen projects; start new ones on Microsoft Agent Framework"}
+  ]')
+) as v(slug, facts)
+where t.slug = v.slug;

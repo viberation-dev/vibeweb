@@ -4,11 +4,13 @@ import type { Metadata } from "next";
 import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
 import { DirectoryPager } from "@/components/features/resource/DirectoryPager";
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
+import { CategoryGuide } from "@/components/features/tools/CategoryGuide";
 import { CategoryIcon } from "@/components/features/tools/CategoryIcon";
 import { DirectoryFilters } from "@/components/features/tools/DirectoryFilters";
 import { buttonVariants } from "@/components/ui/button";
 import { getOpenRouterModels } from "@/lib/integrations/openrouter";
 import { createClient } from "@/lib/integrations/supabase/server";
+import { CATEGORY_GUIDES } from "@/lib/category-guides";
 import { familyLine, familyMembers } from "@/lib/model-facts";
 import { toPageNumber } from "@/lib/pagination";
 import { listBookmarks } from "@/lib/queries/bookmarks";
@@ -158,6 +160,11 @@ export default async function ToolsPage({ searchParams }: Props) {
           ) : null}
         </form>
       </div>
+
+      {/* First page only: a reader paging through already has the answer. */}
+      {category && CATEGORY_GUIDES[category] && page === 1 ? (
+        <CategoryGuide guide={CATEGORY_GUIDES[category]} />
+      ) : null}
 
       <div className="mt-6">
         <DirectoryFilters

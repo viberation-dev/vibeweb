@@ -54,6 +54,17 @@ export const CARD_TAGS: Readonly<Record<string, readonly string[]>> = {
     "local-models",
     "open-source",
   ],
+  // Which kind of agent first, since that is the confusing part (VIB-145).
+  agents: [
+    "cloud-agent",
+    "agent-framework",
+    "opens-prs",
+    "python",
+    "typescript",
+    "multi-agent",
+    "byok",
+    "open-source",
+  ],
 };
 
 /** Tags beyond the pricing badges, so a card stays one or two lines. */

@@ -43,7 +43,7 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
     date: "2026-09-14",
     kind: "improved",
     title: "App Builder cards say what each builder makes",
-    body: "App Builder cards now show pricing and what each builder makes, such as web apps, mobile apps or websites, and whether you can take the code with you. Each builder's page lists its free plan, starting price, the code it writes, its backend, hosting and custom domains.",
+    body: "App Builder cards now show pricing and what each builder makes, such as web apps, mobile apps or websites, and whether you can take the code with you. Each builder's page lists its free plan, starting price, the code it writes, its backend, hosting and custom domains. Mocha is removed, as it shut down on 1 August.",
   },
   {
     date: "2026-09-14",

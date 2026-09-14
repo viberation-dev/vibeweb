@@ -2310,7 +2310,7 @@ from (values
     {"label": "Builds", "value": "Native iOS and Android apps"},
     {"label": "Code it writes", "value": "React Native with Expo; Swift on Rork Max"},
     {"label": "Own your code", "value": "Yes, through GitHub"},
-    {"label": "Hosting", "value": "Publishes to the App Store and Google Play"},
+    {"label": "Hosting", "value": "Can publish to the App Store for you"},
     {"label": "Custom domains", "value": "Not applicable for mobile apps"}
   ]'),
   ('bubble', '[
@@ -2413,3 +2413,12 @@ from (values
   ]')
 ) as v(slug, facts)
 where t.slug = v.slug;
+
+-- Mocha shut down on 2026-08-01 (VIB-142). Removed rather than left as a
+-- listing that sends readers to a dead product. Nothing bookmarked it.
+delete from tools where slug = 'mocha';
+
+-- Durable builds websites, not apps (VIB-142).
+delete from tool_tags
+where tool_id = (select id from tools where slug = 'durable')
+  and tag_id = (select id from tags where slug = 'web-apps');

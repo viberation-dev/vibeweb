@@ -3136,3 +3136,66 @@ from (values
   ]')
 ) as v(slug, facts)
 where t.slug = v.slug;
+
+-- Plugin tags and key facts (VIB-148). Checked against vendor pages and
+-- reviews on 2026-09-14. Copilot has a free plan, so it is Freemium.
+update tools set pricing_tier = 'Freemium', updated_at = now() where slug = 'github-copilot';
+
+update tools set
+  tagline = 'Open-source AI assistant for VS Code and JetBrains, no longer updated.',
+  description = 'Continue lets you point your editor assistant at whichever model you want, including local ones. Cursor acquired the company in 2026, and version 2.0.0 is the final release: it still installs and runs, but gets no new features or fixes.',
+  updated_at = now()
+where slug = 'continue';
+
+update tools set best_for = 'intermediate', platform = '{macos,windows,linux}'
+where slug = 'kilo-code';
+
+insert into tags (name, slug, kind) values
+  ('No longer updated', 'no-longer-updated', 'facet'),
+  ('VS Code',           'vs-code',           'facet')
+on conflict (slug) do update set name = excluded.name, kind = excluded.kind;
+
+insert into tool_tags (tool_id, tag_id)
+select t.id, g.id
+from (values
+  ('github-copilot','vs-code'), ('github-copilot','jetbrains'), ('github-copilot','free-tier'),
+  ('kilo-code','vs-code'), ('kilo-code','jetbrains'), ('kilo-code','byok'), ('kilo-code','local-models'),
+  ('continue','no-longer-updated'), ('continue','vs-code'), ('continue','jetbrains'),
+  ('continue','byok'), ('continue','local-models')
+) as m(tool_slug, tag_slug)
+join tools t on t.slug = m.tool_slug
+join tags  g on g.slug = m.tag_slug
+on conflict do nothing;
+
+update tools t set key_facts = v.facts::jsonb, updated_at = now()
+from (values
+  ('github-copilot', '[
+    {"label": "Works in", "value": "VS Code, Visual Studio, JetBrains, Xcode, Eclipse, Neovim and Vim"},
+    {"label": "Free plan", "value": "2,000 completions a month, with limited chat and agent mode"},
+    {"label": "Paid plans from", "value": "$10 a month (Pro)"},
+    {"label": "Models", "value": "Claude, GPT and Gemini"},
+    {"label": "Your own API key", "value": "On Copilot Business and Enterprise"},
+    {"label": "Install", "value": "Add the GitHub Copilot extension to your editor and sign in with GitHub"},
+    {"label": "Good for", "value": "Autocomplete and chat in the editor you already use"}
+  ]'),
+  ('kilo-code', '[
+    {"label": "Works in", "value": "VS Code, JetBrains and the terminal"},
+    {"label": "Free plan", "value": "Free and open source; you pay model providers at their list price"},
+    {"label": "Paid plans from", "value": "Optional Kilo Pass credits; Teams is $15 per user a month"},
+    {"label": "Models", "value": "Hundreds, including Claude, GPT, Gemini and open models"},
+    {"label": "Your own API key", "value": "Yes, from any provider"},
+    {"label": "Local models", "value": "Yes, through Ollama or LM Studio"},
+    {"label": "Install", "value": "Search for Kilo Code in your editor''s extension marketplace"},
+    {"label": "Good for", "value": "An agent in your editor without a monthly subscription"}
+  ]'),
+  ('continue', '[
+    {"label": "Status", "value": "No longer updated: Cursor acquired Continue in 2026, and 2.0.0 is the final release"},
+    {"label": "Works in", "value": "VS Code and JetBrains, plus a CLI"},
+    {"label": "Cost", "value": "Free and open source (Apache 2.0)"},
+    {"label": "Models", "value": "OpenAI, Anthropic, Gemini, Amazon Bedrock and more"},
+    {"label": "Your own API key", "value": "Yes"},
+    {"label": "Local models", "value": "Yes, through Ollama"},
+    {"label": "Good for", "value": "Existing Continue setups; for a new one, look at Kilo Code"}
+  ]')
+) as v(slug, facts)
+where t.slug = v.slug;

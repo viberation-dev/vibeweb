@@ -91,6 +91,16 @@ export const CARD_TAGS: Readonly<Record<string, readonly string[]>> = {
     "api-key",
     "read-only-mode",
   ],
+  // A dead plugin first, then which editors it plugs into and whose models
+  // it runs (VIB-148).
+  plugins: [
+    "no-longer-updated",
+    "vs-code",
+    "jetbrains",
+    "byok",
+    "local-models",
+    "open-source",
+  ],
 };
 
 /** Tags beyond the pricing badges, so a card stays one or two lines. */

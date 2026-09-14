@@ -65,6 +65,9 @@ const RELATED_LIMIT = 4;
 /** Related Learn reading (VIB-111). Same two-by-two grid as related tools. */
 const READING_LIMIT = 4;
 
+/** Key info rows drawn from columns; editorial key facts cannot repeat them. */
+const FIXED_FACT_LABELS = new Set(["Pricing", "Platform", "Category", "Best for"]);
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const supabase = await createClient();
@@ -354,9 +357,12 @@ export default async function ToolPage({ params, searchParams }: Props) {
             <Fact label="Category" value={toolCategoryLabel(tool.category)} />
             {bestFor ? <Fact label="Best for" value={bestFor} /> : null}
             {/* Editorial rows per tool — free plan, frameworks, email (VIB-141). */}
-            {toKeyFacts(tool.key_facts).map((fact) => (
-              <Fact key={fact.label} label={fact.label} value={fact.value} />
-            ))}
+            {/* A fact reusing a fixed row's label would print it twice (VIB-143). */}
+            {toKeyFacts(tool.key_facts)
+              .filter((fact) => !FIXED_FACT_LABELS.has(fact.label))
+              .map((fact) => (
+                <Fact key={fact.label} label={fact.label} value={fact.value} />
+              ))}
           </dl>
 
           {guides.length ? (

@@ -42,6 +42,16 @@ test("an app builder card orders by what it builds, then code ownership", () => 
   );
 });
 
+test("a tag repeating the pricing tier is not shown twice", () => {
+  assert.deepEqual(
+    cardBadges("clis", "Open source", [
+      tag("coding-agent", "Coding agent"),
+      tag("open-source", "Open source"),
+    ]),
+    ["Open source", "Coding agent"],
+  );
+});
+
 test("a category without a tag order keeps the default card", () => {
   assert.equal(cardBadges("models", "Free", [tag("react", "React")]), undefined);
 });

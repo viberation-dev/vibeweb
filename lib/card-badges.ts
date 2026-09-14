@@ -74,7 +74,8 @@ export function cardBadges(
 
   const bySlug = new Map(tags.map((tag) => [tag.slug, tag.name]));
   const picked = order
-    .filter((slug) => bySlug.has(slug))
+    // A tool priced "Open source" would otherwise show it twice (VIB-144).
+    .filter((slug) => bySlug.has(slug) && bySlug.get(slug) !== pricingTier)
     .slice(0, MAX_CARD_TAGS)
     .map((slug) => bySlug.get(slug)!);
 

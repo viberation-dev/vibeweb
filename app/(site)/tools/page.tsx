@@ -12,7 +12,7 @@ import { createClient } from "@/lib/integrations/supabase/server";
 import { familyLine, familyMembers } from "@/lib/model-facts";
 import { toPageNumber } from "@/lib/pagination";
 import { listBookmarks } from "@/lib/queries/bookmarks";
-import { hostingCardBadges } from "@/lib/hosting";
+import { cardBadges } from "@/lib/card-badges";
 import { listCategoryTags, listTags } from "@/lib/queries/tags";
 import { getToolTagsByIds, listTools } from "@/lib/queries/tools";
 import { normaliseQuery } from "@/lib/search-query";
@@ -187,19 +187,19 @@ export default async function ToolsPage({ searchParams }: Props) {
                   description={tool.tagline}
                   meta={familyFor(tool.openrouter_family) ?? skillLines.get(tool.id)}
                   badges={
-                    // Hosts are chosen by price, trial and what they run
-                    // (VIB-141), so their cards carry those instead.
-                    tool.category === "hosting"
-                      ? hostingCardBadges(
-                          tool.pricing_tier,
-                          toolTags.get(tool.id) ?? [],
-                        )
-                      : [
-                          toolCategoryLabel(tool.category),
-                          ...(toolTags.get(tool.id) ?? [])
-                            .slice(0, 1)
-                            .map((t) => `#${t.slug}`),
-                        ]
+                    // Hosts and app builders are chosen by price, trial and
+                    // what they do (VIB-141, VIB-142), so their cards carry
+                    // those instead.
+                    cardBadges(
+                      tool.category,
+                      tool.pricing_tier,
+                      toolTags.get(tool.id) ?? [],
+                    ) ?? [
+                      toolCategoryLabel(tool.category),
+                      ...(toolTags.get(tool.id) ?? [])
+                        .slice(0, 1)
+                        .map((t) => `#${t.slug}`),
+                    ]
                   }
                   action={
                     <>

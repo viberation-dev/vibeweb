@@ -11,7 +11,8 @@ export function TagPill({
   return (
     <span
       className={cn(
-        "bg-primary/10 text-primary rounded-full px-3 py-1 text-xs font-bold capitalize",
+        // First letter only: `capitalize` turned "Next.js" into "Next.Js".
+        "bg-primary/10 text-primary inline-block rounded-full px-3 py-1 text-xs font-bold first-letter:uppercase",
         className,
       )}
     >

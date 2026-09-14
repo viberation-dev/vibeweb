@@ -1,14 +1,14 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { hostingCardBadges } from "./hosting.ts";
+import { cardBadges } from "./card-badges.ts";
 import { toKeyFacts } from "./key-facts.ts";
 
 const tag = (slug: string, name: string) => ({ slug, name });
 
 test("a hosting card leads with pricing and trial, then tags by usefulness", () => {
   assert.deepEqual(
-    hostingCardBadges("Paid", [
+    cardBadges("hosting", "Paid", [
       tag("backend", "Backend"),
       tag("email", "Email"),
       tag("free-trial", "Free trial"),
@@ -19,8 +19,8 @@ test("a hosting card leads with pricing and trial, then tags by usefulness", () 
   );
 });
 
-test("a hosting card shows at most four tags", () => {
-  const badges = hostingCardBadges(null, [
+test("a card shows at most four tags", () => {
+  const badges = cardBadges("hosting", null, [
     tag("linux", "Linux"),
     tag("cloud", "Cloud"),
     tag("email", "Email"),
@@ -28,6 +28,22 @@ test("a hosting card shows at most four tags", () => {
     tag("react", "React"),
   ]);
   assert.deepEqual(badges, ["React", "Database", "Email", "Cloud"]);
+});
+
+test("an app builder card orders by what it builds, then code ownership", () => {
+  assert.deepEqual(
+    cardBadges("app_builders", "Freemium", [
+      tag("code-export", "Code export"),
+      tag("database", "Database"),
+      tag("mobile-apps", "Mobile apps"),
+      tag("react-native", "React Native"),
+    ]),
+    ["Freemium", "Mobile apps", "Code export", "React Native", "Database"],
+  );
+});
+
+test("a category without a tag order keeps the default card", () => {
+  assert.equal(cardBadges("models", "Free", [tag("react", "React")]), undefined);
 });
 
 test("malformed key facts are dropped, not thrown on", () => {

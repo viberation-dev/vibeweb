@@ -2201,3 +2201,215 @@ from (values
   ]')
 ) as v(slug, facts)
 where t.slug = v.slug;
+
+-- App builder tags and key facts (VIB-142). Checked against pricing pages
+-- and reviews on 2026-09-14. Prices move often on these products, so the
+-- facts say "from" and name the plan. Mocha is left out: it shut down on
+-- 2026-08-01.
+insert into tags (name, slug, kind) values
+  ('Mobile apps',  'mobile-apps',  'facet'),
+  ('Websites',     'websites',     'facet'),
+  ('No-code',      'no-code',      'facet'),
+  ('Code export',  'code-export',  'facet'),
+  ('GitHub sync',  'github-sync',  'facet'),
+  ('React Native', 'react-native', 'facet'),
+  ('Flutter',      'flutter',      'facet')
+on conflict (slug) do update set name = excluded.name, kind = excluded.kind;
+
+insert into tool_tags (tool_id, tag_id)
+select t.id, g.id
+from (values
+  ('lovable','react'), ('lovable','database'), ('lovable','code-export'), ('lovable','github-sync'),
+  ('bolt','mobile-apps'), ('bolt','react'), ('bolt','nextjs'), ('bolt','database'), ('bolt','code-export'), ('bolt','github-sync'),
+  ('base44','database'), ('base44','code-export'), ('base44','github-sync'),
+  ('v0','nextjs'), ('v0','react'), ('v0','code-export'), ('v0','github-sync'),
+  ('replit','web-apps'), ('replit','mobile-apps'), ('replit','database'), ('replit','code-export'), ('replit','github-sync'),
+  ('emergent','mobile-apps'), ('emergent','database'), ('emergent','code-export'), ('emergent','github-sync'),
+  ('rork','mobile-apps'), ('rork','react-native'), ('rork','code-export'), ('rork','github-sync'),
+  ('bubble','mobile-apps'), ('bubble','no-code'),
+  ('flutterflow','mobile-apps'), ('flutterflow','web-apps'), ('flutterflow','flutter'), ('flutterflow','code-export'), ('flutterflow','github-sync'),
+  ('softr','no-code'),
+  ('relume','websites'), ('relume','react'), ('relume','code-export'),
+  ('framer','websites'), ('framer','no-code'),
+  ('webflow','websites'), ('webflow','no-code'), ('webflow','code-export'),
+  ('durable','websites'), ('durable','no-code'),
+  ('figma-make','web-apps'), ('figma-make','react'), ('figma-make','code-export'),
+  ('google-ai-studio','mobile-apps'), ('google-ai-studio','react'), ('google-ai-studio','database'),
+  ('google-ai-studio','code-export'), ('google-ai-studio','github-sync'),
+  ('chatgpt-sites','websites'), ('chatgpt-sites','database')
+) as m(tool_slug, tag_slug)
+join tools t on t.slug = m.tool_slug
+join tags  g on g.slug = m.tag_slug
+on conflict do nothing;
+
+update tools t set key_facts = v.facts::jsonb, updated_at = now()
+from (values
+  ('lovable', '[
+    {"label": "Free plan", "value": "5 credits a day, up to 30 a month"},
+    {"label": "Paid plans from", "value": "$25 a month (Pro)"},
+    {"label": "Builds", "value": "Full-stack web apps"},
+    {"label": "Code it writes", "value": "React, Vite and Tailwind"},
+    {"label": "Own your code", "value": "Yes, two-way GitHub sync"},
+    {"label": "Backend", "value": "Built-in database and logins, or connect Supabase"},
+    {"label": "Hosting", "value": "Included, on a lovable.app address"},
+    {"label": "Custom domains", "value": "On paid plans"}
+  ]'),
+  ('bolt', '[
+    {"label": "Free plan", "value": "1M tokens a month, capped at 300K a day"},
+    {"label": "Paid plans from", "value": "$25 a month (Pro)"},
+    {"label": "Builds", "value": "Web apps, plus mobile apps with Expo"},
+    {"label": "Code it writes", "value": "Your choice of React, Next.js, Vue, Svelte, Astro and more"},
+    {"label": "Own your code", "value": "Yes, download it or push to GitHub"},
+    {"label": "Backend", "value": "Built-in databases, or connect Supabase"},
+    {"label": "Hosting", "value": "Included; free sites carry Bolt branding"},
+    {"label": "Custom domains", "value": "On paid plans"}
+  ]'),
+  ('base44', '[
+    {"label": "Free plan", "value": "25 message credits a month, 5 a day"},
+    {"label": "Paid plans from", "value": "$20 a month (Starter), less billed yearly"},
+    {"label": "Builds", "value": "Full-stack web apps"},
+    {"label": "Code it writes", "value": "React front end on Base44''s own platform"},
+    {"label": "Own your code", "value": "GitHub export on the Builder plan and above"},
+    {"label": "Backend", "value": "Database, logins and permissions built in"},
+    {"label": "Hosting", "value": "Included"},
+    {"label": "Custom domains", "value": "On the Builder plan and above"}
+  ]'),
+  ('v0', '[
+    {"label": "Free plan", "value": "$5 of credits a month, 7 messages a day"},
+    {"label": "Paid plans from", "value": "$30 per user a month (Plus)"},
+    {"label": "Builds", "value": "Web apps and pages"},
+    {"label": "Code it writes", "value": "Next.js, React, Tailwind and shadcn/ui"},
+    {"label": "Own your code", "value": "Yes, GitHub sync or download"},
+    {"label": "Backend", "value": "Connect Supabase, Neon and others through Vercel"},
+    {"label": "Hosting", "value": "One-click deploy to Vercel"},
+    {"label": "Custom domains", "value": "Yes, through Vercel"}
+  ]'),
+  ('replit', '[
+    {"label": "Free plan", "value": "Daily Agent credits and one published app"},
+    {"label": "Paid plans from", "value": "About $20 to $25 a month (Core), with usage on top"},
+    {"label": "Builds", "value": "Web apps, mobile apps and scripts"},
+    {"label": "Code it writes", "value": "Most languages; JavaScript and Python by default"},
+    {"label": "Own your code", "value": "Yes, GitHub sync or download"},
+    {"label": "Backend", "value": "Built-in database and logins"},
+    {"label": "Hosting", "value": "Included, billed by usage"},
+    {"label": "Custom domains", "value": "On paid plans"}
+  ]'),
+  ('emergent', '[
+    {"label": "Free plan", "value": "10 credits to try it"},
+    {"label": "Paid plans from", "value": "$20 a month (Standard)"},
+    {"label": "Builds", "value": "Full-stack web apps and mobile apps"},
+    {"label": "Code it writes", "value": "React front end with a Python back end"},
+    {"label": "Own your code", "value": "Save to GitHub on paid plans"},
+    {"label": "Backend", "value": "Database, logins and payments set up for you"},
+    {"label": "Hosting", "value": "Included; deploying uses credits"},
+    {"label": "Custom domains", "value": "On paid plans"}
+  ]'),
+  ('rork', '[
+    {"label": "Free plan", "value": "35 credits a month, 5 a day"},
+    {"label": "Paid plans from", "value": "About $25 a month"},
+    {"label": "Builds", "value": "Native iOS and Android apps"},
+    {"label": "Code it writes", "value": "React Native with Expo; Swift on Rork Max"},
+    {"label": "Own your code", "value": "Yes, through GitHub"},
+    {"label": "Hosting", "value": "Publishes to the App Store and Google Play"},
+    {"label": "Custom domains", "value": "Not applicable for mobile apps"}
+  ]'),
+  ('bubble', '[
+    {"label": "Free plan", "value": "Build and test, but no live app"},
+    {"label": "Paid plans from", "value": "$29 a month for web (Starter, billed yearly)"},
+    {"label": "Builds", "value": "Web apps and native mobile apps"},
+    {"label": "Code it writes", "value": "None: a visual no-code editor"},
+    {"label": "Own your code", "value": "No, apps stay on Bubble"},
+    {"label": "Backend", "value": "Database, logins and workflows built in"},
+    {"label": "Hosting", "value": "Included, billed by workload units"},
+    {"label": "Custom domains", "value": "On paid plans"}
+  ]'),
+  ('flutterflow', '[
+    {"label": "Free plan", "value": "Full visual builder, web publishing to a free subdomain"},
+    {"label": "Paid plans from", "value": "$39 a month (Basic)"},
+    {"label": "Builds", "value": "Mobile, web and desktop apps"},
+    {"label": "Code it writes", "value": "Flutter (Dart)"},
+    {"label": "Own your code", "value": "Code export from Basic; GitHub sync from Growth"},
+    {"label": "Backend", "value": "Connect Firebase or Supabase"},
+    {"label": "Hosting", "value": "Web hosting included; app store deployment from Basic"},
+    {"label": "Custom domains", "value": "On paid plans"}
+  ]'),
+  ('softr', '[
+    {"label": "Free plan", "value": "10 app users and 5,000 database records"},
+    {"label": "Paid plans from", "value": "$49 a month (Basic)"},
+    {"label": "Builds", "value": "Client portals, internal tools and business apps"},
+    {"label": "Code it writes", "value": "None: a visual no-code editor"},
+    {"label": "Own your code", "value": "No, apps stay on Softr"},
+    {"label": "Backend", "value": "Built-in database, or Airtable, Google Sheets, Supabase and more"},
+    {"label": "Hosting", "value": "Included"},
+    {"label": "Custom domains", "value": "Yes, even on the free plan"}
+  ]'),
+  ('relume', '[
+    {"label": "Free plan", "value": "One project and a starter set of components"},
+    {"label": "Paid plans from", "value": "$32 a month per user (Starter, billed yearly)"},
+    {"label": "Builds", "value": "Sitemaps, wireframes and copy for websites"},
+    {"label": "Code it writes", "value": "Exports to Webflow, Figma or React"},
+    {"label": "Own your code", "value": "Yes, React export"},
+    {"label": "Backend", "value": "None"},
+    {"label": "Hosting", "value": "None; publish through Webflow or your own host"},
+    {"label": "Custom domains", "value": "Not applicable"}
+  ]'),
+  ('framer', '[
+    {"label": "Free plan", "value": "Publish on a framer.app address with Framer branding"},
+    {"label": "Paid plans from", "value": "$10 a month per site (Basic, billed yearly)"},
+    {"label": "Builds", "value": "Marketing sites and landing pages"},
+    {"label": "Code it writes", "value": "None: a visual editor, with code components if you want them"},
+    {"label": "Own your code", "value": "No, sites stay on Framer"},
+    {"label": "Backend", "value": "Built-in CMS, no app database"},
+    {"label": "Hosting", "value": "Included"},
+    {"label": "Custom domains", "value": "On paid plans"}
+  ]'),
+  ('webflow', '[
+    {"label": "Free plan", "value": "Starter: a webflow.io address and a small site"},
+    {"label": "Paid plans from", "value": "$15 a month per site (Basic, billed yearly)"},
+    {"label": "Builds", "value": "Websites with a CMS"},
+    {"label": "Code it writes", "value": "Clean HTML and CSS from a visual editor"},
+    {"label": "Own your code", "value": "Code export on paid Workspace plans"},
+    {"label": "Backend", "value": "Built-in CMS, no app database"},
+    {"label": "Hosting", "value": "Included"},
+    {"label": "Custom domains", "value": "On paid site plans"}
+  ]'),
+  ('durable', '[
+    {"label": "Free plan", "value": "Launch a site for $0 on a Durable address"},
+    {"label": "Paid plans from", "value": "$12 a month (Starter, billed yearly)"},
+    {"label": "Builds", "value": "Small-business websites"},
+    {"label": "Code it writes", "value": "None: answer a few questions and edit visually"},
+    {"label": "Own your code", "value": "No, sites stay on Durable"},
+    {"label": "Backend", "value": "Simple CRM and invoicing, no app database"},
+    {"label": "Hosting", "value": "Included"},
+    {"label": "Custom domains", "value": "On paid plans"}
+  ]'),
+  ('figma-make', '[
+    {"label": "Free plan", "value": "Figma Starter, with a small monthly allowance of AI credits"},
+    {"label": "Paid plans from", "value": "$16 a month (Professional, billed yearly)"},
+    {"label": "Builds", "value": "Interactive prototypes and web apps"},
+    {"label": "Code it writes", "value": "React and Tailwind"},
+    {"label": "Own your code", "value": "Yes, view and copy the code"},
+    {"label": "Backend", "value": "Connect Supabase for data and logins"},
+    {"label": "Hosting", "value": "Publish to a Figma-hosted address"}
+  ]'),
+  ('google-ai-studio', '[
+    {"label": "Free plan", "value": "Building is free; Gemini API use has a free tier"},
+    {"label": "Paid plans from", "value": "Pay as you go for Gemini API and Cloud Run hosting"},
+    {"label": "Builds", "value": "Full-stack web apps and native Android apps"},
+    {"label": "Code it writes", "value": "React and Node.js; Kotlin for Android"},
+    {"label": "Own your code", "value": "Yes, GitHub sync or download a ZIP"},
+    {"label": "Backend", "value": "Firebase database and logins, set up for you"},
+    {"label": "Hosting", "value": "Deploy to Google Cloud Run, billed by Google Cloud"},
+    {"label": "Custom domains", "value": "Yes, through Cloud Run"}
+  ]'),
+  ('chatgpt-sites', '[
+    {"label": "Free plan", "value": "None; needs a paid ChatGPT plan"},
+    {"label": "Paid plans from", "value": "ChatGPT Plus"},
+    {"label": "Builds", "value": "Websites and lightweight web apps"},
+    {"label": "Code it writes", "value": "Runs on Cloudflare Workers; no Node.js servers"},
+    {"label": "Backend", "value": "Simple storage on Cloudflare D1 and R2"},
+    {"label": "Hosting", "value": "Included, with a shareable link"},
+    {"label": "Custom domains", "value": "Yes, if you own the domain"}
+  ]')
+) as v(slug, facts)
+where t.slug = v.slug;

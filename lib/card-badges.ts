@@ -65,6 +65,23 @@ export const CARD_TAGS: Readonly<Record<string, readonly string[]>> = {
     "byok",
     "open-source",
   ],
+  // Who stands behind it, then the stack it assumes (VIB-146). The skill
+  // category and chat-app compatibility come from columns, as `extra`.
+  skills: [
+    "official",
+    "react",
+    "nextjs",
+    "react-native",
+    "python",
+    "dotnet",
+    "go",
+    "supabase",
+    "postgres",
+    "aws",
+    "azure",
+    "cloudflare",
+    "vercel",
+  ],
 };
 
 /** Tags beyond the pricing badges, so a card stays one or two lines. */
@@ -72,13 +89,14 @@ const MAX_CARD_TAGS = 4;
 
 /**
  * Badges for a card in a category with a CARD_TAGS list: the pricing tier,
- * "Free trial" when it has one, then its most useful tags by display name.
- * Undefined for any other category.
+ * "Free trial" when it has one, any `extra` labels derived from columns,
+ * then its most useful tags by display name. Undefined for any other category.
  */
 export function cardBadges(
   category: string,
   pricingTier: string | null,
   tags: ReadonlyArray<{ slug: string; name: string }>,
+  extra: readonly string[] = [],
 ): string[] | undefined {
   const order = CARD_TAGS[category];
   if (!order) return undefined;
@@ -93,6 +111,7 @@ export function cardBadges(
   return [
     ...(pricingTier ? [pricingTier] : []),
     ...(bySlug.has("free-trial") ? ["Free trial"] : []),
+    ...extra,
     ...picked,
   ];
 }

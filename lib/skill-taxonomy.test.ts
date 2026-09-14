@@ -6,6 +6,8 @@ import {
   agentInstallCommand,
   agentInstallPrompt,
   agentsFor,
+  isCodingAgentsOnly,
+  worksInSummary,
   categoryCounts,
   matchesSkillFilters,
   SKILL_AGENT_IDS,
@@ -96,4 +98,15 @@ test("matching and category counts respect the other filters", () => {
   // A tile's count is what clicking it would show under the other filters.
   const chatgpt = categoryCounts(skills, { agent: "chatgpt", category: "planning_workflow" });
   assert.equal(chatgpt.get("design_ui"), 1);
+});
+
+test("a skill that cannot run in a chat app is coding agents only", () => {
+  assert.equal(isCodingAgentsOnly([]), false);
+  assert.equal(isCodingAgentsOnly(["cursor"]), false);
+  assert.equal(isCodingAgentsOnly(["claude-ai", "chatgpt"]), true);
+  assert.equal(worksInSummary([]), "Every agent listed here, including Claude.ai and ChatGPT");
+  assert.equal(
+    worksInSummary(["claude-ai", "chatgpt"]),
+    "Coding agents such as Claude Code, Codex and Cursor; not Claude.ai or ChatGPT",
+  );
 });

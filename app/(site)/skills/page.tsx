@@ -9,7 +9,8 @@ import { buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { listBookmarks } from "@/lib/queries/bookmarks";
 import { listContent } from "@/lib/queries/content";
-import { listTools } from "@/lib/queries/tools";
+import { getToolTagsByIds, listTools } from "@/lib/queries/tools";
+import { cardBadges } from "@/lib/card-badges";
 import { contentView, toolView } from "@/lib/resource-view";
 import { SkillCategoryIcon } from "@/components/features/skills/SkillCategoryIcon";
 import { SkillFilters } from "@/components/features/skills/SkillFilters";
@@ -25,6 +26,7 @@ import { listRankedSkills } from "@/lib/skill-live";
 import {
   categoryCounts,
   matchesSkillFilters,
+  skillCardExtras,
   skillCategoryLabel,
   toSkillFilters,
 } from "@/lib/skill-taxonomy";
@@ -80,6 +82,11 @@ export default async function SkillsPage({ searchParams }: Props) {
   // Filtered in memory: every skill is already loaded for its live facts, and
   // the list is small. Move this into listTools if the category grows past a page.
   const skills = allSkills.filter((skill) => matchesSkillFilters(skill, filters));
+  // One round trip for every card's tags (VIB-146).
+  const skillTags = await getToolTagsByIds(
+    supabase,
+    skills.map((skill) => skill.tool.id),
+  );
   const counts = categoryCounts(allSkills, filters);
   const creators = [
     ...new Map(
@@ -155,6 +162,13 @@ export default async function SkillsPage({ searchParams }: Props) {
                   eyebrow={tool.skill_category ? skillCategoryLabel(tool.skill_category) : undefined}
                   description={tool.tagline}
                   meta={line || undefined}
+                  // The eyebrow already names the category (VIB-146).
+                  badges={cardBadges(
+                    "skills",
+                    null,
+                    skillTags.get(tool.id) ?? [],
+                    skillCardExtras(tool, { withCategory: false }),
+                  )}
                   action={
                     <>
                       <BookmarkButton

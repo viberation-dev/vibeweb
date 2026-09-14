@@ -3,7 +3,7 @@ import type { Enums } from "@/types/supabase";
 export type ToolCategory = Enums<"tool_category">;
 
 /**
- * The 14 canonical directory categories (artifact-type taxonomy, §24/§07).
+ * The 15 canonical directory categories (artifact-type taxonomy, §24/§07).
  *
  * Order is the display order in the category nav, not alphabetical: the
  * things a beginner meets first come first. The enum values double as URL
@@ -14,6 +14,7 @@ export const TOOL_CATEGORIES: ReadonlyArray<{ value: ToolCategory; label: string
   { value: "models", label: "Models" },
   { value: "chats", label: "Chats" },
   { value: "app_builders", label: "App Builders" },
+  { value: "hosting", label: "Hosting" },
   { value: "agents", label: "Agents" },
   { value: "ides", label: "IDEs" },
   { value: "clis", label: "CLIs" },

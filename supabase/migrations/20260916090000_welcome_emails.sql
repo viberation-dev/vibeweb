@@ -23,6 +23,10 @@ create table if not exists private.app_secrets (
   value text not null
 );
 revoke all on private.app_secrets from public, anon, authenticated;
+-- Belt and braces: the schema is not exposed and nothing is granted, but RLS
+-- with no policies also blocks any role that is not the owner. The
+-- security-definer functions below run as the owner, so they are unaffected.
+alter table private.app_secrets enable row level security;
 
 -- The unsubscribe signing key never needs to leave the database, so it is
 -- generated here at apply time rather than written into this public repo.

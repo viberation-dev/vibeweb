@@ -6,7 +6,7 @@ import {
 import Link from "next/link";
 
 import { MarketingHome } from "@/components/features/marketing/MarketingHome";
-import { CategoryIcon } from "@/components/features/tools/CategoryIcon";
+import { CategoryPicker } from "@/components/features/tools/CategoryPicker";
 import { Badge } from "@/components/ui/badge";
 import { ButtonIcon, buttonVariants } from "@/components/ui/button";
 import { Panel } from "@/components/ui/panel";
@@ -36,7 +36,6 @@ import {
   getWalkthroughProgress,
   listWalkthroughs,
 } from "@/lib/queries/walkthroughs";
-import { TOOL_CATEGORIES } from "@/lib/tool-categories";
 import { toolsHref } from "@/lib/tools-url";
 
 /**
@@ -170,19 +169,7 @@ export default async function HomePage({ searchParams }: Props) {
 
       <section className="mt-8">
         <h2 className="sr-only">Categories</h2>
-        <ul className="grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-7">
-          {TOOL_CATEGORIES.map((category) => (
-            <li key={category.value}>
-              <Link
-                href={toolsHref({ category: category.value })}
-                className="bg-secondary hover:bg-primary/10 flex flex-col items-center gap-2 rounded-2xl px-2 py-3.5 text-center text-xs font-bold transition-colors"
-              >
-                <CategoryIcon category={category.value} className="size-4" />
-                {category.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <CategoryPicker />
       </section>
 
       <section className="mt-6">

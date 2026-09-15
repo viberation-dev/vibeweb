@@ -42,8 +42,8 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-16",
     kind: "improved",
-    title: "A proper confirmation email",
-    body: "The email that confirms a new account now carries the Viberation look, a clear button and a backup link if the button does not work.",
+    title: "Proper confirmation and reset emails",
+    body: "The emails that confirm a new account and reset a password now carry the Viberation look, a clear button and a backup link if the button does not work.",
   },
   {
     date: "2026-09-15",

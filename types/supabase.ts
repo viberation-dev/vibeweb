@@ -239,6 +239,44 @@ export type Database = {
           },
         ]
       }
+      onboarding_answers: {
+        Row: {
+          creating: string[]
+          discovery: string | null
+          display_name: string | null
+          occupation: string | null
+          updated_at: string
+          usage: string | null
+          user_id: string
+        }
+        Insert: {
+          creating?: string[]
+          discovery?: string | null
+          display_name?: string | null
+          occupation?: string | null
+          updated_at?: string
+          usage?: string | null
+          user_id: string
+        }
+        Update: {
+          creating?: string[]
+          discovery?: string | null
+          display_name?: string | null
+          occupation?: string | null
+          updated_at?: string
+          usage?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_answers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           app_role: Database["public"]["Enums"]["app_role"]

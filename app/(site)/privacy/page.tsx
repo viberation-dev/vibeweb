@@ -77,7 +77,10 @@ export default function PrivacyPage() {
         <p className="text-muted-foreground">
           <strong className="text-foreground">Your preferences.</strong> Your
           experience level, how dense you like listings to be, and whether you
-          have completed onboarding.
+          have completed onboarding. If you answer the optional setup
+          questions, we also keep the name you gave, how you plan to use
+          Viberation, your role, what you want to build and how you found us.
+          Only you can read those answers.
         </p>
         <p className="text-muted-foreground">
           <strong className="text-foreground">Things you save and do.</strong>{" "}

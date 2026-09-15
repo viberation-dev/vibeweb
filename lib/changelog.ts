@@ -54,6 +54,12 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-15",
     kind: "improved",
+    title: "Clearer signup and a short setup",
+    body: "After creating an account you now see exactly where the confirmation email went, with a way to resend it. Setup then asks a few quick questions so we can point you at the right tools.",
+  },
+  {
+    date: "2026-09-15",
+    kind: "improved",
     title: "Tool types explained on the homepage",
     body: "The directory section on the homepage now gives every tool type a one-line description, so you can tell an agent from a CLI before you click.",
   },

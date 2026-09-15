@@ -1,29 +1,41 @@
 import { z } from "zod";
 
-/**
- * Server-side validation for the onboarding finish step.
- *
- * `role_level` is the only thing written from user input — `app_role` and
- * `onboarding_completed` are set by the action itself, never accepted from
- * the form. The enum mirrors the Postgres enum from migration 01.
- */
-const roleLevelSchema = z.enum(["beginner", "intermediate", "expert"]);
+import {
+  CREATING_OPTIONS,
+  DISCOVERY_OPTIONS,
+  OCCUPATION_OPTIONS,
+  USAGE_OPTIONS,
+} from "../onboarding.ts";
 
 /**
- * Step 1's answer, saved as soon as it is given rather than held in the URL
- * until the end (VIB-67).
+ * Server-side validation for onboarding (VIB-152).
  *
- * The tier is a stated preference and worth keeping the moment someone states
- * it. Completion is a separate fact and stays with the final submit, so an
- * abandoned run still leaves `onboarding_completed` false and the home nudge
- * still offers the way back in.
+ * Each step posts one answer, discriminated by `step`. The enums read the
+ * option lists in lib/onboarding.ts, so the page and the validator cannot
+ * drift apart. `app_role` and `onboarding_completed` are never accepted from
+ * a form.
  */
-export const onboardingLevelSchema = z.object({
-  role_level: roleLevelSchema,
-});
+const values = <T extends readonly { value: string }[]>(options: T) =>
+  z.enum(options.map((o) => o.value) as [T[number]["value"], ...T[number]["value"][]]);
+
+export const onboardingAnswerSchema = z.discriminatedUnion("step", [
+  z.object({
+    step: z.literal("name"),
+    display_name: z.string().trim().min(1, "Enter a name.").max(60),
+  }),
+  z.object({
+    step: z.literal("level"),
+    role_level: z.enum(["beginner", "intermediate", "expert"]),
+  }),
+  z.object({ step: z.literal("usage"), usage: values(USAGE_OPTIONS) }),
+  z.object({ step: z.literal("occupation"), occupation: values(OCCUPATION_OPTIONS) }),
+  z.object({ step: z.literal("creating"), creating: z.array(values(CREATING_OPTIONS)).min(1) }),
+  z.object({ step: z.literal("discovery"), discovery: values(DISCOVERY_OPTIONS) }),
+]);
+
+export type OnboardingAnswerInput = z.infer<typeof onboardingAnswerSchema>;
 
 export const onboardingFinishSchema = z.object({
-  role_level: roleLevelSchema,
   /**
    * Where to land after finishing.
    *
@@ -37,6 +49,3 @@ export const onboardingFinishSchema = z.object({
     .regex(/^\/(walkthroughs\/[a-z0-9-]+)?$/, "Unrecognised destination.")
     .optional(),
 });
-
-export type OnboardingFinishInput = z.infer<typeof onboardingFinishSchema>;
-export type OnboardingLevelInput = z.infer<typeof onboardingLevelSchema>;

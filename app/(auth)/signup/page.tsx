@@ -13,21 +13,28 @@ export const metadata: Metadata = { title: "Create an account" };
 export default function SignUpPage() {
   return (
     <Panel size="lg" className="w-full max-w-md p-8 lg:p-10">
-      <SectionHead
-        level="h1"
-        align="center"
-        title="Create your account"
-        lede="Free. Browsing needs no account; saving does."
-        className="mb-8"
-      />
       {/*
         Email form first, providers second (mockup screen 7). The earlier order
         led with OAuth, which reads as the intended path — it is the shortcut,
         not the default.
-      */}
-      <div className="space-y-6">
-        <AuthForm mode="signup" action={signUpAction} />
 
+        The heading and everything below the form live inside AuthForm so the
+        whole card can give way to "Check your email" once signup succeeds
+        (VIB-152).
+      */}
+      <AuthForm
+        mode="signup"
+        action={signUpAction}
+        heading={
+          <SectionHead
+            level="h1"
+            align="center"
+            title="Create your account"
+            lede="Free forever. Save tools, track your progress and get picks for your level."
+            className="mb-8"
+          />
+        }
+      >
         <AuthDivider />
 
         {/*
@@ -44,7 +51,7 @@ export default function SignUpPage() {
             Sign in
           </Link>
         </p>
-      </div>
+      </AuthForm>
     </Panel>
   );
 }

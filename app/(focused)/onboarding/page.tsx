@@ -1,26 +1,56 @@
 import {
   IconAdjustmentsAlt,
+  IconAppWindow,
+  IconArrowLeft,
   IconArrowRight,
   IconArrowUpRight,
+  IconBolt,
+  IconBrandGoogle,
+  IconBrandInstagram,
+  IconBrandLinkedin,
+  IconBrandReddit,
+  IconBrandTiktok,
+  IconBrandX,
+  IconBrandYoutube,
+  IconBriefcase,
+  IconBulb,
+  IconChartBar,
+  IconCode,
+  IconDots,
+  IconFileText,
+  IconHeart,
+  IconHelpCircle,
+  IconMessageChatbot,
+  IconPalette,
+  IconPencil,
   IconRocket,
+  IconSchool,
   IconSeeding,
+  IconShoppingCart,
+  IconSpeakerphone,
+  IconUser,
+  IconUsers,
   IconWand,
+  IconWorld,
 } from "@tabler/icons-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import {
-  chooseLevelAction,
   finishOnboardingAction,
+  saveAnswerAction,
 } from "@/app/(focused)/onboarding/actions";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { IconTile } from "@/components/ui/icon-tile";
+import { Input } from "@/components/ui/input";
 import { Panel } from "@/components/ui/panel";
 import { createClient } from "@/lib/integrations/supabase/server";
-import { getCurrentProfile } from "@/lib/queries/profiles";
 import {
-  DEFAULT_ROLE_LEVEL,
+  CREATING_OPTIONS,
+  DISCOVERY_OPTIONS,
+  LAST_STEP,
+  OCCUPATION_OPTIONS,
   ONBOARDING_STEPS,
   onboardingHref,
   resolveStep,
@@ -28,18 +58,19 @@ import {
   revealSummary,
   starterSetSlug,
   STARTER_SET_FALLBACK_SLUG,
-  walkthroughFraming,
   stepEyebrow,
+  USAGE_OPTIONS,
+  walkthroughFraming,
+  type OnboardingStep,
+  type OnboardingStepKey,
 } from "@/lib/onboarding";
-import {
-  getCollectionBySlug,
-  type Collection,
-} from "@/lib/queries/collections";
-import { listTags, type Tag } from "@/lib/queries/tags";
+import { getCollectionBySlug, type Collection } from "@/lib/queries/collections";
+import { getOnboardingAnswers } from "@/lib/queries/onboarding-answers";
+import { getCurrentProfile } from "@/lib/queries/profiles";
 import { listTools, type Tool } from "@/lib/queries/tools";
 import { listWalkthroughs, type Walkthrough } from "@/lib/queries/walkthroughs";
 import { toolView } from "@/lib/resource-view";
-import { ROLE_LEVELS, toRoleLevel, type RoleLevel } from "@/lib/role-level";
+import { ROLE_LEVELS, type RoleLevel } from "@/lib/role-level";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -47,8 +78,10 @@ export const metadata: Metadata = {
 };
 
 type Props = {
-  searchParams: Promise<{ step?: string; level?: string; focus?: string }>;
+  searchParams: Promise<{ step?: string }>;
 };
+
+type Icon = typeof IconSeeding;
 
 const LEVEL_BLURBS: Record<RoleLevel, string> = {
   beginner: "New to building with AI.",
@@ -57,29 +90,55 @@ const LEVEL_BLURBS: Record<RoleLevel, string> = {
 };
 
 /** One glyph per tier, in the mockup's order: seedling → rocket → dials. */
-const LEVEL_ICONS: Record<RoleLevel, typeof IconSeeding> = {
+const LEVEL_ICONS: Record<RoleLevel, Icon> = {
   beginner: IconSeeding,
   intermediate: IconRocket,
   expert: IconAdjustmentsAlt,
 };
 
+const OPTION_ICONS: Record<string, Icon> = {
+  // usage
+  work: IconBriefcase,
+  personal: IconUser,
+  both: IconHeart,
+  // occupation
+  founder: IconBriefcase,
+  developer: IconCode,
+  designer: IconPalette,
+  product: IconChartBar,
+  marketer: IconSpeakerphone,
+  creator: IconPencil,
+  student: IconSchool,
+  // creating
+  landing_page: IconFileText,
+  website: IconWorld,
+  web_app: IconAppWindow,
+  ecommerce: IconShoppingCart,
+  workflow: IconBolt,
+  inspiration: IconBulb,
+  undecided: IconHelpCircle,
+  // discovery
+  youtube: IconBrandYoutube,
+  friends: IconUsers,
+  ai_chat: IconMessageChatbot,
+  google: IconBrandGoogle,
+  reddit: IconBrandReddit,
+  x: IconBrandX,
+  linkedin: IconBrandLinkedin,
+  instagram: IconBrandInstagram,
+  tiktok: IconBrandTiktok,
+};
+
 /**
- * Three-step onboarding (§31, VIB-39).
+ * Onboarding (§31, VIB-39, VIB-152): six short questions, then the reveal.
  *
  * Every step is a real URL and every transition is a plain link or form, so
- * the back button works, a refresh keeps your answers, and none of it needs
- * JavaScript.
- *
- * Step 1 saves the chosen tier as it goes past (VIB-67); the reveal's exits
- * are tool cards people are meant to click, so holding the answer in the URL
- * until the end meant success looked identical to abandonment. Completion is
- * still only written by the final submit.
+ * the back button works, a refresh keeps your place, and none of it needs
+ * JavaScript. Single-choice steps submit on the option itself, the way the
+ * Magnific flow does; only the name, level and multi-pick need a Continue.
  */
 export default async function OnboardingPage({ searchParams }: Props) {
-  const params = await searchParams;
-  const level = toRoleLevel(params.level);
-  const focus = params.focus?.trim() || undefined;
-  const step = resolveStep(params.step, level);
+  const step = resolveStep((await searchParams).step);
 
   const supabase = await createClient();
   const profile = await getCurrentProfile(supabase);
@@ -90,51 +149,38 @@ export default async function OnboardingPage({ searchParams }: Props) {
   }
 
   /*
-   * §31: onboarding "runs once, post-signup". The signup paths send people
-   * here, and sign-in deliberately does not — but an existing member who
-   * clicks a provider button on /signup would otherwise be walked through it
-   * again. Anyone already finished goes to the feed instead.
-   *
-   * Abandoning the flow does not set the flag, so the home page keeps showing
-   * its onboarding nudge (§31 home §3) until it is genuinely completed. That
-   * nudge, not a repeated redirect, is the way back in.
+   * §31: onboarding "runs once, post-signup". An existing member who clicks a
+   * provider button on /signup would otherwise be walked through it again.
+   * Abandoning does not set the flag, so the home nudge stays the way back in.
    */
   if (profile.onboarding_completed) {
     redirect("/");
   }
 
-  // Only the step being rendered fetches anything. resolveStep guarantees a
-  // level exists past step 1, so these narrowings hold.
-  const tags = step >= 2 ? await listTags(supabase) : [];
-  const focusTag = tags.find((tag) => tag.slug === focus);
+  const answers = await getOnboardingAnswers(supabase, profile.id);
+  const level = profile.role_level;
 
+  // Only the reveal fetches catalogue data.
   const [starterTools, starterCollection, walkthroughs] =
-    step === 3
+    step === LAST_STEP
       ? await Promise.all([
-          // Narrowed to the focus when there is one. If that tag has fewer
-          // than three tools the starter set is simply shorter — better than
-          // padding it with things the person did not ask about.
-          // Narrowed by tier as well as focus (VIB-94): an expert who picks
-          // "frontend" was getting the same three rows as a beginner who did.
-          // Tools with no stated audience stay in for everyone.
-          listTools(supabase, {
-            tag: focusTag?.slug,
-            bestFor: level,
-            sort: "popular",
-            pageSize: 3,
-          }).then((page) => page.tools),
-          // One collection per tier, by slug. Falling back to the beginner
-          // set rather than rendering an empty panel on the screen that
-          // promises "here is your Viberation".
-          getCollectionBySlug(supabase, starterSetSlug(level!)).then(
-            (found) =>
-              found ?? getCollectionBySlug(supabase, STARTER_SET_FALLBACK_SLUG),
+          // Narrowed by tier (VIB-94). Tools with no stated audience stay in.
+          listTools(supabase, { bestFor: level, sort: "popular", pageSize: 3 }).then(
+            (page) => page.tools,
+          ),
+          // Falling back to the beginner set rather than an empty panel on the
+          // screen that promises "here is your Viberation".
+          getCollectionBySlug(supabase, starterSetSlug(level)).then(
+            (found) => found ?? getCollectionBySlug(supabase, STARTER_SET_FALLBACK_SLUG),
           ),
           listWalkthroughs(supabase),
         ])
       : [[], null, []];
 
-  const heading = ONBOARDING_STEPS.find((s) => s.step === step)!.title;
+  const current = ONBOARDING_STEPS.find((s) => s.step === step)!;
+  const name = answers?.display_name ?? profile.username;
+  const withIcons = (options: readonly { value: string; label: string; blurb?: string }[]) =>
+    options.map((o) => ({ ...o, icon: OPTION_ICONS[o.value] ?? IconDots }));
 
   return (
     <div className="w-full max-w-2xl">
@@ -142,35 +188,66 @@ export default async function OnboardingPage({ searchParams }: Props) {
         {stepEyebrow(step)}
       </p>
 
-      {/* Dots, not a bar: three steps is few enough to show as places. */}
-      <nav
-        aria-label="Progress"
-        className="mt-3 flex items-center justify-center gap-2"
+      <div
+        role="progressbar"
+        aria-label="Onboarding progress"
+        aria-valuemin={1}
+        aria-valuemax={LAST_STEP}
+        aria-valuenow={step}
+        className="bg-muted mx-auto mt-3 h-1 w-48 overflow-hidden rounded-full"
       >
-        {ONBOARDING_STEPS.map(({ step: n }) => (
-          <span
-            key={n}
-            aria-current={n === step ? "step" : undefined}
-            className={cn(
-              "size-2 rounded-full",
-              n <= step ? "bg-primary" : "bg-muted",
-            )}
-          >
-            <span className="sr-only">Step {n}</span>
-          </span>
-        ))}
-      </nav>
+        <div
+          className="bg-primary h-full rounded-full"
+          style={{ width: `${(step / LAST_STEP) * 100}%` }}
+        />
+      </div>
 
       <h1 className="font-heading mt-6 text-center text-3xl font-bold tracking-[-0.04em] lg:text-4xl">
-        {step === 3 ? revealHeadline(profile.username) : heading}
+        {step === LAST_STEP ? revealHeadline(name) : current.title}
       </h1>
 
-      {step === 1 ? <StepLevel /> : null}
-      {step === 2 && level ? <StepFocus level={level} tags={tags} /> : null}
-      {step === 3 && level ? (
+      {current.key === "name" ? <StepName defaultName={name ?? ""} /> : null}
+      {current.key === "level" ? <StepLevel level={level} /> : null}
+      {current.key === "usage" ? (
+        <StepCards
+          stepKey="usage"
+          step={step}
+          lede="Tell us about your projects so we can show you the right things."
+          options={withIcons(USAGE_OPTIONS)}
+          selected={answers?.usage}
+        />
+      ) : null}
+      {current.key === "occupation" ? (
+        <StepChips
+          stepKey="occupation"
+          step={step}
+          lede="Pick the one that fits you best."
+          options={withIcons(OCCUPATION_OPTIONS)}
+          selected={answers?.occupation ? [answers.occupation] : []}
+        />
+      ) : null}
+      {current.key === "creating" ? (
+        <StepChips
+          multiple
+          stepKey="creating"
+          step={step}
+          lede="Pick as many as you like."
+          options={withIcons(CREATING_OPTIONS)}
+          selected={answers?.creating ?? []}
+        />
+      ) : null}
+      {current.key === "discovery" ? (
+        <StepChips
+          stepKey="discovery"
+          step={step}
+          lede="Last question. It helps us know where to show up."
+          options={withIcons(DISCOVERY_OPTIONS)}
+          selected={answers?.discovery ? [answers.discovery] : []}
+        />
+      ) : null}
+      {step === LAST_STEP ? (
         <StepReveal
           level={level}
-          focusTag={focusTag}
           tools={starterTools}
           collection={starterCollection ?? undefined}
           walkthrough={walkthroughs[0]}
@@ -180,117 +257,230 @@ export default async function OnboardingPage({ searchParams }: Props) {
   );
 }
 
-function StepLevel() {
+type QuestionKey = Exclude<OnboardingStepKey, "reveal">;
+type Option = { value: string; label: string; icon: Icon; blurb?: string };
+
+function Lede({ children }: { children: React.ReactNode }) {
+  return <p className="text-muted-foreground mx-auto mt-3 max-w-md text-center">{children}</p>;
+}
+
+/** Back, an optional Continue, and Skip. Skip posts through the same action. */
+function StepFooter({
+  step,
+  stepKey,
+  withContinue = false,
+}: {
+  step: OnboardingStep;
+  stepKey: QuestionKey;
+  withContinue?: boolean;
+}) {
+  return (
+    <div className="mt-8 flex flex-wrap items-center justify-center gap-5">
+      {step > 1 ? (
+        <Link
+          href={onboardingHref((step - 1) as OnboardingStep)}
+          className="text-muted-foreground inline-flex items-center gap-1 text-sm hover:underline"
+        >
+          <IconArrowLeft className="size-4" aria-hidden />
+          Back
+        </Link>
+      ) : null}
+      {withContinue ? (
+        <Button type="submit" variant="pill" size="pill">
+          <ButtonIcon>
+            <IconArrowUpRight />
+          </ButtonIcon>
+          Continue
+        </Button>
+      ) : null}
+      <button
+        type="submit"
+        name="skip"
+        value={stepKey}
+        formNoValidate
+        className="text-muted-foreground text-sm hover:underline"
+      >
+        Skip
+      </button>
+    </div>
+  );
+}
+
+function StepName({ defaultName }: { defaultName: string }) {
   return (
     <>
-      <p className="text-muted-foreground mx-auto mt-3 max-w-md text-center">
-        This is the one setting that changes what you see. We keep beginner
-        guides clear of advanced noise, and the reverse.
-      </p>
-
-      {/*
-        Posts to a Server Action that saves the tier and then redirects to
-        step 2 as a plain URL, so the back button and refresh behave exactly
-        as they did when this was a GET form (VIB-67).
-      */}
-      <form action={chooseLevelAction} className="mt-8">
-        <div className="grid gap-3 sm:grid-cols-3">
-          {ROLE_LEVELS.map(({ value, label }) => {
-            const Icon = LEVEL_ICONS[value];
-            return (
-              <label
-                key={value}
-                className="bg-secondary hover:bg-primary/10 has-checked:ring-primary flex cursor-pointer flex-col items-center rounded-[1.125rem] p-6 text-center transition-colors has-checked:ring-2"
-              >
-                <input
-                  type="radio"
-                  name="role_level"
-                  value={value}
-                  defaultChecked={value === DEFAULT_ROLE_LEVEL}
-                  className="sr-only"
-                />
-                <IconTile>
-                  <Icon className="size-5" aria-hidden />
-                </IconTile>
-                <span className="font-heading mt-4 font-bold tracking-tight">
-                  {label}
-                </span>
-                <span className="text-muted-foreground mt-1 text-sm">
-                  {LEVEL_BLURBS[value]}
-                </span>
-              </label>
-            );
-          })}
-        </div>
-
-        <div className="mt-8 flex flex-col items-center gap-3">
-          <Button type="submit" variant="pill" size="pill">
-            <ButtonIcon>
-              <IconArrowUpRight />
-            </ButtonIcon>
-            Continue
-          </Button>
-          {/*
-            The radio for Beginner is already checked, so this submits the same
-            form rather than being a second code path with its own default.
-          */}
-          <p className="text-muted-foreground text-sm">
-            Not sure? Continue as{" "}
-            <span className="text-foreground">Beginner</span>.
-          </p>
-        </div>
+      <Lede>We will use it to greet you.</Lede>
+      <form action={saveAnswerAction} className="mx-auto mt-8 max-w-sm">
+        <input type="hidden" name="step" value="name" />
+        <label htmlFor="display_name" className="sr-only">
+          Your name
+        </label>
+        <Input
+          id="display_name"
+          name="display_name"
+          autoComplete="name"
+          maxLength={60}
+          required
+          defaultValue={defaultName}
+          placeholder="Your name"
+        />
+        <StepFooter step={1} stepKey="name" withContinue />
       </form>
     </>
   );
 }
 
-function StepFocus({ level, tags }: { level: RoleLevel; tags: Tag[] }) {
+function StepLevel({ level }: { level: RoleLevel }) {
   return (
     <>
-      <p className="text-muted-foreground mx-auto mt-3 max-w-md text-center">
-        Optional. Pick the one closest to what you are working on and we will
-        lead with it, or skip if you are just here to explore.
-      </p>
+      <Lede>
+        This is the one setting that changes what you see. We keep beginner
+        guides clear of advanced noise, and the reverse.
+      </Lede>
 
-      <form method="get" action="/onboarding" className="mt-6">
-        <input type="hidden" name="step" value="3" />
-        <input type="hidden" name="level" value={level} />
+      <form action={saveAnswerAction} className="mt-8">
+        <input type="hidden" name="step" value="level" />
+        <div className="grid gap-3 sm:grid-cols-3">
+          {ROLE_LEVELS.map(({ value, label }) => {
+            const LevelIcon = LEVEL_ICONS[value];
+            return (
+              <label
+                key={value}
+                className="bg-secondary hover:bg-primary/10 has-checked:ring-primary has-focus-visible:ring-ring flex cursor-pointer flex-col items-center rounded-[1.125rem] p-6 text-center transition-colors has-checked:ring-2 has-focus-visible:ring-2"
+              >
+                {/* Pre-checked with the saved tier, which defaults to beginner (§31). */}
+                <input
+                  type="radio"
+                  name="role_level"
+                  value={value}
+                  defaultChecked={value === level}
+                  className="sr-only"
+                />
+                <IconTile>
+                  <LevelIcon className="size-5" aria-hidden />
+                </IconTile>
+                <span className="font-heading mt-4 font-bold tracking-tight">{label}</span>
+                <span className="text-muted-foreground mt-1 text-sm">{LEVEL_BLURBS[value]}</span>
+              </label>
+            );
+          })}
+        </div>
+        <StepFooter step={2} stepKey="level" withContinue />
+      </form>
+    </>
+  );
+}
 
-        <div className="flex flex-wrap justify-center gap-2">
-          {tags.map((tag) => (
-            <label
-              key={tag.id}
-              className="bg-secondary hover:bg-primary/10 has-checked:bg-primary has-checked:text-primary-foreground cursor-pointer rounded-full px-3.5 py-1.5 text-sm font-bold transition-colors"
+/** Single choice as cards; picking one saves it and moves on. */
+function StepCards({
+  stepKey,
+  step,
+  lede,
+  options,
+  selected,
+}: {
+  stepKey: QuestionKey;
+  step: OnboardingStep;
+  lede: string;
+  options: Option[];
+  selected?: string | null;
+}) {
+  return (
+    <>
+      <Lede>{lede}</Lede>
+      <form action={saveAnswerAction} className="mt-8">
+        <input type="hidden" name="step" value={stepKey} />
+        <div className="grid gap-3 sm:grid-cols-2">
+          {options.map(({ value, label, blurb, icon: OptionIcon }) => (
+            <button
+              key={value}
+              type="submit"
+              name={stepKey}
+              value={value}
+              aria-pressed={selected === value}
+              className="bg-secondary hover:bg-primary/10 aria-pressed:ring-primary flex items-start gap-4 rounded-[1.125rem] p-5 text-left transition-colors aria-pressed:ring-2"
             >
-              <input
-                type="radio"
-                name="focus"
-                value={tag.slug}
-                className="sr-only"
-              />
-              {tag.name}
-            </label>
+              <IconTile>
+                <OptionIcon className="size-5" aria-hidden />
+              </IconTile>
+              <span>
+                <span className="font-heading block font-bold tracking-tight">{label}</span>
+                {blurb ? (
+                  <span className="text-muted-foreground mt-1 block text-sm">{blurb}</span>
+                ) : null}
+              </span>
+            </button>
           ))}
         </div>
+        <StepFooter step={step} stepKey={stepKey} />
+      </form>
+    </>
+  );
+}
 
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-          <Button type="submit" variant="pill" size="pill">
-            <ButtonIcon>
-              <IconArrowUpRight />
-            </ButtonIcon>
-            Continue
-          </Button>
-          {/*
-            Skip is a link, not a disabled submit: step 2 is optional and must
-            never be able to block finishing (VIB-39).
-          */}
-          <Link
-            href={onboardingHref({ step: 3, level })}
-            className="text-sm text-muted-foreground hover:underline"
-          >
-            Skip this
-          </Link>
+/**
+ * Pills. Single choice submits on click; `multiple` turns them into
+ * checkboxes with a Continue, since picking several needs a moment to finish.
+ */
+function StepChips({
+  stepKey,
+  step,
+  lede,
+  options,
+  selected,
+  multiple = false,
+}: {
+  stepKey: QuestionKey;
+  step: OnboardingStep;
+  lede: string;
+  options: Option[];
+  selected: string[];
+  multiple?: boolean;
+}) {
+  const chip =
+    "bg-secondary hover:bg-primary/10 inline-flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition-colors";
+
+  return (
+    <>
+      <Lede>{lede}</Lede>
+      <form action={saveAnswerAction} className="mt-8">
+        <input type="hidden" name="step" value={stepKey} />
+        <div className="flex flex-wrap justify-center gap-2">
+          {options.map(({ value, label, icon: OptionIcon }) =>
+            multiple ? (
+              <label
+                key={value}
+                className={cn(
+                  chip,
+                  "has-checked:bg-primary has-checked:text-primary-foreground has-focus-visible:ring-ring has-focus-visible:ring-2",
+                )}
+              >
+                <input
+                  type="checkbox"
+                  name={stepKey}
+                  value={value}
+                  defaultChecked={selected.includes(value)}
+                  className="sr-only"
+                />
+                <OptionIcon className="size-4" aria-hidden />
+                {label}
+              </label>
+            ) : (
+              <button
+                key={value}
+                type="submit"
+                name={stepKey}
+                value={value}
+                aria-pressed={selected.includes(value)}
+                className={cn(chip, "aria-pressed:bg-primary aria-pressed:text-primary-foreground")}
+              >
+                <OptionIcon className="size-4" aria-hidden />
+                {label}
+              </button>
+            ),
+          )}
         </div>
+        <StepFooter step={step} stepKey={stepKey} withContinue={multiple} />
       </form>
     </>
   );
@@ -298,13 +488,11 @@ function StepFocus({ level, tags }: { level: RoleLevel; tags: Tag[] }) {
 
 function StepReveal({
   level,
-  focusTag,
   tools,
   collection,
   walkthrough,
 }: {
   level: RoleLevel;
-  focusTag?: Tag;
   tools: Tool[];
   collection?: Collection;
   walkthrough?: Walkthrough;
@@ -312,7 +500,7 @@ function StepReveal({
   return (
     <>
       <p className="text-muted-foreground mt-3 text-center">
-        {revealSummary(level, focusTag?.name)}
+        {revealSummary(level)}
       </p>
 
       {/*
@@ -403,7 +591,6 @@ function StepReveal({
         action={finishOnboardingAction}
         className="mt-8 flex flex-col items-center gap-3"
       >
-        <input type="hidden" name="role_level" value={level} />
         {walkthrough ? (
           <>
             <Button

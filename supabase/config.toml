@@ -254,6 +254,11 @@ otp_expiry = 3600
 subject = "Confirm your email for Viberation"
 content_path = "./supabase/templates/confirmation.html"
 
+# Branded password reset (VIB-154), pasted into the dashboard the same way.
+[auth.email.template.recovery]
+subject = "Reset your Viberation password"
+content_path = "./supabase/templates/recovery.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"

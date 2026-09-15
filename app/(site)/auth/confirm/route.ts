@@ -1,8 +1,9 @@
 import { type EmailOtpType } from "@supabase/supabase-js";
-import { type NextRequest, NextResponse } from "next/server";
+import { after, type NextRequest, NextResponse } from "next/server";
 
 import { createClient } from "@/lib/integrations/supabase/server";
 import { safeRedirect } from "@/lib/validation/auth";
+import { sendFirstWelcomeEmail } from "@/lib/welcome-emails";
 
 /**
  * Handles the link Supabase emails after sign-up.
@@ -36,6 +37,13 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     return NextResponse.redirect(`${origin}/login?error=expired-link`);
+  }
+
+  // A confirmed signup starts the welcome sequence (VIB-155). After the
+  // response, so email never slows the redirect. Magic-link sign-ins of
+  // existing members reach here too; the database sends them nothing.
+  if (type === "signup" || type === "email") {
+    after(() => sendFirstWelcomeEmail(supabase, origin));
   }
 
   return NextResponse.redirect(`${origin}${next}`);

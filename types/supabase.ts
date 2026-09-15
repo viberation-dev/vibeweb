@@ -736,6 +736,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_welcome_emails: {
+        Args: { p_limit?: number; p_secret: string }
+        Returns: {
+          creating: string[]
+          display_name: string | null
+          email: string
+          role_level: Database["public"]["Enums"]["role_level"]
+          step: number
+          unsubscribe_sig: string
+          user_id: string
+        }[]
+      }
+      start_welcome_emails: {
+        Args: never
+        Returns: {
+          unsubscribe_sig: string
+        }[]
+      }
+      unsubscribe_welcome_emails: {
+        Args: { p_sig: string; p_user: string }
+        Returns: boolean
+      }
       increment_content_views: {
         Args: { content_slug: string }
         Returns: undefined

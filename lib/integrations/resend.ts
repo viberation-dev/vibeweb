@@ -74,3 +74,70 @@ export async function subscribeToNewsletter(
     detail: `${response.status} ${await response.text().catch(() => "")}`.trim(),
   };
 }
+
+export type SendResult =
+  | { status: "sent"; id: string }
+  | { status: "not_configured" }
+  | { status: "failed"; detail: string };
+
+export type OutgoingEmail = {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+  /** One-click unsubscribe (RFC 8058), so Gmail and Apple Mail show their own button. */
+  unsubscribeUrl?: string;
+};
+
+/**
+ * Sends one email (VIB-155). Only needs RESEND_API_KEY; the audience id is a
+ * newsletter concern. The sender domain is the one Supabase auth mail already
+ * goes out on, so it is verified in Resend.
+ */
+export async function sendEmail(email: OutgoingEmail): Promise<SendResult> {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) {
+    return { status: "not_configured" };
+  }
+
+  const headers: Record<string, string> = {};
+  if (email.unsubscribeUrl) {
+    headers["List-Unsubscribe"] = `<${email.unsubscribeUrl}>`;
+    headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click";
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(`${API}/emails`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: process.env.EMAIL_FROM ?? "Viberation <hello@mail.viberation.dev>",
+        reply_to: process.env.EMAIL_REPLY_TO ?? "hello@viberation.dev",
+        to: [email.to],
+        subject: email.subject,
+        html: email.html,
+        text: email.text,
+        headers,
+      }),
+    });
+  } catch (error) {
+    return {
+      status: "failed",
+      detail: error instanceof Error ? error.message : "network error",
+    };
+  }
+
+  if (!response.ok) {
+    return {
+      status: "failed",
+      detail: `${response.status} ${await response.text().catch(() => "")}`.trim(),
+    };
+  }
+
+  const body = (await response.json().catch(() => ({}))) as { id?: string };
+  return { status: "sent", id: body.id ?? "" };
+}

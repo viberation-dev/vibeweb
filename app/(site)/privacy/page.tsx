@@ -83,6 +83,12 @@ export default function PrivacyPage() {
           Only you can read those answers.
         </p>
         <p className="text-muted-foreground">
+          <strong className="text-foreground">Welcome emails.</strong> After
+          you join we send a short series of emails with tips for getting
+          started. Every one has an unsubscribe link, and unsubscribing stops
+          the rest.
+        </p>
+        <p className="text-muted-foreground">
           <strong className="text-foreground">Things you save and do.</strong>{" "}
           Bookmarks (what you saved, the folder you filed it under, and when),
           recently viewed items (what you opened and when), and your progress
@@ -137,7 +143,7 @@ export default function PrivacyPage() {
       <Section title="4. Who else handles your information">
         <p className="text-muted-foreground">
           We do not sell your personal information, and we do not share it for
-          advertising. We use two service providers, each acting on our
+          advertising. We use these service providers, each acting on our
           instructions:
         </p>
         <ul className="list-disc space-y-2 pl-6 text-muted-foreground">
@@ -151,6 +157,11 @@ export default function PrivacyPage() {
             including IP addresses, in order to deliver pages and protect the
             service against abuse. We do not store IP addresses in our own
             database.
+          </li>
+          <li>
+            <strong className="text-foreground">Resend</strong> sends our
+            emails: account confirmation, password resets and welcome emails.
+            It receives your email address and the content of those emails.
           </li>
         </ul>
         <p className="text-muted-foreground">

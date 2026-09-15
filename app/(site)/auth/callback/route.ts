@@ -1,8 +1,9 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { after, type NextRequest, NextResponse } from "next/server";
 
 import { exchangeCodeForSession } from "@/lib/integrations/supabase/auth";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { safeRedirect } from "@/lib/validation/auth";
+import { sendFirstWelcomeEmail } from "@/lib/welcome-emails";
 
 /**
  * Where the OAuth provider sends the user back to.
@@ -31,6 +32,10 @@ export async function GET(request: NextRequest) {
   if (!result.ok) {
     return NextResponse.redirect(`${origin}/login?error=oauth-failed`);
   }
+
+  // First provider sign-in starts the welcome sequence (VIB-155); every
+  // later one is a no-op in the database.
+  after(() => sendFirstWelcomeEmail(supabase, origin));
 
   return NextResponse.redirect(`${origin}${next}`);
 }

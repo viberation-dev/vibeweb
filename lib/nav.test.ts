@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { isActiveNavItem, SIDEBAR_GROUPS, TOP_NAV } from "./nav.ts";
+import { isActiveNavItem, SIDEBAR_GROUPS, sidebarGroupsFor, TOP_NAV } from "./nav.ts";
 
 const active = (pathname: string, query: string, href: string) =>
   isActiveNavItem(pathname, new URLSearchParams(query), href);
@@ -75,4 +75,11 @@ test("the logged-out top nav stays flat and short", () => {
     TOP_NAV.map((item) => item.label),
     ["Explore", "Skills", "Learn", "Collections"],
   );
+});
+
+test("members never see roadmap items; super admins see the full sidebar", () => {
+  const member = sidebarGroupsFor(false);
+  assert.ok(member.every((group) => group.items.length && group.items.every((item) => !item.disabled)));
+  assert.ok(!member.some((group) => group.label === "Later"));
+  assert.equal(sidebarGroupsFor(true), SIDEBAR_GROUPS);
 });

@@ -10,6 +10,7 @@ import { CategoryPicker } from "@/components/features/tools/CategoryPicker";
 import { Badge } from "@/components/ui/badge";
 import { ButtonIcon, buttonVariants } from "@/components/ui/button";
 import { Panel } from "@/components/ui/panel";
+import { isSuperAdmin } from "@/lib/app-role";
 import {
   FEED_TABS,
   feedQueryFor,
@@ -59,28 +60,39 @@ export default async function HomePage({ searchParams }: Props) {
   // those queries run.
   const profile = auth.user ? await getProfile(supabase, auth.user.id) : null;
 
-  const [collections, { items: latest }, { tools }, walkthroughs, history, topSkills, { tools: appBuilders }] =
-    await Promise.all([
-      listFeaturedCollections(supabase),
-      listContent(supabase, {
-        types: LEARN_TYPE_VALUES,
-        /*
-         * Which tier and which order each tab wants lives in feedQueryFor, so
-         * the tabs cannot quietly disagree with their own labels.
-         */
-        ...feedQueryFor(tab, profile?.role_level ?? undefined),
-        pageSize: 3,
-      }),
-      listTools(supabase, { sort: "popular", pageSize: 6 }),
-      listWalkthroughs(supabase),
-      // Four is what the rail has room for; the full list is the History tab.
-      auth.user ? listHistory(supabase, auth.user.id, 4) : [],
-      // Both homepages point at the skills hub (VIB-131). Cached per skill for
-      // an hour, and ordered by stars when skills.sh is unavailable.
-      listRankedSkills(supabase, 3),
-      // Both homepages point at App Builders too (VIB-139).
-      listTools(supabase, { category: "app_builders", sort: "popular", pageSize: 3 }),
-    ]);
+  const [
+    collections,
+    { items: latest },
+    { tools },
+    walkthroughs,
+    history,
+    topSkills,
+    { tools: appBuilders },
+  ] = await Promise.all([
+    listFeaturedCollections(supabase),
+    listContent(supabase, {
+      types: LEARN_TYPE_VALUES,
+      /*
+       * Which tier and which order each tab wants lives in feedQueryFor, so
+       * the tabs cannot quietly disagree with their own labels.
+       */
+      ...feedQueryFor(tab, profile?.role_level ?? undefined),
+      pageSize: 3,
+    }),
+    listTools(supabase, { sort: "popular", pageSize: 6 }),
+    listWalkthroughs(supabase),
+    // Four is what the rail has room for; the full list is the History tab.
+    auth.user ? listHistory(supabase, auth.user.id, 4) : [],
+    // Both homepages point at the skills hub (VIB-131). Cached per skill for
+    // an hour, and ordered by stars when skills.sh is unavailable.
+    listRankedSkills(supabase, 3),
+    // Both homepages point at App Builders too (VIB-139).
+    listTools(supabase, {
+      category: "app_builders",
+      sort: "popular",
+      pageSize: 3,
+    }),
+  ]);
 
   // §31 puts the flagship promo last. Nothing renders it when no walkthrough is
   // published, so the section cannot point at a route that 404s.
@@ -127,6 +139,7 @@ export default async function HomePage({ searchParams }: Props) {
     return target ? [{ id: item.id, target }] : [];
   });
 
+  const showRoadmap = isSuperAdmin(profile?.app_role);
   const greeting = profile?.username ?? auth.user.email?.split("@")[0];
 
   return (
@@ -172,35 +185,41 @@ export default async function HomePage({ searchParams }: Props) {
         <CategoryPicker />
       </section>
 
+      {/*
+        Roadmap stays with super admins (VIB-151): members get only the live
+        hubs, with no Phase 1.5 cards and no MVP / Phase 1.5 pills.
+      */}
       <section className="mt-6">
-        <h2 className="sr-only">Hubs</h2>
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {HUBS.map((hub) => (
-            <li key={hub.title}>
-              {/*
+          <h2 className="sr-only">Hubs</h2>
+          <ul
+            className={`grid gap-3 ${showRoadmap ? "sm:grid-cols-2 lg:grid-cols-5" : "sm:grid-cols-3"}`}
+          >
+            {HUBS.filter((hub) => showRoadmap || hub.href).map((hub) => (
+              <li key={hub.title}>
+                {/*
                 Setups and Paths are Phase 1.5 — signposted, never linked.
                 CLAUDE.md is explicit that nothing from 1.5 gets built, and a
                 card that navigates somewhere is the first half of building it.
               */}
-              {hub.href ? (
-                <Link
-                  href={hub.href}
-                  className="bg-secondary hover:bg-primary/10 motion-lift block h-full rounded-[1.125rem] p-5 transition-colors"
-                >
-                  <HubBody {...hub} />
-                </Link>
-              ) : (
-                <div
-                  aria-disabled
-                  className="bg-secondary/50 text-muted-foreground/60 h-full rounded-[1.125rem] p-5"
-                >
-                  <HubBody {...hub} />
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
-      </section>
+                {hub.href ? (
+                  <Link
+                    href={hub.href}
+                    className="bg-secondary hover:bg-primary/10 motion-lift block h-full rounded-[1.125rem] p-5 transition-colors"
+                  >
+                    <HubBody {...hub} showPill={showRoadmap} />
+                  </Link>
+                ) : (
+                  <div
+                    aria-disabled
+                    className="bg-secondary/50 text-muted-foreground/60 h-full rounded-[1.125rem] p-5"
+                  >
+                    <HubBody {...hub} showPill={showRoadmap} />
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
         <div>
@@ -361,7 +380,10 @@ export default async function HomePage({ searchParams }: Props) {
           ) : null}
 
           {appBuilders.length ? (
-            <RailCard title="App builders" href={toolsHref({ category: "app_builders" })}>
+            <RailCard
+              title="App builders"
+              href={toolsHref({ category: "app_builders" })}
+            >
               <ul className="space-y-1.5">
                 {appBuilders.map((tool) => (
                   <li key={tool.id}>
@@ -460,21 +482,25 @@ function HubBody({
   title,
   blurb,
   pill,
+  showPill,
 }: {
   title: string;
   blurb: string;
   pill: string;
+  showPill: boolean;
 }) {
   return (
     <>
       <h3 className="font-heading font-bold tracking-tight">{title}</h3>
       <p className="text-muted-foreground mt-1 text-xs">{blurb}</p>
-      <Badge
-        variant={pill === "MVP" ? "default" : "secondary"}
-        className="mt-2"
-      >
-        {pill}
-      </Badge>
+      {showPill ? (
+        <Badge
+          variant={pill === "MVP" ? "default" : "secondary"}
+          className="mt-2"
+        >
+          {pill}
+        </Badge>
+      ) : null}
     </>
   );
 }

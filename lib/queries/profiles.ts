@@ -3,6 +3,17 @@ import { cache } from "react";
 
 import type { Database, Tables, TablesUpdate } from "@/types/supabase";
 
+/**
+ * The columns anon and authenticated may read (migration 20260915090000).
+ * `email` is not among them: it is private, and `select *` would fail with
+ * 42501 under column grants, so every read lists these explicitly.
+ */
+const PUBLIC_COLUMNS =
+  "id, username, plan, role_level, app_role, layout_mode, onboarding_completed, created_at, updated_at";
+
+export type PublicProfile = Omit<Tables<"profiles">, "email">;
+
+/** The signed-in user's own profile; `email` comes from auth, not the table. */
 export type Profile = Tables<"profiles">;
 
 type Client = SupabaseClient<Database>;
@@ -37,8 +48,12 @@ function unwrap<T>(result: { data: T | null; error: { message: string } | null }
 }
 
 /** Look up one profile by id. Returns null when it does not exist. */
-export async function getProfile(client: Client, id: string): Promise<Profile | null> {
-  const { data, error } = await client.from("profiles").select("*").eq("id", id).maybeSingle();
+export async function getProfile(client: Client, id: string): Promise<PublicProfile | null> {
+  const { data, error } = await client
+    .from("profiles")
+    .select(PUBLIC_COLUMNS)
+    .eq("id", id)
+    .maybeSingle();
 
   if (error) {
     throw new Error(`getProfile(${id}): ${error.message}`);
@@ -66,8 +81,9 @@ export const getCurrentProfile = cache(async function getCurrentProfile(
   if (error || !data.user) {
     return null;
   }
-  return getProfile(client, data.user.id);
-})
+  const profile = await getProfile(client, data.user.id);
+  return profile && { ...profile, email: data.user.email ?? null };
+});
 
 /**
  * Update the current user's own preferences.
@@ -79,12 +95,12 @@ export async function updateProfilePreferences(
   client: Client,
   id: string,
   preferences: ProfilePreferences,
-): Promise<Profile> {
+): Promise<PublicProfile> {
   const result = await client
     .from("profiles")
     .update({ ...preferences, updated_at: new Date().toISOString() })
     .eq("id", id)
-    .select()
+    .select(PUBLIC_COLUMNS)
     .single();
 
   return unwrap(result, `updateProfilePreferences(${id})`);

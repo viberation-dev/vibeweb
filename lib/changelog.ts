@@ -41,6 +41,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-16",
+    kind: "added",
+    title: "Welcome emails",
+    body: "New members get a short series of emails after joining: where to start, tools picked for what they want to build, how to save tools, and a check-in they can reply to. Each one has an unsubscribe link.",
+  },
+  {
+    date: "2026-09-16",
     kind: "improved",
     title: "Proper confirmation and reset emails",
     body: "The emails that confirm a new account and reset a password now carry the Viberation look, a clear button and a backup link if the button does not work.",

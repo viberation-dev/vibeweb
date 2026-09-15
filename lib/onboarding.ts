@@ -1,48 +1,106 @@
-import type { RoleLevel } from "@/lib/role-level";
+import type { RoleLevel } from "./role-level.ts";
 
 /**
- * Onboarding runs as three URL-addressed steps (§31): level → optional focus
- * → reveal. State lives in the query string rather than a client store, so
- * the back button works, a half-finished flow survives a refresh, and each
- * step is server-rendered like every other page here.
+ * Onboarding runs as URL-addressed steps (§31, VIB-152): a few questions,
+ * then the reveal. Each answer is saved as its step is submitted, so the URL
+ * only carries which step you are on. The back button works, a refresh keeps
+ * your place, and every step is server-rendered like every other page here.
  *
- * The tier is written as step 1 is submitted; completion is written only by
- * the final submit (VIB-67). Those are different facts: a stated preference
- * is worth keeping the moment it is stated, while "has finished onboarding"
- * governs whether the home nudge keeps offering the way back in. Someone who
- * abandons at step 2 keeps their tier and still gets the nudge.
+ * Completion is still written only by the final submit (VIB-67). Someone who
+ * abandons halfway keeps what they answered and still gets the home nudge.
  */
 
 export const ONBOARDING_STEPS = [
-  { step: 1, label: "Level", title: "First — how much have you built?" },
-  { step: 2, label: "Focus", title: "What are you building?" },
-  { step: 3, label: "The reveal", title: "Here is your Viberation" },
+  { step: 1, key: "name", label: "You", title: "Welcome. What should we call you?" },
+  { step: 2, key: "level", label: "Level", title: "How much have you built?" },
+  { step: 3, key: "usage", label: "Use", title: "How will you use Viberation?" },
+  { step: 4, key: "occupation", label: "Role", title: "What best describes you?" },
+  { step: 5, key: "creating", label: "Goals", title: "What will you create?" },
+  { step: 6, key: "discovery", label: "Found us", title: "How did you find us?" },
+  { step: 7, key: "reveal", label: "The reveal", title: "Here is your Viberation" },
 ] as const;
 
-/** "STEP 2 OF 3 · FOCUS" — the eyebrow above each card in the mockup. */
+export type OnboardingStep = (typeof ONBOARDING_STEPS)[number]["step"];
+export type OnboardingStepKey = (typeof ONBOARDING_STEPS)[number]["key"];
+
+export const LAST_STEP: OnboardingStep = 7;
+
+/** "STEP 2 OF 7 · LEVEL" — the eyebrow above each card in the mockup. */
 export function stepEyebrow(step: OnboardingStep): string {
   const { label } = ONBOARDING_STEPS.find((s) => s.step === step)!;
   return `Step ${step} of ${ONBOARDING_STEPS.length} · ${label}`;
 }
 
-export type OnboardingStep = (typeof ONBOARDING_STEPS)[number]["step"];
-
-export const LAST_STEP: OnboardingStep = 3;
-
-/**
- * Narrows `?step=`, and refuses to skip ahead of what has been answered.
- *
- * Step 3 needs a level to reveal anything, so a hand-typed `?step=3` with no
- * level falls back to step 1 rather than rendering an empty reveal.
- */
-export function resolveStep(value: string | undefined, level: RoleLevel | undefined): OnboardingStep {
+/** Narrows `?step=`; anything unrecognised lands on step 1. */
+export function resolveStep(value: string | undefined): OnboardingStep {
   const parsed = Number(value);
-  const requested = ONBOARDING_STEPS.some((s) => s.step === parsed) ? (parsed as OnboardingStep) : 1;
-  return requested > 1 && !level ? 1 : requested;
+  return ONBOARDING_STEPS.some((s) => s.step === parsed) ? (parsed as OnboardingStep) : 1;
+}
+
+/** Step 1 is the bare path so the entry link stays `/onboarding`. */
+export function onboardingHref(step: OnboardingStep): string {
+  return step > 1 ? `/onboarding?step=${step}` : "/onboarding";
+}
+
+/** The step after this one, capped at the reveal. */
+export function nextStep(step: OnboardingStep): OnboardingStep {
+  return Math.min(step + 1, LAST_STEP) as OnboardingStep;
 }
 
 /**
- * The tier written when someone skips step 1 entirely.
+ * Answer lists. Values are what gets stored, so rename a label freely but
+ * treat a value as permanent: old rows still hold it.
+ */
+export const USAGE_OPTIONS = [
+  { value: "work", label: "Work", blurb: "I build things as part of my job." },
+  { value: "personal", label: "Personal", blurb: "Side projects, hobbies and ideas." },
+  { value: "both", label: "Work and personal", blurb: "A bit of both." },
+  { value: "student", label: "Student", blurb: "Courses, school projects and learning." },
+] as const;
+
+export const OCCUPATION_OPTIONS = [
+  { value: "founder", label: "Founder / Business owner" },
+  { value: "developer", label: "Developer / IT" },
+  { value: "designer", label: "Designer" },
+  { value: "product", label: "Product manager" },
+  { value: "marketer", label: "Marketer" },
+  { value: "creator", label: "Content creator" },
+  { value: "student", label: "Student" },
+  { value: "other", label: "Other" },
+] as const;
+
+export const CREATING_OPTIONS = [
+  { value: "landing_page", label: "Landing page" },
+  { value: "website", label: "Website" },
+  { value: "web_app", label: "Online application" },
+  { value: "ecommerce", label: "Ecommerce store" },
+  { value: "workflow", label: "Improve my workflow" },
+  { value: "inspiration", label: "Take inspiration" },
+  { value: "undecided", label: "Not decided yet" },
+  { value: "other", label: "Other" },
+] as const;
+
+export const DISCOVERY_OPTIONS = [
+  { value: "youtube", label: "YouTube" },
+  { value: "friends", label: "Friends / Teammates" },
+  { value: "ai_chat", label: "ChatGPT / Claude" },
+  { value: "google", label: "Google" },
+  { value: "reddit", label: "Reddit" },
+  { value: "x", label: "X" },
+  { value: "linkedin", label: "LinkedIn" },
+  { value: "instagram", label: "Instagram" },
+  { value: "tiktok", label: "TikTok" },
+  { value: "other", label: "Other" },
+] as const;
+
+type Values<T extends readonly { value: string }[]> = T[number]["value"];
+export type Usage = Values<typeof USAGE_OPTIONS>;
+export type Occupation = Values<typeof OCCUPATION_OPTIONS>;
+export type Creating = Values<typeof CREATING_OPTIONS>;
+export type Discovery = Values<typeof DISCOVERY_OPTIONS>;
+
+/**
+ * The tier written when someone skips the level question.
  *
  * §31: skipping defaults to beginner, which preserves the beginner/advanced
  * feed gating the rest of the product depends on. Defaulting to expert would
@@ -50,41 +108,20 @@ export function resolveStep(value: string | undefined, level: RoleLevel | undefi
  */
 export const DEFAULT_ROLE_LEVEL: RoleLevel = "beginner";
 
-/** Builds `/onboarding?...` URLs, dropping anything not yet answered. */
-export function onboardingHref(params: {
-  step?: OnboardingStep;
-  level?: RoleLevel;
-  focus?: string;
-}): string {
-  const search = new URLSearchParams();
-
-  if (params.step && params.step > 1) search.set("step", String(params.step));
-  if (params.level) search.set("level", params.level);
-  if (params.focus) search.set("focus", params.focus);
-
-  const query = search.toString();
-  return query ? `/onboarding?${query}` : "/onboarding";
-}
-
-/** Short second-person summary of the choices, shown back on the reveal. */
-export function revealSummary(level: RoleLevel, focusLabel?: string): string {
-  const levelPhrase = {
-    beginner: "You are starting out",
-    intermediate: "You have shipped a few things",
-    expert: "You know your way around",
+/** Short second-person summary shown back on the reveal. */
+export function revealSummary(level: RoleLevel): string {
+  return {
+    beginner: "You are starting out, so we lead with the gentle stuff.",
+    intermediate: "You have shipped a few things, so we skip the basics.",
+    expert: "You know your way around, so we keep it sharp.",
   }[level];
-
-  return focusLabel
-    ? `${levelPhrase}, and you are focused on ${focusLabel.toLowerCase()}.`
-    : `${levelPhrase}.`;
 }
 
 /**
  * The reveal's headline, personalised when there is a name to use.
  *
  * Mockup: "Here's your Viberation, Ali." Falls back to the plain version
- * rather than "Here's your Viberation, ." — a username is optional on
- * `profiles`, and most people arrive here seconds after signup without one.
+ * rather than "Here's your Viberation, ." — the name step can be skipped.
  */
 export function revealHeadline(name: string | null | undefined): string {
   const trimmed = name?.trim();

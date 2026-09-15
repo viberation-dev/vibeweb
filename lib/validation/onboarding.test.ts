@@ -1,10 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { onboardingFinishSchema, onboardingLevelSchema } from "./onboarding.ts";
+import { onboardingAnswerSchema, onboardingFinishSchema } from "./onboarding.ts";
 
-const ok = (next: string | undefined) =>
-  onboardingFinishSchema.safeParse({ role_level: "beginner", next }).success;
+const ok = (next: string | undefined) => onboardingFinishSchema.safeParse({ next }).success;
 
 test("the reveal's own destinations are accepted", () => {
   assert.ok(ok(undefined));
@@ -21,41 +20,43 @@ test("a protocol-relative path cannot smuggle an off-site redirect", () => {
 });
 
 test("other internal paths are rejected too", () => {
-  // Not because they are dangerous, but because the reveal never offers them
-  // — anything else arriving here is a tampered form.
+  // The reveal never offers them — anything else arriving here is a tampered form.
   assert.equal(ok("/profile"), false);
   assert.equal(ok("/walkthroughs"), false);
   assert.equal(ok("/walkthroughs/Bad_Slug"), false);
 });
 
-test("an unknown role level is rejected", () => {
-  assert.equal(onboardingFinishSchema.safeParse({ role_level: "walkthrough" }).success, false);
-});
+const answer = (value: Record<string, unknown>) => onboardingAnswerSchema.safeParse(value).success;
 
-const level = (value: unknown) => onboardingLevelSchema.safeParse({ role_level: value }).success;
-
-test("step 1 accepts the three real tiers", () => {
-  assert.ok(level("beginner"));
-  assert.ok(level("intermediate"));
-  assert.ok(level("expert"));
-});
-
-test("step 1 rejects anything outside the Postgres enum", () => {
+test("the level step accepts only the Postgres enum", () => {
   // This value reaches a profiles UPDATE, so a tampered radio must not get
   // as far as the database rejecting it.
-  assert.equal(level("admin"), false);
-  assert.equal(level("Beginner"), false);
-  assert.equal(level(""), false);
-  assert.equal(level(undefined), false);
+  assert.ok(answer({ step: "level", role_level: "expert" }));
+  assert.equal(answer({ step: "level", role_level: "admin" }), false);
+  assert.equal(answer({ step: "level", role_level: "Beginner" }), false);
 });
 
-test("step 1 does not accept a next destination", () => {
-  // Only the finish step redirects anywhere chosen by the form. Step 1 always
-  // goes to step 2, so there is no open-redirect surface to guard here.
-  const parsed = onboardingLevelSchema.safeParse({
-    role_level: "expert",
-    next: "//evil.example",
-  });
-  assert.ok(parsed.success);
-  assert.equal("next" in parsed.data, false);
+test("a name is trimmed, required and capped", () => {
+  const parsed = onboardingAnswerSchema.safeParse({ step: "name", display_name: "  Ali  " });
+  assert.ok(parsed.success && parsed.data.step === "name" && parsed.data.display_name === "Ali");
+  assert.equal(answer({ step: "name", display_name: "   " }), false);
+  assert.equal(answer({ step: "name", display_name: "x".repeat(61) }), false);
+});
+
+test("single-choice answers must be one of the listed values", () => {
+  assert.ok(answer({ step: "usage", usage: "student" }));
+  assert.ok(answer({ step: "occupation", occupation: "developer" }));
+  assert.ok(answer({ step: "discovery", discovery: "ai_chat" }));
+  assert.equal(answer({ step: "discovery", discovery: "billboard" }), false);
+});
+
+test("the create step takes several known values, not none and not unknowns", () => {
+  assert.ok(answer({ step: "creating", creating: ["website", "ecommerce"] }));
+  assert.equal(answer({ step: "creating", creating: [] }), false);
+  assert.equal(answer({ step: "creating", creating: ["website", "nope"] }), false);
+});
+
+test("an answer cannot name a step that does not exist", () => {
+  // `step` picks which row and column are written, so it is validated too.
+  assert.equal(answer({ step: "app_role", app_role: "super_admin" }), false);
 });

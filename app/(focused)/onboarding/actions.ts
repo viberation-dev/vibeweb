@@ -4,73 +4,76 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/integrations/supabase/server";
-import { DEFAULT_ROLE_LEVEL, onboardingHref } from "@/lib/onboarding";
+import {
+  nextStep,
+  onboardingHref,
+  ONBOARDING_STEPS,
+  type OnboardingStep,
+} from "@/lib/onboarding";
+import { saveOnboardingAnswers } from "@/lib/queries/onboarding-answers";
 import { getCurrentProfile, updateProfilePreferences } from "@/lib/queries/profiles";
-import { onboardingFinishSchema, onboardingLevelSchema } from "@/lib/validation/onboarding";
+import { onboardingAnswerSchema, onboardingFinishSchema } from "@/lib/validation/onboarding";
 
 /**
- * Writes the chosen tier and marks onboarding done.
+ * Saves one step's answer and moves to the next step (VIB-152).
  *
- * The only two things onboarding persists (VIB-39). Step 2's focus is not
- * written: nothing consumes a stored focus yet — the home feed personalizes
- * on `role_level` — so storing it now would be a column with no reader. When
- * the feed starts weighting facet tags, that is the change that earns it.
+ * Every question step posts here. Answers are written the moment they are
+ * given rather than held until the end (VIB-67): the reveal hands out links
+ * people are meant to follow, and following one should not lose anything.
  *
- * A plain Server Action taking FormData, like the bookmark toggle: no client
- * component, and the flow completes without JavaScript.
+ * A `skip` submit advances without writing. A tampered or empty answer does
+ * the same rather than erroring, since every question here is optional.
+ *
+ * `onboarding_completed` stays false until the reveal's own submit, so an
+ * abandoned run still gets the home nudge back in (§31 home §3).
  */
-/**
- * Saves the chosen tier on the way from step 1 to step 2 (VIB-67).
- *
- * Onboarding used to write nothing until the final submit, which meant the
- * reveal — a page whose whole job is to hand you tool cards worth clicking —
- * discarded the answer the moment you clicked one. Reading your reveal and
- * following it into the product is success, not abandonment, and it should
- * not be the one path that loses your level.
- *
- * `onboarding_completed` deliberately stays false here. Choosing a tier is
- * not finishing, so an abandoned run still gets the home nudge offering the
- * way back in (§31 home §3) — that separation is the point.
- */
-export async function chooseLevelAction(formData: FormData): Promise<void> {
-  const parsed = onboardingLevelSchema.safeParse({
-    role_level: formData.get("role_level") ?? DEFAULT_ROLE_LEVEL,
-  });
-
-  if (!parsed.success) {
-    redirect("/onboarding");
-  }
+export async function saveAnswerAction(formData: FormData): Promise<void> {
+  const key = formData.get("step");
+  const current = ONBOARDING_STEPS.find((s) => s.key === key)?.step ?? (1 as OnboardingStep);
+  const next = onboardingHref(nextStep(current));
 
   const supabase = await createClient();
   const profile = await getCurrentProfile(supabase);
-
   if (!profile) {
     redirect("/login?redirectTo=/onboarding");
   }
 
-  await updateProfilePreferences(supabase, profile.id, {
-    role_level: parsed.data.role_level,
+  if (formData.get("skip")) {
+    redirect(next);
+  }
+
+  const parsed = onboardingAnswerSchema.safeParse({
+    step: key,
+    display_name: formData.get("display_name") ?? undefined,
+    role_level: formData.get("role_level") ?? undefined,
+    usage: formData.get("usage") ?? undefined,
+    occupation: formData.get("occupation") ?? undefined,
+    creating: formData.getAll("creating"),
+    discovery: formData.get("discovery") ?? undefined,
   });
 
-  /*
-   * The tier already changes what Learn and the feed show, so caches are
-   * stale from here rather than only at the finish.
-   */
-  revalidatePath("/", "layout");
+  if (!parsed.success) {
+    redirect(next);
+  }
 
-  // Back to a plain URL, so step 2 stays bookmarkable and the back button
-  // keeps working exactly as it did when this was a GET form.
-  redirect(onboardingHref({ step: 2, level: parsed.data.role_level }));
+  if (parsed.data.step === "level") {
+    // `role_level` lives on profiles; everything else is private (VIB-152).
+    await updateProfilePreferences(supabase, profile.id, {
+      role_level: parsed.data.role_level,
+    });
+    // The tier changes what Learn and the feed show.
+    revalidatePath("/", "layout");
+  } else {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { step, ...answer } = parsed.data;
+    await saveOnboardingAnswers(supabase, profile.id, answer);
+  }
+
+  redirect(next);
 }
 
 export async function finishOnboardingAction(formData: FormData): Promise<void> {
-  /*
-   * A missing level means step 1 was skipped. §31 says that is beginner, not
-   * an error to bounce someone back for. Anything else present but wrong is
-   * a tampered form, and zod rejects it below.
-   */
   const parsed = onboardingFinishSchema.safeParse({
-    role_level: formData.get("role_level") ?? DEFAULT_ROLE_LEVEL,
     next: formData.get("next") ?? undefined,
   });
 
@@ -90,13 +93,8 @@ export async function finishOnboardingAction(formData: FormData): Promise<void> 
     redirect("/login?redirectTo=/onboarding");
   }
 
-  await updateProfilePreferences(supabase, profile.id, {
-    role_level: parsed.data.role_level,
-    onboarding_completed: true,
-  });
+  await updateProfilePreferences(supabase, profile.id, { onboarding_completed: true });
 
-  // The tier changes what Learn and the home feed show, so every cached
-  // render is now stale.
   revalidatePath("/", "layout");
   redirect(parsed.data.next ?? "/");
 }

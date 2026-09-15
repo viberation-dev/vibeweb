@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import {
+  resendSignupConfirmation,
   resetPasswordForEmail,
   signInWithOAuth,
   signInWithPassword,
@@ -23,7 +24,12 @@ import {
   signUpSchema,
 } from "@/lib/validation/auth";
 
-export type AuthFormState = { error?: string; notice?: string };
+export type AuthFormState = {
+  error?: string;
+  notice?: string;
+  /** Set by signup once the confirmation email is sent; swaps in CheckEmail. */
+  sentTo?: string;
+};
 
 /** Absolute origin of this deployment, for email confirmation links. */
 async function currentOrigin(): Promise<string> {
@@ -78,16 +84,11 @@ export async function signUpAction(
   }
 
   const supabase = await createClient();
-  const origin = await currentOrigin();
   const result = await signUpWithPassword(
     supabase,
     parsed.data.email,
     parsed.data.password,
-    // §31: onboarding "runs once, post-signup", so the confirmation link
-    // lands there rather than on the home feed. /auth/confirm passes `next`
-    // through safeRedirect, and /onboarding sends anyone who has already
-    // finished straight back to "/" — so this cannot re-run the flow.
-    `${origin}/auth/confirm?next=${encodeURIComponent("/onboarding")}`,
+    await confirmSignupUrl(),
   );
 
   if (!result.ok) {
@@ -99,10 +100,46 @@ export async function signUpAction(
    * registered. Saying "that email is taken" would turn this form into an
    * account-existence oracle.
    */
-  return {
-    notice:
-      "Check your inbox — we have sent you a link to confirm your email address.",
-  };
+  return { sentTo: parsed.data.email };
+}
+
+/** Where every signup confirmation link lands. */
+async function confirmSignupUrl(): Promise<string> {
+  // §31: onboarding "runs once, post-signup", so the confirmation link lands
+  // there rather than on the home feed. /onboarding sends anyone who has
+  // already finished straight back to "/", so this cannot re-run the flow.
+  return `${await currentOrigin()}/auth/confirm?next=${encodeURIComponent("/onboarding")}`;
+}
+
+/**
+ * Sends the signup confirmation again, from the check-your-email screen.
+ *
+ * Same answer whatever happens to the address, for the same oracle reason as
+ * signup itself. Supabase's own rate limit applies; its message is passed on
+ * because "wait a minute" is useful and says nothing about the account.
+ */
+export async function resendConfirmationAction(
+  _previous: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  const parsed = forgotPasswordSchema.safeParse({ email: formData.get("email") });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message };
+  }
+
+  const supabase = await createClient();
+  const result = await resendSignupConfirmation(
+    supabase,
+    parsed.data.email,
+    await confirmSignupUrl(),
+  );
+
+  if (!result.ok) {
+    return { error: result.message };
+  }
+
+  return { notice: "Sent again. It can take a minute to arrive." };
 }
 
 export async function forgotPasswordAction(

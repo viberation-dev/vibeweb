@@ -48,6 +48,20 @@ export async function signUpWithPassword(
   return error ? { ok: false, message: toMessage(error.message) } : { ok: true };
 }
 
+/** Sends the signup confirmation email again. */
+export async function resendSignupConfirmation(
+  client: Client,
+  email: string,
+  emailRedirectTo: string,
+): Promise<AuthResult> {
+  const { error } = await client.auth.resend({
+    type: "signup",
+    email,
+    options: { emailRedirectTo },
+  });
+  return error ? { ok: false, message: toMessage(error.message) } : { ok: true };
+}
+
 export async function signOut(client: Client): Promise<AuthResult> {
   const { error } = await client.auth.signOut();
   return error ? { ok: false, message: error.message } : { ok: true };

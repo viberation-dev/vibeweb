@@ -2,7 +2,14 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  CREATING_OPTIONS,
   DEFAULT_ROLE_LEVEL,
+  DISCOVERY_OPTIONS,
+  LAST_STEP,
+  nextStep,
+  OCCUPATION_OPTIONS,
+  ONBOARDING_STEPS,
+  USAGE_OPTIONS,
   onboardingHref,
   resolveStep,
   revealHeadline,
@@ -20,43 +27,42 @@ test("skipping the level question defaults to beginner, not expert", () => {
   assert.equal(DEFAULT_ROLE_LEVEL, "beginner");
 });
 
-test("a later step without a level falls back to step 1", () => {
-  // A hand-typed ?step=3 must not render a reveal with nothing to reveal.
-  assert.equal(resolveStep("3", undefined), 1);
-  assert.equal(resolveStep("2", undefined), 1);
-  assert.equal(resolveStep("3", "expert"), 3);
-});
-
 test("unparseable steps land on step 1", () => {
-  assert.equal(resolveStep(undefined, "beginner"), 1);
-  assert.equal(resolveStep("0", "beginner"), 1);
-  assert.equal(resolveStep("9", "beginner"), 1);
-  assert.equal(resolveStep("two", "beginner"), 1);
+  assert.equal(resolveStep(undefined), 1);
+  assert.equal(resolveStep("0"), 1);
+  assert.equal(resolveStep("99"), 1);
+  assert.equal(resolveStep("two"), 1);
+  assert.equal(resolveStep("4"), 4);
 });
 
-test("hrefs carry answers forward and drop what is unanswered", () => {
-  assert.equal(onboardingHref({}), "/onboarding");
-  assert.equal(onboardingHref({ step: 1 }), "/onboarding");
-  assert.equal(onboardingHref({ step: 3, level: "expert" }), "/onboarding?step=3&level=expert");
-  assert.equal(
-    onboardingHref({ step: 3, level: "beginner", focus: "frontend" }),
-    "/onboarding?step=3&level=beginner&focus=frontend",
-  );
+test("step 1 is the bare path, later steps carry only the step", () => {
+  // Answers are saved as they are given, so nothing else rides in the URL.
+  assert.equal(onboardingHref(1), "/onboarding");
+  assert.equal(onboardingHref(5), "/onboarding?step=5");
 });
 
-test("the reveal reads back both answers, or just the level", () => {
-  assert.equal(
-    revealSummary("beginner", "Frontend"),
-    "You are starting out, and you are focused on frontend.",
-  );
-  assert.equal(revealSummary("expert"), "You know your way around.");
+test("moving on stops at the reveal", () => {
+  assert.equal(nextStep(1), 2);
+  assert.equal(nextStep(LAST_STEP), LAST_STEP);
+  assert.equal(ONBOARDING_STEPS.at(-1)!.key, "reveal");
+});
+
+test("the reveal reads the level back differently per tier", () => {
+  assert.equal(new Set(["beginner", "intermediate", "expert"].map((l) => revealSummary(l as "beginner"))).size, 3);
 });
 
 test("the step eyebrow counts the real number of steps", () => {
-  // Reads the list rather than hardcoding "of 3", so adding a step cannot
-  // leave the label claiming there are still three.
-  assert.equal(stepEyebrow(1), "Step 1 of 3 · Level");
-  assert.equal(stepEyebrow(3), "Step 3 of 3 · The reveal");
+  // Reads the list rather than hardcoding the total, so adding a step cannot
+  // leave the label claiming the old count.
+  assert.equal(stepEyebrow(2), `Step 2 of ${ONBOARDING_STEPS.length} · Level`);
+});
+
+test("option values are unique within each question", () => {
+  // A duplicate value would make two chips indistinguishable once stored.
+  for (const options of [USAGE_OPTIONS, OCCUPATION_OPTIONS, CREATING_OPTIONS, DISCOVERY_OPTIONS]) {
+    const values = options.map((o) => o.value);
+    assert.equal(new Set(values).size, values.length);
+  }
 });
 
 test("the reveal headline uses a name when there is one", () => {

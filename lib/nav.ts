@@ -108,6 +108,18 @@ export const SIDEBAR_GROUPS: ReadonlyArray<{ label?: string; items: readonly Nav
 ];
 
 /**
+ * The sidebar a given viewer sees. Roadmap items (the disabled ones) are for
+ * super admins only (VIB-151); a group left empty by that is dropped.
+ */
+export function sidebarGroupsFor(showRoadmap: boolean): typeof SIDEBAR_GROUPS {
+  if (showRoadmap) return SIDEBAR_GROUPS;
+  return SIDEBAR_GROUPS.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => !item.disabled),
+  })).filter((group) => group.items.length);
+}
+
+/**
  * Whether a nav item points at what is currently on screen.
  *
  * Two traps this exists to avoid. Home is a prefix of every path, so it

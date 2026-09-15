@@ -11,6 +11,7 @@ import { ThemeRail } from "@/components/features/nav/ThemeRail";
 import { UtilityBar } from "@/components/features/nav/UtilityBar";
 import { SearchInput } from "@/components/features/search/SearchInput";
 import { ButtonIcon, buttonVariants } from "@/components/ui/button";
+import { isSuperAdmin } from "@/lib/app-role";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { TOP_NAV } from "@/lib/nav";
 import { getCurrentProfile, type Profile } from "@/lib/queries/profiles";
@@ -79,7 +80,7 @@ export default async function SiteLayout({
           <Suspense
             fallback={<div className="hidden w-56 shrink-0 border-r md:block" />}
           >
-            <AppSidebar />
+            <AppSidebar showRoadmap={isSuperAdmin(profile.app_role)} />
           </Suspense>
           <div className="min-w-0 flex-1">{children}</div>
         </div>

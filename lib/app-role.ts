@@ -20,3 +20,11 @@ const STAFF_ROLES: readonly AppRole[] = ["admin", "super_admin"];
 export function isStaff(role: AppRole | null | undefined): boolean {
   return role != null && STAFF_ROLES.includes(role);
 }
+
+/**
+ * Who sees roadmap signposts — Setups, Paths, the Later group (VIB-151).
+ * A display rule, not a data gate: those items link nowhere.
+ */
+export function isSuperAdmin(role: AppRole | null | undefined): boolean {
+  return role === "super_admin";
+}

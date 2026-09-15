@@ -4,7 +4,7 @@ import { IconBookmark, IconHome } from "@tabler/icons-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 
-import { isActiveNavItem, SIDEBAR_GROUPS } from "@/lib/nav";
+import { isActiveNavItem, sidebarGroupsFor } from "@/lib/nav";
 
 /** The mockup gives only the top group icons; the rest are plain text. */
 const ICONS: Record<string, typeof IconHome> = {
@@ -21,14 +21,14 @@ const ICONS: Record<string, typeof IconHome> = {
  * Deliberately calm: the hover-lift and scroll-reveal treatment is scoped to
  * the marketing homepage and Learn hub, not the app shell.
  */
-export function AppSidebar() {
+export function AppSidebar({ showRoadmap }: { showRoadmap: boolean }) {
   return (
     <>
       <nav
         aria-label="Main"
         className="hidden w-56 shrink-0 overflow-y-auto border-r px-3 py-4 md:block"
       >
-        <NavGroups />
+        <NavGroups showRoadmap={showRoadmap} />
       </nav>
 
       {/*
@@ -40,20 +40,20 @@ export function AppSidebar() {
       <details className="border-b md:hidden">
         <summary className="cursor-pointer px-6 py-3 text-sm font-medium">Menu</summary>
         <nav aria-label="Main" className="px-3 pb-4">
-          <NavGroups />
+          <NavGroups showRoadmap={showRoadmap} />
         </nav>
       </details>
     </>
   );
 }
 
-function NavGroups() {
+function NavGroups({ showRoadmap }: { showRoadmap: boolean }) {
   const pathname = usePathname();
   const search = useSearchParams();
 
   return (
     <>
-      {SIDEBAR_GROUPS.map((group, index) => (
+      {sidebarGroupsFor(showRoadmap).map((group, index) => (
         <div key={group.label ?? index} className={index ? "mt-6" : undefined}>
           {group.label ? (
             <h2 className="text-muted-foreground px-3 pb-1 text-xs font-medium tracking-wide uppercase">

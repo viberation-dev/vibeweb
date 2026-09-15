@@ -41,6 +41,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-15",
+    kind: "fixed",
+    title: "Tighter profile privacy",
+    body: "We tightened which profile details can be read and changed, so your account information stays private to you.",
+  },
+  {
+    date: "2026-09-15",
     kind: "improved",
     title: "Tool types explained on the homepage",
     body: "The directory section on the homepage now gives every tool type a one-line description, so you can tell an agent from a CLI before you click.",

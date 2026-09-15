@@ -26,7 +26,7 @@ import {
 } from "@/lib/queries/collections";
 import { listContent } from "@/lib/queries/content";
 import { listHistory } from "@/lib/queries/history";
-import { getProfile, type Profile } from "@/lib/queries/profiles";
+import { getProfile, type PublicProfile } from "@/lib/queries/profiles";
 import { resolveTargetViews } from "@/lib/queries/resources";
 import { listPopularTags } from "@/lib/queries/tags";
 import { listPublishedTestimonials } from "@/lib/queries/testimonials";
@@ -548,7 +548,7 @@ function RailCard({
 }
 
 /** Only for someone who has not been through it — never for visitors. */
-function OnboardingNudge({ profile }: { profile: Profile | null }) {
+function OnboardingNudge({ profile }: { profile: PublicProfile | null }) {
   if (!profile || profile.onboarding_completed) return null;
 
   return (

@@ -42,6 +42,12 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-15",
     kind: "improved",
+    title: "A shorter start on your home page",
+    body: "Your home page now leads with the tool types most people start with. All tools opens every type, grouped so related ones sit together.",
+  },
+  {
+    date: "2026-09-15",
+    kind: "improved",
     title: "Tool types explained on the homepage",
     body: "The directory section on the homepage now gives every tool type a one-line description, so you can tell an agent from a CLI before you click.",
   },

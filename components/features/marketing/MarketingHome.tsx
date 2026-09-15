@@ -28,7 +28,7 @@ import type { Testimonial } from "@/lib/queries/testimonials";
 import type { Tool } from "@/lib/queries/tools";
 import type { Walkthrough } from "@/lib/queries/walkthroughs";
 import { initialsFrom } from "@/lib/testimonials";
-import { TOOL_CATEGORIES, type ToolCategory } from "@/lib/tool-categories";
+import { CATEGORY_BLURBS, TOOL_CATEGORIES } from "@/lib/tool-categories";
 import { toolsHref } from "@/lib/tools-url";
 
 type Props = {
@@ -808,25 +808,6 @@ function ContrastList({
     </div>
   );
 }
-
-/** One line per directory category. Keyed by the enum so a new category fails the build until it has one. */
-const CATEGORY_BLURBS: Record<ToolCategory, string> = {
-  models: "The AI behind every tool. See what each one is good at.",
-  chats: "Ask, plan and draft code with an AI in your browser.",
-  app_builders: "Describe an app in plain English and get a working one.",
-  hosting: "Put your project online with a real link to share.",
-  agents: "AI that plans and carries out coding tasks for you.",
-  ides: "Code editors with AI built in, for when you open the code.",
-  clis: "AI coding assistants that run in your terminal.",
-  skills: "Instructions your agent loads to follow a proven method.",
-  mcp_servers: "Connect your AI to the apps and data you already use.",
-  plugins: "Add-ons that extend the AI tools you already have.",
-  frameworks: "Solid foundations to build on, so the AI invents less.",
-  templates: "Starter projects, so you begin from something that works.",
-  workflows: "Proven ways of working with AI, step by step.",
-  tools: "Focused helpers that do one job in your build well.",
-  utilities: "Small extras that smooth out everyday AI coding.",
-};
 
 const STEPS = [
   {

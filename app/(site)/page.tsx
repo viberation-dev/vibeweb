@@ -139,6 +139,7 @@ export default async function HomePage({ searchParams }: Props) {
     return target ? [{ id: item.id, target }] : [];
   });
 
+  const showRoadmap = isSuperAdmin(profile?.app_role);
   const greeting = profile?.username ?? auth.user.email?.split("@")[0];
 
   return (
@@ -184,12 +185,16 @@ export default async function HomePage({ searchParams }: Props) {
         <CategoryPicker />
       </section>
 
-      {/* The hub row carries Phase 1.5 signposts, so only super admins see it (VIB-151). */}
-      {isSuperAdmin(profile?.app_role) ? (
-        <section className="mt-6">
+      {/*
+        Roadmap stays with super admins (VIB-151): members get only the live
+        hubs, with no Phase 1.5 cards and no MVP / Phase 1.5 pills.
+      */}
+      <section className="mt-6">
           <h2 className="sr-only">Hubs</h2>
-          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            {HUBS.map((hub) => (
+          <ul
+            className={`grid gap-3 ${showRoadmap ? "sm:grid-cols-2 lg:grid-cols-5" : "sm:grid-cols-3"}`}
+          >
+            {HUBS.filter((hub) => showRoadmap || hub.href).map((hub) => (
               <li key={hub.title}>
                 {/*
                 Setups and Paths are Phase 1.5 — signposted, never linked.
@@ -201,21 +206,20 @@ export default async function HomePage({ searchParams }: Props) {
                     href={hub.href}
                     className="bg-secondary hover:bg-primary/10 motion-lift block h-full rounded-[1.125rem] p-5 transition-colors"
                   >
-                    <HubBody {...hub} />
+                    <HubBody {...hub} showPill={showRoadmap} />
                   </Link>
                 ) : (
                   <div
                     aria-disabled
                     className="bg-secondary/50 text-muted-foreground/60 h-full rounded-[1.125rem] p-5"
                   >
-                    <HubBody {...hub} />
+                    <HubBody {...hub} showPill={showRoadmap} />
                   </div>
                 )}
               </li>
             ))}
           </ul>
         </section>
-      ) : null}
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
         <div>
@@ -478,21 +482,25 @@ function HubBody({
   title,
   blurb,
   pill,
+  showPill,
 }: {
   title: string;
   blurb: string;
   pill: string;
+  showPill: boolean;
 }) {
   return (
     <>
       <h3 className="font-heading font-bold tracking-tight">{title}</h3>
       <p className="text-muted-foreground mt-1 text-xs">{blurb}</p>
-      <Badge
-        variant={pill === "MVP" ? "default" : "secondary"}
-        className="mt-2"
-      >
-        {pill}
-      </Badge>
+      {showPill ? (
+        <Badge
+          variant={pill === "MVP" ? "default" : "secondary"}
+          className="mt-2"
+        >
+          {pill}
+        </Badge>
+      ) : null}
     </>
   );
 }

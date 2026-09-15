@@ -248,6 +248,12 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
+# Branded signup confirmation (VIB-153). The hosted project does not read
+# this file: the same HTML is pasted into Dashboard → Authentication → Emails.
+[auth.email.template.confirmation]
+subject = "Confirm your email for Viberation"
+content_path = "./supabase/templates/confirmation.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"

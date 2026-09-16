@@ -41,6 +41,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-16",
+    kind: "added",
+    title: "Terminals category",
+    body: "A new directory category for the window you type commands in. It explains terminal and shell in plain words, shows how to open the one already on your computer, and lists Windows Terminal, PowerShell, Git Bash, WSL, the Mac Terminal, iTerm2, Ptyxis, Konsole, Warp, Wave, Ghostty, WezTerm, Kitty, Alacritty and Tabby.",
+  },
+  {
+    date: "2026-09-16",
     kind: "improved",
     title: "Pick a prompt, then open your AI tool",
     body: "Every step of Ship your first web project now has plainer wording, example ideas, and three prompts to choose from. One click copies the prompt and opens Claude, ChatGPT or another AI tool, with ChatGPT and Grok filled in for you, or opens Cursor, VS Code or Antigravity if they are installed.",

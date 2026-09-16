@@ -3,7 +3,7 @@ import type { Enums } from "@/types/supabase";
 export type ToolCategory = Enums<"tool_category">;
 
 /**
- * The 15 canonical directory categories (artifact-type taxonomy, §24/§07).
+ * The 16 canonical directory categories (artifact-type taxonomy, §24/§07).
  *
  * Order is the display order in the category nav, not alphabetical: the
  * things a beginner meets first come first. The enum values double as URL
@@ -17,6 +17,7 @@ export const TOOL_CATEGORIES: ReadonlyArray<{ value: ToolCategory; label: string
   { value: "hosting", label: "Hosting" },
   { value: "agents", label: "Agents" },
   { value: "ides", label: "IDEs" },
+  { value: "terminals", label: "Terminals" },
   { value: "clis", label: "CLIs" },
   { value: "skills", label: "Skills" },
   { value: "mcp_servers", label: "MCP Servers" },
@@ -36,6 +37,7 @@ export const CATEGORY_BLURBS: Record<ToolCategory, string> = {
   hosting: "Put your project online with a real link to share.",
   agents: "AI that plans and carries out coding tasks for you.",
   ides: "Code editors with AI built in, for when you open the code.",
+  terminals: "Where you type commands to install, run and ship your project.",
   clis: "AI coding assistants that run in your terminal.",
   skills: "Instructions your agent loads to follow a proven method.",
   mcp_servers: "Connect your AI to the apps and data you already use.",
@@ -60,7 +62,7 @@ export const BEGINNER_CATEGORIES: ReadonlyArray<ToolCategory> = [
 
 /** The "All tools" modal's tabs. Every category appears in exactly one group (tool-categories.test.ts). */
 export const CATEGORY_GROUPS: ReadonlyArray<{ label: string; categories: ReadonlyArray<ToolCategory> }> = [
-  { label: "Build", categories: ["app_builders", "ides", "clis", "agents"] },
+  { label: "Build", categories: ["app_builders", "ides", "terminals", "clis", "agents"] },
   { label: "AI", categories: ["models", "chats"] },
   { label: "Extend", categories: ["skills", "mcp_servers", "plugins"] },
   { label: "Start from", categories: ["templates", "frameworks", "workflows"] },

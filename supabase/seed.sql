@@ -559,13 +559,216 @@ insert into wizards (title, slug, kind, reusable, role_level, status, steps) val
       ]
     },
     {
+      "key": "setup",
+      "title": "Setup",
+      "intro": "Three free installs and one folder. Do this once, and every project after this starts in minutes.",
+      "blocks": [
+        {
+          "kind": "text",
+          "body": "Before you build anything, your computer needs three things: a terminal to type commands in, Node.js to run your project, and Git to save its history.\n\nIt sounds like a lot. It takes about fifteen minutes, and most of that is waiting for downloads."
+        },
+        {
+          "kind": "tabs",
+          "label": "Your computer",
+          "tabs": [
+            {
+              "key": "windows",
+              "title": "Windows",
+              "blocks": [
+                {
+                  "kind": "text",
+                  "body": "1. Open a terminal. Press the Windows key, type Terminal and press Enter. That opens Windows Terminal running PowerShell, which is all you need. On Windows 10, if Terminal does not appear, open PowerShell from the Start menu instead."
+                },
+                {
+                  "kind": "text",
+                  "body": "2. Install Node.js. Download the LTS version for Windows from nodejs.org and run the installer, keeping every default.\n\n3. Install Git. Download Git for Windows and run the installer. The defaults are fine, and you get Git Bash as a bonus.\n\nWhen both are installed, close your terminal and open a new one, so it can find them."
+                },
+                {
+                  "kind": "links",
+                  "links": [
+                    {
+                      "label": "Download Node.js",
+                      "href": "https://nodejs.org/en/download"
+                    },
+                    {
+                      "label": "Download Git for Windows",
+                      "href": "https://git-scm.com/downloads/win"
+                    },
+                    {
+                      "label": "Windows terminals",
+                      "href": "/tools?category=terminals&tag=windows"
+                    }
+                  ]
+                },
+                {
+                  "kind": "text",
+                  "body": "4. Check it worked. Paste these into the terminal and press Enter:"
+                },
+                {
+                  "kind": "code",
+                  "language": "bash",
+                  "code": "node -v\nnpm -v\ngit --version",
+                  "expected": "Three lines, each with a version number. Any numbers are fine. An error such as not recognized or command not found means that install did not finish, or the terminal was already open before you installed it. Close it, open a new one and try again."
+                },
+                {
+                  "kind": "callout",
+                  "tone": "warning",
+                  "body": "Seeing \"running scripts is disabled on this system\" after npm -v? Windows PowerShell blocks npm until you allow it. Run this once, type Y if it asks, then try again:\n\nSet-ExecutionPolicy -Scope CurrentUser RemoteSigned\n\nIt only changes the setting for your own account."
+                }
+              ]
+            },
+            {
+              "key": "macos",
+              "title": "Mac",
+              "blocks": [
+                {
+                  "kind": "text",
+                  "body": "1. Open a terminal. Press Cmd+Space, type Terminal and press Enter."
+                },
+                {
+                  "kind": "text",
+                  "body": "2. Install Node.js. Download the LTS version for macOS from nodejs.org and run the installer. Then quit Terminal with Cmd+Q and open it again, so it can find Node.\n\n3. Install Git. Type git --version and press Enter. If Git is missing, your Mac offers to install the command line developer tools, which include it. Click Install and wait for it to finish."
+                },
+                {
+                  "kind": "links",
+                  "links": [
+                    {
+                      "label": "Download Node.js",
+                      "href": "https://nodejs.org/en/download"
+                    },
+                    {
+                      "label": "Mac terminals",
+                      "href": "/tools?category=terminals&tag=macos"
+                    }
+                  ]
+                },
+                {
+                  "kind": "text",
+                  "body": "4. Check it worked. Paste these into Terminal and press Enter:"
+                },
+                {
+                  "kind": "code",
+                  "language": "bash",
+                  "code": "node -v\nnpm -v\ngit --version",
+                  "expected": "Three lines, each with a version number. Any numbers are fine. An error such as not recognized or command not found means that install did not finish, or the terminal was already open before you installed it. Close it, open a new one and try again."
+                }
+              ]
+            },
+            {
+              "key": "linux",
+              "title": "Linux",
+              "blocks": [
+                {
+                  "kind": "text",
+                  "body": "1. Open a terminal. On Ubuntu, press Ctrl+Alt+T."
+                },
+                {
+                  "kind": "text",
+                  "body": "2. Install Node.js. The version in your system''s software store is often years out of date, so use nodejs.org instead: choose Linux and nvm, then run the commands it shows, one at a time. Open a new terminal when it finishes.\n\n3. Install Git. On Ubuntu or Debian, run sudo apt install git. It asks for your password, and nothing appears while you type it. That is normal: type it and press Enter."
+                },
+                {
+                  "kind": "links",
+                  "links": [
+                    {
+                      "label": "Download Node.js",
+                      "href": "https://nodejs.org/en/download"
+                    },
+                    {
+                      "label": "Linux terminals",
+                      "href": "/tools?category=terminals&tag=linux"
+                    }
+                  ]
+                },
+                {
+                  "kind": "text",
+                  "body": "4. Check it worked. Paste these into the terminal and press Enter:"
+                },
+                {
+                  "kind": "code",
+                  "language": "bash",
+                  "code": "node -v\nnpm -v\ngit --version",
+                  "expected": "Three lines, each with a version number. Any numbers are fine. An error such as not recognized or command not found means that install did not finish, or the terminal was already open before you installed it. Close it, open a new one and try again."
+                }
+              ]
+            }
+          ],
+          "detect": "os"
+        },
+        {
+          "kind": "text",
+          "body": "Tell Git who you are. Every save, called a commit, is labelled with a name and email. Use the email you will sign up to GitHub with, and keep the quote marks."
+        },
+        {
+          "kind": "code",
+          "language": "bash",
+          "code": "git config --global user.name \"Your Name\"\ngit config --global user.email \"you@example.com\"",
+          "expected": "Nothing at all. No message means it worked."
+        },
+        {
+          "kind": "text",
+          "body": "Make a home for your projects. Keep them together in one folder inside your user folder. Not on the Desktop, and not inside OneDrive, iCloud Drive or Dropbox: sync apps fight over the thousands of small files a project installs, and things break in confusing ways."
+        },
+        {
+          "kind": "code",
+          "language": "bash",
+          "code": "cd ~\nmkdir projects\ncd projects",
+          "expected": "On Windows, a short table naming the new folder. On Mac and Linux, nothing. Either way, the line before your cursor now ends in projects. Next time, open a terminal and run cd ~/projects to get back here."
+        },
+        {
+          "kind": "callout",
+          "tone": "tip",
+          "body": "Using an editor such as VS Code or Cursor? It has a terminal built in. Open your project folder with File, then Open Folder, and press Ctrl+` (the key under Esc) to open a terminal that is already inside it."
+        },
+        {
+          "kind": "prompt",
+          "label": "Stuck? Pick a prompt and ask your AI tool",
+          "prompt": "I am setting up my computer for web development for the first time.\n\nMy computer: [Windows, Mac or Linux]\nWhat I was installing: [Node.js or Git]\nThe command I ran: [paste it]\nWhat I saw: [paste the full message]\n\nExplain what went wrong in plain words, then give me the exact steps to fix it, one at a time.",
+          "prompts": [
+            {
+              "title": "Fix an install",
+              "prompt": "I am setting up my computer for web development for the first time.\n\nMy computer: [Windows, Mac or Linux]\nWhat I was installing: [Node.js or Git]\nThe command I ran: [paste it]\nWhat I saw: [paste the full message]\n\nExplain what went wrong in plain words, then give me the exact steps to fix it, one at a time."
+            },
+            {
+              "title": "Explain the terminal",
+              "prompt": "I am a complete beginner and I just opened a terminal for the first time. My computer: [Windows, Mac or Linux].\n\nExplain, in plain words:\n1. What the text before my cursor means\n2. How to see which folder I am in, move into a folder, and go back up one\n3. How to stop a command that keeps running\n\nGive me the exact command for my system each time, and keep it short."
+            },
+            {
+              "title": "Check my setup",
+              "prompt": "I want to check my computer is ready to build a Next.js project. My computer: [Windows, Mac or Linux].\n\nHere is what these commands printed:\nnode -v: [paste]\nnpm -v: [paste]\ngit --version: [paste]\n\nTell me whether these versions are recent enough for the latest Next.js, and exactly what to update if not."
+            }
+          ]
+        },
+        {
+          "kind": "checklist",
+          "tasks": [
+            {
+              "id": "setup-terminal",
+              "label": "Opened a terminal"
+            },
+            {
+              "id": "setup-node",
+              "label": "Installed Node.js and saw its version number"
+            },
+            {
+              "id": "setup-git",
+              "label": "Installed Git and told it my name and email"
+            },
+            {
+              "id": "setup-folder",
+              "label": "Made a projects folder outside OneDrive and iCloud"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "key": "stack",
       "title": "Stack",
       "intro": "Choose tools that stay out of your way. Nothing here is forever.",
       "blocks": [
         {
           "kind": "text",
-          "body": "For a first project, the tools matter much less than picking some and moving on. Use Next.js to build the site, Tailwind to style it, and Vercel to put it online. Skip the database unless your idea really needs to save something. A list of recipes can live in a file just fine."
+          "body": "For a first project, the tools matter much less than picking some and moving on. Use Next.js to build the site, Tailwind to style it, and Vercel to put it online. Skip the database unless your idea really needs to save something. A list of recipes can live in a file just fine.\n\nIn your terminal, go to your projects folder first with cd ~/projects, then run:"
         },
         {
           "kind": "code",
@@ -623,13 +826,17 @@ insert into wizards (title, slug, kind, reusable, role_level, status, steps) val
       ]
     },
     {
-      "key": "deploy",
-      "title": "Deploy",
-      "intro": "Put it online today, while there is nothing to break. Do not leave it for the end.",
+      "key": "github",
+      "title": "GitHub",
+      "intro": "Put your code online, so it is backed up and ready to deploy.",
       "blocks": [
         {
           "kind": "text",
-          "body": "Going live early turns every change after this into a small, safe step, instead of one big scary leap at the finish. You also get a real link to send people the moment it is worth showing off.\n\nGood news: create-next-app already set up git and saved a first commit for you. You only need to save the changes you have made since."
+          "body": "GitHub stores your project and its full history, so a broken laptop is not a lost project. It is also how hosts get your code: once they are connected, every push to GitHub updates your live site. A GitHub account is free."
+        },
+        {
+          "kind": "text",
+          "body": "1. Save your latest changes. create-next-app already made a first commit for you. From your project folder (cd ~/projects/my-project), save what you have changed since:"
         },
         {
           "kind": "code",
@@ -639,16 +846,114 @@ insert into wizards (title, slug, kind, reusable, role_level, status, steps) val
         },
         {
           "kind": "text",
-          "body": "Next, create an empty repository on GitHub. Right after you create it, GitHub shows the exact two commands to connect it and push your code. Copy them, run them, done."
+          "body": "2. Create a GitHub account at github.com, if you do not have one. Use the same email you gave Git in the Setup step."
         },
         {
           "kind": "text",
-          "body": "Once your code is on GitHub, go to vercel.com and choose Add New Project. Pick your repository, keep every default setting and press Deploy. A minute or two later you have a live link. Yes, on the actual internet."
+          "body": "3. Make an empty repository. On GitHub, click the + at the top right, then New repository. Name it my-project. Public or Private both work.\n\nLeave the README, .gitignore and license options switched off. Your project already has its own, and an extra file on GitHub makes your first push fail."
+        },
+        {
+          "kind": "links",
+          "links": [
+            {
+              "label": "Create a GitHub account",
+              "href": "https://github.com/signup"
+            },
+            {
+              "label": "New repository",
+              "href": "https://github.com/new"
+            }
+          ]
+        },
+        {
+          "kind": "text",
+          "body": "4. Connect and push. Your new repository page shows a section headed ...or push an existing repository from the command line. Copy those three lines and run them in your project folder. They look like this, with your own username:"
+        },
+        {
+          "kind": "code",
+          "language": "bash",
+          "code": "git remote add origin https://github.com/YOUR-USERNAME/my-project.git\ngit branch -M main\ngit push -u origin main",
+          "expected": "The first time, you are asked to sign in (see below). Then a few lines counting and writing objects, ending with branch main set up to track origin/main. Refresh your repository page on GitHub and your files are there."
+        },
+        {
+          "kind": "tabs",
+          "label": "Signing in the first time",
+          "tabs": [
+            {
+              "key": "windows",
+              "title": "Windows",
+              "blocks": [
+                {
+                  "kind": "text",
+                  "body": "A window pops up asking you to connect to GitHub. Choose Sign in with your browser, approve it on the page that opens, and the push carries on by itself. Git for Windows remembers you, so this only happens once."
+                }
+              ]
+            },
+            {
+              "key": "macos",
+              "title": "Mac",
+              "blocks": [
+                {
+                  "kind": "text",
+                  "body": "GitHub does not accept your account password in the terminal. Instead, sign in once with GitHub''s own tool before you push. Install GitHub CLI from cli.github.com (it has a Mac installer), open a new Terminal window, and run:"
+                },
+                {
+                  "kind": "links",
+                  "links": [
+                    {
+                      "label": "Get GitHub CLI",
+                      "href": "https://cli.github.com"
+                    }
+                  ]
+                },
+                {
+                  "kind": "code",
+                  "language": "bash",
+                  "code": "gh auth login",
+                  "expected": "A few questions. Choose GitHub.com, then HTTPS, then Yes to authenticate Git, then Login with a web browser. It shows a one-time code: copy it, press Enter, paste it into the page that opens and approve. The terminal ends with Logged in as your username."
+                },
+                {
+                  "kind": "text",
+                  "body": "Now run git push -u origin main again. It will not ask you to sign in."
+                }
+              ]
+            },
+            {
+              "key": "linux",
+              "title": "Linux",
+              "blocks": [
+                {
+                  "kind": "text",
+                  "body": "GitHub does not accept your account password in the terminal. Instead, sign in once with GitHub''s own tool before you push. Install GitHub CLI using the instructions for your system on cli.github.com, then run:"
+                },
+                {
+                  "kind": "links",
+                  "links": [
+                    {
+                      "label": "Get GitHub CLI",
+                      "href": "https://cli.github.com"
+                    }
+                  ]
+                },
+                {
+                  "kind": "code",
+                  "language": "bash",
+                  "code": "gh auth login",
+                  "expected": "A few questions. Choose GitHub.com, then HTTPS, then Yes to authenticate Git, then Login with a web browser. It shows a one-time code: copy it, press Enter, paste it into the page that opens and approve. The terminal ends with Logged in as your username."
+                },
+                {
+                  "kind": "text",
+                  "body": "Now run git push -u origin main again. It will not ask you to sign in."
+                }
+              ]
+            }
+          ],
+          "detect": "os"
         },
         {
           "kind": "callout",
-          "tone": "tip",
-          "body": "From now on, every push to your main branch goes live by itself. There is no separate deploy step to remember, which is good, because you would forget it."
+          "tone": "warning",
+          "body": "Never put passwords, API keys or tokens in your code. Anything pushed to a public repository can be read by anyone, and bots scan GitHub for leaked keys within minutes of a push."
         },
         {
           "kind": "prompt",
@@ -660,12 +965,12 @@ insert into wizards (title, slug, kind, reusable, role_level, status, steps) val
               "prompt": "I am trying to put my first project on GitHub and got stuck.\n\nWhat I ran: [paste the commands]\nWhat I saw: [paste the full message]\n\nExplain what went wrong in plain words and give me the exact commands to fix it, one step at a time. I am a beginner, so do not skip steps."
             },
             {
-              "title": "Fix a failed deploy",
-              "prompt": "My Vercel deploy failed. This is my first time deploying anything.\n\nHere is the build log: [paste the red part of the log]\n\nTell me:\n1. What actually broke, in one or two plain sentences\n2. Which file to change, and what to change it to\n3. How to check the fix works on my computer before I push again"
+              "title": "Undo a mistake",
+              "prompt": "I made a mistake with git and I am worried about losing work. I am a beginner.\n\nMy computer: [Windows, Mac or Linux]\nWhat I did: [describe it]\nWhat git status shows: [paste the output of git status]\n\nTell me, one step at a time, how to get back to a safe state without deleting anything. Explain what each command does before I run it."
             },
             {
-              "title": "Explain what just happened",
-              "prompt": "I just pushed my project to GitHub and Vercel put it online. It works, but I am not sure how.\n\nExplain in plain words, as if to a friend:\n1. What git, GitHub and Vercel each did\n2. What happens now when I change a file and push again\n3. One mistake beginners often make with this setup, and how to avoid it"
+              "title": "Explain git",
+              "prompt": "I just pushed my first project to GitHub, but I do not really understand git yet.\n\nExplain in plain words, as if to a friend:\n1. What a commit, a branch and a push are\n2. The three commands I will use every day, and when to use each\n3. What to do before I try something risky, so I can undo it"
             }
           ]
         },
@@ -677,12 +982,133 @@ insert into wizards (title, slug, kind, reusable, role_level, status, steps) val
               "label": "Saved my changes with a commit"
             },
             {
-              "id": "deploy-github",
-              "label": "Pushed the code to GitHub"
+              "id": "github-account",
+              "label": "Created a GitHub account"
             },
             {
+              "id": "deploy-github",
+              "label": "Pushed the code to GitHub"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "deploy",
+      "title": "Deploy",
+      "intro": "Put it online today, while there is nothing to break. Pick one host and follow its steps.",
+      "blocks": [
+        {
+          "kind": "text",
+          "body": "Going live early turns every change after this into a small, safe step, instead of one big scary leap at the finish. You also get a real link to send people the moment it is worth showing off.\n\nAll three hosts below have a free plan that covers a project like this, and all three redeploy by themselves whenever you push to GitHub. Not sure? Pick Vercel."
+        },
+        {
+          "kind": "tabs",
+          "label": "Pick a host",
+          "tabs": [
+            {
+              "key": "vercel",
+              "title": "Vercel (easiest)",
+              "blocks": [
+                {
+                  "kind": "text",
+                  "body": "Vercel is made by the team behind Next.js, so there is nothing to set up.\n\n1. Go to vercel.com/signup and choose Continue with GitHub. When asked, pick the free Hobby plan, which is for personal projects.\n2. Open vercel.com/new. If my-project is not listed, click Adjust GitHub App Permissions and give Vercel access to it.\n3. Click Import next to my-project.\n4. Leave every setting as it is and click Deploy.\n5. Wait a minute or two for the Congratulations screen, then open your site. Its address ends in .vercel.app."
+                },
+                {
+                  "kind": "links",
+                  "links": [
+                    {
+                      "label": "Open Vercel",
+                      "href": "https://vercel.com/new"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "netlify",
+              "title": "Netlify",
+              "blocks": [
+                {
+                  "kind": "text",
+                  "body": "1. Go to app.netlify.com/signup and sign up with GitHub.\n2. Choose Add new project, then Import an existing project.\n3. Choose GitHub and allow Netlify to see your repository.\n4. Pick my-project. Netlify spots that it is a Next.js app and fills in the settings for you.\n5. Click Deploy (some screens say Publish) and wait a few minutes. Your site gets an address ending in .netlify.app."
+                },
+                {
+                  "kind": "links",
+                  "links": [
+                    {
+                      "label": "Open Netlify",
+                      "href": "https://app.netlify.com"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "cloudflare",
+              "title": "Cloudflare",
+              "blocks": [
+                {
+                  "kind": "text",
+                  "body": "Cloudflare runs Next.js through an adapter, so there is one extra step: accepting a change it makes to your project.\n\n1. Sign up at dash.cloudflare.com. The free plan is enough.\n2. Open Workers & Pages, create an application, choose to import a repository, and connect GitHub.\n3. Pick my-project and follow the prompts. Cloudflare detects Next.js and opens a pull request on GitHub with the settings it needs.\n4. On GitHub, open the Pull requests tab of your repository, open Cloudflare''s pull request and click Merge pull request.\n5. Cloudflare builds your site again and gives you an address ending in .workers.dev.\n6. Back in your terminal, run git pull so your computer has Cloudflare''s changes too."
+                },
+                {
+                  "kind": "callout",
+                  "tone": "info",
+                  "body": "Next.js support on Cloudflare is newer and still changing. If a build fails and the error means nothing to you, Vercel is the easy fallback."
+                },
+                {
+                  "kind": "links",
+                  "links": [
+                    {
+                      "label": "Open Cloudflare",
+                      "href": "https://dash.cloudflare.com"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "links",
+          "links": [
+            {
+              "label": "Compare hosts",
+              "href": "/tools?category=hosting"
+            }
+          ]
+        },
+        {
+          "kind": "callout",
+          "tone": "tip",
+          "body": "From now on, every push to your main branch goes live by itself. There is no separate deploy step to remember, which is good, because you would forget it."
+        },
+        {
+          "kind": "prompt",
+          "label": "Stuck? Pick a prompt and ask your AI tool",
+          "prompt": "My deploy failed. This is my first time deploying anything.\n\nMy host: [Vercel, Netlify or Cloudflare]\nHere is the build log: [paste the red part of the log]\n\nTell me:\n1. What actually broke, in one or two plain sentences\n2. Which file to change, and what to change it to\n3. How to check the fix works on my computer before I push again",
+          "prompts": [
+            {
+              "title": "Fix a failed deploy",
+              "prompt": "My deploy failed. This is my first time deploying anything.\n\nMy host: [Vercel, Netlify or Cloudflare]\nHere is the build log: [paste the red part of the log]\n\nTell me:\n1. What actually broke, in one or two plain sentences\n2. Which file to change, and what to change it to\n3. How to check the fix works on my computer before I push again"
+            },
+            {
+              "title": "Help me choose a host",
+              "prompt": "I am deploying my first Next.js project and cannot decide between Vercel, Netlify and Cloudflare.\n\nWhat I am building: [your one-sentence idea]\nCould it ever make money: [yes or no]\n\nCompare them in a short table: what the free plan covers, how easy Next.js setup is, and anything that might surprise a beginner later. Then recommend one and say why."
+            },
+            {
+              "title": "Explain what just happened",
+              "prompt": "I pushed my project to GitHub and [Vercel, Netlify or Cloudflare] put it online. It works, but I am not sure how.\n\nExplain in plain words, as if to a friend:\n1. What GitHub and my host each did\n2. What happens now when I change a file and push again\n3. One mistake beginners often make with this setup, and how to avoid it"
+            }
+          ]
+        },
+        {
+          "kind": "checklist",
+          "tasks": [
+            {
               "id": "deploy-vercel",
-              "label": "Deployed on Vercel and opened the live link"
+              "label": "Deployed and opened my live link"
             },
             {
               "id": "deploy-second",
@@ -712,7 +1138,7 @@ insert into wizards (title, slug, kind, reusable, role_level, status, steps) val
             },
             {
               "title": "Pre-launch checklist",
-              "prompt": "I am about to share my first web project: [paste your link]. It is built with Next.js and hosted on Vercel.\n\nGive me a short pre-launch checklist, ten items at most, covering:\n- the page title and the preview that shows when someone shares the link\n- how it looks on a phone\n- leftover starter text or placeholder content\n\nFor each item, tell me exactly where to look and how to fix it."
+              "prompt": "I am about to share my first web project: [paste your link]. It is built with Next.js and hosted on [Vercel, Netlify or Cloudflare].\n\nGive me a short pre-launch checklist, ten items at most, covering:\n- the page title and the preview that shows when someone shares the link\n- how it looks on a phone\n- leftover starter text or placeholder content\n\nFor each item, tell me exactly where to look and how to fix it."
             },
             {
               "title": "Write my share message",

@@ -63,7 +63,7 @@ test("derived labels sit between pricing and tags", () => {
 });
 
 test("a category without a tag order keeps the default card", () => {
-  assert.equal(cardBadges("models", "Free", [tag("react", "React")]), undefined);
+  assert.equal(cardBadges("not-a-category", "Free", [tag("react", "React")]), undefined);
 });
 
 test("malformed key facts are dropped, not thrown on", () => {

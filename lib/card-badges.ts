@@ -101,6 +101,39 @@ export const CARD_TAGS: Readonly<Record<string, readonly string[]>> = {
     "local-models",
     "open-source",
   ],
+  // The last seven (VIB-158). Models and chat apps: what they can make
+  // beyond text, and whether a coding agent comes with them.
+  models: ["coding-agent", "image-generation", "video-generation"],
+  chats: ["coding-agent", "skills-ecosystem", "image-generation", "voice-mode"],
+  // Frameworks and templates: what you build, then the stack.
+  frameworks: ["agent-framework", "web-apps", "python", "typescript", "react", "open-source"],
+  templates: ["web-apps", "design", "nextjs", "react", "typescript", "database", "open-source"],
+  // Workflows: where it runs and whether you need code.
+  workflows: ["self-hosted", "no-code", "automation"],
+  // Tools: a mixed bag, so the job each one does.
+  tools: [
+    "database",
+    "postgres",
+    "design",
+    "image-generation",
+    "video-generation",
+    "project-management",
+    "team-chat",
+    "open-source",
+  ],
+  // Utilities: skill sites first (selling, finding, checking), then the
+  // developer services.
+  utilities: [
+    "sell-skills",
+    "skills-ecosystem",
+    "security-checks",
+    "model-gateway",
+    "email",
+    "search",
+    "self-hosted",
+    "byok",
+    "open-source",
+  ],
 };
 
 /** Tags beyond the pricing badges, so a card stays one or two lines. */

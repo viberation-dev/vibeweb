@@ -42,6 +42,12 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-16",
     kind: "improved",
+    title: "Clearer tool cards everywhere",
+    body: "Cards for models, chat apps, frameworks, templates, workflow tools, utilities and everyday tools now lead with what matters: whether a coding agent comes included, if you can self-host it, or if a skills site checks skills for risks.",
+  },
+  {
+    date: "2026-09-16",
+    kind: "improved",
     title: "Key info on every tool page",
     body: "Models, chat apps, frameworks, templates, workflow tools, utilities and everyday tools now show Key info too: free plans, starting prices, what they work with and what each one is good for.",
   },

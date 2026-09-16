@@ -3411,3 +3411,48 @@ from (values
   ]')
 ) as v(slug, facts)
 where t.slug = v.slug;
+
+-- Card tags for the last seven categories (VIB-158). Existing tags where
+-- one fits; new facets for what these tools are for.
+insert into tags (name, slug, kind) values
+  ('Image generation',   'image-generation',   'facet'),
+  ('Video generation',   'video-generation',   'facet'),
+  ('Voice mode',         'voice-mode',         'facet'),
+  ('Self-hosted',        'self-hosted',        'facet'),
+  ('Project management', 'project-management', 'facet'),
+  ('Team chat',          'team-chat',          'facet'),
+  ('Model gateway',      'model-gateway',      'facet'),
+  ('Search',             'search',             'facet'),
+  ('Security checks',    'security-checks',    'facet')
+on conflict (slug) do update set name = excluded.name, kind = excluded.kind;
+
+insert into tool_tags (tool_id, tag_id)
+select t.id, g.id
+from (values
+  ('claude','coding-agent'),
+  ('gpt','coding-agent'), ('gpt','image-generation'),
+  ('gemini','coding-agent'), ('gemini','image-generation'), ('gemini','video-generation'),
+  ('claude-ai','coding-agent'), ('claude-ai','skills-ecosystem'), ('claude-ai','voice-mode'),
+  ('chatgpt','coding-agent'), ('chatgpt','skills-ecosystem'), ('chatgpt','voice-mode'),
+  ('chatgpt','image-generation'),
+  ('nextjs','react'), ('nextjs','typescript'),
+  ('langchain','agent-framework'), ('langchain','python'), ('langchain','typescript'),
+  ('create-t3-app','nextjs'), ('create-t3-app','react'), ('create-t3-app','typescript'),
+  ('create-t3-app','database'), ('create-t3-app','open-source'),
+  ('shadcn-ui','react'), ('shadcn-ui','nextjs'),
+  ('n8n','self-hosted'), ('n8n','no-code'), ('n8n','free-trial'),
+  ('zapier','no-code'), ('zapier','free-tier'),
+  ('supabase','postgres'), ('supabase','open-source'),
+  ('higgsfield','image-generation'), ('higgsfield','video-generation'),
+  ('clickup','project-management'), ('clickup','free-tier'),
+  ('slack','team-chat'), ('slack','free-tier'),
+  ('openrouter','model-gateway'), ('openrouter','byok'),
+  ('omniroute','model-gateway'), ('omniroute','self-hosted'),
+  ('resend','email'),
+  ('typesense','search'), ('typesense','self-hosted'),
+  ('skills-sh','security-checks'), ('skillsllm','security-checks'),
+  ('awesome-skills','security-checks')
+) as m(tool_slug, tag_slug)
+join tools t on t.slug = m.tool_slug
+join tags  g on g.slug = m.tag_slug
+on conflict do nothing;

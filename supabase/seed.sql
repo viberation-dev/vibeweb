@@ -3199,3 +3199,215 @@ from (values
   ]')
 ) as v(slug, facts)
 where t.slug = v.slug;
+
+-- Key info for the last seven categories (VIB-157): utilities, tools,
+-- models, frameworks, workflows, chats and templates. Checked against vendor
+-- pages on 2026-09-16. Model families skip cost, memory and context: the
+-- live OpenRouter specs on those pages already show them.
+update tools t set key_facts = v.facts::jsonb, updated_at = now()
+from (values
+  -- Models
+  ('claude', '[
+    {"label": "Made by", "value": "Anthropic"},
+    {"label": "Chat app", "value": "Claude.ai, free with usage limits; Pro is $20 a month"},
+    {"label": "Coding tool", "value": "Claude Code, in the terminal, desktop app and IDEs"},
+    {"label": "Also in", "value": "Cursor, GitHub Copilot, Amazon Bedrock and Google Vertex AI"},
+    {"label": "Good for", "value": "Long coding sessions and working across a large codebase"}
+  ]'),
+  ('gpt', '[
+    {"label": "Made by", "value": "OpenAI"},
+    {"label": "Chat app", "value": "ChatGPT, free with limits; Go is $8 and Plus $20 a month"},
+    {"label": "Coding tool", "value": "Codex, in the terminal, IDEs and the cloud"},
+    {"label": "Also in", "value": "Cursor, GitHub Copilot and Microsoft Azure"},
+    {"label": "Good for", "value": "General chat, images and coding in one subscription"}
+  ]'),
+  ('gemini', '[
+    {"label": "Made by", "value": "Google DeepMind"},
+    {"label": "Chat app", "value": "Gemini, free with a Flash model and limited Pro use"},
+    {"label": "Paid plans from", "value": "Google AI Pro, $19.99 a month, which also adds 5 TB of storage"},
+    {"label": "Coding tool", "value": "Gemini CLI and Google Antigravity"},
+    {"label": "Good for", "value": "Images, video and very long documents"}
+  ]'),
+  -- Chats
+  ('claude-ai', '[
+    {"label": "Free plan", "value": "Yes, with usage limits that reset every five hours"},
+    {"label": "Paid plans from", "value": "$20 a month (Pro), or $17 a month billed yearly"},
+    {"label": "Models", "value": "Claude"},
+    {"label": "Skills", "value": "Upload your own as a ZIP; see the skills hub"},
+    {"label": "Included on paid plans", "value": "Claude Code and Claude Design"},
+    {"label": "Good for", "value": "Writing, research and building small apps as artifacts"}
+  ]'),
+  ('chatgpt', '[
+    {"label": "Free plan", "value": "Yes, with limits on messages, uploads and images"},
+    {"label": "Paid plans from", "value": "$8 a month (Go); Plus is $20"},
+    {"label": "Models", "value": "GPT"},
+    {"label": "Skills", "value": "Upload your own as a ZIP; see the skills hub"},
+    {"label": "Included on paid plans", "value": "Deep research and agent mode, on Plus and above"},
+    {"label": "Good for", "value": "Everyday questions, images and voice chat"}
+  ]'),
+  -- Frameworks
+  ('nextjs', '[
+    {"label": "Cost", "value": "Free and open source (MIT)"},
+    {"label": "Language", "value": "TypeScript or JavaScript, with React"},
+    {"label": "Create a project", "value": "npx create-next-app@latest"},
+    {"label": "Needs", "value": "Node.js 20.9 or newer"},
+    {"label": "Default setup", "value": "TypeScript, Tailwind CSS, ESLint and the App Router"},
+    {"label": "For AI agents", "value": "New projects include an AGENTS.md so agents write current Next.js"},
+    {"label": "Good for", "value": "Web apps that deploy to Vercel or any Node host"}
+  ]'),
+  ('langchain', '[
+    {"label": "Cost", "value": "Free and open source (MIT)"},
+    {"label": "Language", "value": "Python and TypeScript"},
+    {"label": "Install", "value": "pip install langchain, or npm install langchain"},
+    {"label": "Related", "value": "LangGraph for agent workflows, LangSmith for testing and tracing"},
+    {"label": "Models", "value": "Swap between OpenAI, Anthropic, Google, local models and more"},
+    {"label": "Good for", "value": "Apps that connect a model to your own data and tools"}
+  ]'),
+  -- Templates
+  ('create-t3-app', '[
+    {"label": "Cost", "value": "Free and open source (MIT)"},
+    {"label": "Create a project", "value": "npm create t3-app@latest"},
+    {"label": "Built on", "value": "Next.js and TypeScript"},
+    {"label": "Pick what you need", "value": "tRPC, Prisma or Drizzle, NextAuth.js or Better Auth, Tailwind CSS"},
+    {"label": "Good for", "value": "A typesafe full-stack app without choosing every library yourself"}
+  ]'),
+  ('shadcn-ui', '[
+    {"label": "Cost", "value": "Free and open source (MIT)"},
+    {"label": "Set up", "value": "npx shadcn@latest init"},
+    {"label": "Works with", "value": "Next.js, Vite, TanStack Start, React Router, Astro and Laravel"},
+    {"label": "Needs", "value": "React and Tailwind CSS"},
+    {"label": "How it works", "value": "Components are copied into your project, so you own and edit the code"},
+    {"label": "Good for", "value": "Good-looking UI that AI tools already know how to write"}
+  ]'),
+  -- Workflows
+  ('n8n', '[
+    {"label": "Self-hosted", "value": "Free Community Edition"},
+    {"label": "Cloud plans from", "value": "€20 a month (Starter, 2,500 executions)"},
+    {"label": "Free trial", "value": "14 days of Pro on the cloud, no card needed"},
+    {"label": "AI", "value": "Nodes for agents, chat models and vector stores"},
+    {"label": "Good for", "value": "Automations you want to run on your own server"}
+  ]'),
+  ('zapier', '[
+    {"label": "Free plan", "value": "100 tasks a month, two-step Zaps only"},
+    {"label": "Paid plans from", "value": "$19.99 a month billed yearly (Professional, 750 tasks)"},
+    {"label": "Connects", "value": "Over 9,000 apps"},
+    {"label": "Needs code", "value": "No"},
+    {"label": "Good for", "value": "Linking the apps you already use without a server"}
+  ]'),
+  -- Tools
+  ('supabase', '[
+    {"label": "Free plan", "value": "2 projects, 500 MB database, 50,000 monthly users"},
+    {"label": "Paid plans from", "value": "$25 a month (Pro)"},
+    {"label": "Includes", "value": "Postgres, auth, file storage, realtime and edge functions"},
+    {"label": "Watch out", "value": "Free projects pause after a week without activity"},
+    {"label": "Good for", "value": "The database and login behind an AI-built app"}
+  ]'),
+  ('claude-design', '[
+    {"label": "Included with", "value": "Claude Pro, Max, Team and Enterprise"},
+    {"label": "Makes", "value": "Prototypes, slides, landing pages, dashboards and app flows"},
+    {"label": "Export", "value": "PDF, PPTX, HTML or ZIP, or send to Canva and others"},
+    {"label": "Hand off to", "value": "Claude Code, to build it for real"},
+    {"label": "Good for", "value": "Seeing an idea before anyone writes code"}
+  ]'),
+  ('higgsfield', '[
+    {"label": "Paid plans from", "value": "$9 a month (Basic, 120 credits); prices can vary by country"},
+    {"label": "Makes", "value": "Images and video"},
+    {"label": "Models", "value": "Over 30, including Nano Banana Pro and Seedance"},
+    {"label": "Good for", "value": "Ads, product shots and short clips from one account"}
+  ]'),
+  ('clickup', '[
+    {"label": "Free plan", "value": "Yes, with 60 MB of storage"},
+    {"label": "Paid plans from", "value": "$7 per user a month billed yearly (Unlimited)"},
+    {"label": "AI", "value": "ClickUp Brain, an add-on from $9 per user a month"},
+    {"label": "Good for", "value": "Planning a project and tracking tasks in one place"}
+  ]'),
+  ('slack', '[
+    {"label": "Free plan", "value": "90 days of message history and up to 10 apps"},
+    {"label": "Paid plans from", "value": "$7.25 per user a month billed yearly (Pro)"},
+    {"label": "AI", "value": "Built-in summaries and search, plus apps such as Claude"},
+    {"label": "Good for", "value": "Team chat, and working with AI where the team already talks"}
+  ]'),
+  -- Utilities
+  ('openrouter', '[
+    {"label": "Free plan", "value": "25+ free models, 50 requests a day"},
+    {"label": "Pay as you go", "value": "Buy credits; a 5.5% fee on top of model prices"},
+    {"label": "Models", "value": "500+ from 80+ providers through one API"},
+    {"label": "Works with", "value": "Any tool that accepts an OpenAI-compatible API"},
+    {"label": "Good for", "value": "Trying many models without a separate account for each"}
+  ]'),
+  ('omniroute', '[
+    {"label": "Cost", "value": "Free and open source (MIT); you run it yourself"},
+    {"label": "Install", "value": "npm install -g omniroute"},
+    {"label": "What it does", "value": "Routes requests across AI providers and falls back when one fails"},
+    {"label": "Works with", "value": "Claude Code, Cursor, Cline and other tools, through an OpenAI-compatible endpoint"},
+    {"label": "Good for", "value": "Stretching free model quotas across providers"}
+  ]'),
+  ('resend', '[
+    {"label": "Free plan", "value": "3,000 emails a month, 100 a day, one domain"},
+    {"label": "Paid plans from", "value": "$20 a month (Pro, 50,000 emails)"},
+    {"label": "Works with", "value": "Node.js, Python, Next.js and more, or plain SMTP"},
+    {"label": "Good for", "value": "Sign-up, password reset and receipt emails from your app"}
+  ]'),
+  ('typesense', '[
+    {"label": "Self-hosted", "value": "Free and open source (GPL-3.0)"},
+    {"label": "Cloud", "value": "Typesense Cloud, priced by the server size you pick"},
+    {"label": "Features", "value": "Typo tolerance, filters, geo search and vector search"},
+    {"label": "Good for", "value": "Fast site search once a database search is not enough"}
+  ]'),
+  ('agent-skills', '[
+    {"label": "Cost", "value": "Free; an open format"},
+    {"label": "What it is", "value": "A folder with a SKILL.md file, plus any scripts or reference files"},
+    {"label": "Works in", "value": "Claude.ai, Claude Code, the Claude API, Codex, Cursor and more"},
+    {"label": "Ready-made skills", "value": "Word, Excel, PowerPoint and PDF, from Anthropic"},
+    {"label": "Watch out", "value": "A skill can run code, so only install ones you trust or have read"}
+  ]'),
+  ('skills-sh', '[
+    {"label": "Cost", "value": "Free"},
+    {"label": "Run by", "value": "Vercel"},
+    {"label": "Ranks by", "value": "Installs through the skills CLI"},
+    {"label": "Install a skill", "value": "npx skills add owner/repo"},
+    {"label": "Safety", "value": "Security audits shown for each skill"},
+    {"label": "Good for", "value": "Finding the skills people actually install"}
+  ]'),
+  ('skillsmp', '[
+    {"label": "Cost", "value": "Free"},
+    {"label": "Where skills come from", "value": "Open-source GitHub repositories"},
+    {"label": "Search by", "value": "Category, occupation or keyword"},
+    {"label": "API", "value": "Free REST API and MCP server"},
+    {"label": "Good for", "value": "Searching the widest range of skills"}
+  ]'),
+  ('skillsllm', '[
+    {"label": "Cost", "value": "Free to browse"},
+    {"label": "For", "value": "Claude Code, Codex, ChatGPT, Cursor and OpenCode"},
+    {"label": "Safety", "value": "Listings are security-vetted, with a checker tool"},
+    {"label": "Also", "value": "A Chrome extension for finding skills"},
+    {"label": "Good for", "value": "Browsing skills by category"}
+  ]'),
+  ('awesome-skills', '[
+    {"label": "For", "value": "Claude, Codex, ChatGPT and other coding assistants"},
+    {"label": "Safety", "value": "Each skill shows a risk score out of 100, with the risks it found"},
+    {"label": "Also lists", "value": "MCP tools, prompt packs and agent workflows"},
+    {"label": "Good for", "value": "Checking how risky a skill looks before you install it"}
+  ]'),
+  ('awesome-claude-skills', '[
+    {"label": "Cost", "value": "Free (Apache 2.0); each skill has its own license"},
+    {"label": "Where", "value": "A GitHub list maintained by Composio"},
+    {"label": "Covers", "value": "Documents, coding, data, marketing, writing, security and more"},
+    {"label": "Works in", "value": "Claude.ai, Claude Code, the Claude API, Codex, Cursor and Gemini CLI"},
+    {"label": "Good for", "value": "Browsing skills by topic in one long page"}
+  ]'),
+  ('promptbase', '[
+    {"label": "Sell", "value": "Prompts and agent skills (SKILL.md files)"},
+    {"label": "Fees", "value": "0% on sales through your own link, 20% through the marketplace"},
+    {"label": "Payouts", "value": "Through Stripe or Zoneless"},
+    {"label": "Good for", "value": "Earning from a prompt or skill you have already written"}
+  ]'),
+  ('capafy', '[
+    {"label": "Sell", "value": "Skills, as a subscription, hourly rental or one-off download"},
+    {"label": "You keep", "value": "80% of each sale"},
+    {"label": "To publish", "value": "A one-time $0.99 certification fee"},
+    {"label": "Your code", "value": "Stays private on subscription and rental; a download shares it"},
+    {"label": "Good for", "value": "Recurring income from a skill without giving away the source"}
+  ]')
+) as v(slug, facts)
+where t.slug = v.slug;

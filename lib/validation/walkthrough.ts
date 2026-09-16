@@ -73,12 +73,60 @@ const checklistBlock = z.object({
   tasks: z.array(checklistTask).min(1),
 });
 
+/**
+ * An authored link. Site-relative paths or https only: the value becomes an
+ * href, and a `javascript:` or protocol-relative one would run or leave the
+ * site on a visitor's click.
+ */
+const linkHref = z
+  .string()
+  .refine(
+    (href) => (href.startsWith("/") && !href.startsWith("//")) || href.startsWith("https://"),
+    "Links are site paths starting with / or https:// URLs.",
+  );
+
+const linksBlock = z.object({
+  kind: z.literal("links"),
+  links: z.array(z.object({ label: z.string().min(1), href: linkHref })).min(1),
+});
+
+/** Blocks allowed inside a tab. No checklists or nested tabs: task ids stay top-level. */
+const nestedBlockSchema = z.discriminatedUnion("kind", [
+  textBlock,
+  calloutBlock,
+  promptBlock,
+  codeBlock,
+  linksBlock,
+]);
+
+/**
+ * Alternatives the reader picks one of, such as their operating system or a
+ * host (VIB-162). With `detect: "os"`, tab keys are `windows`, `macos` and
+ * `linux`, and the runner opens the visitor's own system first.
+ */
+const tabsBlock = z.object({
+  kind: z.literal("tabs"),
+  label: z.string().min(1),
+  detect: z.literal("os").optional(),
+  tabs: z
+    .array(
+      z.object({
+        key: z.string().min(1).regex(/^[a-z0-9-]+$/),
+        title: z.string().min(1),
+        blocks: z.array(nestedBlockSchema).min(1),
+      }),
+    )
+    .min(2),
+});
+
 export const walkthroughBlockSchema = z.discriminatedUnion("kind", [
   textBlock,
   calloutBlock,
   promptBlock,
   codeBlock,
   checklistBlock,
+  linksBlock,
+  tabsBlock,
 ]);
 
 export const walkthroughStepSchema = z.object({
@@ -123,6 +171,7 @@ export const walkthroughStepsSchema = z
   });
 
 export type WalkthroughBlock = z.infer<typeof walkthroughBlockSchema>;
+export type NestedWalkthroughBlock = z.infer<typeof nestedBlockSchema>;
 export type WalkthroughStep = z.infer<typeof walkthroughStepSchema>;
 export type WalkthroughSteps = z.infer<typeof walkthroughStepsSchema>;
 

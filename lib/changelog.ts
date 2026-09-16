@@ -41,6 +41,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-16",
+    kind: "improved",
+    title: "Ship your first web project, from a blank computer",
+    body: "The walkthrough now starts with setting up your computer: opening a terminal, installing Node.js and Git, and where to keep your projects, with steps for Windows, Mac or Linux. A new GitHub step walks through your first push, and Deploy lets you pick Vercel, Netlify or Cloudflare.",
+  },
+  {
+    date: "2026-09-16",
     kind: "added",
     title: "Terminals category",
     body: "A new directory category for the window you type commands in. It explains terminal and shell in plain words, shows how to open the one already on your computer, and lists Windows Terminal, PowerShell, Git Bash, WSL, the Mac Terminal, iTerm2, Ptyxis, Konsole, Warp, Wave, Ghostty, WezTerm, Kitty, Alacritty and Tabby.",

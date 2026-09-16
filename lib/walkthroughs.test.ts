@@ -3,6 +3,7 @@ import { test } from "node:test";
 
 import {
   allTaskIds,
+  osFromPlatform,
   resolveStepIndex,
   stepTaskIds,
   summariseProgress,
@@ -104,4 +105,13 @@ test("state left over from a deleted task cannot push progress past 100%", () =>
   assert.equal(summary.done, 3);
   assert.equal(summary.total, 3);
   assert.equal(summary.percent, 100);
+});
+
+test("osFromPlatform recognises the three desktop systems", () => {
+  assert.equal(osFromPlatform("Win32"), "windows");
+  assert.equal(osFromPlatform("Windows"), "windows");
+  assert.equal(osFromPlatform("MacIntel"), "macos");
+  assert.equal(osFromPlatform("macOS"), "macos");
+  assert.equal(osFromPlatform("Linux x86_64"), "linux");
+  assert.equal(osFromPlatform(""), null);
 });

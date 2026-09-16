@@ -1,15 +1,22 @@
+import { IconExternalLink } from "@tabler/icons-react";
 import Link from "next/link";
 
 import { toggleTaskAction } from "@/app/(site)/walkthroughs/[slug]/actions";
 import { CopyButton } from "@/components/features/walkthroughs/CopyButton";
 import { PromptBlock } from "@/components/features/walkthroughs/PromptBlock";
+import { TabsBlock } from "@/components/features/walkthroughs/TabsBlock";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { ChecklistState, WalkthroughBlock } from "@/lib/validation/walkthrough";
+import type {
+  ChecklistState,
+  NestedWalkthroughBlock,
+  WalkthroughBlock,
+} from "@/lib/validation/walkthrough";
 import { walkthroughHref } from "@/lib/walkthroughs";
 
 type Props = {
-  block: WalkthroughBlock;
+  /** Top-level, or a block inside a tab, which renders through here too. */
+  block: WalkthroughBlock | NestedWalkthroughBlock;
   walkthroughSlug: string;
   stepIndex: number;
   checklistState: ChecklistState;
@@ -32,7 +39,7 @@ const CALLOUT_LABELS = {
 /**
  * Renders one authored block (§26 §1 taxonomy, MVP subset).
  *
- * A switch on `kind` rather than a registry: there are five kinds and a
+ * A switch on `kind` rather than a registry: there are seven kinds and a
  * registry would be indirection for one consumer. The discriminated union
  * means adding a kind fails the typecheck here until it is handled.
  */
@@ -98,6 +105,54 @@ export function WalkthroughBlockView({
             </div>
           ) : null}
         </div>
+      );
+
+    case "links":
+      return (
+        <ul className="flex flex-wrap gap-2">
+          {block.links.map((link) => (
+            <li key={link.href}>
+              {link.href.startsWith("/") ? (
+                <Link href={link.href} className={buttonVariants({ variant: "outline", size: "sm" })}>
+                  {link.label}
+                </Link>
+              ) : (
+                <a
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={buttonVariants({ variant: "outline", size: "sm" })}
+                >
+                  {link.label}
+                  <IconExternalLink aria-hidden />
+                  <span className="sr-only">(opens in a new tab)</span>
+                </a>
+              )}
+            </li>
+          ))}
+        </ul>
+      );
+
+    case "tabs":
+      return (
+        <TabsBlock
+          label={block.label}
+          detect={block.detect}
+          tabs={block.tabs.map((tab) => ({
+            key: tab.key,
+            title: tab.title,
+            content: tab.blocks.map((inner, i) => (
+              <WalkthroughBlockView
+                key={i}
+                block={inner}
+                walkthroughSlug={walkthroughSlug}
+                stepIndex={stepIndex}
+                checklistState={checklistState}
+                canSave={canSave}
+              />
+            )),
+          }))}
+        />
       );
 
     case "checklist":

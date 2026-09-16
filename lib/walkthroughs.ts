@@ -105,3 +105,17 @@ export function stepTaskIds(steps: WalkthroughSteps, index: number): string[] {
     block.kind === "checklist" ? block.tasks.map((t) => t.id) : [],
   );
 }
+
+export type OperatingSystem = "windows" | "macos" | "linux";
+
+/**
+ * The visitor's operating system from `navigator.userAgentData.platform`,
+ * `navigator.platform` or the user agent, for opening the right tab first.
+ * Null when it cannot tell, and the first tab stays open.
+ */
+export function osFromPlatform(platform: string): OperatingSystem | null {
+  if (/win/i.test(platform)) return "windows";
+  if (/mac/i.test(platform)) return "macos";
+  if (/linux|x11|cros/i.test(platform)) return "linux";
+  return null;
+}

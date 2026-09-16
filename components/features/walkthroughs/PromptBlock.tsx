@@ -6,7 +6,13 @@ import { useState } from "react";
 
 import { CopyButton } from "@/components/features/walkthroughs/CopyButton";
 import { buttonVariants } from "@/components/ui/button";
-import { AI_BUILDERS, AI_CHATS, type AiLauncher } from "@/lib/ai-launchers";
+import {
+  AI_BUILDERS,
+  AI_CHATS,
+  DESKTOP_EDITORS,
+  launcherHref,
+  type AiLauncher,
+} from "@/lib/ai-launchers";
 import { toolsHref } from "@/lib/tools-url";
 import { cn } from "@/lib/utils";
 
@@ -18,7 +24,9 @@ type Props = {
 
 /**
  * A copyable prompt, optionally with a choice of versions, followed by
- * one-click links to open an AI tool (VIB-160).
+ * one-click links to open an AI tool (VIB-160). Every link copies the prompt;
+ * sites that support it also open with the prompt pre-filled, and desktop
+ * editors open through their own URL scheme.
  *
  * Client-side only for the picker: which version is selected is throwaway UI
  * state, not something worth a URL or a saved row.
@@ -27,6 +35,7 @@ export function PromptBlock({ label, prompt, prompts }: Props) {
   const options = prompts ?? [{ title: "", prompt }];
   const [selected, setSelected] = useState(0);
   const current = options[selected];
+  const [copiedTo, setCopiedTo] = useState<string | null>(null);
 
   return (
     <div className="rounded-lg border">
@@ -62,15 +71,56 @@ export function PromptBlock({ label, prompt, prompts }: Props) {
       <p className="px-4 py-3 font-mono text-sm whitespace-pre-wrap">{current.prompt}</p>
 
       <div className="flex flex-col gap-2 border-t px-4 py-3 text-sm">
-        <p className="text-muted-foreground">Then open your AI tool and paste it in:</p>
-        <LauncherList launchers={AI_CHATS} />
+        <p className="text-muted-foreground">
+          Open it in your AI tool. Clicking copies the prompt, and Claude, ChatGPT and Grok open with it
+          already filled in.
+        </p>
+        <LauncherList launchers={AI_CHATS} prompt={current.prompt} onCopy={setCopiedTo} />
+        {copiedTo ? (
+          <p aria-live="polite" className="text-muted-foreground">
+            Prompt copied. If {copiedTo} opens empty, paste it in with Ctrl+V (Cmd+V on a Mac).
+          </p>
+        ) : null}
         <details className="group">
           <summary className="flex w-fit cursor-pointer list-none items-center gap-1 text-sm font-medium [&::-webkit-details-marker]:hidden">
             More tools
             <IconChevronDown aria-hidden className="size-4 transition-transform group-open:rotate-180" />
           </summary>
-          <div className="mt-2 flex flex-col gap-2">
-            <LauncherList launchers={AI_BUILDERS} />
+          <div className="mt-2 flex flex-col gap-3">
+            <div className="flex flex-col gap-2">
+              <p className="text-muted-foreground">App builders, in your browser:</p>
+              <LauncherList launchers={AI_BUILDERS} prompt={current.prompt} onCopy={setCopiedTo} />
+            </div>
+            <div className="flex flex-col gap-2">
+              <p className="text-muted-foreground">
+                Code editors on your computer. Open app only works once it is installed, so use Get it
+                first if you do not have it.
+              </p>
+              <ul className="flex flex-col gap-2">
+                {DESKTOP_EDITORS.map((editor) => (
+                  <li key={editor.name} className="flex flex-wrap items-center gap-2">
+                    <span className="w-32 font-medium">{editor.name}</span>
+                    <a
+                      href={editor.appUrl}
+                      onClick={() => copyPrompt(current.prompt, editor.name, setCopiedTo)}
+                      className={buttonVariants({ variant: "outline", size: "sm" })}
+                    >
+                      Open app
+                    </a>
+                    <a
+                      href={editor.downloadUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={buttonVariants({ variant: "ghost", size: "sm" })}
+                    >
+                      Get it
+                      <IconExternalLink aria-hidden />
+                      <span className="sr-only">(opens in a new tab)</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
             <p className="text-muted-foreground">
               Want the full list? Browse all{" "}
               <Link href={toolsHref({ category: "app_builders" })} className="underline">
@@ -89,15 +139,36 @@ export function PromptBlock({ label, prompt, prompts }: Props) {
   );
 }
 
-function LauncherList({ launchers }: { launchers: readonly AiLauncher[] }) {
+/**
+ * Copies the prompt as the link opens. Fire-and-forget: the click must not
+ * wait on the clipboard, or the browser treats the new tab as a popup.
+ */
+function copyPrompt(prompt: string, toolName: string, onCopy: (name: string) => void) {
+  navigator.clipboard?.writeText(prompt).then(
+    () => onCopy(toolName),
+    // Denied clipboard: the prompt is still on screen to select by hand.
+    () => {},
+  );
+}
+
+function LauncherList({
+  launchers,
+  prompt,
+  onCopy,
+}: {
+  launchers: readonly AiLauncher[];
+  prompt: string;
+  onCopy: (name: string) => void;
+}) {
   return (
     <ul className="flex flex-wrap gap-2">
       {launchers.map((tool) => (
         <li key={tool.name}>
           <a
-            href={tool.url}
+            href={launcherHref(tool, prompt)}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => copyPrompt(prompt, tool.name, onCopy)}
             className={buttonVariants({ variant: "outline", size: "sm" })}
           >
             {tool.name}

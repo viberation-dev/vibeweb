@@ -512,6 +512,11 @@ insert into wizards (title, slug, kind, reusable, role_level, status, steps) val
         },
         {
           "kind": "callout",
+          "tone": "tip",
+          "body": "Stuck for an idea? Borrow one of these and make it yours:\n- A tip calculator that splits the bill between friends\n- A random dinner picker for when nobody can decide\n- A packing list for your next trip\n- A page with three things you have made or are proud of\n- A quiz about your favourite film, band or football team\n- A simple timer for workouts, studying or boiling eggs\n- A page that shows a new random compliment each time you open it\n\nStill nothing? Choose the \"I have no idea yet\" prompt below, and your AI tool will suggest ideas based on what you like."
+        },
+        {
+          "kind": "callout",
           "tone": "warning",
           "body": "Do not start with your dream app. Build the boring version first, put it online, then make it clever. Right now you are practising shipping, not design."
         },

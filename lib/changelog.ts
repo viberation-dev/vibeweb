@@ -43,7 +43,7 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
     date: "2026-09-16",
     kind: "improved",
     title: "Pick a prompt, then open your AI tool",
-    body: "Every step of Ship your first web project now has plainer wording, three prompts to choose from, and one-click links to open Claude, ChatGPT and other AI tools in a new tab.",
+    body: "Every step of Ship your first web project now has plainer wording, example ideas, and three prompts to choose from. One click opens Claude, ChatGPT or Grok with the prompt already filled in, or opens Cursor, VS Code or Antigravity if they are installed.",
   },
   {
     date: "2026-09-16",

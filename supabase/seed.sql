@@ -504,28 +504,51 @@ insert into wizards (title, slug, kind, reusable, role_level, status, steps) val
     {
       "key": "idea",
       "title": "Idea",
-      "intro": "The hardest part of a first project is choosing one small enough to finish.",
+      "intro": "Your first project should be small enough to finish. Then make it a bit smaller.",
       "blocks": [
         {
           "kind": "text",
-          "body": "Pick something with one screen and one job. A page that lists your favourite recipes. A countdown to a date that matters. A form that emails you.\n\nThe test is whether you can describe it in one sentence without the word and. If you need and, it is two projects, and you will finish neither."
+          "body": "Pick something with one screen and one job. A page of your favourite recipes. A countdown to a date that matters. A form that emails you.\n\nHere is the test: can you describe it in one sentence without the word \"and\"? If you need an \"and\", you have two projects. You will finish neither, and both will live forever in a folder called final-v2."
         },
         {
           "kind": "callout",
           "tone": "warning",
-          "body": "Do not start with the thing you actually want to build. Start with the boring version of it, ship that, then make it interesting. Shipping is the skill you are practising here, not design."
+          "body": "Do not start with your dream app. Build the boring version first, put it online, then make it clever. Right now you are practising shipping, not design."
         },
         {
           "kind": "prompt",
-          "label": "Paste this into your AI tool to pressure-test the idea",
-          "prompt": "I want to build this as my first web project: [describe it in one sentence].\n\nBefore any code, tell me:\n1. Is this one screen or several? If several, what is the smallest one-screen version?\n2. What data does it need to store, if any?\n3. What is the single thing that would make this take a week instead of an evening?\n\nBe blunt. I would rather cut scope now than abandon this on Thursday."
+          "label": "Pick a prompt, copy it, and paste it into your AI tool",
+          "prompt": "I want to build this as my first web project: [describe it in one sentence].\n\nBefore we write any code, answer three questions:\n1. Is this one screen or several? If several, what is the smallest one-screen version?\n2. Does it need to save any data? If so, what?\n3. What one thing would turn this from an evening job into a week-long job?\n\nBe honest. I would rather cut it down now than give up on Thursday.",
+          "prompts": [
+            {
+              "title": "Check my idea",
+              "prompt": "I want to build this as my first web project: [describe it in one sentence].\n\nBefore we write any code, answer three questions:\n1. Is this one screen or several? If several, what is the smallest one-screen version?\n2. Does it need to save any data? If so, what?\n3. What one thing would turn this from an evening job into a week-long job?\n\nBe honest. I would rather cut it down now than give up on Thursday."
+            },
+            {
+              "title": "Shrink my idea",
+              "prompt": "Here is my idea for a first web project: [describe it, as long or messy as you like].\n\nIt is probably too big. Help me shrink it:\n1. Rewrite it as one sentence with no \"and\" in it.\n2. List what I should leave out of the first version.\n3. Describe the finished single screen in plain words.\n\nKeep it simple. I am a beginner and I want to finish something this week."
+            },
+            {
+              "title": "I have no idea yet",
+              "prompt": "I want to build my first web project, but I do not have an idea yet.\n\nThings I care about: [a hobby, your job, something that annoys you].\n\nSuggest five tiny project ideas based on those. Each one must:\n- fit on one screen\n- be describable in one sentence without the word \"and\"\n- be buildable by a beginner with AI in one evening\n\nThen tell me which one you would pick, and why."
+            }
+          ]
         },
         {
           "kind": "checklist",
           "tasks": [
-            { "id": "idea-sentence", "label": "Written the idea as one sentence, with no and in it" },
-            { "id": "idea-scope", "label": "Cut it down to a single screen" },
-            { "id": "idea-done", "label": "Decided what done looks like, so I can tell when I am finished" }
+            {
+              "id": "idea-sentence",
+              "label": "Wrote my idea as one sentence, with no \"and\" in it"
+            },
+            {
+              "id": "idea-scope",
+              "label": "Cut it down to one screen"
+            },
+            {
+              "id": "idea-done",
+              "label": "Decided what done looks like, so I know when to stop"
+            }
           ]
         }
       ]

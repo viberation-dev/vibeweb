@@ -13,8 +13,8 @@ test("Home matches exactly — it is a prefix of every other path", () => {
 });
 
 test("category links are told apart by their query, not their path", () => {
-  // All thirteen share the /tools pathname. A pathname-only check lights
-  // every one of them at once, which is the bug this rule exists for.
+  // Every category link shares the /tools pathname. A pathname-only check
+  // lights all of them at once, which is the bug this rule exists for.
   assert.ok(active("/tools", "category=models", "/tools?category=models"));
   assert.equal(active("/tools", "category=agents", "/tools?category=models"), false);
   assert.equal(active("/tools", "", "/tools?category=models"), false);

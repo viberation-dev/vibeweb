@@ -3582,3 +3582,231 @@ from (values
   ('awesome-skills', 'Free')
 ) as v(slug, tier)
 where t.slug = v.slug;
+
+-- Terminals (VIB-161). Built-in terminals and shells for each operating
+-- system first, then the popular cross-platform apps. Checked against vendor
+-- sites and docs on 2026-09-16. Hyper is left out: its own repository no
+-- longer counts as actively maintained, which is the wrong first pick.
+insert into tools (name, slug, category, tagline, description, pricing_tier, outbound_url) values
+  ('Windows Terminal', 'windows-terminal', 'terminals',
+   'The modern terminal that comes with Windows 11.',
+   'Microsoft''s tabbed terminal. It opens PowerShell by default and keeps Command Prompt and WSL a click away in other tabs. Already installed on Windows 11, and a free download from the Microsoft Store on Windows 10.',
+   'Open source', 'https://learn.microsoft.com/windows/terminal/'),
+  ('PowerShell', 'powershell', 'terminals',
+   'The shell Windows runs your commands in.',
+   'Type npm, npx and git commands here on Windows. Windows PowerShell 5.1 comes with Windows; the newer PowerShell 7 is a free install that also runs on macOS and Linux, and sits alongside the old one.',
+   'Open source', 'https://learn.microsoft.com/powershell/scripting/install/installing-powershell-on-windows'),
+  ('Git Bash', 'git-bash', 'terminals',
+   'Mac and Linux style commands on Windows.',
+   'Comes with Git for Windows. It gives you the bash shell and familiar commands such as ls and rm, so guides written for Mac or Linux work on Windows without rewriting each command.',
+   'Open source', 'https://gitforwindows.org'),
+  ('WSL', 'wsl', 'terminals',
+   'A real Linux system inside Windows.',
+   'Windows Subsystem for Linux runs Ubuntu, or another Linux, alongside Windows. One command installs it. Worth it when a tool only supports Mac and Linux, or you want your setup to match the servers you deploy to.',
+   'Open source', 'https://learn.microsoft.com/windows/wsl/install'),
+  ('Terminal (macOS)', 'macos-terminal', 'terminals',
+   'The terminal that comes with every Mac.',
+   'Already on your Mac, in Applications, then Utilities. It runs zsh, the shell nearly every Mac guide assumes, so there is nothing to install before your first command.',
+   'Free', 'https://support.apple.com/guide/terminal/welcome/mac'),
+  ('iTerm2', 'iterm2', 'terminals',
+   'The favourite upgrade from the Mac''s built-in Terminal.',
+   'A free Mac terminal with split panes, better search, a drop-down hotkey window and deep customisation. Most people switch to it once they spend real time on the command line.',
+   'Open source', 'https://iterm2.com'),
+  ('Ptyxis', 'ptyxis', 'terminals',
+   'The default terminal on recent Ubuntu and Fedora.',
+   'A GNOME terminal that replaced GNOME Terminal as the default on Ubuntu 25.10 and later and on Fedora Workstation. It has tabs, profiles and built-in support for containers.',
+   'Open source', 'https://gitlab.gnome.org/chergert/ptyxis'),
+  ('Konsole', 'konsole', 'terminals',
+   'The terminal that comes with KDE Plasma.',
+   'KDE''s terminal, already installed on Plasma desktops such as Kubuntu and KDE neon. Tabs, split views and profiles come built in.',
+   'Open source', 'https://konsole.kde.org'),
+  ('Warp', 'warp', 'terminals',
+   'A terminal with AI agents that write and run commands.',
+   'Describe what you want in plain English and Warp suggests the command, explains errors, or hands the task to an agent. Runs on Mac, Windows and Linux. The free plan includes a small monthly allowance of AI credits.',
+   'Freemium', 'https://www.warp.dev'),
+  ('Wave Terminal', 'wave-terminal', 'terminals',
+   'An open-source terminal with AI and file previews built in.',
+   'Wave puts your terminal next to file previews, web pages, an editor and AI chat in one window. Free and open source, with no account needed, on Mac, Windows and Linux.',
+   'Open source', 'https://www.waveterm.dev'),
+  ('Ghostty', 'ghostty', 'terminals',
+   'A fast terminal that works well with no setup.',
+   'Created by Mitchell Hashimoto, co-founder of HashiCorp. Ghostty feels native on each system, is quick, and has sensible defaults, so you rarely need to touch its config. macOS and Linux only; there is no official Windows version.',
+   'Open source', 'https://ghostty.org'),
+  ('WezTerm', 'wezterm', 'terminals',
+   'One terminal set up the same way on every computer.',
+   'Runs on Mac, Windows and Linux with one config file, written in Lua. Tabs, split panes and sessions that keep running in the background are built in, so you may not need tmux.',
+   'Open source', 'https://wezterm.org'),
+  ('Kitty', 'kitty', 'terminals',
+   'A speedy, keyboard-driven terminal for Mac and Linux.',
+   'Uses your graphics card to draw text, and can show images right in the terminal. Tabs, splits and layouts are controlled from the keyboard and a config file. No Windows version.',
+   'Open source', 'https://sw.kovidgoyal.net/kitty/'),
+  ('Alacritty', 'alacritty', 'terminals',
+   'A minimal terminal built purely for speed.',
+   'Uses your graphics card and does very little else: no tabs or split panes, by design. Popular with people who pair it with tmux. Runs on Mac, Windows and Linux.',
+   'Open source', 'https://alacritty.org'),
+  ('Tabby', 'tabby', 'terminals',
+   'A terminal with saved SSH connections built in.',
+   'A customisable terminal for Mac, Windows and Linux that doubles as an SSH and serial client, so you can keep a list of servers and connect in one click. Handy once you manage your own server.',
+   'Open source', 'https://tabby.sh')
+on conflict (slug) do update set
+  name         = excluded.name,
+  category     = excluded.category,
+  tagline      = excluded.tagline,
+  description  = excluded.description,
+  pricing_tier = excluded.pricing_tier,
+  outbound_url = excluded.outbound_url,
+  updated_at   = now();
+
+update tools t set platform = v.platform::text[], best_for = v.best_for::role_level
+from (values
+  ('windows-terminal', '{windows}',             'beginner'),
+  ('powershell',       '{windows,macos,linux}', 'beginner'),
+  ('git-bash',         '{windows}',             'beginner'),
+  ('wsl',              '{windows}',             'intermediate'),
+  ('macos-terminal',   '{macos}',               'beginner'),
+  ('iterm2',           '{macos}',               'intermediate'),
+  ('ptyxis',           '{linux}',               'beginner'),
+  ('konsole',          '{linux}',               'beginner'),
+  ('warp',             '{macos,windows,linux}', 'beginner'),
+  ('wave-terminal',    '{macos,windows,linux}', 'beginner'),
+  ('ghostty',          '{macos,linux}',         'intermediate'),
+  ('wezterm',          '{macos,windows,linux}', 'intermediate'),
+  ('kitty',            '{macos,linux}',         'intermediate'),
+  ('alacritty',        '{macos,windows,linux}', 'expert'),
+  ('tabby',            '{macos,windows,linux}', 'intermediate')
+) as v(slug, platform, best_for)
+where t.slug = v.slug;
+
+insert into tags (name, slug, kind) values
+  ('Built in', 'built-in', 'facet'),
+  ('Windows',  'windows',  'facet'),
+  ('macOS',    'macos',    'facet')
+on conflict (slug) do update set name = excluded.name, kind = excluded.kind;
+
+insert into tool_tags (tool_id, tag_id)
+select t.id, g.id
+from (values
+  ('windows-terminal','built-in'), ('windows-terminal','windows'), ('windows-terminal','open-source'),
+  ('powershell','built-in'), ('powershell','windows'), ('powershell','macos'), ('powershell','linux'), ('powershell','open-source'),
+  ('git-bash','windows'), ('git-bash','open-source'),
+  ('wsl','windows'), ('wsl','linux'), ('wsl','open-source'),
+  ('macos-terminal','built-in'), ('macos-terminal','macos'),
+  ('iterm2','macos'), ('iterm2','open-source'),
+  ('ptyxis','built-in'), ('ptyxis','linux'), ('ptyxis','open-source'),
+  ('konsole','built-in'), ('konsole','linux'), ('konsole','open-source'),
+  ('warp','coding-agent'), ('warp','byok'), ('warp','windows'), ('warp','macos'), ('warp','linux'), ('warp','free-tier'),
+  ('wave-terminal','windows'), ('wave-terminal','macos'), ('wave-terminal','linux'), ('wave-terminal','open-source'),
+  ('ghostty','macos'), ('ghostty','linux'), ('ghostty','open-source'),
+  ('wezterm','windows'), ('wezterm','macos'), ('wezterm','linux'), ('wezterm','open-source'),
+  ('kitty','macos'), ('kitty','linux'), ('kitty','open-source'),
+  ('alacritty','windows'), ('alacritty','macos'), ('alacritty','linux'), ('alacritty','open-source'),
+  ('tabby','windows'), ('tabby','macos'), ('tabby','linux'), ('tabby','open-source')
+) as m(tool_slug, tag_slug)
+join tools t on t.slug = m.tool_slug
+join tags  g on g.slug = m.tag_slug
+on conflict do nothing;
+
+update tools t set key_facts = v.facts::jsonb, updated_at = now()
+from (values
+  ('windows-terminal', '[
+    {"label": "Runs on", "value": "Windows 10 and 11"},
+    {"label": "Already installed", "value": "Yes on Windows 11; free from the Microsoft Store on Windows 10"},
+    {"label": "How to open", "value": "Start menu, type Terminal, press Enter"},
+    {"label": "Shells inside", "value": "PowerShell by default, plus Command Prompt and WSL"},
+    {"label": "Good for", "value": "Your everyday terminal on Windows"}
+  ]'),
+  ('powershell', '[
+    {"label": "Runs on", "value": "Windows, macOS and Linux"},
+    {"label": "Already installed", "value": "Windows PowerShell 5.1 comes with Windows"},
+    {"label": "Newer version", "value": "PowerShell 7: winget install --id Microsoft.PowerShell"},
+    {"label": "Price", "value": "Free"},
+    {"label": "Good for", "value": "Running npm, npx and git commands on Windows"}
+  ]'),
+  ('git-bash', '[
+    {"label": "Runs on", "value": "Windows"},
+    {"label": "How to get it", "value": "Install Git for Windows; Git Bash comes with it"},
+    {"label": "Shell", "value": "bash, with Linux-style commands such as ls, cp and rm"},
+    {"label": "Price", "value": "Free"},
+    {"label": "Good for", "value": "Following guides written for Mac or Linux"}
+  ]'),
+  ('wsl', '[
+    {"label": "Runs on", "value": "Windows 10 and 11"},
+    {"label": "How to get it", "value": "Run wsl --install in PowerShell as administrator, then restart"},
+    {"label": "Gives you", "value": "A full Linux system, Ubuntu unless you choose another"},
+    {"label": "Price", "value": "Free"},
+    {"label": "Good for", "value": "Tools that only support Mac and Linux"}
+  ]'),
+  ('macos-terminal', '[
+    {"label": "Runs on", "value": "macOS"},
+    {"label": "Already installed", "value": "Yes, in Applications, then Utilities"},
+    {"label": "How to open", "value": "Press Cmd+Space, type Terminal, press Enter"},
+    {"label": "Shell", "value": "zsh"},
+    {"label": "Good for", "value": "Your first commands on a Mac, with nothing to install"}
+  ]'),
+  ('iterm2', '[
+    {"label": "Runs on", "value": "macOS"},
+    {"label": "Price", "value": "Free"},
+    {"label": "Adds", "value": "Split panes, better search and a drop-down hotkey window"},
+    {"label": "Good for", "value": "Mac users who spend hours on the command line"}
+  ]'),
+  ('ptyxis', '[
+    {"label": "Runs on", "value": "Linux"},
+    {"label": "Already installed", "value": "Yes on Ubuntu 25.10 and later, and Fedora Workstation"},
+    {"label": "How to open", "value": "Ctrl+Alt+T on Ubuntu"},
+    {"label": "Price", "value": "Free"},
+    {"label": "Good for", "value": "GNOME desktops"}
+  ]'),
+  ('konsole', '[
+    {"label": "Runs on", "value": "Linux"},
+    {"label": "Already installed", "value": "Yes on KDE Plasma desktops, such as Kubuntu and KDE neon"},
+    {"label": "Price", "value": "Free"},
+    {"label": "Good for", "value": "KDE desktops"}
+  ]'),
+  ('warp', '[
+    {"label": "Runs on", "value": "macOS, Windows and Linux"},
+    {"label": "Free plan", "value": "150 AI credits a month for two months, then 75"},
+    {"label": "Paid plans from", "value": "$20 a month (Build)"},
+    {"label": "AI", "value": "Agents and command suggestions using OpenAI, Anthropic and Google models"},
+    {"label": "Your own API key", "value": "Yes, on every plan"},
+    {"label": "Good for", "value": "Asking for a command in plain English"}
+  ]'),
+  ('wave-terminal', '[
+    {"label": "Runs on", "value": "macOS, Windows and Linux"},
+    {"label": "Price", "value": "Free, with no account needed"},
+    {"label": "AI", "value": "Built-in AI chat beside your terminal"},
+    {"label": "Adds", "value": "File previews, web pages and an editor in the same window"},
+    {"label": "Good for", "value": "Keeping commands, files and docs side by side"}
+  ]'),
+  ('ghostty', '[
+    {"label": "Runs on", "value": "macOS and Linux; no official Windows version"},
+    {"label": "Price", "value": "Free"},
+    {"label": "Setup", "value": "Works well out of the box; optional config file"},
+    {"label": "Good for", "value": "A fast terminal that feels at home on your system"}
+  ]'),
+  ('wezterm', '[
+    {"label": "Runs on", "value": "macOS, Windows and Linux"},
+    {"label": "Price", "value": "Free"},
+    {"label": "Setup", "value": "One config file, written in Lua"},
+    {"label": "Adds", "value": "Tabs, split panes and sessions that keep running"},
+    {"label": "Good for", "value": "The same setup on every computer you use"}
+  ]'),
+  ('kitty', '[
+    {"label": "Runs on", "value": "macOS and Linux"},
+    {"label": "Price", "value": "Free"},
+    {"label": "Adds", "value": "Tabs, splits, layouts and images shown in the terminal"},
+    {"label": "Good for", "value": "Speed and working mostly from the keyboard"}
+  ]'),
+  ('alacritty', '[
+    {"label": "Runs on", "value": "macOS, Windows and Linux"},
+    {"label": "Price", "value": "Free"},
+    {"label": "Tabs and splits", "value": "No, by design; pair it with tmux"},
+    {"label": "Good for", "value": "People who want the fastest, simplest terminal"}
+  ]'),
+  ('tabby', '[
+    {"label": "Runs on", "value": "macOS, Windows and Linux"},
+    {"label": "Price", "value": "Free"},
+    {"label": "Adds", "value": "Saved SSH and serial connections, with file transfer"},
+    {"label": "Good for", "value": "Connecting to your own servers"}
+  ]')
+) as v(slug, facts)
+where t.slug = v.slug;

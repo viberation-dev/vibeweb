@@ -50,6 +50,32 @@ export const CATEGORY_GUIDES: Readonly<Record<string, CategoryGuide>> = {
     choose:
       "Building an app with AI? Start with an agent in your editor or terminal. Want tasks done while you are away? Try a cloud agent. Adding an AI feature for your own users? That is when you need a framework.",
   },
+  // VIB-161. Every walkthrough says "run this in your terminal", and
+  // beginners do not know which one, or what the difference from a shell is.
+  terminals: {
+    title: "Terminal, shell or command line?",
+    intro:
+      "When you are starting out, they all mean the same thing: a window where you type a command and press Enter. Strictly, the terminal is the window and the shell is the program inside it that runs what you type, such as PowerShell, bash or zsh. Your computer already has one, so you do not need to install anything to begin.",
+    kinds: [
+      {
+        name: "On Windows",
+        body: "Open Windows Terminal from the Start menu. It runs PowerShell, which handles npm, npx and git commands. Install Git for Windows as well and you also get Git Bash, handy for guides written for Mac or Linux.",
+        links: [{ label: "Show Windows terminals", category: "terminals", tag: "windows" }],
+      },
+      {
+        name: "On a Mac",
+        body: "Terminal comes with every Mac. Press Cmd+Space, type Terminal and press Enter. It runs zsh, which works with almost every guide you will find.",
+        links: [{ label: "Show Mac terminals", category: "terminals", tag: "macos" }],
+      },
+      {
+        name: "On Linux",
+        body: "Your desktop comes with one: Ptyxis on recent Ubuntu, Konsole on KDE. On Ubuntu, press Ctrl+Alt+T to open it.",
+        links: [{ label: "Show Linux terminals", category: "terminals", tag: "linux" }],
+      },
+    ],
+    choose:
+      "Start with the terminal already on your computer. Once commands feel normal, try Warp or Wave if you want AI to explain errors or suggest the next command.",
+  },
   // VIB-147. "MCP" is jargon most vibe coders meet in a setup guide first.
   mcp_servers: {
     title: "What is an MCP server?",

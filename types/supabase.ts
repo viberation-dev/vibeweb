@@ -829,6 +829,7 @@ export type Database = {
         | "frameworks"
         | "clis"
         | "ides"
+        | "terminals"
         | "tools"
         | "utilities"
         | "templates"
@@ -1015,6 +1016,7 @@ export const Constants = {
         "frameworks",
         "clis",
         "ides",
+        "terminals",
         "tools",
         "utilities",
         "templates",

@@ -290,12 +290,6 @@ export function MarketingHome({
               </Link>
             </li>
           ))}
-          {/*
-            Empty cell closing the last row, so the cells above and beside it
-            keep their dividers. ponytail: assumes 15 categories (odd, so one
-            filler fits both 2 and 4 columns); revisit if the count changes.
-          */}
-          <li aria-hidden className="-mt-px -ml-px hidden border-t border-l sm:block" />
         </ul>
       </Section>
 

@@ -13,6 +13,7 @@ import {
   IconStack2,
   IconTemplate,
   IconTerminal,
+  IconTerminal2,
   IconTool,
   type Icon,
 } from "@tabler/icons-react";
@@ -40,6 +41,7 @@ const ICONS: Record<ToolCategory, Icon> = {
   agents: IconRobot,
   ides: IconCode,
   clis: IconTerminal,
+  terminals: IconTerminal2,
   skills: IconAward,
   mcp_servers: IconPlug,
   plugins: IconPuzzle,

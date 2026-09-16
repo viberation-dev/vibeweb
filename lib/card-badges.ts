@@ -101,6 +101,9 @@ export const CARD_TAGS: Readonly<Record<string, readonly string[]>> = {
     "local-models",
     "open-source",
   ],
+  // Terminals (VIB-161): whether it is already on your computer, whether it
+  // helps with AI, then which operating systems it runs on.
+  terminals: ["built-in", "coding-agent", "windows", "macos", "linux", "open-source"],
   // The last seven (VIB-158). Models and chat apps: what they can make
   // beyond text, and whether a coding agent comes with them.
   models: ["coding-agent", "image-generation", "video-generation"],

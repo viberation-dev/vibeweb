@@ -41,6 +41,7 @@ export const toolEditorSchema = z.object({
     "frameworks",
     "clis",
     "ides",
+    "terminals",
     "tools",
     "utilities",
     "templates",

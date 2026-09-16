@@ -44,7 +44,7 @@ export const TOP_NAV: readonly NavItem[] = [
  * Logged-in sidebar.
  *
  * The Directory group is derived from TOOL_CATEGORIES rather than restated,
- * so the 15 categories have exactly one definition and the database enum
+ * so the 16 categories have exactly one definition and the database enum
  * stays the only source of truth for what exists.
  */
 export const SIDEBAR_GROUPS: ReadonlyArray<{ label?: string; items: readonly NavItem[] }> = [
@@ -56,7 +56,7 @@ export const SIDEBAR_GROUPS: ReadonlyArray<{ label?: string; items: readonly Nav
     ],
   },
   {
-    label: "Directory · 15",
+    label: "Directory · 16",
     items: [
       { href: "/tools", label: "All tools", exclusive: ["category"] },
       ...TOOL_CATEGORIES.map((category) => ({
@@ -125,7 +125,7 @@ export function sidebarGroupsFor(showRoadmap: boolean): typeof SIDEBAR_GROUPS {
  * Two traps this exists to avoid. Home is a prefix of every path, so it
  * matches exactly and never by prefix. And the category links differ only
  * by query string — `/tools?category=models` and `/tools?category=agents`
- * share a pathname, so a pathname-only check lights all fifteen at once.
+ * share a pathname, so a pathname-only check lights all sixteen at once.
  *
  * An item with no query matches its whole subtree; an item with one also
  * requires each of its params to match.

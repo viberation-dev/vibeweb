@@ -41,6 +41,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-16",
+    kind: "improved",
+    title: "Key info on every tool page",
+    body: "Models, chat apps, frameworks, templates, workflow tools, utilities and everyday tools now show Key info too: free plans, starting prices, what they work with and what each one is good for.",
+  },
+  {
+    date: "2026-09-16",
     kind: "added",
     title: "Welcome emails",
     body: "New members get a short series of emails after joining: where to start, tools picked for what they want to build, how to save tools, and a check-in they can reply to. Each one has an unsubscribe link.",

@@ -72,7 +72,7 @@ export function PromptBlock({ label, prompt, prompts }: Props) {
 
       <div className="flex flex-col gap-2 border-t px-4 py-3 text-sm">
         <p className="text-muted-foreground">
-          Open it in your AI tool. Clicking copies the prompt, and Claude, ChatGPT and Grok open with it
+          Open it in your AI tool. Clicking copies the prompt, and ChatGPT and Grok open with it
           already filled in.
         </p>
         <LauncherList launchers={AI_CHATS} prompt={current.prompt} onCopy={setCopiedTo} />

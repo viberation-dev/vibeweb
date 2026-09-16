@@ -14,7 +14,7 @@ export type AiLauncher = {
   url: string;
   /**
    * Query parameter the site reads to pre-fill a new chat. Only set where
-   * the site actually honours it; the rest get the prompt on the clipboard.
+   * the site honours it without a warning; the rest get the prompt on the clipboard.
    */
   prefillParam?: string;
 };
@@ -28,7 +28,10 @@ export type DesktopLauncher = {
 };
 
 export const AI_CHATS: readonly AiLauncher[] = [
-  { name: "Claude", url: "https://claude.ai/new", prefillParam: "q" },
+  // Claude reads ?q= too, but shows a prompt-injection warning on every
+  // link-filled chat. Beginners should not learn to click past warnings, so
+  // Claude gets copy-then-paste instead (VIB-160).
+  { name: "Claude", url: "https://claude.ai/new" },
   { name: "ChatGPT", url: "https://chatgpt.com/", prefillParam: "q" },
   { name: "Qwen", url: "https://chat.qwen.ai" },
   { name: "DeepSeek", url: "https://chat.deepseek.com" },

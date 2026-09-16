@@ -566,13 +566,13 @@ insert into wizards (title, slug, kind, reusable, role_level, status, steps) val
           "kind": "code",
           "language": "bash",
           "code": "npx create-next-app@latest my-project",
-          "expected": "A few questions, then a new my-project folder. Say yes to TypeScript, yes to Tailwind and yes to App Router. For everything else, the default is fine."
+          "expected": "npm asks Ok to proceed? Press y. Then one question: Would you like to use the recommended Next.js defaults? Pick Yes, use recommended defaults. That gives you TypeScript, Tailwind and the App Router in one go. Installing takes a minute or two and ends with Success! Created my-project."
         },
         {
           "kind": "code",
           "language": "bash",
           "code": "cd my-project\nnpm run dev",
-          "expected": "A line saying Local: http://localhost:3000. Open that address in your browser and you should see the Next.js starter page."
+          "expected": "A few lines, including Local: http://localhost:3000. Open that address in your browser. The first load takes a few seconds while it builds, then you see the Next.js starter page. To stop the server later, press Ctrl+C."
         },
         {
           "kind": "callout",
@@ -624,13 +624,13 @@ insert into wizards (title, slug, kind, reusable, role_level, status, steps) val
       "blocks": [
         {
           "kind": "text",
-          "body": "Going live early turns every change after this into a small, safe step, instead of one big scary leap at the finish. You also get a real link to send people the moment it is worth showing off."
+          "body": "Going live early turns every change after this into a small, safe step, instead of one big scary leap at the finish. You also get a real link to send people the moment it is worth showing off.\n\nGood news: create-next-app already set up git and saved a first commit for you. You only need to save the changes you have made since."
         },
         {
           "kind": "code",
           "language": "bash",
-          "code": "git init\ngit add -A\ngit commit -m \"first commit\"",
-          "expected": "A list of create mode lines, one per file, then a commit ID. If git asks who you are, set your name and email with git config, then run the commit again."
+          "code": "git add -A\ngit commit -m \"my first changes\"",
+          "expected": "A short summary of the files you changed, and a commit ID. If git says nothing to commit, you have not changed anything yet, which is fine. If git asks who you are, set your name and email with git config, then run the commit again."
         },
         {
           "kind": "text",
@@ -669,7 +669,7 @@ insert into wizards (title, slug, kind, reusable, role_level, status, steps) val
           "tasks": [
             {
               "id": "deploy-git",
-              "label": "Made my first commit"
+              "label": "Saved my changes with a commit"
             },
             {
               "id": "deploy-github",

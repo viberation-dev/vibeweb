@@ -41,6 +41,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-16",
+    kind: "added",
+    title: "Add a database with Supabase",
+    body: "A new beginner walkthrough for projects that need to save things. You build a guestbook: create a free Supabase project, make a table with the security rules switched on, show and add notes from a Next.js page, then put it live on Vercel, Netlify or Cloudflare.",
+  },
+  {
+    date: "2026-09-16",
     kind: "improved",
     title: "Ship your first web project, from a blank computer",
     body: "The walkthrough now starts with setting up your computer: opening a terminal, installing Node.js and Git, and where to keep your projects, with steps for Windows, Mac or Linux. A new GitHub step walks through your first push, and Deploy lets you pick Vercel, Netlify or Cloudflare.",

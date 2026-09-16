@@ -1,6 +1,6 @@
 import { IconArrowRight, IconSearch } from "@tabler/icons-react";
 
-import { CategoryIcon } from "@/components/features/tools/CategoryIcon";
+import { ToolIcon } from "@/components/features/tools/ToolIcon";
 import type { Tool } from "@/lib/queries/tools";
 import { TOOL_CATEGORIES } from "@/lib/tool-categories";
 
@@ -74,8 +74,8 @@ export function ProductPanel({ tools }: { tools: Tool[] }) {
             <div className="divide-y">
               {tools.map((tool) => (
                 <div key={tool.id} className="flex items-center gap-3 py-2.5">
-                  <span className="bg-accent text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
-                    <CategoryIcon category={tool.category} className="size-4" />
+                  <span className="bg-accent text-primary flex size-9 shrink-0 items-center justify-center rounded-lg has-[img]:bg-white">
+                    <ToolIcon tool={tool} className="size-4" />
                   </span>
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-semibold">

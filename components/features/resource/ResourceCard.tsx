@@ -81,7 +81,7 @@ export function ResourceCard({
         )}
       >
         {icon ? (
-          <span className="bg-primary text-primary-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
+          <span className="bg-primary text-primary-foreground flex size-8 shrink-0 items-center justify-center rounded-lg has-[img]:bg-white">
             {icon}
           </span>
         ) : null}

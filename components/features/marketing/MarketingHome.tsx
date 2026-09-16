@@ -18,6 +18,7 @@ import { FeatureCard } from "@/components/features/marketing/FeatureCard";
 import { NewsletterForm } from "@/components/features/marketing/NewsletterForm";
 import { ProductPanel } from "@/components/features/marketing/ProductPanel";
 import { CategoryIcon } from "@/components/features/tools/CategoryIcon";
+import { ToolIcon } from "@/components/features/tools/ToolIcon";
 import { ButtonIcon, buttonVariants } from "@/components/ui/button";
 import { IconTile } from "@/components/ui/icon-tile";
 import { SectionHead } from "@/components/ui/section-head";
@@ -729,8 +730,8 @@ function ToolTiles({ tools, cta }: { tools: Tool[]; cta: string }) {
             href={`/tools/${tool.slug}`}
             className="motion-lift bg-secondary flex h-full flex-col rounded-[1.125rem] p-6"
           >
-            <IconTile>
-              <CategoryIcon category={tool.category} className="size-5" />
+            <IconTile className="has-[img]:bg-white">
+              <ToolIcon tool={tool} className="size-5" />
             </IconTile>
             <span className="font-heading mt-4 text-lg font-bold tracking-tight">
               {tool.name}

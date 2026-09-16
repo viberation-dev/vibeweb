@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
-import { CategoryIcon } from "@/components/features/tools/CategoryIcon";
+import { ToolIcon } from "@/components/features/tools/ToolIcon";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/integrations/supabase/server";
@@ -12,7 +12,6 @@ import { listContent } from "@/lib/queries/content";
 import { getToolTagsByIds, listTools } from "@/lib/queries/tools";
 import { cardBadges } from "@/lib/card-badges";
 import { contentView, toolView } from "@/lib/resource-view";
-import { SkillCategoryIcon } from "@/components/features/skills/SkillCategoryIcon";
 import { SkillFilters } from "@/components/features/skills/SkillFilters";
 import {
   HUB_GROUPS,
@@ -153,13 +152,7 @@ export default async function SkillsPage({ searchParams }: Props) {
                 <ResourceCard
                   href={`/tools/${tool.slug}`}
                   title={tool.name}
-                  icon={
-                    tool.skill_category ? (
-                      <SkillCategoryIcon category={tool.skill_category} className="size-4" />
-                    ) : (
-                      <CategoryIcon category={tool.category} className="size-4" />
-                    )
-                  }
+                  icon={<ToolIcon tool={tool} className="size-4" />}
                   eyebrow={tool.skill_category ? skillCategoryLabel(tool.skill_category) : undefined}
                   description={tool.tagline}
                   meta={line || undefined}
@@ -214,7 +207,7 @@ export default async function SkillsPage({ searchParams }: Props) {
                 <li key={tool.id}>
                   <ResourceCard
                     {...toolView(tool)}
-                    icon={<CategoryIcon category={tool.category} className="text-primary size-4" />}
+                    icon={<ToolIcon tool={tool} className="size-4" />}
                     action={
                       <>
                         <BookmarkButton

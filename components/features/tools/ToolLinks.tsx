@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { CategoryIcon } from "@/components/features/tools/CategoryIcon";
+import { ToolIcon } from "@/components/features/tools/ToolIcon";
 import { groupByCategory, sortLinks, type ToolLink } from "@/lib/tool-links";
 
 /**
@@ -73,7 +73,7 @@ function LinkList({ links }: { links: readonly ToolLink[] }) {
             href={`/tools/${link.tool.slug}`}
             className="hover:bg-muted/60 inline-flex max-w-full items-center gap-2 rounded-lg border px-3 py-1.5 text-sm transition-colors"
           >
-            <CategoryIcon category={link.tool.category} className="text-primary size-4 shrink-0" />
+            <ToolIcon tool={link.tool} className="text-primary size-4 shrink-0" />
             <span>{link.tool.name}</span>
             {link.note ? (
               <span className="text-muted-foreground text-xs">· {link.note}</span>

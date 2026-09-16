@@ -5,7 +5,7 @@ import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
 import { DirectoryPager } from "@/components/features/resource/DirectoryPager";
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import { CategoryGuide } from "@/components/features/tools/CategoryGuide";
-import { CategoryIcon } from "@/components/features/tools/CategoryIcon";
+import { ToolIcon } from "@/components/features/tools/ToolIcon";
 import { DirectoryFilters } from "@/components/features/tools/DirectoryFilters";
 import { buttonVariants } from "@/components/ui/button";
 import { getOpenRouterModels } from "@/lib/integrations/openrouter";
@@ -186,12 +186,7 @@ export default async function ToolsPage({ searchParams }: Props) {
                 <ResourceCard
                   href={`/tools/${tool.slug}`}
                   title={tool.name}
-                  icon={
-                    <CategoryIcon
-                      category={tool.category}
-                      className="text-primary size-4"
-                    />
-                  }
+                  icon={<ToolIcon tool={tool} className="size-4" />}
                   description={tool.tagline}
                   meta={familyFor(tool.openrouter_family) ?? skillLines.get(tool.id)}
                   badges={

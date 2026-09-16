@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { after } from "next/server";
 
 import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
-import { CategoryIcon } from "@/components/features/tools/CategoryIcon";
+import { ToolIcon } from "@/components/features/tools/ToolIcon";
 import { Fact } from "@/components/features/tools/Fact";
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import {
@@ -264,11 +264,8 @@ export default async function ToolPage({ params, searchParams }: Props) {
       </nav>
 
       <div className="mt-4 flex items-center gap-3">
-        <span className="bg-muted flex size-11 shrink-0 items-center justify-center rounded-xl">
-          <CategoryIcon
-            category={tool.category}
-            className="text-primary size-6"
-          />
+        <span className="bg-muted text-primary flex size-11 shrink-0 items-center justify-center rounded-xl has-[img]:bg-white">
+          <ToolIcon tool={tool} className="size-6" />
         </span>
         <div>
           <h1 className="font-heading text-2xl font-semibold">{tool.name}</h1>

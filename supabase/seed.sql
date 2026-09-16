@@ -3310,7 +3310,7 @@ from (values
     {"label": "Good for", "value": "Seeing an idea before anyone writes code"}
   ]'),
   ('higgsfield', '[
-    {"label": "Paid plans from", "value": "$9 a month (Basic, 120 credits); prices can vary by country"},
+    {"label": "Paid plans", "value": "Monthly credit plans; prices change often and vary by country"},
     {"label": "Makes", "value": "Images and video"},
     {"label": "Models", "value": "Over 30, including Nano Banana Pro and Seedance"},
     {"label": "Good for", "value": "Ads, product shots and short clips from one account"}
@@ -3456,3 +3456,16 @@ from (values
 join tools t on t.slug = m.tool_slug
 join tags  g on g.slug = m.tag_slug
 on conflict do nothing;
+
+-- Pricing for the five tools that had none (VIB-159). PromptBase and Capafy
+-- are free to browse, with free and paid listings; Higgsfield has no lasting
+-- free plan.
+update tools t set pricing_tier = v.tier, updated_at = now()
+from (values
+  ('higgsfield', 'Paid'),
+  ('promptbase', 'Freemium'),
+  ('capafy', 'Freemium'),
+  ('skillsllm', 'Free'),
+  ('awesome-skills', 'Free')
+) as v(slug, tier)
+where t.slug = v.slug;

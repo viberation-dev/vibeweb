@@ -504,28 +504,56 @@ insert into wizards (title, slug, kind, reusable, role_level, status, steps) val
     {
       "key": "idea",
       "title": "Idea",
-      "intro": "The hardest part of a first project is choosing one small enough to finish.",
+      "intro": "Your first project should be small enough to finish. Then make it a bit smaller.",
       "blocks": [
         {
           "kind": "text",
-          "body": "Pick something with one screen and one job. A page that lists your favourite recipes. A countdown to a date that matters. A form that emails you.\n\nThe test is whether you can describe it in one sentence without the word and. If you need and, it is two projects, and you will finish neither."
+          "body": "Pick something with one screen and one job. A page of your favourite recipes. A countdown to a date that matters. A form that emails you.\n\nHere is the test: can you describe it in one sentence without the word \"and\"? If you need an \"and\", you have two projects. You will finish neither, and both will live forever in a folder called final-v2."
+        },
+        {
+          "kind": "callout",
+          "tone": "tip",
+          "body": "Stuck for an idea? Borrow one of these and make it yours:\n- A tip calculator that splits the bill between friends\n- A random dinner picker for when nobody can decide\n- A packing list for your next trip\n- A page with three things you have made or are proud of\n- A quiz about your favourite film, band or football team\n- A simple timer for workouts, studying or boiling eggs\n- A page that shows a new random compliment each time you open it\n\nStill nothing? Choose the \"I have no idea yet\" prompt below, and your AI tool will suggest ideas based on what you like."
         },
         {
           "kind": "callout",
           "tone": "warning",
-          "body": "Do not start with the thing you actually want to build. Start with the boring version of it, ship that, then make it interesting. Shipping is the skill you are practising here, not design."
+          "body": "Do not start with your dream app. Build the boring version first, put it online, then make it clever. Right now you are practising shipping, not design."
         },
         {
           "kind": "prompt",
-          "label": "Paste this into your AI tool to pressure-test the idea",
-          "prompt": "I want to build this as my first web project: [describe it in one sentence].\n\nBefore any code, tell me:\n1. Is this one screen or several? If several, what is the smallest one-screen version?\n2. What data does it need to store, if any?\n3. What is the single thing that would make this take a week instead of an evening?\n\nBe blunt. I would rather cut scope now than abandon this on Thursday."
+          "label": "Pick a prompt, copy it, and paste it into your AI tool",
+          "prompt": "I want to build this as my first web project: [describe it in one sentence].\n\nBefore we write any code, answer three questions:\n1. Is this one screen or several? If several, what is the smallest one-screen version?\n2. Does it need to save any data? If so, what?\n3. What one thing would turn this from an evening job into a week-long job?\n\nBe honest. I would rather cut it down now than give up on Thursday.",
+          "prompts": [
+            {
+              "title": "Check my idea",
+              "prompt": "I want to build this as my first web project: [describe it in one sentence].\n\nBefore we write any code, answer three questions:\n1. Is this one screen or several? If several, what is the smallest one-screen version?\n2. Does it need to save any data? If so, what?\n3. What one thing would turn this from an evening job into a week-long job?\n\nBe honest. I would rather cut it down now than give up on Thursday."
+            },
+            {
+              "title": "Shrink my idea",
+              "prompt": "Here is my idea for a first web project: [describe it, as long or messy as you like].\n\nIt is probably too big. Help me shrink it:\n1. Rewrite it as one sentence with no \"and\" in it.\n2. List what I should leave out of the first version.\n3. Describe the finished single screen in plain words.\n\nKeep it simple. I am a beginner and I want to finish something this week."
+            },
+            {
+              "title": "I have no idea yet",
+              "prompt": "I want to build my first web project, but I do not have an idea yet.\n\nThings I care about: [a hobby, your job, something that annoys you].\n\nSuggest five tiny project ideas based on those. Each one must:\n- fit on one screen\n- be describable in one sentence without the word \"and\"\n- be buildable by a beginner with AI in one evening\n\nThen tell me which one you would pick, and why."
+            }
+          ]
         },
         {
           "kind": "checklist",
           "tasks": [
-            { "id": "idea-sentence", "label": "Written the idea as one sentence, with no and in it" },
-            { "id": "idea-scope", "label": "Cut it down to a single screen" },
-            { "id": "idea-done", "label": "Decided what done looks like, so I can tell when I am finished" }
+            {
+              "id": "idea-sentence",
+              "label": "Wrote my idea as one sentence, with no \"and\" in it"
+            },
+            {
+              "id": "idea-scope",
+              "label": "Cut it down to one screen"
+            },
+            {
+              "id": "idea-done",
+              "label": "Decided what done looks like, so I know when to stop"
+            }
           ]
         }
       ]
@@ -533,35 +561,63 @@ insert into wizards (title, slug, kind, reusable, role_level, status, steps) val
     {
       "key": "stack",
       "title": "Stack",
-      "intro": "Pick tools that get out of the way. You can change any of this later.",
+      "intro": "Choose tools that stay out of your way. Nothing here is forever.",
       "blocks": [
         {
           "kind": "text",
-          "body": "For a first project the stack matters far less than picking one and stopping. Next.js for the app, Tailwind for styling, Vercel to host it. Add a database only if your idea actually stores something."
+          "body": "For a first project, the tools matter much less than picking some and moving on. Use Next.js to build the site, Tailwind to style it, and Vercel to put it online. Skip the database unless your idea really needs to save something. A list of recipes can live in a file just fine."
         },
         {
           "kind": "code",
           "language": "bash",
           "code": "npx create-next-app@latest my-project",
-          "expected": "A series of questions, then a my-project folder with node_modules installed. Answer yes to TypeScript, yes to Tailwind, yes to App Router."
+          "expected": "npm asks Ok to proceed? Press y. Then one question: Would you like to use the recommended Next.js defaults? Pick Yes, use recommended defaults. That gives you TypeScript, Tailwind and the App Router in one go. Installing takes a minute or two and ends with Success! Created my-project."
         },
         {
           "kind": "code",
           "language": "bash",
           "code": "cd my-project\nnpm run dev",
-          "expected": "Local: http://localhost:3000 — open it and you should see the Next.js starter page."
+          "expected": "A few lines, including Local: http://localhost:3000. Open that address in your browser. The first load takes a few seconds while it builds, then you see the Next.js starter page. To stop the server later, press Ctrl+C."
         },
         {
           "kind": "callout",
           "tone": "tip",
-          "body": "If localhost:3000 shows the starter page, the hard part of setup is already behind you. Everything from here is editing files and refreshing."
+          "body": "See the starter page? Then the fiddly part of setup is done. From here on it is: edit a file, save, look at the browser. Repeat until it is yours."
+        },
+        {
+          "kind": "prompt",
+          "label": "Stuck? Pick a prompt and ask your AI tool",
+          "prompt": "I am setting up my first Next.js project and something went wrong.\n\nThe command I ran: [paste the command]\nWhat I saw: [paste the full error message]\nMy computer: [Windows, Mac or Linux]\n\nExplain in plain words what the error means, then give me the exact steps to fix it, one at a time. Assume I am a beginner.",
+          "prompts": [
+            {
+              "title": "Fix an error",
+              "prompt": "I am setting up my first Next.js project and something went wrong.\n\nThe command I ran: [paste the command]\nWhat I saw: [paste the full error message]\nMy computer: [Windows, Mac or Linux]\n\nExplain in plain words what the error means, then give me the exact steps to fix it, one at a time. Assume I am a beginner."
+            },
+            {
+              "title": "Explain the files",
+              "prompt": "I just created a Next.js project with create-next-app. I am a beginner.\n\nExplain, in plain words:\n1. Which files and folders I actually need to care about right now\n2. Which ones I can safely ignore for my first project\n3. Which file to edit to change the text on the home page\n\nKeep it short. I do not need the history of JavaScript."
+            },
+            {
+              "title": "Build my first screen",
+              "prompt": "I have a fresh Next.js project with Tailwind. My project idea is: [your one-sentence idea].\n\nWrite the code for app/page.tsx so it shows a simple first version of that one screen.\n- Use made-up example data, no database\n- Keep it all in one file\n- Add short comments so I can follow what each part does\n\nThen tell me how to check it works at localhost:3000."
+            }
+          ]
         },
         {
           "kind": "checklist",
           "tasks": [
-            { "id": "stack-created", "label": "Created the project with create-next-app" },
-            { "id": "stack-running", "label": "Seen the starter page at localhost:3000" },
-            { "id": "stack-edited", "label": "Changed some text in app/page.tsx and watched it update" }
+            {
+              "id": "stack-created",
+              "label": "Created the project with create-next-app"
+            },
+            {
+              "id": "stack-running",
+              "label": "Saw the starter page at localhost:3000"
+            },
+            {
+              "id": "stack-edited",
+              "label": "Changed some text in app/page.tsx and watched it update by itself"
+            }
           ]
         }
       ]
@@ -569,38 +625,69 @@ insert into wizards (title, slug, kind, reusable, role_level, status, steps) val
     {
       "key": "deploy",
       "title": "Deploy",
-      "intro": "Deploy on day one, while there is nothing to lose. Do not save it for the end.",
+      "intro": "Put it online today, while there is nothing to break. Do not leave it for the end.",
       "blocks": [
         {
           "kind": "text",
-          "body": "Deploying early means every change after this is a small, safe step instead of one terrifying leap at the end. It also means you have a real URL to send someone the moment it is worth sending."
+          "body": "Going live early turns every change after this into a small, safe step, instead of one big scary leap at the finish. You also get a real link to send people the moment it is worth showing off.\n\nGood news: create-next-app already set up git and saved a first commit for you. You only need to save the changes you have made since."
         },
         {
           "kind": "code",
           "language": "bash",
-          "code": "git init\ngit add -A\ngit commit -m \"first commit\"",
-          "expected": "create mode ... lines for each file, and a commit hash. If git complains about your name or email, set them with git config and run the commit again."
+          "code": "git add -A\ngit commit -m \"my first changes\"",
+          "expected": "A short summary of the files you changed, and a commit ID. If git says nothing to commit, you have not changed anything yet, which is fine. If git asks who you are, set your name and email with git config, then run the commit again."
         },
         {
           "kind": "text",
-          "body": "Now make an empty repository on GitHub, then connect it and push. GitHub shows you the exact two commands on the page right after you create it."
+          "body": "Next, create an empty repository on GitHub. Right after you create it, GitHub shows the exact two commands to connect it and push your code. Copy them, run them, done."
         },
         {
           "kind": "text",
-          "body": "With the code on GitHub, go to vercel.com, choose Add New Project, and pick the repository. Accept every default and press Deploy. When it finishes you have a live URL."
+          "body": "Once your code is on GitHub, go to vercel.com and choose Add New Project. Pick your repository, keep every default setting and press Deploy. A minute or two later you have a live link. Yes, on the actual internet."
         },
         {
           "kind": "callout",
           "tone": "tip",
-          "body": "From now on, every push to your main branch deploys automatically. That is the whole workflow — there is no separate deploy step to remember."
+          "body": "From now on, every push to your main branch goes live by itself. There is no separate deploy step to remember, which is good, because you would forget it."
+        },
+        {
+          "kind": "prompt",
+          "label": "Stuck? Pick a prompt and ask your AI tool",
+          "prompt": "I am trying to put my first project on GitHub and got stuck.\n\nWhat I ran: [paste the commands]\nWhat I saw: [paste the full message]\n\nExplain what went wrong in plain words and give me the exact commands to fix it, one step at a time. I am a beginner, so do not skip steps.",
+          "prompts": [
+            {
+              "title": "Fix a GitHub error",
+              "prompt": "I am trying to put my first project on GitHub and got stuck.\n\nWhat I ran: [paste the commands]\nWhat I saw: [paste the full message]\n\nExplain what went wrong in plain words and give me the exact commands to fix it, one step at a time. I am a beginner, so do not skip steps."
+            },
+            {
+              "title": "Fix a failed deploy",
+              "prompt": "My Vercel deploy failed. This is my first time deploying anything.\n\nHere is the build log: [paste the red part of the log]\n\nTell me:\n1. What actually broke, in one or two plain sentences\n2. Which file to change, and what to change it to\n3. How to check the fix works on my computer before I push again"
+            },
+            {
+              "title": "Explain what just happened",
+              "prompt": "I just pushed my project to GitHub and Vercel put it online. It works, but I am not sure how.\n\nExplain in plain words, as if to a friend:\n1. What git, GitHub and Vercel each did\n2. What happens now when I change a file and push again\n3. One mistake beginners often make with this setup, and how to avoid it"
+            }
+          ]
         },
         {
           "kind": "checklist",
           "tasks": [
-            { "id": "deploy-git", "label": "Made the first commit" },
-            { "id": "deploy-github", "label": "Pushed the repository to GitHub" },
-            { "id": "deploy-vercel", "label": "Deployed on Vercel and opened the live URL" },
-            { "id": "deploy-second", "label": "Pushed a second change and watched it deploy itself" }
+            {
+              "id": "deploy-git",
+              "label": "Saved my changes with a commit"
+            },
+            {
+              "id": "deploy-github",
+              "label": "Pushed the code to GitHub"
+            },
+            {
+              "id": "deploy-vercel",
+              "label": "Deployed on Vercel and opened the live link"
+            },
+            {
+              "id": "deploy-second",
+              "label": "Pushed a second change and watched it go live by itself"
+            }
           ]
         }
       ]
@@ -608,30 +695,56 @@ insert into wizards (title, slug, kind, reusable, role_level, status, steps) val
     {
       "key": "launch",
       "title": "Launch",
-      "intro": "The last mile: make it yours, then tell one person.",
+      "intro": "The last mile: make it yours, then show one person.",
       "blocks": [
         {
           "kind": "text",
-          "body": "Nothing here is technically hard. It is the part everyone skips, and it is the difference between a folder on your laptop and something that exists."
+          "body": "Nothing in this step is hard. It is just the part everyone skips, and it is the difference between a folder on your laptop and something that really exists."
         },
         {
           "kind": "prompt",
-          "label": "Ask for a pre-launch review",
-          "prompt": "Here is my first web project: [paste your URL].\n\nLook at it as a stranger would and tell me:\n1. Within five seconds, is it obvious what this does?\n2. Anything visibly broken or half-finished?\n3. The single highest-value thing I could fix in under thirty minutes?\n\nDo not suggest new features. I am trying to finish, not start again."
+          "label": "Pick a prompt and get a review before you share",
+          "prompt": "Here is my first web project: [paste your link].\n\nLook at it the way a stranger would and tell me:\n1. Within five seconds, is it obvious what this does?\n2. Is anything visibly broken or half-finished?\n3. What is the one fix worth doing in under thirty minutes?\n\nDo not suggest new features. I am trying to finish, not start again.",
+          "prompts": [
+            {
+              "title": "Review it like a stranger",
+              "prompt": "Here is my first web project: [paste your link].\n\nLook at it the way a stranger would and tell me:\n1. Within five seconds, is it obvious what this does?\n2. Is anything visibly broken or half-finished?\n3. What is the one fix worth doing in under thirty minutes?\n\nDo not suggest new features. I am trying to finish, not start again."
+            },
+            {
+              "title": "Pre-launch checklist",
+              "prompt": "I am about to share my first web project: [paste your link]. It is built with Next.js and hosted on Vercel.\n\nGive me a short pre-launch checklist, ten items at most, covering:\n- the page title and the preview that shows when someone shares the link\n- how it looks on a phone\n- leftover starter text or placeholder content\n\nFor each item, tell me exactly where to look and how to fix it."
+            },
+            {
+              "title": "Write my share message",
+              "prompt": "I just finished my first web project: [paste your link]. It does this: [your one-sentence idea].\n\nWrite three short messages I could use to share it:\n1. One for a friend on WhatsApp\n2. One for LinkedIn or X\n3. One asking someone for honest feedback\n\nKeep them short and friendly. No hype, and no rocket emojis."
+            }
+          ]
         },
         {
           "kind": "checklist",
           "tasks": [
-            { "id": "launch-title", "label": "Set the page title and description so it is not Create Next App" },
-            { "id": "launch-mobile", "label": "Opened it on a phone and fixed anything obviously broken" },
-            { "id": "launch-placeholder", "label": "Removed every piece of leftover starter content" },
-            { "id": "launch-share", "label": "Sent the URL to one actual human being" }
+            {
+              "id": "launch-title",
+              "label": "Set the page title and description, so it no longer says Create Next App"
+            },
+            {
+              "id": "launch-mobile",
+              "label": "Opened it on a phone and fixed anything clearly broken"
+            },
+            {
+              "id": "launch-placeholder",
+              "label": "Removed all the leftover starter content"
+            },
+            {
+              "id": "launch-share",
+              "label": "Sent the link to one real human being"
+            }
           ]
         },
         {
           "kind": "callout",
           "tone": "info",
-          "body": "That last task is the one that counts. A project nobody has seen is still a draft. Once someone has opened it, you have shipped, and the next one is meaningfully easier."
+          "body": "That last task is the one that counts. A project nobody has seen is still a draft. Once one person has opened it, you have shipped, and the next project gets a lot easier."
         }
       ]
     }

@@ -42,6 +42,12 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-16",
     kind: "improved",
+    title: "Pick a prompt, then open your AI tool",
+    body: "Every step of Ship your first web project now has plainer wording, example ideas, and three prompts to choose from. One click copies the prompt and opens Claude, ChatGPT or another AI tool, with ChatGPT and Grok filled in for you, or opens Cursor, VS Code or Antigravity if they are installed.",
+  },
+  {
+    date: "2026-09-16",
+    kind: "improved",
     title: "Clearer tool cards everywhere",
     body: "Cards for models, chat apps, frameworks, templates, workflow tools, utilities and everyday tools now lead with what matters: whether a coding agent comes included, if you can self-host it, or if a skills site checks skills for risks.",
   },

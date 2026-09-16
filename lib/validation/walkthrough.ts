@@ -27,11 +27,24 @@ const calloutBlock = z.object({
   body: z.string().min(1),
 });
 
+const promptOption = z.object({
+  /** Short name on the picker, e.g. "Quick check". */
+  title: z.string().min(1),
+  prompt: z.string().min(1),
+});
+
 const promptBlock = z.object({
   kind: z.literal("prompt"),
   /** What to do with it — "Paste this into Claude Code", etc. */
   label: z.string().min(1),
+  /**
+   * The single prompt. Still required when `prompts` is set: builds from
+   * before VIB-160 only read this field, and the one Supabase project serves
+   * production and previews, so new content has to stay readable by them.
+   */
   prompt: z.string().min(1),
+  /** Two or more versions to choose between (VIB-160). Wins over `prompt`. */
+  prompts: z.array(promptOption).min(2).optional(),
 });
 
 const codeBlock = z.object({

@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { toggleTaskAction } from "@/app/(site)/walkthroughs/[slug]/actions";
 import { CopyButton } from "@/components/features/walkthroughs/CopyButton";
+import { PromptBlock } from "@/components/features/walkthroughs/PromptBlock";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ChecklistState, WalkthroughBlock } from "@/lib/validation/walkthrough";
@@ -67,20 +68,11 @@ export function WalkthroughBlockView({
 
     case "prompt":
       return (
-        <div className="rounded-lg border">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2">
-            <p className="text-sm font-medium">{block.label}</p>
-            <CopyButton text={block.prompt} label="Copy prompt" />
-          </div>
-          {/*
-            pre-wrap, not pre-line: authored prompts use indentation that
-            pre-line would collapse, and a prompt that loses its shape is a
-            different prompt.
-          */}
-          <p className="px-4 py-3 font-mono text-sm whitespace-pre-wrap">
-            {block.prompt}
-          </p>
-        </div>
+        <PromptBlock
+          label={block.label}
+          prompt={block.prompt}
+          prompts={block.prompts}
+        />
       );
 
     case "code":

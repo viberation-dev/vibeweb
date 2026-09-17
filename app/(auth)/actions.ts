@@ -27,7 +27,7 @@ import {
 export type AuthFormState = {
   error?: string;
   notice?: string;
-  /** Set by signup once the confirmation email is sent; swaps in CheckEmail. */
+  /** Set once a signup or reset email is sent; swaps in the check-your-email screen. */
   sentTo?: string;
 };
 
@@ -183,10 +183,7 @@ export async function forgotPasswordAction(
    * A form that says "no account with that email" is an account-existence
    * oracle, and this one would be readable by anyone.
    */
-  return {
-    notice:
-      "If that address has an account, we have sent it a link to reset the password.",
-  };
+  return { sentTo: parsed.data.email };
 }
 
 export async function resetPasswordAction(

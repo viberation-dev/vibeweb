@@ -5,6 +5,7 @@ import {
 } from "@tabler/icons-react";
 import Link from "next/link";
 
+import { Greeting } from "@/components/features/home/Greeting";
 import { MarketingHome } from "@/components/features/marketing/MarketingHome";
 import { CategoryPicker } from "@/components/features/tools/CategoryPicker";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +15,6 @@ import { isSuperAdmin } from "@/lib/app-role";
 import {
   FEED_TABS,
   feedQueryFor,
-  greetingFor,
   progressLabel,
   toFeedTab,
 } from "@/lib/home-feed";
@@ -149,8 +149,7 @@ export default async function HomePage({ searchParams }: Props) {
     <div className="mx-auto w-full max-w-6xl p-6">
       <section className="mx-auto max-w-2xl text-center">
         <h1 className="font-heading text-3xl font-bold tracking-[-0.04em]">
-          {greetingFor(new Date().getHours())}
-          {greeting ? `, ${greeting}` : ""}. What are you building?
+          <Greeting serverHour={new Date().getHours()} name={greeting} />
         </h1>
         {/*
           Intent search: the same GET form as everywhere else, so it works

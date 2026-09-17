@@ -47,10 +47,10 @@ export function feedQueryFor(tab: FeedTab, roleLevel: RoleLevel | undefined) {
  * Time-of-day greeting, matching the mockup's "Good evening, Ali".
  *
  * Takes the hour rather than reading the clock so it is testable, and so
- * the caller decides whose clock counts. Rendered on the server, so this is
- * the server's timezone — a visitor in another one can see the "wrong"
- * greeting, which is the accepted cost of not shipping a client component
- * and a hydration mismatch for a pleasantry.
+ * the caller decides whose clock counts. The home page passes the server's
+ * hour for first paint and components/features/home/Greeting.tsx corrects it
+ * to the viewer's own once mounted (VIB-170) — the server timezone made it
+ * "Good afternoon" at 10pm in Karachi.
  */
 export function greetingFor(hour: number): string {
   if (hour < 12) return "Good morning";

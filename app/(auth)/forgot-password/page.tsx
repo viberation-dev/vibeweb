@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
 import { forgotPasswordAction } from "@/app/(auth)/actions";
 import { ForgotPasswordForm } from "@/components/features/auth/ForgotPasswordForm";
@@ -23,29 +22,25 @@ export default async function ForgotPasswordPage({
 
   return (
     <Panel size="lg" className="w-full max-w-md p-8 lg:p-10">
-      <SectionHead
-        level="h1"
-        align="center"
-        title="Reset your password"
-        lede="We will email you a link to set a new one."
-        className="mb-8"
+      <ForgotPasswordForm
+        action={forgotPasswordAction}
+        heading={
+          <>
+            <SectionHead
+              level="h1"
+              align="center"
+              title="Reset your password"
+              lede="We will email you a link to set a new one."
+              className="mb-8"
+            />
+            {errorMessage ? (
+              <p role="alert" className="text-destructive mb-6 text-sm">
+                {errorMessage}
+              </p>
+            ) : null}
+          </>
+        }
       />
-      <div className="space-y-6">
-        {errorMessage ? (
-          <p role="alert" className="text-destructive text-sm">
-            {errorMessage}
-          </p>
-        ) : null}
-
-        <ForgotPasswordForm action={forgotPasswordAction} />
-
-        <p className="text-muted-foreground text-center text-sm">
-          Remembered it?{" "}
-          <Link href="/login" className="text-primary hover:underline">
-            Sign in
-          </Link>
-        </p>
-      </div>
     </Panel>
   );
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 
+import { siteUrl } from "@/lib/site-url";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 import "./globals.css";
@@ -23,6 +24,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  // Absolute base for canonical and social-card URLs (VIB-165).
+  metadataBase: new URL(siteUrl),
   /*
    * Every page sets just its own name; the suffix is applied here (VIB-119).
    * It used to be hand-written on all 41 of them, with an em dash Ali does

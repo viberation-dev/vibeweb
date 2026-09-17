@@ -40,6 +40,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
  */
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    date: "2026-09-17",
+    kind: "improved",
+    title: "Easier to find in search",
+    body: "The site now tells search engines which pages exist and which to skip, so tools, guides and walkthroughs can turn up in search results.",
+  },
+  {
     date: "2026-09-16",
     kind: "added",
     title: "Add a database with Supabase",

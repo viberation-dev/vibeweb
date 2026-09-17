@@ -42,6 +42,12 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-17",
     kind: "improved",
+    title: "Link previews",
+    body: "Links to Viberation shared on X, LinkedIn or Slack now show a proper preview card instead of plain text.",
+  },
+  {
+    date: "2026-09-17",
+    kind: "improved",
     title: "Easier to find in search",
     body: "The site now tells search engines which pages exist and which to skip, so tools, guides and walkthroughs can turn up in search results.",
   },

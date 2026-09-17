@@ -140,14 +140,17 @@ export default async function HomePage({ searchParams }: Props) {
   });
 
   const showRoadmap = isSuperAdmin(profile?.app_role);
-  const greeting = profile?.username ?? auth.user.email?.split("@")[0];
+  // Google and GitHub put the person's name in metadata; the username is
+  // often unset for them, and the email's local part is not a name (VIB-169).
+  const metaName = (auth.user.user_metadata?.full_name ?? auth.user.user_metadata?.name) as string | undefined;
+  const greeting = metaName?.trim().split(/\s+/)[0] || profile?.username || auth.user.email?.split("@")[0];
 
   return (
     <div className="mx-auto w-full max-w-6xl p-6">
       <section className="mx-auto max-w-2xl text-center">
         <h1 className="font-heading text-3xl font-bold tracking-[-0.04em]">
           {greetingFor(new Date().getHours())}
-          {greeting ? `, ${greeting}` : ""} — what are you building?
+          {greeting ? `, ${greeting}` : ""}. What are you building?
         </h1>
         {/*
           Intent search: the same GET form as everywhere else, so it works

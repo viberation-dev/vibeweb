@@ -13,6 +13,11 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default async function OpengraphImage() {
+  // Geist ExtraBold for headings, Inter for body, as on the site. Satori needs TTF, not the woff2 next/font serves.
+  const [geist, inter] = await Promise.all([
+    readFile(path.join(process.cwd(), "assets/fonts/Geist-ExtraBold.ttf")),
+    readFile(path.join(process.cwd(), "assets/fonts/Inter-Medium.ttf")),
+  ]);
   // The logo SVG paints with currentColor, which an <img> cannot inherit.
   const svg = await readFile(path.join(process.cwd(), "public/brand/logo-horizontal.svg"), "utf8");
   const logo = `data:image/svg+xml;base64,${Buffer.from(
@@ -31,6 +36,7 @@ export default async function OpengraphImage() {
           padding: 80,
           background: "#011aff",
           color: "#fffff2",
+          fontFamily: "Geist",
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- rendered to PNG, not the page */}
@@ -43,9 +49,12 @@ export default async function OpengraphImage() {
             No guesswork. No hype.
           </div>
         </div>
-        <div style={{ fontSize: 30, opacity: 0.85 }}>Tools, guides and walkthroughs for vibe coders</div>
+        <div style={{ fontSize: 30, opacity: 0.85, fontFamily: "Inter" }}>Tools, guides and walkthroughs for vibe coders</div>
       </div>
     ),
-    size,
+    { ...size, fonts: [
+        { name: "Geist", data: geist, weight: 800, style: "normal" },
+        { name: "Inter", data: inter, weight: 500, style: "normal" },
+      ] },
   );
 }

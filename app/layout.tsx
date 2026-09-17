@@ -26,6 +26,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   // Absolute base for canonical and social-card URLs (VIB-165).
   metadataBase: new URL(siteUrl),
+  // The image itself comes from app/opengraph-image.tsx (VIB-166).
+  openGraph: { siteName: "Viberation", type: "website" },
+  twitter: { card: "summary_large_image" },
   /*
    * Every page sets just its own name; the suffix is applied here (VIB-119).
    * It used to be hand-written on all 41 of them, with an em dash Ali does

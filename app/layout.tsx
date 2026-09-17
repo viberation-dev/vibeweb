@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 
@@ -97,6 +98,8 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         {children}
+        {/* Cookieless page counts, so no consent banner (VIB-171). */}
+        <Analytics />
       </body>
     </html>
   );

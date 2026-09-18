@@ -47,7 +47,9 @@ async function oidcToken(): Promise<string | null> {
  * `cached: false` skips Next's data cache for this request. The detail
  * response carries every file's contents and runs to megabytes (VIB-176),
  * past the cache's 2MB ceiling, so it is fetched raw and only the parsed
- * result is cached — see getSkillDetail.
+ * result is cached — see getSkillDetail. Those megabytes get 15s rather
+ * than 5s: a skill that never downloads in time would never be cached, and
+ * after one success the next hour is served from the parsed copy.
  */
 async function getJson(path: string, authenticated: boolean, cached = true): Promise<unknown> {
   const headers: Record<string, string> = {};
@@ -62,7 +64,7 @@ async function getJson(path: string, authenticated: boolean, cached = true): Pro
       headers,
       ...(cached ? { next: { revalidate: REVALIDATE_SECONDS } } : { cache: "no-store" as const }),
       // A hung request would hold the whole page until Vercel's 300s kill (VIB-175).
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(cached ? 5000 : 15000),
     });
     // 404 is an answer — no audits yet, or not listed — not a fault to log.
     if (response.status === 404) return null;

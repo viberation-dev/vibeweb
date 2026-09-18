@@ -41,6 +41,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-18",
+    kind: "added",
+    title: "Profile photos and your name",
+    body: "Upload a profile photo in Settings and it shows in the header and on your account page. You can also set the name we call you, separately from your public username. Only you can see your name.",
+  },
+  {
+    date: "2026-09-18",
     kind: "improved",
     title: "Browse tools by category",
     body: "The tools page now opens with a row for each category, grouped into Build, AI, Extend, Start from and Ship, with a link to see everything in it. Tags are sorted by how many tools use them, and the rest sit behind a More button.",

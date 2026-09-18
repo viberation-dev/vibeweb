@@ -11,6 +11,7 @@ import { useEffect, useRef } from "react";
 
 import { SignOutButton } from "@/components/features/auth/SignOutButton";
 import { Logo } from "@/components/features/nav/Logo";
+import { Avatar } from "@/components/features/profile/Avatar";
 import { ThemeToggle } from "@/components/features/nav/ThemeToggle";
 import { TOOL_CATEGORIES } from "@/lib/tool-categories";
 import { toolsHref } from "@/lib/tools-url";
@@ -32,7 +33,14 @@ const ACCOUNT_MENU = [
   { href: "/account/settings", label: "Settings" },
 ] as const;
 
-export function SiteHeader({ initials }: { initials: string }) {
+export function SiteHeader({
+  name,
+  avatarSrc,
+}: {
+  /** What the avatar's initials come from. */
+  name: string;
+  avatarSrc: string | null;
+}) {
   const input = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -130,9 +138,9 @@ export function SiteHeader({ initials }: { initials: string }) {
       <details className="relative">
         <summary
           aria-label="Your account"
-          className="bg-accent text-accent-foreground flex size-7 shrink-0 cursor-pointer list-none items-center justify-center rounded-full text-[10px] font-medium"
+          className="flex shrink-0 cursor-pointer list-none rounded-full"
         >
-          {initials}
+          <Avatar name={name} src={avatarSrc} className="size-7 text-[10px]" />
         </summary>
         <div className="bg-background absolute right-0 z-20 mt-2 w-48 rounded-md border p-1 shadow-md">
           <ul>

@@ -28,6 +28,8 @@ export type ToolFilters = {
   sort?: ToolSort;
   /** Free text, matched against the tools' own search_vector. */
   q?: string;
+  /** Only tools staff ticked as an Editor's pick (VIB-182). */
+  editorPick?: boolean;
   /** `free` or `paid` — see lib/tool-facts.ts for what each matches. */
   pricing?: PricingFilter;
   /** 1-based. Values past the end return an empty page, not an error. */
@@ -76,6 +78,10 @@ export async function listTools(
 
   if (filters.category) {
     query = query.eq("category", filters.category);
+  }
+
+  if (filters.editorPick) {
+    query = query.eq("editor_pick", true);
   }
 
   if (filters.bestFor) {
@@ -355,6 +361,7 @@ export type ToolWrite = Pick<
   | "best_for"
   | "outbound_url"
   | "is_affiliate"
+  | "editor_pick"
   | "openrouter_family"
   | "openrouter_id"
   | "skills_sh_source"

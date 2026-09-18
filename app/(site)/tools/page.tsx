@@ -1,5 +1,6 @@
-import { IconSearch } from "@tabler/icons-react";
+import { IconSearch, IconStar } from "@tabler/icons-react";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import Link from "next/link";
 
 import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
@@ -12,7 +13,11 @@ import { DirectoryFilters } from "@/components/features/tools/DirectoryFilters";
 import { buttonVariants } from "@/components/ui/button";
 import { getOpenRouterModels } from "@/lib/integrations/openrouter";
 import { createClient } from "@/lib/integrations/supabase/server";
-import { CATEGORY_GUIDES } from "@/lib/category-guides";
+import {
+  CATEGORY_GUIDES,
+  GUIDES_HIDDEN_COOKIE,
+  hiddenGuides,
+} from "@/lib/category-guides";
 import { familyLine, familyMembers } from "@/lib/model-facts";
 import { toPageNumber } from "@/lib/pagination";
 import { listBookmarks } from "@/lib/queries/bookmarks";
@@ -78,7 +83,14 @@ export default async function ToolsPage({ searchParams }: Props) {
    */
   const browsing = !category && !tag && !q && !pricing;
 
-  const [result, tags, bookmarks] = await Promise.all([
+  /*
+   * Editor's picks (VIB-182): one curated row at the top of a category's
+   * first page. Only unfiltered, since a filter is a reader asking for
+   * something narrower than our recommendation.
+   */
+  const showPicks = !!category && !tag && !q && !pricing && page === 1;
+
+  const [result, tags, bookmarks, picks] = await Promise.all([
     listTools(
       supabase,
       browsing
@@ -92,6 +104,14 @@ export default async function ToolsPage({ searchParams }: Props) {
     // Signed-out visitors still see Save buttons; pressing one sends them to
     // sign in. Only which ones read as saved needs a user.
     auth.user ? listBookmarks(supabase, auth.user.id, "tool") : [],
+    showPicks
+      ? listTools(supabase, {
+          category,
+          editorPick: true,
+          sort,
+          pageSize: ROW_SIZE,
+        }).then((r) => r.tools)
+      : [],
   ]);
 
   const { total, pageCount } = result;
@@ -112,19 +132,23 @@ export default async function ToolsPage({ searchParams }: Props) {
   const tools = browsing
     ? rows.flatMap((g) => g.categories.flatMap((row) => row.tools))
     : result.tools;
+  // Picks usually also sit in the grid; the lookups below do not mind repeats.
+  const onScreen = [...picks, ...tools];
 
   const [toolTags, liveModels, skillLines] = await Promise.all([
     // One round trip for the whole grid's tag pills rather than one per card.
     getToolTagsByIds(
       supabase,
-      tools.map((tool) => tool.id),
+      onScreen.map((tool) => tool.id),
     ),
     // Only when this page shows a model with live specs; cached for an hour
     // and empty rather than throwing when OpenRouter is down (VIB-107).
-    tools.some((tool) => tool.openrouter_family) ? getOpenRouterModels() : null,
+    onScreen.some((tool) => tool.openrouter_family)
+      ? getOpenRouterModels()
+      : null,
     // "881K installs · 176K stars" for skill cards (VIB-130); empty map when
     // this page has no skills, and missing lines rather than errors.
-    getSkillCardLines(tools),
+    getSkillCardLines(onScreen),
   ]);
 
   /** "15 models · from $0.25 per 1M" for a model family's card; undefined otherwise. */
@@ -138,6 +162,12 @@ export default async function ToolsPage({ searchParams }: Props) {
   const bookmarkedIds = new Set(
     bookmarks.map((bookmark) => bookmark.target_id),
   );
+  const hiddenGuide =
+    !!category &&
+    hiddenGuides((await cookies()).get(GUIDES_HIDDEN_COOKIE)?.value).includes(
+      category,
+    );
+
   // Come back to this exact filtered page after a signed-out visitor logs in.
   const returnTo = toolsHref({ category, tag, sort, q, pricing, page });
 
@@ -256,8 +286,34 @@ export default async function ToolsPage({ searchParams }: Props) {
       </div>
 
       {/* First page only: a reader paging through already has the answer. */}
-      {category && CATEGORY_GUIDES[category] && page === 1 ? (
-        <CategoryGuide guide={CATEGORY_GUIDES[category]} />
+      {category && page === 1 ? (
+        <CategoryGuide
+          key={category}
+          guide={CATEGORY_GUIDES[category]}
+          category={category}
+          collapsible={!!auth.user}
+          initiallyHidden={hiddenGuide}
+        />
+      ) : null}
+
+      {category && picks.length ? (
+        <section aria-labelledby="editor-picks" className="mt-8">
+          <h2
+            id="editor-picks"
+            className="font-heading flex items-center gap-2 text-lg font-semibold"
+          >
+            <IconStar aria-hidden className="text-primary size-5" />
+            Editor&apos;s picks
+          </h2>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Where we would start in {toolCategoryLabel(category)}.
+          </p>
+          <ul className="mt-4 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {picks.map((tool) => (
+              <li key={tool.id}>{card(tool)}</li>
+            ))}
+          </ul>
+        </section>
       ) : null}
 
       <div className="mt-6">

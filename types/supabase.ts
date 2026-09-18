@@ -553,6 +553,7 @@ export type Database = {
           comparison_ready: boolean
           created_at: string
           description: string | null
+          editor_pick: boolean
           id: string
           is_affiliate: boolean
           key_facts: Json
@@ -578,6 +579,7 @@ export type Database = {
           comparison_ready?: boolean
           created_at?: string
           description?: string | null
+          editor_pick?: boolean
           id?: string
           is_affiliate?: boolean
           key_facts?: Json
@@ -603,6 +605,7 @@ export type Database = {
           comparison_ready?: boolean
           created_at?: string
           description?: string | null
+          editor_pick?: boolean
           id?: string
           is_affiliate?: boolean
           key_facts?: Json

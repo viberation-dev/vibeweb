@@ -27,6 +27,8 @@ const chip =
   "rounded-full border px-3 py-1 text-xs transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 /** Chips before "+N more": about one line at the directory's width. */
 const VISIBLE_TAGS = 8;
+/** The same line on a phone: "Tags:", two chips and "+N more" fit 343px. */
+const VISIBLE_TAGS_PHONE = 2;
 
 const chipActive =
   "border-transparent bg-primary text-primary-foreground hover:bg-primary/80";
@@ -81,15 +83,26 @@ export function DirectoryFilters({
    */
   const shown = tags.filter((t, i) => i < VISIBLE_TAGS || t.slug === tag);
   const hidden = tags.filter((t) => !shown.includes(t));
+  // A phone has room for fewer (VIB-181); the rest of `shown` waits behind "more" there.
+  const phoneShown = shown.filter(
+    (t, i) => i < VISIBLE_TAGS_PHONE || t.slug === tag,
+  );
+  const wideOnly = shown.filter((t) => !phoneShown.includes(t));
 
   return (
     <div className="space-y-3">
       {tags.length ? (
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-muted-foreground text-xs">Tags:</span>
-          {shown.map(chipFor)}
-          {hidden.length ? (
-            <MoreTags count={hidden.length}>{hidden.map(chipFor)}</MoreTags>
+          {phoneShown.map(chipFor)}
+          {hidden.length || wideOnly.length ? (
+            <MoreTags
+              count={hidden.length}
+              wideOnlyCount={wideOnly.length}
+              wideOnly={wideOnly.map(chipFor)}
+            >
+              {hidden.map(chipFor)}
+            </MoreTags>
           ) : null}
         </div>
       ) : null}

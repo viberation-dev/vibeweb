@@ -40,6 +40,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
  */
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    date: "2026-09-18",
+    kind: "fixed",
+    title: "Home page no longer hangs",
+    body: "When a service we pull skill stats from was slow, the home page could fail to load at all. Now it loads anyway and skips the numbers it could not get.",
+  },
+  {
     date: "2026-09-17",
     kind: "improved",
     title: "Link previews",

@@ -166,7 +166,11 @@ function toEndpoint(raw: z.infer<typeof EndpointSchema>): OpenRouterEndpoint {
 
 async function getJson(path: string): Promise<unknown> {
   try {
-    const response = await fetch(`${API}${path}`, { next: { revalidate: REVALIDATE_SECONDS } });
+    const response = await fetch(`${API}${path}`, {
+      next: { revalidate: REVALIDATE_SECONDS },
+      // A hung request would hold the whole page until Vercel's 300s kill (VIB-175).
+      signal: AbortSignal.timeout(5000),
+    });
     if (!response.ok) {
       console.error(`openrouter ${path}: HTTP ${response.status}`);
       return null;

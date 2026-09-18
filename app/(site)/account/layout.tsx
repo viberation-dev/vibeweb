@@ -1,18 +1,13 @@
 import { redirect } from "next/navigation";
 
 import { AccountTabs } from "@/components/features/account/AccountTabs";
+import { Avatar } from "@/components/features/profile/Avatar";
 import { Panel } from "@/components/ui/panel";
 import { TagPill } from "@/components/ui/tag-pill";
 import { createClient } from "@/lib/integrations/supabase/server";
+import { avatarUrl } from "@/lib/queries/avatars";
+import { getOnboardingAnswers } from "@/lib/queries/onboarding-answers";
 import { getCurrentProfile } from "@/lib/queries/profiles";
-
-/** Two letters for the avatar, from whatever identity exists. */
-function initialsFor(name: string): string {
-  const parts = name.split(/[\s._-]+/).filter(Boolean);
-  const letters =
-    parts.length > 1 ? parts[0][0] + parts[1][0] : name.slice(0, 2);
-  return letters.toUpperCase() || "?";
-}
 
 /**
  * The /account shell (VIB-69, restyled to the v3 system under VIB-126).
@@ -45,17 +40,22 @@ export default async function AccountLayout({
     redirect("/login?redirectTo=/account");
   }
 
-  const name = profile.username ?? profile.email ?? "Your account";
+  // Display name first: it is private, and this header only its owner sees.
+  const answers = await getOnboardingAnswers(supabase, profile.id);
+  const name =
+    answers?.display_name ??
+    profile.username ??
+    profile.email ??
+    "Your account";
 
   return (
     <div className="mx-auto w-full max-w-4xl px-[clamp(1.25rem,4vw,2.5rem)] py-10">
       <Panel className="flex flex-wrap items-center gap-5">
-        <span
-          aria-hidden
-          className="bg-primary text-primary-foreground font-heading flex size-16 shrink-0 items-center justify-center rounded-full text-xl font-bold"
-        >
-          {initialsFor(name)}
-        </span>
+        <Avatar
+          name={name}
+          src={avatarUrl(supabase, profile.avatar_path)}
+          className="font-heading size-16 text-xl font-bold"
+        />
         <div className="min-w-0">
           <h1 className="font-heading truncate text-3xl font-bold tracking-[-0.04em]">
             {name}

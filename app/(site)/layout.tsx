@@ -20,24 +20,10 @@ import {
   TOP_NAV,
   toSidebarMode,
 } from "@/lib/nav";
-import {
-  getCurrentProfile,
-  getCurrentUser,
-  type Profile,
-} from "@/lib/queries/profiles";
+import { getCurrentProfile, getCurrentUser } from "@/lib/queries/profiles";
+import { avatarUrl } from "@/lib/queries/avatars";
+import { getOnboardingAnswers } from "@/lib/queries/onboarding-answers";
 import { countAffiliateTools } from "@/lib/queries/tools";
-
-/**
- * Up to two letters for the header avatar, from whatever identity exists.
- * Falls back to "?" rather than rendering an empty circle.
- */
-function initialsFor(identity: Pick<Profile, "username" | "email">): string {
-  const source = identity.username ?? identity.email ?? "";
-  const parts = source.split(/[\s._-]+/).filter(Boolean);
-  const letters =
-    parts.length > 1 ? parts[0][0] + parts[1][0] : source.slice(0, 2);
-  return letters.toUpperCase() || "?";
-}
 
 /**
  * Two nav structures, not one (VIB-76, handoff §2).
@@ -75,7 +61,11 @@ export default async function SiteLayout({
    * The footer's affiliate line is a claim about the site, so it is read from
    * the site rather than typed into the markup — see countAffiliateTools.
    */
-  const affiliateCount = await countAffiliateTools(supabase);
+  const [affiliateCount, answers] = await Promise.all([
+    countAffiliateTools(supabase),
+    // The private display name, for the avatar's initials (VIB-178).
+    user ? getOnboardingAnswers(supabase, user.id) : null,
+  ]);
 
   // The member's sidebar choices (VIB-174), read here so the first paint is the right width.
   const jar = await cookies();
@@ -87,9 +77,10 @@ export default async function SiteLayout({
     <>
       {signedIn ? (
         <SiteHeader
-          initials={initialsFor(
-            profile ?? { username: null, email: user?.email ?? null },
-          )}
+          name={
+            answers?.display_name ?? profile?.username ?? user?.email ?? "?"
+          }
+          avatarSrc={avatarUrl(supabase, profile?.avatar_path ?? null)}
         />
       ) : (
         <>

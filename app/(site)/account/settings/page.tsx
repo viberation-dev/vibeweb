@@ -1,11 +1,17 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { updateProfileAction } from "@/app/(site)/account/settings/actions";
+import {
+  updateAvatarAction,
+  updateProfileAction,
+} from "@/app/(site)/account/settings/actions";
 import { ThemeToggle } from "@/components/features/nav/ThemeToggle";
+import { AvatarForm } from "@/components/features/profile/AvatarForm";
 import { ProfileForm } from "@/components/features/profile/ProfileForm";
 import { Panel } from "@/components/ui/panel";
 import { createClient } from "@/lib/integrations/supabase/server";
+import { avatarUrl } from "@/lib/queries/avatars";
+import { getOnboardingAnswers } from "@/lib/queries/onboarding-answers";
 import { getCurrentProfile } from "@/lib/queries/profiles";
 
 export const metadata: Metadata = { title: "Settings" };
@@ -23,6 +29,9 @@ export default async function AccountSettingsPage() {
     redirect("/login?redirectTo=/account/settings");
   }
 
+  const answers = await getOnboardingAnswers(supabase, profile.id);
+  const displayName = answers?.display_name ?? null;
+
   return (
     <div className="grid gap-5">
       <Panel>
@@ -31,7 +40,18 @@ export default async function AccountSettingsPage() {
         </h2>
         <p className="text-muted-foreground mt-2 text-sm">{profile.email}</p>
         <div className="mt-7">
-          <ProfileForm profile={profile} action={updateProfileAction} />
+          <AvatarForm
+            name={displayName ?? profile.username ?? profile.email ?? "?"}
+            src={avatarUrl(supabase, profile.avatar_path)}
+            action={updateAvatarAction}
+          />
+        </div>
+        <div className="mt-7 border-t pt-7">
+          <ProfileForm
+            profile={profile}
+            displayName={displayName}
+            action={updateProfileAction}
+          />
         </div>
       </Panel>
 

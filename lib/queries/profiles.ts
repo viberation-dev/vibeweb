@@ -9,7 +9,7 @@ import type { Database, Tables, TablesUpdate } from "@/types/supabase";
  * 42501 under column grants, so every read lists these explicitly.
  */
 const PUBLIC_COLUMNS =
-  "id, username, plan, role_level, app_role, layout_mode, onboarding_completed, created_at, updated_at";
+  "id, username, avatar_path, plan, role_level, app_role, layout_mode, onboarding_completed, created_at, updated_at";
 
 export type PublicProfile = Omit<Tables<"profiles">, "email">;
 
@@ -30,14 +30,21 @@ type Client = SupabaseClient<Database>;
  */
 export type ProfilePreferences = Pick<
   TablesUpdate<"profiles">,
-  "username" | "role_level" | "layout_mode" | "onboarding_completed"
+  | "username"
+  | "role_level"
+  | "layout_mode"
+  | "onboarding_completed"
+  | "avatar_path"
 >;
 
 /**
  * Supabase returns { data, error } rather than throwing. Surfacing the error
  * keeps a failed query from being silently read as "no rows".
  */
-function unwrap<T>(result: { data: T | null; error: { message: string } | null }, context: string): T {
+function unwrap<T>(
+  result: { data: T | null; error: { message: string } | null },
+  context: string,
+): T {
   if (result.error) {
     throw new Error(`${context}: ${result.error.message}`);
   }
@@ -48,7 +55,10 @@ function unwrap<T>(result: { data: T | null; error: { message: string } | null }
 }
 
 /** Look up one profile by id. Returns null when it does not exist. */
-export async function getProfile(client: Client, id: string): Promise<PublicProfile | null> {
+export async function getProfile(
+  client: Client,
+  id: string,
+): Promise<PublicProfile | null> {
   const { data, error } = await client
     .from("profiles")
     .select(PUBLIC_COLUMNS)
@@ -73,7 +83,9 @@ export async function getProfile(client: Client, id: string): Promise<PublicProf
  * is the client, which createClient() also caches — both halves are needed
  * or this dedupes nothing.
  */
-export const getCurrentUser = cache(async function getCurrentUser(client: Client) {
+export const getCurrentUser = cache(async function getCurrentUser(
+  client: Client,
+) {
   const { data, error } = await client.auth.getUser();
   return error ? null : data.user;
 });

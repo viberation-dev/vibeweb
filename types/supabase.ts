@@ -280,6 +280,7 @@ export type Database = {
       profiles: {
         Row: {
           app_role: Database["public"]["Enums"]["app_role"]
+          avatar_path: string | null
           created_at: string
           email: string | null
           id: string
@@ -292,6 +293,7 @@ export type Database = {
         }
         Insert: {
           app_role?: Database["public"]["Enums"]["app_role"]
+          avatar_path?: string | null
           created_at?: string
           email?: string | null
           id: string
@@ -304,6 +306,7 @@ export type Database = {
         }
         Update: {
           app_role?: Database["public"]["Enums"]["app_role"]
+          avatar_path?: string | null
           created_at?: string
           email?: string | null
           id?: string

@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { cache } from "react";
 
 import type { Database, Tables, TablesUpdate } from "@/types/supabase";
 
@@ -10,8 +11,13 @@ export type OnboardingAnswersPatch = Omit<
 
 type Client = SupabaseClient<Database>;
 
-/** The signed-in user's answers, or null before they have given any. */
-export async function getOnboardingAnswers(
+/**
+ * The signed-in user's answers, or null before they have given any.
+ *
+ * cache()d because the site layout, the /account layout and Settings all
+ * want the display name on one request (VIB-178).
+ */
+export const getOnboardingAnswers = cache(async function getOnboardingAnswers(
   client: Client,
   userId: string,
 ): Promise<OnboardingAnswers | null> {
@@ -25,7 +31,7 @@ export async function getOnboardingAnswers(
     throw new Error(`getOnboardingAnswers(${userId}): ${error.message}`);
   }
   return data;
-}
+});
 
 /**
  * Saves one step's answer. An upsert, because each step writes as it goes and
@@ -38,7 +44,11 @@ export async function saveOnboardingAnswers(
 ): Promise<void> {
   const { error } = await client
     .from("onboarding_answers")
-    .upsert({ ...patch, user_id: userId, updated_at: new Date().toISOString() });
+    .upsert({
+      ...patch,
+      user_id: userId,
+      updated_at: new Date().toISOString(),
+    });
 
   if (error) {
     throw new Error(`saveOnboardingAnswers(${userId}): ${error.message}`);

@@ -11,7 +11,12 @@ import type { Profile } from "@/lib/queries/profiles";
 
 type Props = {
   profile: Profile;
-  action: (state: ProfileFormState, formData: FormData) => Promise<ProfileFormState>;
+  /** Private, from onboarding_answers rather than the public profile (VIB-178). */
+  displayName: string | null;
+  action: (
+    state: ProfileFormState,
+    formData: FormData,
+  ) => Promise<ProfileFormState>;
 };
 
 const ROLE_LEVELS = [
@@ -45,7 +50,7 @@ function Select(props: ComponentProps<"select">) {
   );
 }
 
-export function ProfileForm({ profile, action }: Props) {
+export function ProfileForm({ profile, displayName, action }: Props) {
   const [state, formAction, pending] = useActionState(action, {});
 
   /*
@@ -56,9 +61,26 @@ export function ProfileForm({ profile, action }: Props) {
    * confirmation — so hold the value in state instead and keep both.
    */
   const [username, setUsername] = useState(profile.username ?? "");
+  const [name, setName] = useState(displayName ?? "");
 
   return (
     <form action={formAction} className="space-y-6">
+      <div className="space-y-2">
+        <Label htmlFor="display_name">Name</Label>
+        <Input
+          id="display_name"
+          name="display_name"
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+          placeholder="Not set"
+          maxLength={60}
+          autoComplete="name"
+        />
+        <p className="text-muted-foreground text-sm">
+          What we call you. Only you can see it.
+        </p>
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor="username">Username</Label>
         <Input
@@ -70,7 +92,8 @@ export function ProfileForm({ profile, action }: Props) {
           autoComplete="username"
         />
         <p className="text-muted-foreground text-sm">
-          3–30 characters. Letters, numbers, hyphens and underscores. Leave blank to clear.
+          Public, and unique. 3–30 characters: letters, numbers, hyphens and
+          underscores. Leave blank to clear.
         </p>
       </div>
 

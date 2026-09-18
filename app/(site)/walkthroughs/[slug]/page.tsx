@@ -11,6 +11,8 @@ import {
 import { WalkthroughStepper } from "@/components/features/walkthroughs/WalkthroughStepper";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { JsonLd } from "@/components/features/seo/JsonLd";
+import { breadcrumbLd } from "@/lib/structured-data";
 import { createClient } from "@/lib/integrations/supabase/server";
 import {
   getWalkthroughBySlug,
@@ -18,6 +20,7 @@ import {
   getWalkthroughTools,
 } from "@/lib/queries/walkthroughs";
 import { toolView } from "@/lib/resource-view";
+import { siteUrl } from "@/lib/site-url";
 import { resolveStepIndex, summariseProgress } from "@/lib/walkthroughs";
 
 type Props = {
@@ -90,6 +93,26 @@ export default async function WalkthroughRunnerPage({
 
   return (
     <main className="mx-auto w-full max-w-3xl p-6">
+      <JsonLd
+        data={[
+          {
+            "@context": "https://schema.org",
+            "@type": "HowTo",
+            name: walkthrough.title,
+            step: walkthrough.steps.map((s, i) => ({
+              "@type": "HowToStep",
+              position: i + 1,
+              name: s.title,
+              text: s.intro ?? s.title,
+              url: `${siteUrl}/walkthroughs/${walkthrough.slug}?step=${i + 1}`,
+            })),
+          },
+          breadcrumbLd([
+            { name: "Walkthroughs", path: "/walkthroughs" },
+            { name: walkthrough.title, path: `/walkthroughs/${walkthrough.slug}` },
+          ]),
+        ]}
+      />
       <Link
         href="/walkthroughs"
         className="text-sm text-muted-foreground hover:underline"

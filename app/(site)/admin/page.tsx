@@ -1,4 +1,9 @@
-import { IconBook2, IconQuote, IconStack2 } from "@tabler/icons-react";
+import {
+  IconArrowsLeftRight,
+  IconBook2,
+  IconQuote,
+  IconStack2,
+} from "@tabler/icons-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -28,6 +33,12 @@ const EDITORS = [
     title: "Testimonials",
     blurb: "Real quotes from real people, or the homepage shows none.",
   },
+  {
+    href: "/admin/comparisons",
+    icon: IconArrowsLeftRight,
+    title: "Comparisons",
+    blurb: "Curated A vs B pages: the intro and the verdict for each pair.",
+  },
 ] as const;
 
 /**
@@ -39,6 +50,8 @@ const EDITORS = [
  * RPC) until one of them becomes a weekly job the way tools and articles
  * are. Testimonials joined them in VIB-102 — they are visitor-facing claims
  * about real people, which is not work to do in a database client.
+ * Comparisons joined in VIB-184, for the same reason: the verdicts are
+ * published opinion.
  */
 export default async function AdminPage() {
   const profile = await requireStaff("/admin");

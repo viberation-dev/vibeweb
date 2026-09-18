@@ -41,6 +41,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-18",
+    kind: "added",
+    title: "Side-by-side comparisons",
+    body: "New comparison pages put two tools next to each other, with their pricing, platforms and key facts in one table and a straight answer on which to pick. Start with Claude vs GPT, Cursor vs Devin Desktop and Lovable vs Replit.",
+  },
+  {
+    date: "2026-09-18",
     kind: "improved",
     title: "Easier to find in search and AI assistants",
     body: "Tool, guide and walkthrough pages now describe themselves to search engines and AI assistants, and the site publishes an llms.txt map of everything worth reading.",

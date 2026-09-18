@@ -35,6 +35,8 @@ export async function getRepoFacts(owner: string, repo: string): Promise<RepoFac
     const response = await fetch(`${API}/repos/${owner}/${repo}`, {
       headers,
       next: { revalidate: REVALIDATE_SECONDS },
+      // A hung request would hold the whole page until Vercel's 300s kill (VIB-175).
+      signal: AbortSignal.timeout(5000),
     });
     if (!response.ok) {
       console.error(`github ${owner}/${repo}: HTTP ${response.status}`);

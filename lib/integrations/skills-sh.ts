@@ -59,6 +59,8 @@ async function getJson(path: string, authenticated: boolean): Promise<unknown> {
     const response = await fetch(`${API}${path}`, {
       headers,
       next: { revalidate: REVALIDATE_SECONDS },
+      // A hung request would hold the whole page until Vercel's 300s kill (VIB-175).
+      signal: AbortSignal.timeout(5000),
     });
     // 404 is an answer — no audits yet, or not listed — not a fault to log.
     if (response.status === 404) return null;

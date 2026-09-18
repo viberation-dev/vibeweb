@@ -33,7 +33,7 @@ import type { ToolCategory } from "@/lib/tool-categories";
  * stores a per-tool icon, so the category's icon is what there is. A tool
  * icon column would be its own piece of work.
  */
-const ICONS: Record<ToolCategory, Icon> = {
+export const CATEGORY_ICONS: Record<ToolCategory, Icon> = {
   models: IconBox,
   chats: IconMessage2,
   app_builders: IconApps,
@@ -59,6 +59,6 @@ export function CategoryIcon({
   category: ToolCategory;
   className?: string;
 }) {
-  const Icon = ICONS[category];
+  const Icon = CATEGORY_ICONS[category];
   return <Icon aria-hidden className={className} />;
 }

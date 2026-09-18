@@ -47,7 +47,8 @@ export function SiteHeader({ initials }: { initials: string }) {
   }, []);
 
   return (
-    <div className="flex items-center gap-4 border-b px-6 py-3">
+    /* Sticky at a fixed h-14: the sidebar rail docks under it at top-14 (VIB-174). */
+    <div className="bg-background sticky top-0 z-50 flex h-14 items-center gap-4 border-b px-6">
       <Link href="/" aria-label="Viberation — home" className="shrink-0">
         <Logo className="h-5" />
       </Link>

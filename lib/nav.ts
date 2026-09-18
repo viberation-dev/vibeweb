@@ -4,7 +4,7 @@
  * lib/role-level.ts and lib/search-query.ts stay alias-free.
  */
 import { CONTENT_PILLARS, learnHref } from "./learn.ts";
-import { TOOL_CATEGORIES } from "./tool-categories.ts";
+import { CATEGORY_GROUPS, toolCategoryLabel } from "./tool-categories.ts";
 import { toolsHref } from "./tools-url.ts";
 
 /**
@@ -30,6 +30,8 @@ export type NavItem = {
   exclusive?: readonly string[];
   /** Renders dimmed and unclickable — signals direction, links nowhere. */
   disabled?: boolean;
+  /** Sub-heading this item sits under inside its group (the Directory's Build, AI, …). */
+  section?: string;
 };
 
 /** Logged-out top nav. Four items, no sidebar. */
@@ -43,9 +45,9 @@ export const TOP_NAV: readonly NavItem[] = [
 /**
  * Logged-in sidebar.
  *
- * The Directory group is derived from TOOL_CATEGORIES rather than restated,
- * so the 16 categories have exactly one definition and the database enum
- * stays the only source of truth for what exists.
+ * The Directory group is derived from CATEGORY_GROUPS rather than restated,
+ * so it reads Build / AI / Extend / Start from / Ship like the "All tools"
+ * modal (VIB-174), and the 16 categories still have one definition.
  */
 export const SIDEBAR_GROUPS: ReadonlyArray<{ label?: string; items: readonly NavItem[] }> = [
   {
@@ -59,10 +61,13 @@ export const SIDEBAR_GROUPS: ReadonlyArray<{ label?: string; items: readonly Nav
     label: "Directory · 16",
     items: [
       { href: "/tools", label: "All tools", exclusive: ["category"] },
-      ...TOOL_CATEGORIES.map((category) => ({
-        href: toolsHref({ category: category.value }),
-        label: category.label,
-      })),
+      ...CATEGORY_GROUPS.flatMap((group) =>
+        group.categories.map((category) => ({
+          href: toolsHref({ category }),
+          label: toolCategoryLabel(category),
+          section: group.label,
+        })),
+      ),
     ],
   },
   {
@@ -117,6 +122,26 @@ export function sidebarGroupsFor(showRoadmap: boolean): typeof SIDEBAR_GROUPS {
     ...group,
     items: group.items.filter((item) => !item.disabled),
   })).filter((group) => group.items.length);
+}
+
+/**
+ * How the desktop rail behaves (VIB-174), Supabase's three options. Stored in
+ * a cookie so the server renders the right width and nothing jumps on load.
+ */
+export const SIDEBAR_MODES = ["expanded", "collapsed", "hover"] as const;
+export type SidebarMode = (typeof SIDEBAR_MODES)[number];
+export const SIDEBAR_MODE_COOKIE = "sidebar_mode";
+/** Comma-separated ids of the groups the member has folded shut. */
+export const SIDEBAR_CLOSED_COOKIE = "sidebar_closed";
+
+/** Cookies are untrusted input: anything unknown falls back to expand-on-hover. */
+export function toSidebarMode(value: string | undefined): SidebarMode {
+  return SIDEBAR_MODES.find((mode) => mode === value) ?? "hover";
+}
+
+/** A group's cookie id: the first word of its label, so "Directory · 16" is "Directory". */
+export function sidebarGroupId(label: string): string {
+  return label.split(" ")[0];
 }
 
 /**

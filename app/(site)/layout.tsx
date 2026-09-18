@@ -1,4 +1,5 @@
 import { IconArrowUpRight } from "@tabler/icons-react";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -13,7 +14,12 @@ import { SearchInput } from "@/components/features/search/SearchInput";
 import { ButtonIcon, buttonVariants } from "@/components/ui/button";
 import { isSuperAdmin } from "@/lib/app-role";
 import { createClient } from "@/lib/integrations/supabase/server";
-import { TOP_NAV } from "@/lib/nav";
+import {
+  SIDEBAR_CLOSED_COOKIE,
+  SIDEBAR_MODE_COOKIE,
+  TOP_NAV,
+  toSidebarMode,
+} from "@/lib/nav";
 import {
   getCurrentProfile,
   getCurrentUser,
@@ -71,6 +77,12 @@ export default async function SiteLayout({
    */
   const affiliateCount = await countAffiliateTools(supabase);
 
+  // The member's sidebar choices (VIB-174), read here so the first paint is the right width.
+  const jar = await cookies();
+  const sidebarMode = toSidebarMode(jar.get(SIDEBAR_MODE_COOKIE)?.value);
+  const sidebarClosed =
+    jar.get(SIDEBAR_CLOSED_COOKIE)?.value.split(",").filter(Boolean) ?? [];
+
   return (
     <>
       {signedIn ? (
@@ -94,10 +106,16 @@ export default async function SiteLayout({
             whole tree opts out of static rendering.
           */}
           <Suspense
-            fallback={<div className="hidden w-56 shrink-0 border-r md:block" />}
+            fallback={
+              <div
+                className={`hidden shrink-0 border-r md:block ${sidebarMode === "expanded" ? "w-56" : "w-14"}`}
+              />
+            }
           >
             <AppSidebar
               showRoadmap={profile ? isSuperAdmin(profile.app_role) : false}
+              initialMode={sidebarMode}
+              initialClosed={sidebarClosed}
             />
           </Suspense>
           <div className="min-w-0 flex-1">{children}</div>

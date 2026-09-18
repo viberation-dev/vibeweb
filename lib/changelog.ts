@@ -41,6 +41,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-18",
+    kind: "improved",
+    title: "Easier to find in search and AI assistants",
+    body: "Tool, guide and walkthrough pages now describe themselves to search engines and AI assistants, and the site publishes an llms.txt map of everything worth reading.",
+  },
+  {
+    date: "2026-09-18",
     kind: "added",
     title: "Explainers and Editor's picks on every category",
     body: "Every tools category now opens with a plain-English explainer of what it is and which kind you need. Once you know it, hide it with one click, and bring it back any time. Each category also starts with a short row of the tools we would pick first.",

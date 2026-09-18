@@ -2,7 +2,9 @@ import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 
+import { JsonLd } from "@/components/features/seo/JsonLd";
 import { siteUrl } from "@/lib/site-url";
+import { siteLd } from "@/lib/structured-data";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 import "./globals.css";
@@ -97,6 +99,7 @@ export default function RootLayout({
          */
         suppressHydrationWarning
       >
+        <JsonLd data={siteLd} />
         {children}
         {/* Cookieless page counts, so no consent banner (VIB-171). */}
         <Analytics />

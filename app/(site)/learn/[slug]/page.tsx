@@ -5,7 +5,10 @@ import { after } from "next/server";
 
 import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
 import { Badge } from "@/components/ui/badge";
+import { JsonLd } from "@/components/features/seo/JsonLd";
+import { breadcrumbLd, plainSummary } from "@/lib/structured-data";
 import { createClient } from "@/lib/integrations/supabase/server";
+import { siteUrl } from "@/lib/site-url";
 import { contentTypeLabel, learnHref } from "@/lib/learn";
 import { isBookmarked } from "@/lib/queries/bookmarks";
 import {
@@ -26,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!item || item.type === "announcement") {
     return { title: "Not found" };
   }
-  return { title: item.title };
+  return { title: item.title, description: plainSummary(item.body) };
 }
 
 /**
@@ -98,6 +101,23 @@ export default async function ContentPage({ params }: Props) {
 
   return (
     <main className="mx-auto w-full max-w-3xl p-6">
+      <JsonLd
+        data={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: item.title,
+            description: plainSummary(item.body),
+            datePublished: item.created_at,
+            dateModified: item.updated_at,
+            publisher: { "@id": `${siteUrl}/#organization` },
+          },
+          breadcrumbLd([
+            { name: "Learn", path: "/learn" },
+            { name: item.title, path: `/learn/${item.slug}` },
+          ]),
+        ]}
+      />
       <Link
         href="/learn"
         className="text-sm text-muted-foreground hover:underline"

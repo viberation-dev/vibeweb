@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { IconChevronDown } from "@tabler/icons-react";
+import { useActionState, useState, type ComponentProps } from "react";
 
 import type { ProfileFormState } from "@/app/(site)/account/settings/actions";
 import { Button } from "@/components/ui/button";
@@ -24,9 +25,25 @@ const LAYOUT_MODES = [
   { value: "advanced", label: "Advanced — show me everything" },
 ] as const;
 
-/** Native selects on purpose: keyboard and screen-reader behaviour for free. */
-const selectClass =
-  "border-input bg-background focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border px-3 py-1 text-sm outline-none focus-visible:ring-3";
+/**
+ * Native selects on purpose: keyboard and screen-reader behaviour for free.
+ * The browser's own arrow sits hard against the border and cannot be moved,
+ * so it is hidden and drawn here with room to breathe (VIB-177).
+ */
+function Select(props: ComponentProps<"select">) {
+  return (
+    <div className="relative">
+      <select
+        {...props}
+        className="border-input bg-background focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full appearance-none rounded-md border py-1 pr-10 pl-3 text-sm outline-none focus-visible:ring-3"
+      />
+      <IconChevronDown
+        aria-hidden
+        className="text-muted-foreground pointer-events-none absolute top-1/2 right-3.5 size-4 -translate-y-1/2"
+      />
+    </div>
+  );
+}
 
 export function ProfileForm({ profile, action }: Props) {
   const [state, formAction, pending] = useActionState(action, {});
@@ -59,18 +76,17 @@ export function ProfileForm({ profile, action }: Props) {
 
       <div className="space-y-2">
         <Label htmlFor="role_level">Experience level</Label>
-        <select
+        <Select
           id="role_level"
           name="role_level"
           defaultValue={profile.role_level}
-          className={selectClass}
         >
           {ROLE_LEVELS.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
             </option>
           ))}
-        </select>
+        </Select>
         <p className="text-muted-foreground text-sm">
           Tunes which guides and tools are surfaced to you.
         </p>
@@ -78,18 +94,17 @@ export function ProfileForm({ profile, action }: Props) {
 
       <div className="space-y-2">
         <Label htmlFor="layout_mode">Layout</Label>
-        <select
+        <Select
           id="layout_mode"
           name="layout_mode"
           defaultValue={profile.layout_mode}
-          className={selectClass}
         >
           {LAYOUT_MODES.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       {state.error ? (

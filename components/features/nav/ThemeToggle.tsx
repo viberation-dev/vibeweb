@@ -88,8 +88,12 @@ export function ThemeToggle({
       className={cn(
         "flex gap-0.5",
         /* The rail supplies the padding in vertical form, so the control
-           does not add a second ring of it inside the pill. */
-        orientation === "vertical" ? "flex-col" : "p-1",
+           does not add a second ring of it inside the pill. A track behind
+           the horizontal form is what makes it read as one three-way
+           switch rather than three loose words (VIB-177). */
+        orientation === "vertical"
+          ? "flex-col"
+          : "bg-muted w-fit gap-1 rounded-full border p-1",
       )}
     >
       {THEME_MODES.map((value) => {
@@ -103,10 +107,10 @@ export function ThemeToggle({
             aria-pressed={active}
             title={LABELS[value]}
             className={cn(
-              "flex items-center justify-center gap-1.5 rounded text-xs transition-colors",
+              "group flex items-center justify-center rounded text-xs transition-colors",
               orientation === "vertical"
                 ? "size-9.5 rounded-full"
-                : "flex-1 px-2 py-1",
+                : "rounded-full px-2 py-1.5",
               /*
                 Active is the brand fill, per the mockup's `.tgl` — the
                 shipped state was --accent, a muted surface that read as
@@ -119,8 +123,22 @@ export function ThemeToggle({
           >
             <Icon aria-hidden className="size-3.5" />
             {/* The rail is icon-only — three stacked words is a column of
-                text, not a control. `title` already names each one. */}
-            {orientation === "vertical" ? null : LABELS[value]}
+                text, not a control. `title` already names each one.
+                Horizontally the label slides out on hover or focus and stays
+                out on the active mode (VIB-177). Collapsed with max-width, not
+                display:none, so screen readers still get the name. */}
+            {orientation === "vertical" ? null : (
+              <span
+                className={cn(
+                  "overflow-hidden whitespace-nowrap transition-all motion-reduce:transition-none",
+                  active
+                    ? "ml-1.5 max-w-16"
+                    : "max-w-0 opacity-0 group-hover:ml-1.5 group-hover:max-w-16 group-hover:opacity-100 group-focus-visible:ml-1.5 group-focus-visible:max-w-16 group-focus-visible:opacity-100",
+                )}
+              >
+                {LABELS[value]}
+              </span>
+            )}
           </button>
         );
       })}

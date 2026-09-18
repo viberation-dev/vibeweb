@@ -41,6 +41,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-18",
+    kind: "improved",
+    title: "A slimmer sidebar",
+    body: "The sidebar is now a row of icons that opens out when you hover it. Pick Expanded, Collapsed or Expand on hover from the button at its foot, and fold away the sections you do not use. The directory is grouped into Build, AI, Extend, Start from and Ship.",
+  },
+  {
+    date: "2026-09-18",
     kind: "fixed",
     title: "Home page no longer hangs",
     body: "When a service we pull skill stats from was slow, the home page could fail to load at all. Now it loads anyway and skips the numbers it could not get.",

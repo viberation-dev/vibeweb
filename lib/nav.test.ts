@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { isActiveNavItem, SIDEBAR_GROUPS, sidebarGroupsFor, TOP_NAV } from "./nav.ts";
+import { isActiveNavItem, SIDEBAR_GROUPS, sidebarGroupsFor, toSidebarMode, TOP_NAV } from "./nav.ts";
 
 const active = (pathname: string, query: string, href: string) =>
   isActiveNavItem(pathname, new URLSearchParams(query), href);
@@ -82,4 +82,15 @@ test("members never see roadmap items; super admins see the full sidebar", () =>
   assert.ok(member.every((group) => group.items.length && group.items.every((item) => !item.disabled)));
   assert.ok(!member.some((group) => group.label === "Later"));
   assert.equal(sidebarGroupsFor(true), SIDEBAR_GROUPS);
+});
+test("the Directory is grouped like the All tools modal", () => {
+  const directory = SIDEBAR_GROUPS.find((group) => group.label === "Directory · 16")!;
+  const sections = [...new Set(directory.items.map((item) => item.section).filter(Boolean))];
+  assert.deepEqual(sections, ["Build", "AI", "Extend", "Start from", "Ship"]);
+});
+
+test("an unknown sidebar mode cookie falls back to expand-on-hover", () => {
+  assert.equal(toSidebarMode("collapsed"), "collapsed");
+  assert.equal(toSidebarMode("<script>"), "hover");
+  assert.equal(toSidebarMode(undefined), "hover");
 });

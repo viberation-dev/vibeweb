@@ -476,6 +476,66 @@ export type Database = {
           },
         ]
       }
+      tool_comparisons: {
+        Row: {
+          created_at: string
+          id: string
+          intro: string
+          models_a: string[]
+          models_b: string[]
+          pick_a: string
+          pick_b: string
+          published: boolean
+          slug: string
+          tool_a_id: string
+          tool_b_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          intro: string
+          models_a?: string[]
+          models_b?: string[]
+          pick_a: string
+          pick_b: string
+          published?: boolean
+          slug: string
+          tool_a_id: string
+          tool_b_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          intro?: string
+          models_a?: string[]
+          models_b?: string[]
+          pick_a?: string
+          pick_b?: string
+          published?: boolean
+          slug?: string
+          tool_a_id?: string
+          tool_b_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_comparisons_tool_a_id_fkey"
+            columns: ["tool_a_id"]
+            isOneToOne: false
+            referencedRelation: "tools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tool_comparisons_tool_b_id_fkey"
+            columns: ["tool_b_id"]
+            isOneToOne: false
+            referencedRelation: "tools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tool_links: {
         Row: {
           kind: Database["public"]["Enums"]["tool_link_kind"]

@@ -4278,3 +4278,34 @@ join tools t on t.slug in ('supabase', 'supabase-mcp-server', 'supabase-postgres
 where w.slug = 'add-a-database-with-supabase'
 on conflict do nothing;
 
+-- Comparison pages (VIB-184). Same rows as migration 20260918170000.
+insert into tool_comparisons (slug, tool_a_id, tool_b_id, intro, pick_a, pick_b, models_a, models_b, published)
+select s.slug, a.id, b.id, v.intro, v.pick_a, v.pick_b, v.models_a, v.models_b, true
+from (values
+  (
+    'claude', 'gpt',
+    'Claude and GPT are the two model families most vibe coders choose between: the models behind Claude.ai and ChatGPT. Both have a $20 a month chat plan and both work inside Cursor and GitHub Copilot. Claude is the stronger pick for long coding sessions across a large codebase. GPT is the better all-rounder if you want chat, images and coding in one subscription.',
+    'You spend long sessions coding in one project, want an agent that works across a large codebase with Claude Code, or give your AI long, detailed instructions and need them followed.',
+    'You want one subscription for chat, images and coding, want a cheaper way in with ChatGPT Go at $8 a month, or already work with Codex or Microsoft Azure.',
+    array['anthropic/claude-fable-5.1', 'anthropic/claude-opus-5', 'anthropic/claude-sonnet-5'],
+    array['openai/gpt-6-astra', 'openai/gpt-5.6-sol', 'openai/gpt-5.6-terra']
+  ),
+  (
+    'cursor', 'devin-desktop',
+    'Cursor and Devin Desktop are both AI editors built on VS Code, both free to start with a $20 a month Pro plan, and both let you choose between Claude, GPT and Gemini. Cursor is the safer default for everyday AI coding on any stack. Devin Desktop, formerly Windsurf, makes most sense if you came from Windsurf or already use Devin to run agents on whole tasks.',
+    'You want a proven AI editor for everyday coding on any stack, want to bring your own API key, or want Cursor''s own models alongside Claude, GPT and Gemini.',
+    'You are moving over from Windsurf, already use Devin for agent work, or want an agent built into the editor that takes on whole tasks.',
+    array[]::text[], array[]::text[]
+  ),
+  (
+    'lovable', 'replit',
+    'Lovable and Replit both build a working app from a description in your browser, with a database, logins and hosting included, and both let you keep your code on GitHub. Lovable is the quicker path to a polished web app. Replit builds web apps, mobile apps and scripts in more languages, with a full editor in the browser when you want to open the code.',
+    'You want a web app that looks good fast, are happy with React and Tailwind, or want to connect your own Supabase project and keep your code in two-way sync with GitHub.',
+    'You want a mobile app or a script as well as web apps, prefer Python or another language, or want a full editor in the browser alongside the agent.',
+    array[]::text[], array[]::text[]
+  )
+) as v(a_slug, b_slug, intro, pick_a, pick_b, models_a, models_b)
+join tools a on a.slug = v.a_slug
+join tools b on b.slug = v.b_slug
+cross join lateral (select v.a_slug || '-vs-' || v.b_slug as slug) s(slug)
+on conflict (slug) do nothing;

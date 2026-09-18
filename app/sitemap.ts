@@ -3,6 +3,7 @@ import type { MetadataRoute } from "next";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { contentHref } from "@/lib/learn";
 import { listCollections } from "@/lib/queries/collections";
+import { listPublishedComparisons } from "@/lib/queries/comparisons";
 import { listAllContent } from "@/lib/queries/content";
 import { listAllTools } from "@/lib/queries/tools";
 import { listWalkthroughs } from "@/lib/queries/walkthroughs";
@@ -15,6 +16,7 @@ const STATIC_PATHS = [
   "/learn",
   "/walkthroughs",
   "/collections",
+  "/compare",
   "/blog",
   "/docs",
   "/changelog",
@@ -27,11 +29,12 @@ export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = await createClient();
-  const [tools, content, walkthroughs, collections] = await Promise.all([
+  const [tools, content, walkthroughs, collections, comparisons] = await Promise.all([
     listAllTools(supabase),
     listAllContent(supabase),
     listWalkthroughs(supabase),
     listCollections(supabase),
+    listPublishedComparisons(supabase),
   ]);
 
   const entry = (path: string, updated?: string | null) => ({
@@ -48,5 +51,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .map((c) => entry(contentHref(c.type, c.slug), c.updated_at)),
     ...walkthroughs.map((w) => entry(`/walkthroughs/${w.slug}`, w.updated_at)),
     ...collections.map((c) => entry(`/collections/${c.slug}`, c.created_at)),
+    ...comparisons.map((c) => entry(`/compare/${c.slug}`, c.updated_at)),
   ];
 }

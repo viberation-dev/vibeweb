@@ -62,7 +62,7 @@ export async function getProfile(client: Client, id: string): Promise<PublicProf
 }
 
 /**
- * The signed-in user's profile, or null when nobody is signed in.
+ * The signed-in auth user, or null when nobody is signed in.
  *
  * Uses getUser() rather than getSession() — getUser() revalidates the token
  * against Supabase, so it can be trusted on the server. getSession() only
@@ -73,16 +73,26 @@ export async function getProfile(client: Client, id: string): Promise<PublicProf
  * is the client, which createClient() also caches — both halves are needed
  * or this dedupes nothing.
  */
+export const getCurrentUser = cache(async function getCurrentUser(client: Client) {
+  const { data, error } = await client.auth.getUser();
+  return error ? null : data.user;
+});
+
+/**
+ * The signed-in user's profile, or null when nobody is signed in — or when
+ * the auth user exists but its profiles row does not (VIB-173). Callers that
+ * only need "is someone signed in" should ask getCurrentUser instead.
+ */
 export const getCurrentProfile = cache(async function getCurrentProfile(
   client: Client,
 ): Promise<Profile | null> {
-  const { data, error } = await client.auth.getUser();
+  const user = await getCurrentUser(client);
 
-  if (error || !data.user) {
+  if (!user) {
     return null;
   }
-  const profile = await getProfile(client, data.user.id);
-  return profile && { ...profile, email: data.user.email ?? null };
+  const profile = await getProfile(client, user.id);
+  return profile && { ...profile, email: user.email ?? null };
 });
 
 /**

@@ -1,6 +1,7 @@
 import { IconChevronDown } from "@tabler/icons-react";
 import Link from "next/link";
 
+import { MoreTags } from "@/components/features/tools/MoreTags";
 import type { Tag } from "@/lib/queries/tags";
 import { PRICING_FILTERS, type PricingFilter } from "@/lib/tool-facts";
 import type { ToolCategory } from "@/lib/tool-categories";
@@ -24,6 +25,9 @@ type Props = {
 
 const chip =
   "rounded-full border px-3 py-1 text-xs transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
+/** Chips before "+N more": about one line at the directory's width. */
+const VISIBLE_TAGS = 8;
+
 const chipActive =
   "border-transparent bg-primary text-primary-foreground hover:bg-primary/80";
 
@@ -50,99 +54,114 @@ export function DirectoryFilters({
 }: Props) {
   const activeSort = sort ?? DEFAULT_TOOL_SORT;
 
+  const chipFor = (t: Tag) => {
+    const active = tag === t.slug;
+    return (
+      <Link
+        key={t.id}
+        href={toolsHref({
+          category,
+          tag: active ? undefined : t.slug,
+          sort,
+          q,
+          pricing,
+        })}
+        aria-current={active ? "page" : undefined}
+        className={cn(chip, active && chipActive)}
+      >
+        #{t.slug}
+      </Link>
+    );
+  };
+
+  /*
+   * One line of the most-used tags, the rest behind "+N more" (VIB-179).
+   * Tags arrive ordered by use. The active tag always stays visible, even
+   * when it is not in the top few, or the reader could not see or clear it.
+   */
+  const shown = tags.filter((t, i) => i < VISIBLE_TAGS || t.slug === tag);
+  const hidden = tags.filter((t) => !shown.includes(t));
+
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="space-y-3">
       {tags.length ? (
-        <>
+        <div className="flex flex-wrap items-center gap-2">
           <span className="text-muted-foreground text-xs">Tags:</span>
-          {tags.map((t) => {
-            const active = tag === t.slug;
-            return (
-              <Link
-                key={t.id}
-                href={toolsHref({
-                  category,
-                  tag: active ? undefined : t.slug,
-                  sort,
-                  q,
-                  pricing,
-                })}
-                aria-current={active ? "page" : undefined}
-                className={cn(chip, active && chipActive)}
-              >
-                #{t.slug}
-              </Link>
-            );
-          })}
-        </>
+          {shown.map(chipFor)}
+          {hidden.length ? (
+            <MoreTags count={hidden.length}>{hidden.map(chipFor)}</MoreTags>
+          ) : null}
+        </div>
       ) : null}
 
-      {/*
+      <div className="flex flex-wrap items-center gap-2">
+        {/*
         Pricing is its own axis, not a tag. It reads `pricing_tier`, which is
         set on every row, rather than the `free-tier` tag that covered 7 of 10
         Freemium tools and none of the 10 priced "Open source" (VIB-88, VIB-93).
       */}
-      <span className="text-muted-foreground ml-2 text-xs">Pricing:</span>
-      {PRICING_FILTERS.map((option) => {
-        const active = pricing === option.value;
-        return (
-          <Link
-            key={option.value}
-            href={toolsHref({
-              category,
-              tag,
-              sort,
-              q,
-              pricing: active ? undefined : option.value,
-            })}
-            aria-current={active ? "page" : undefined}
-            className={cn(chip, active && chipActive)}
-          >
-            {option.label}
-          </Link>
-        );
-      })}
+        <span className="text-muted-foreground text-xs">Pricing:</span>
+        {PRICING_FILTERS.map((option) => {
+          const active = pricing === option.value;
+          return (
+            <Link
+              key={option.value}
+              href={toolsHref({
+                category,
+                tag,
+                sort,
+                q,
+                pricing: active ? undefined : option.value,
+              })}
+              aria-current={active ? "page" : undefined}
+              className={cn(chip, active && chipActive)}
+            >
+              {option.label}
+            </Link>
+          );
+        })}
 
-      {/*
+        {/*
         Native <details> rather than a select or a menu library: it needs no
         JavaScript, no client component, and each option stays a real link
         with a shareable URL behind it.
       */}
-      <details className="relative ml-auto">
-        <summary className="text-muted-foreground hover:text-foreground flex cursor-pointer list-none items-center gap-1 text-sm">
-          Sort: {toolSortOrder(activeSort).label}
-          <IconChevronDown aria-hidden className="size-3.5" />
-        </summary>
-        <div className="bg-background absolute right-0 z-20 mt-2 w-40 rounded-md border p-1 shadow-md">
-          <ul>
-            {TOOL_SORTS.map(({ value, label }) => (
-              <li key={value}>
-                <Link
-                  /*
-                   * The default sort is expressed by *omitting* ?sort=, so the
-                   * plain /tools URL stays canonical instead of gaining a param
-                   * that means what no param already meant.
-                   */
-                  href={toolsHref({
-                    category,
-                    tag,
-                    q,
-                    pricing,
-                    sort: value === DEFAULT_TOOL_SORT ? undefined : value,
-                  })}
-                  aria-current={activeSort === value ? "page" : undefined}
-                  className={cn(
-                    "hover:bg-accent block rounded px-2 py-1 text-sm",
-                    activeSort === value && "font-medium",
-                  )}
-                >
-                  {label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </details>
+        <details className="relative ml-auto">
+          <summary className="text-muted-foreground hover:text-foreground flex cursor-pointer list-none items-center gap-1 text-sm">
+            Sort: {toolSortOrder(activeSort).label}
+            <IconChevronDown aria-hidden className="size-3.5" />
+          </summary>
+          <div className="bg-background absolute right-0 z-20 mt-2 w-40 rounded-md border p-1 shadow-md">
+            <ul>
+              {TOOL_SORTS.map(({ value, label }) => (
+                <li key={value}>
+                  <Link
+                    /*
+                     * The default sort is expressed by *omitting* ?sort=, so the
+                     * plain /tools URL stays canonical instead of gaining a param
+                     * that means what no param already meant.
+                     */
+                    href={toolsHref({
+                      category,
+                      tag,
+                      q,
+                      pricing,
+                      sort: value === DEFAULT_TOOL_SORT ? undefined : value,
+                    })}
+                    aria-current={activeSort === value ? "page" : undefined}
+                    className={cn(
+                      "hover:bg-accent block rounded px-2 py-1 text-sm",
+                      activeSort === value && "font-medium",
+                    )}
+                  >
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </details>
+      </div>
     </div>
   );
 }

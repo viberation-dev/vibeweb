@@ -36,27 +36,40 @@ export async function listTags(
 }
 
 /**
- * Facet tags carried by at least one tool in `category`, alphabetical.
+ * Facet tags carried by at least one tool (in `category`, when given), most
+ * used first, then alphabetical.
  *
- * The directory's chip row on a category page (VIB-141). Hosting brought
- * tags like `vps` and `nextjs` that mean nothing on the Skills or Models
- * page, and a chip that filters a category down to zero is a dead end.
+ * The directory's chip row (VIB-141). Hosting brought tags like `vps` and
+ * `nextjs` that mean nothing on the Skills or Models page, and a chip that
+ * filters the list down to zero is a dead end. Ordered by use since VIB-179,
+ * so the one line of chips shown before "more" is the useful line.
  */
 export async function listCategoryTags(
   client: Client,
-  category: Enums<"tool_category">,
+  category?: Enums<"tool_category">,
 ): Promise<Tag[]> {
-  const { data, error } = await client
+  let query = client
     .from("tool_tags")
     .select("tags!inner(*), tools!inner(category)")
-    .eq("tools.category", category)
     .eq("tags.kind", "facet");
+  if (category) {
+    query = query.eq("tools.category", category);
+  }
+  const { data, error } = await query;
 
   if (error) {
-    throw new Error(`listCategoryTags(${category}): ${error.message}`);
+    throw new Error(`listCategoryTags(${category ?? "all"}): ${error.message}`);
   }
-  const byId = new Map(data.map((row) => [row.tags.id, row.tags]));
-  return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name));
+  // One row per (tool, tag), so a tag's row count is how many tools carry it.
+  const uses = new Map<string, { tag: Tag; count: number }>();
+  for (const { tags } of data) {
+    const entry = uses.get(tags.id) ?? { tag: tags, count: 0 };
+    entry.count += 1;
+    uses.set(tags.id, entry);
+  }
+  return [...uses.values()]
+    .sort((a, b) => b.count - a.count || a.tag.name.localeCompare(b.tag.name))
+    .map((entry) => entry.tag);
 }
 
 /** One tag by its URL slug. Null when it does not exist. */

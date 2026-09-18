@@ -42,6 +42,12 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-18",
     kind: "improved",
+    title: "Browse tools by category",
+    body: "The tools page now opens with a row for each category, grouped into Build, AI, Extend, Start from and Ship, with a link to see everything in it. Tags are sorted by how many tools use them, and the rest sit behind a More button.",
+  },
+  {
+    date: "2026-09-18",
+    kind: "improved",
     title: "A tidier colour mode switch",
     body: "Light, Dark and System now sit in one compact switch. Hover an icon to see its name, and the mode you picked stays clearly highlighted. The dropdowns in Settings also have more room around their arrows.",
   },

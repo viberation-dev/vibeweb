@@ -1,10 +1,12 @@
 import { IconSearch } from "@tabler/icons-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
 import { DirectoryPager } from "@/components/features/resource/DirectoryPager";
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import { CategoryGuide } from "@/components/features/tools/CategoryGuide";
+import { CategoryIcon } from "@/components/features/tools/CategoryIcon";
 import { ToolIcon } from "@/components/features/tools/ToolIcon";
 import { DirectoryFilters } from "@/components/features/tools/DirectoryFilters";
 import { buttonVariants } from "@/components/ui/button";
@@ -15,11 +17,13 @@ import { familyLine, familyMembers } from "@/lib/model-facts";
 import { toPageNumber } from "@/lib/pagination";
 import { listBookmarks } from "@/lib/queries/bookmarks";
 import { cardBadges } from "@/lib/card-badges";
-import { listCategoryTags, listTags } from "@/lib/queries/tags";
-import { getToolTagsByIds, listTools } from "@/lib/queries/tools";
+import { listCategoryTags } from "@/lib/queries/tags";
+import { getToolTagsByIds, listTools, type Tool } from "@/lib/queries/tools";
 import { normaliseQuery } from "@/lib/search-query";
 import { toPricingFilter } from "@/lib/tool-facts";
 import {
+  CATEGORY_BLURBS,
+  CATEGORY_GROUPS,
   TOOL_CATEGORIES,
   toToolCategory,
   toolCategoryLabel,
@@ -34,6 +38,9 @@ export const metadata: Metadata = {
   description:
     "Find the AI tool that fits what you are building. Models, agents, IDEs, CLIs and MCP servers, with honest tradeoffs and labelled affiliate links.",
 };
+
+/** Tools per category row: one line of the three-column grid. */
+const ROW_SIZE = 3;
 
 type Props = {
   searchParams: Promise<{
@@ -63,13 +70,48 @@ export default async function ToolsPage({ searchParams }: Props) {
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
 
-  const [{ tools, total, pageCount }, tags, bookmarks] = await Promise.all([
-    listTools(supabase, { category, tag, sort, q, pricing, page }),
-    category ? listCategoryTags(supabase, category) : listTags(supabase),
+  /*
+   * Unfiltered, the directory is one row per category rather than one long
+   * grid (VIB-179): a reader starts from what kind of thing they need, and
+   * each row's "See all" is the filtered grid. Any filter drops back to the
+   * grid and pager.
+   */
+  const browsing = !category && !tag && !q && !pricing;
+
+  const [result, tags, bookmarks] = await Promise.all([
+    listTools(
+      supabase,
+      browsing
+        ? // ponytail: fetches every tool to fill the rows and count each
+          // category in one round trip. Fine at a few hundred rows; switch
+          // to a per-category query or a counts view past a few thousand.
+          { sort, pageSize: 1000 }
+        : { category, tag, sort, q, pricing, page },
+    ),
+    listCategoryTags(supabase, category),
     // Signed-out visitors still see Save buttons; pressing one sends them to
     // sign in. Only which ones read as saved needs a user.
     auth.user ? listBookmarks(supabase, auth.user.id, "tool") : [],
   ]);
+
+  const { total, pageCount } = result;
+
+  const rows = browsing
+    ? CATEGORY_GROUPS.map((group) => ({
+        label: group.label,
+        categories: group.categories
+          .map((value) => {
+            const all = result.tools.filter((t) => t.category === value);
+            return { value, count: all.length, tools: all.slice(0, ROW_SIZE) };
+          })
+          .filter((row) => row.count),
+      })).filter((group) => group.categories.length)
+    : [];
+
+  // Only the cards actually on screen need their tags, specs and install counts.
+  const tools = browsing
+    ? rows.flatMap((g) => g.categories.flatMap((row) => row.tools))
+    : result.tools;
 
   const [toolTags, liveModels, skillLines] = await Promise.all([
     // One round trip for the whole grid's tag pills rather than one per card.
@@ -98,6 +140,57 @@ export default async function ToolsPage({ searchParams }: Props) {
   );
   // Come back to this exact filtered page after a signed-out visitor logs in.
   const returnTo = toolsHref({ category, tag, sort, q, pricing, page });
+
+  const card = (tool: Tool) => (
+    <ResourceCard
+      href={`/tools/${tool.slug}`}
+      title={tool.name}
+      icon={<ToolIcon tool={tool} className="size-4" />}
+      description={tool.tagline}
+      meta={familyFor(tool.openrouter_family) ?? skillLines.get(tool.id)}
+      badges={
+        // Hosts and app builders are chosen by price, trial and
+        // what they do (VIB-141, VIB-142), so their cards carry
+        // those instead.
+        cardBadges(
+          tool.category,
+          tool.pricing_tier,
+          toolTags.get(tool.id) ?? [],
+          tool.category === "skills" ? skillCardExtras(tool) : [],
+        ) ?? [
+          toolCategoryLabel(tool.category),
+          ...(toolTags.get(tool.id) ?? []).slice(0, 1).map((t) => `#${t.slug}`),
+        ]
+      }
+      action={
+        <>
+          <BookmarkButton
+            targetType="tool"
+            targetId={tool.id}
+            bookmarked={bookmarkedIds.has(tool.id)}
+            returnTo={returnTo}
+          />
+          {/*
+            Through /go/[slug] (VIB-52), never straight to the
+            vendor — a direct link loses the click and the
+            affiliate attribution with it. The outbound variant
+            keeps it visually distinct from in-product actions.
+          */}
+          <a
+            href={`/go/${tool.slug}`}
+            rel="sponsored noopener"
+            target="_blank"
+            className={buttonVariants({
+              variant: "outbound",
+              size: "sm",
+            })}
+          >
+            Visit ↗
+          </a>
+        </>
+      }
+    />
+  );
 
   return (
     <main className="mx-auto w-full max-w-6xl p-6">
@@ -178,62 +271,60 @@ export default async function ToolsPage({ searchParams }: Props) {
         />
       </div>
 
-      {tools.length ? (
+      {browsing ? (
+        <div className="mt-8 space-y-12">
+          {rows.map((group) => (
+            <section key={group.label} aria-labelledby={`group-${group.label}`}>
+              <h2
+                id={`group-${group.label}`}
+                className="text-muted-foreground text-xs font-bold tracking-widest uppercase"
+              >
+                {group.label}
+              </h2>
+              <div className="mt-4 space-y-8">
+                {group.categories.map((row) => (
+                  <div key={row.value}>
+                    <div className="flex items-end justify-between gap-4">
+                      <div>
+                        <h3 className="font-heading flex items-center gap-2 text-lg font-semibold">
+                          <CategoryIcon
+                            category={row.value}
+                            className="text-primary size-5"
+                          />
+                          {toolCategoryLabel(row.value)}
+                        </h3>
+                        <p className="text-muted-foreground mt-1 text-sm">
+                          {CATEGORY_BLURBS[row.value]}
+                        </p>
+                      </div>
+                      <Link
+                        href={toolsHref({ category: row.value, sort })}
+                        className="text-primary shrink-0 text-sm font-semibold hover:underline"
+                      >
+                        See all {row.count}
+                        <span className="sr-only">
+                          {" "}
+                          {toolCategoryLabel(row.value)}
+                        </span>{" "}
+                        →
+                      </Link>
+                    </div>
+                    <ul className="mt-4 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {row.tools.map((tool) => (
+                        <li key={tool.id}>{card(tool)}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      ) : tools.length ? (
         <>
           <ul className="mt-6 grid items-start gap-4 sm:grid-cols-2">
             {tools.map((tool) => (
-              <li key={tool.id}>
-                <ResourceCard
-                  href={`/tools/${tool.slug}`}
-                  title={tool.name}
-                  icon={<ToolIcon tool={tool} className="size-4" />}
-                  description={tool.tagline}
-                  meta={familyFor(tool.openrouter_family) ?? skillLines.get(tool.id)}
-                  badges={
-                    // Hosts and app builders are chosen by price, trial and
-                    // what they do (VIB-141, VIB-142), so their cards carry
-                    // those instead.
-                    cardBadges(
-                      tool.category,
-                      tool.pricing_tier,
-                      toolTags.get(tool.id) ?? [],
-                      tool.category === "skills" ? skillCardExtras(tool) : [],
-                    ) ?? [
-                      toolCategoryLabel(tool.category),
-                      ...(toolTags.get(tool.id) ?? [])
-                        .slice(0, 1)
-                        .map((t) => `#${t.slug}`),
-                    ]
-                  }
-                  action={
-                    <>
-                      <BookmarkButton
-                        targetType="tool"
-                        targetId={tool.id}
-                        bookmarked={bookmarkedIds.has(tool.id)}
-                        returnTo={returnTo}
-                      />
-                      {/*
-                        Through /go/[slug] (VIB-52), never straight to the
-                        vendor — a direct link loses the click and the
-                        affiliate attribution with it. The outbound variant
-                        keeps it visually distinct from in-product actions.
-                      */}
-                      <a
-                        href={`/go/${tool.slug}`}
-                        rel="sponsored noopener"
-                        target="_blank"
-                        className={buttonVariants({
-                          variant: "outbound",
-                          size: "sm",
-                        })}
-                      >
-                        Visit ↗
-                      </a>
-                    </>
-                  }
-                />
-              </li>
+              <li key={tool.id}>{card(tool)}</li>
             ))}
           </ul>
           <DirectoryPager

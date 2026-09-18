@@ -14,15 +14,19 @@ import { ButtonIcon, buttonVariants } from "@/components/ui/button";
 import { isSuperAdmin } from "@/lib/app-role";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { TOP_NAV } from "@/lib/nav";
-import { getCurrentProfile, type Profile } from "@/lib/queries/profiles";
+import {
+  getCurrentProfile,
+  getCurrentUser,
+  type Profile,
+} from "@/lib/queries/profiles";
 import { countAffiliateTools } from "@/lib/queries/tools";
 
 /**
  * Up to two letters for the header avatar, from whatever identity exists.
  * Falls back to "?" rather than rendering an empty circle.
  */
-function initialsFor(profile: Profile): string {
-  const source = profile.username ?? profile.email ?? "";
+function initialsFor(identity: Pick<Profile, "username" | "email">): string {
+  const source = identity.username ?? identity.email ?? "";
   const parts = source.split(/[\s._-]+/).filter(Boolean);
   const letters =
     parts.length > 1 ? parts[0][0] + parts[1][0] : source.slice(0, 2);
@@ -51,7 +55,15 @@ export default async function SiteLayout({
   children: React.ReactNode;
 }>) {
   const supabase = await createClient();
+  const user = await getCurrentUser(supabase);
   const profile = await getCurrentProfile(supabase);
+
+  /*
+   * Signed-in chrome follows the auth user, not the profiles row (VIB-173).
+   * Pages gate on getUser(), so a login whose row is missing would otherwise
+   * see members-only content under a "Sign in" header.
+   */
+  const signedIn = user !== null;
 
   /*
    * The footer's affiliate line is a claim about the site, so it is read from
@@ -61,8 +73,12 @@ export default async function SiteLayout({
 
   return (
     <>
-      {profile ? (
-        <SiteHeader initials={initialsFor(profile)} />
+      {signedIn ? (
+        <SiteHeader
+          initials={initialsFor(
+            profile ?? { username: null, email: user?.email ?? null },
+          )}
+        />
       ) : (
         <>
           <UtilityBar />
@@ -70,7 +86,7 @@ export default async function SiteLayout({
         </>
       )}
 
-      {profile ? (
+      {signedIn ? (
         <div className="flex min-h-0 flex-1 flex-col md:flex-row">
           {/*
             AppSidebar reads the query string to mark the active category,
@@ -80,7 +96,9 @@ export default async function SiteLayout({
           <Suspense
             fallback={<div className="hidden w-56 shrink-0 border-r md:block" />}
           >
-            <AppSidebar showRoadmap={isSuperAdmin(profile.app_role)} />
+            <AppSidebar
+              showRoadmap={profile ? isSuperAdmin(profile.app_role) : false}
+            />
           </Suspense>
           <div className="min-w-0 flex-1">{children}</div>
         </div>
@@ -92,7 +110,7 @@ export default async function SiteLayout({
         </>
       )}
 
-      {profile ? (
+      {signedIn ? (
         <AppFooter />
       ) : (
         <VisitorFooter hasAffiliateLinks={affiliateCount > 0} />

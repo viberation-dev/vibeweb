@@ -12,8 +12,9 @@ type Context = { params: Promise<{ slug: string }> };
  * A skill as a ZIP (VIB-132): the folder Claude.ai and ChatGPT take on
  * upload, and what a skills folder wants when unzipped in place.
  *
- * Built from the same cached skills.sh response the page lists, so the
- * download is exactly the files a visitor could read there first. Nothing is
+ * Built from the same skills.sh response the page lists (fetched fresh, as
+ * it is too large to cache), so the download is exactly the files a visitor
+ * could read there first. Nothing is
  * stored and nothing runs: the route only packages text.
  *
  * When there is nothing we can package — a pack, no skills.sh source, no

@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
-  feedQueryFor,
   greetingFor,
+  pickFeedTabs,
   progressLabel,
   toFeedTab,
 } from "./home-feed.ts";
@@ -50,27 +50,51 @@ test("Top became selectable once content had a view counter", () => {
   assert.equal(toFeedTab("top"), "top");
 });
 
-test("each tab asks for what its label promises", () => {
-  // For you is the reader's tier, newest first.
-  assert.deepEqual(feedQueryFor("for-you", "beginner"), {
-    roleLevel: "beginner",
-    sort: "latest",
-  });
-  // Latest drops the tier — that is the only thing separating it from For you.
-  assert.deepEqual(feedQueryFor("latest", "beginner"), {
-    roleLevel: undefined,
-    sort: "latest",
-  });
-  // Top drops the tier too and orders by reads, or it would be "top among
-  // things written for your level", which is not what the label says.
-  assert.deepEqual(feedQueryFor("top", "beginner"), {
-    roleLevel: undefined,
-    sort: "popular",
-  });
+const item = (
+  id: string,
+  created: string,
+  views: number,
+  role_level: "beginner" | "intermediate" | "expert" | null = null,
+) => ({ id, slug: id, created_at: created, view_count: views, role_level });
+
+const pool = [
+  item("a", "2026-09-01", 50),
+  item("b", "2026-09-02", 40, "expert"),
+  item("c", "2026-09-03", 30),
+  item("d", "2026-09-04", 20),
+  item("e", "2026-09-05", 10, "beginner"),
+  item("f", "2026-09-06", 5, "expert"),
+  item("g", "2026-09-07", 0),
+];
+const none = { affinity: () => 0, read: new Set<string>() };
+const ids = (items: { id: string }[]) => items.map((i) => i.id).join("");
+
+test("no item appears in two tabs when there is enough to go round", () => {
+  const tabs = pickFeedTabs(pool, { ...none, roleLevel: "beginner" }, 2);
+  const all = [...tabs["for-you"], ...tabs.top, ...tabs.latest].map(
+    (i) => i.id,
+  );
+  assert.equal(new Set(all).size, all.length);
 });
 
-test("a signed-out reader gets no tier filter on any tab", () => {
-  for (const tab of ["for-you", "latest", "top"] as const) {
-    assert.equal(feedQueryFor(tab, undefined).roleLevel, undefined);
-  }
+test("For you keeps to the tier, unread first, then tag overlap", () => {
+  const tabs = pickFeedTabs(
+    pool,
+    {
+      roleLevel: "beginner",
+      affinity: (id) => (id === "a" ? 5 : 0),
+      read: new Set(["g"]),
+    },
+    2,
+  );
+  // a: best overlap. e: newest unread in tier. g is read; b and f are expert.
+  assert.equal(ids(tabs["for-you"]), "ae");
+  // Top and Latest skip a and e.
+  assert.equal(ids(tabs.top), "bc");
+  assert.equal(ids(tabs.latest), "gf");
+});
+
+test("a short pool tops tabs up rather than leaving them empty", () => {
+  const tabs = pickFeedTabs(pool.slice(0, 2), none, 2);
+  assert.equal(tabs.latest.length, 2);
 });

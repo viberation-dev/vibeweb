@@ -41,6 +41,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-18",
+    kind: "improved",
+    title: "A faster, more personal home feed",
+    body: "For you, Top and Latest no longer show the same items. For you now leans on what you have saved and read, and puts things you have not opened yet first. The home page and the skills hub also load much faster.",
+  },
+  {
+    date: "2026-09-18",
     kind: "added",
     title: "Profile photos and your name",
     body: "Upload a profile photo in Settings and it shows in the header and on your account page. You can also set the name we call you, separately from your public username. Only you can see your name.",

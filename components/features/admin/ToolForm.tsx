@@ -278,6 +278,23 @@ export function ToolForm({ tool, action }: Props) {
         </div>
       </div>
 
+      <div className="flex items-start gap-3">
+        <input
+          id="editor_pick"
+          name="editor_pick"
+          type="checkbox"
+          defaultChecked={tool?.editor_pick ?? false}
+          className="border-input mt-0.5 size-4 rounded border"
+        />
+        <div className="space-y-1">
+          <Label htmlFor="editor_pick">Editor&apos;s pick</Label>
+          <p className="text-muted-foreground text-sm">
+            Shows in the Editor&apos;s picks row at the top of its category.
+            The row holds three, so keep it to the best three per category.
+          </p>
+        </div>
+      </div>
+
       {state.error ? (
         <p role="alert" className="text-destructive text-sm">
           {state.error}

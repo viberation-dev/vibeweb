@@ -87,6 +87,10 @@ export const toolEditorSchema = z.object({
     .union([z.literal("on"), z.literal("")])
     .nullable()
     .transform((value) => value === "on"),
+  editor_pick: z
+    .union([z.literal("on"), z.literal("")])
+    .nullable()
+    .transform((value) => value === "on"),
   /*
    * Model family and its featured model (VIB-107). Checked against the same
    * shapes as the columns' CHECKs so a typo is a form error rather than a 500

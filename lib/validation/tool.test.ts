@@ -14,6 +14,7 @@ const valid = {
   best_for: "intermediate",
   outbound_url: "https://example.com/claude-code",
   is_affiliate: null,
+  editor_pick: null,
 };
 
 test("a whole valid tool parses, trimmed and lowercased", () => {
@@ -59,6 +60,8 @@ test("an unticked affiliate box arrives as null and means false", () => {
   // Unchecked checkboxes are absent from FormData, so formData.get() is null.
   assert.equal(toolEditorSchema.parse(valid).is_affiliate, false);
   assert.equal(toolEditorSchema.parse({ ...valid, is_affiliate: "on" }).is_affiliate, true);
+  assert.equal(toolEditorSchema.parse(valid).editor_pick, false);
+  assert.equal(toolEditorSchema.parse({ ...valid, editor_pick: "on" }).editor_pick, true);
 });
 
 test("a slug with spaces or slashes is rejected", () => {

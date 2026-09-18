@@ -14,7 +14,7 @@ import { Panel } from "@/components/ui/panel";
 import { isSuperAdmin } from "@/lib/app-role";
 import {
   FEED_TABS,
-  feedQueryFor,
+  pickFeedTabs,
   progressLabel,
   toFeedTab,
 } from "@/lib/home-feed";
@@ -25,7 +25,8 @@ import {
   countCollectionItems,
   listFeaturedCollections,
 } from "@/lib/queries/collections";
-import { listContent } from "@/lib/queries/content";
+import { getContentTagIdsByIds, listContent } from "@/lib/queries/content";
+import { listBookmarks } from "@/lib/queries/bookmarks";
 import { listHistory } from "@/lib/queries/history";
 import { getProfile, type PublicProfile } from "@/lib/queries/profiles";
 import { resolveTargetViews } from "@/lib/queries/resources";
@@ -48,6 +49,9 @@ import { toolsHref } from "@/lib/tools-url";
  * rows — collections, latest content, popular tools, the flagship walkthrough —
  * just arranged and framed differently.
  */
+/** Learn items ranked for the feed tabs. More than the library holds today. */
+const FEED_POOL = 100;
+
 type Props = { searchParams: Promise<{ feed?: string }> };
 
 export default async function HomePage({ searchParams }: Props) {
@@ -62,7 +66,7 @@ export default async function HomePage({ searchParams }: Props) {
 
   const [
     collections,
-    { items: latest },
+    { items: pool },
     { tools },
     walkthroughs,
     history,
@@ -70,19 +74,17 @@ export default async function HomePage({ searchParams }: Props) {
     { tools: appBuilders },
   ] = await Promise.all([
     listFeaturedCollections(supabase),
-    listContent(supabase, {
-      types: LEARN_TYPE_VALUES,
-      /*
-       * Which tier and which order each tab wants lives in feedQueryFor, so
-       * the tabs cannot quietly disagree with their own labels.
-       */
-      ...feedQueryFor(tab, profile?.role_level ?? undefined),
-      pageSize: 3,
-    }),
+    /*
+     * One pool for all three feed tabs, newest first (VIB-180). pickFeedTabs
+     * ranks it per tab and keeps the tabs from repeating each other.
+     * ponytail: the whole Learn library, a dozen rows today; cap or move the
+     * ranking into SQL once it is in the hundreds.
+     */
+    listContent(supabase, { types: LEARN_TYPE_VALUES, pageSize: FEED_POOL }),
     listTools(supabase, { sort: "popular", pageSize: 6 }),
     listWalkthroughs(supabase),
-    // Four is what the rail has room for; the full list is the History tab.
-    auth.user ? listHistory(supabase, auth.user.id, 4) : [],
+    // Enough to know what the reader has been reading; the rail shows four.
+    auth.user ? listHistory(supabase, auth.user.id, 50) : [],
     // Both homepages point at the skills hub (VIB-131). Cached per skill for
     // an hour, and ordered by stars when skills.sh is unavailable.
     listRankedSkills(supabase, 3),
@@ -97,6 +99,8 @@ export default async function HomePage({ searchParams }: Props) {
   // §31 puts the flagship promo last. Nothing renders it when no walkthrough is
   // published, so the section cannot point at a route that 404s.
   const flagship = walkthroughs[0];
+  // Signed out there are no tabs, just the newest few.
+  const latest = pool.slice(0, 3);
 
   if (!auth.user) {
     // The marketing page shows no counts (VIB-116), so it no longer asks for
@@ -117,24 +121,59 @@ export default async function HomePage({ searchParams }: Props) {
     );
   }
 
-  const [recent, collectionCounts, tags, progress] = await Promise.all([
-    resolveTargetViews(supabase, history),
-    countCollectionItems(
-      supabase,
-      collections.map((collection) => collection.id),
-    ),
-    listPopularTags(supabase),
-    flagship
-      ? getWalkthroughProgress(supabase, auth.user.id, flagship.id)
-      : null,
-  ]);
+  // Four is what the rail has room for; the full list is the History tab.
+  const railHistory = history.slice(0, 4);
+
+  const [recent, collectionCounts, tags, progress, poolTags, savedContent] =
+    await Promise.all([
+      resolveTargetViews(supabase, railHistory),
+      countCollectionItems(
+        supabase,
+        collections.map((collection) => collection.id),
+      ),
+      listPopularTags(supabase),
+      flagship
+        ? getWalkthroughProgress(supabase, auth.user.id, flagship.id)
+        : null,
+      getContentTagIdsByIds(
+        supabase,
+        pool.map((item) => item.id),
+      ),
+      listBookmarks(supabase, auth.user.id, "content"),
+    ]);
+
+  /*
+   * For you ranks by overlap with what the reader saved and opened: each tag
+   * on those items scores a point for every pool item that shares it.
+   */
+  const read = new Set(
+    history
+      .filter((item) => item.target_type === "content")
+      .map((item) => item.target_id),
+  );
+  const engaged = [...read, ...savedContent.map((b) => b.target_id)];
+  const tagWeight = new Map<string, number>();
+  for (const id of engaged) {
+    for (const tagId of poolTags.get(id) ?? []) {
+      tagWeight.set(tagId, (tagWeight.get(tagId) ?? 0) + 1);
+    }
+  }
+  const feed = pickFeedTabs(pool, {
+    roleLevel: profile?.role_level ?? undefined,
+    read,
+    affinity: (id) =>
+      (poolTags.get(id) ?? []).reduce(
+        (sum, tagId) => sum + (tagWeight.get(tagId) ?? 0),
+        0,
+      ),
+  })[tab];
 
   /*
    * Nothing deletes a history row when its tool goes away — no foreign key
    * can span a polymorphic target — so entries whose target has vanished
    * are dropped rather than rendered as holes.
    */
-  const continueItems = history.flatMap((item) => {
+  const continueItems = railHistory.flatMap((item) => {
     const target = recent.get(item.target_id);
     return target ? [{ id: item.id, target }] : [];
   });
@@ -142,8 +181,12 @@ export default async function HomePage({ searchParams }: Props) {
   const showRoadmap = isSuperAdmin(profile?.app_role);
   // Google and GitHub put the person's name in metadata; the username is
   // often unset for them, and the email's local part is not a name (VIB-169).
-  const metaName = (auth.user.user_metadata?.full_name ?? auth.user.user_metadata?.name) as string | undefined;
-  const greeting = metaName?.trim().split(/\s+/)[0] || profile?.username || auth.user.email?.split("@")[0];
+  const metaName = (auth.user.user_metadata?.full_name ??
+    auth.user.user_metadata?.name) as string | undefined;
+  const greeting =
+    metaName?.trim().split(/\s+/)[0] ||
+    profile?.username ||
+    auth.user.email?.split("@")[0];
 
   return (
     <div className="mx-auto w-full max-w-6xl p-6">
@@ -192,36 +235,36 @@ export default async function HomePage({ searchParams }: Props) {
         hubs, with no Phase 1.5 cards and no MVP / Phase 1.5 pills.
       */}
       <section className="mt-6">
-          <h2 className="sr-only">Hubs</h2>
-          <ul
-            className={`grid gap-3 ${showRoadmap ? "sm:grid-cols-2 lg:grid-cols-5" : "sm:grid-cols-3"}`}
-          >
-            {HUBS.filter((hub) => showRoadmap || hub.href).map((hub) => (
-              <li key={hub.title}>
-                {/*
+        <h2 className="sr-only">Hubs</h2>
+        <ul
+          className={`grid gap-3 ${showRoadmap ? "sm:grid-cols-2 lg:grid-cols-5" : "sm:grid-cols-3"}`}
+        >
+          {HUBS.filter((hub) => showRoadmap || hub.href).map((hub) => (
+            <li key={hub.title}>
+              {/*
                 Setups and Paths are Phase 1.5 — signposted, never linked.
                 CLAUDE.md is explicit that nothing from 1.5 gets built, and a
                 card that navigates somewhere is the first half of building it.
               */}
-                {hub.href ? (
-                  <Link
-                    href={hub.href}
-                    className="bg-secondary hover:bg-primary/10 motion-lift block h-full rounded-[1.125rem] p-5 transition-colors"
-                  >
-                    <HubBody {...hub} showPill={showRoadmap} />
-                  </Link>
-                ) : (
-                  <div
-                    aria-disabled
-                    className="bg-secondary/50 text-muted-foreground/60 h-full rounded-[1.125rem] p-5"
-                  >
-                    <HubBody {...hub} showPill={showRoadmap} />
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
+              {hub.href ? (
+                <Link
+                  href={hub.href}
+                  className="bg-secondary hover:bg-primary/10 motion-lift block h-full rounded-[1.125rem] p-5 transition-colors"
+                >
+                  <HubBody {...hub} showPill={showRoadmap} />
+                </Link>
+              ) : (
+                <div
+                  aria-disabled
+                  className="bg-secondary/50 text-muted-foreground/60 h-full rounded-[1.125rem] p-5"
+                >
+                  <HubBody {...hub} showPill={showRoadmap} />
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
         <div>
@@ -259,7 +302,8 @@ export default async function HomePage({ searchParams }: Props) {
           </div>
 
           <ul className="space-y-3">
-            {flagship ? (
+            {/* The walkthrough and collections are For you's; the other tabs are the library ranked. */}
+            {flagship && tab === "for-you" ? (
               <li>
                 <FeedCard
                   href={`/walkthroughs/${flagship.slug}`}
@@ -269,7 +313,7 @@ export default async function HomePage({ searchParams }: Props) {
                 />
               </li>
             ) : null}
-            {latest.map((item) => (
+            {feed.map((item) => (
               <li key={item.id}>
                 <FeedCard
                   href={`/learn/${item.slug}`}
@@ -281,7 +325,7 @@ export default async function HomePage({ searchParams }: Props) {
                 />
               </li>
             ))}
-            {collections.map((collection) => (
+            {(tab === "for-you" ? collections : []).map((collection) => (
               <li key={collection.id}>
                 <FeedCard
                   href={`/collections/${collection.slug}`}

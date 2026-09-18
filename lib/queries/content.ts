@@ -221,6 +221,33 @@ export async function getContentTags(
 }
 
 /**
+ * Tag ids per content row, for a whole list in one round trip. The home
+ * feed matches them against what the reader saved and read (VIB-180).
+ */
+export async function getContentTagIdsByIds(
+  client: Client,
+  contentIds: string[],
+): Promise<Map<string, string[]>> {
+  const byContent = new Map<string, string[]>();
+  if (contentIds.length === 0) {
+    return byContent;
+  }
+
+  const { data, error } = await client
+    .from("content_tags")
+    .select("content_id, tag_id")
+    .in("content_id", contentIds);
+
+  if (error) {
+    throw new Error(`getContentTagIdsByIds: ${error.message}`);
+  }
+  for (const { content_id, tag_id } of data) {
+    byContent.set(content_id, [...(byContent.get(content_id) ?? []), tag_id]);
+  }
+  return byContent;
+}
+
+/**
  * Content rows by id, for hydrating polymorphic references (bookmarks,
  * history, collection items) that carry only a target_id.
  *

@@ -28,19 +28,79 @@ export function toFeedTab(value: string | undefined): FeedTab {
   return tab && !("disabled" in tab && tab.disabled) ? tab.value : "for-you";
 }
 
+/** The fields the tabs rank on; a `content` row has them all. */
+export type FeedItem = {
+  id: string;
+  slug: string;
+  created_at: string;
+  view_count: number;
+  role_level: RoleLevel | null;
+};
+
+export type FeedSignals = {
+  /** The reader's tier. For you keeps to it, plus the rows for everyone. */
+  roleLevel?: RoleLevel;
+  /** How much each item overlaps with what the reader saved and read, by tag. */
+  affinity: (id: string) => number;
+  /** Items the reader has already opened. */
+  read: ReadonlySet<string>;
+};
+
+const newest = (a: FeedItem, b: FeedItem) =>
+  b.created_at.localeCompare(a.created_at) || a.slug.localeCompare(b.slug);
+
 /**
- * What each tab asks the content query for.
+ * All three tabs from one pool, without repeats between them (VIB-180).
  *
- * "For you" is the reader's own tier; "Latest" drops that filter and takes
- * newest first; "Top" drops it too and takes most-read. Keeping the mapping
- * here rather than in the page means the tabs cannot quietly disagree with
- * their own labels.
+ * Before, each tab was its own query, and with a dozen Learn items every tab
+ * shared a row with another. Now the tabs are filled in turn and each skips
+ * what an earlier one took:
+ *
+ * - **For you**: the reader's tier, unread first, then by tag overlap with
+ *   what they saved and read, then newest.
+ * - **Top**: most read of what is left.
+ * - **Latest**: newest of what is left.
+ *
+ * A tab that runs short tops up from the whole pool in its own order rather
+ * than showing a gap, so repeats only happen when there is not enough to go
+ * round.
  */
-export function feedQueryFor(tab: FeedTab, roleLevel: RoleLevel | undefined) {
-  return {
-    roleLevel: tab === "for-you" ? roleLevel : undefined,
-    sort: tab === "top" ? ("popular" as const) : ("latest" as const),
+export function pickFeedTabs<T extends FeedItem>(
+  pool: readonly T[],
+  signals: FeedSignals,
+  size = 3,
+): Record<FeedTab, T[]> {
+  const taken = new Set<string>();
+
+  const fill = (candidates: readonly T[], order: (a: T, b: T) => number) => {
+    const sorted = [...candidates].sort(order);
+    const fresh = sorted.filter((item) => !taken.has(item.id)).slice(0, size);
+    const topUp = [...pool]
+      .sort(order)
+      .filter((item) => !fresh.includes(item))
+      .slice(0, size - fresh.length);
+    const picked = [...fresh, ...topUp];
+    picked.forEach((item) => taken.add(item.id));
+    return picked;
   };
+
+  const inTier = pool.filter(
+    (item) =>
+      !signals.roleLevel ||
+      item.role_level === null ||
+      item.role_level === signals.roleLevel,
+  );
+  const forYou = fill(
+    inTier,
+    (a, b) =>
+      Number(signals.read.has(a.id)) - Number(signals.read.has(b.id)) ||
+      signals.affinity(b.id) - signals.affinity(a.id) ||
+      newest(a, b),
+  );
+  const top = fill(pool, (a, b) => b.view_count - a.view_count || newest(a, b));
+  const latest = fill(pool, newest);
+
+  return { "for-you": forYou, latest, top };
 }
 
 /**

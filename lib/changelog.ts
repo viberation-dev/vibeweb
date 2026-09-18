@@ -60,6 +60,12 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-18",
     kind: "improved",
+    title: "A faster, more personal home feed",
+    body: "For you, Top and Latest no longer show the same items. For you now leans on what you have saved and read, and puts things you have not opened yet first. The home page and the skills hub also load much faster.",
+  },
+  {
+    date: "2026-09-18",
+    kind: "improved",
     title: "A slimmer sidebar",
     body: "The sidebar is now a row of icons that opens out when you hover it. Pick Expanded, Collapsed or Expand on hover from the button at its foot, and fold away the sections you do not use. The directory is grouped into Build, AI, Extend, Start from and Ship.",
   },

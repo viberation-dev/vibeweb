@@ -42,6 +42,12 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-18",
     kind: "improved",
+    title: "A tidier colour mode switch",
+    body: "Light, Dark and System now sit in one compact switch. Hover an icon to see its name, and the mode you picked stays clearly highlighted. The dropdowns in Settings also have more room around their arrows.",
+  },
+  {
+    date: "2026-09-18",
+    kind: "improved",
     title: "A slimmer sidebar",
     body: "The sidebar is now a row of icons that opens out when you hover it. Pick Expanded, Collapsed or Expand on hover from the button at its foot, and fold away the sections you do not use. The directory is grouped into Build, AI, Extend, Start from and Ship.",
   },

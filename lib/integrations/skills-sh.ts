@@ -1,4 +1,5 @@
 import { getVercelOidcToken } from "@vercel/oidc";
+import { unstable_cache } from "next/cache";
 
 import {
   parseAudits,
@@ -30,11 +31,6 @@ const API = "https://skills.sh/api/v1/skills";
 /*
  * Installs move by the day. An hour matches the OpenRouter adapter and keeps
  * a busy page well under the rate limit.
- *
- * ponytail: the detail response carries every file's contents. A skill
- * bundling large assets could pass Next's 2MB data-cache ceiling, at which
- * point that one skill silently stops caching; move to a leaner endpoint if
- * skills.sh ever offers one.
  */
 const REVALIDATE_SECONDS = 3600;
 
@@ -47,7 +43,13 @@ async function oidcToken(): Promise<string | null> {
   }
 }
 
-async function getJson(path: string, authenticated: boolean): Promise<unknown> {
+/**
+ * `cached: false` skips Next's data cache for this request. The detail
+ * response carries every file's contents and runs to megabytes (VIB-176),
+ * past the cache's 2MB ceiling, so it is fetched raw and only the parsed
+ * result is cached — see getSkillDetail.
+ */
+async function getJson(path: string, authenticated: boolean, cached = true): Promise<unknown> {
   const headers: Record<string, string> = {};
   if (authenticated) {
     const token = await oidcToken();
@@ -58,7 +60,7 @@ async function getJson(path: string, authenticated: boolean): Promise<unknown> {
   try {
     const response = await fetch(`${API}${path}`, {
       headers,
-      next: { revalidate: REVALIDATE_SECONDS },
+      ...(cached ? { next: { revalidate: REVALIDATE_SECONDS } } : { cache: "no-store" as const }),
       // A hung request would hold the whole page until Vercel's 300s kill (VIB-175).
       signal: AbortSignal.timeout(5000),
     });
@@ -83,20 +85,42 @@ async function getJson(path: string, authenticated: boolean): Promise<unknown> {
 const skillPath = (source: SkillSource) =>
   `${source.owner}/${source.repo}${source.skill ? `/${source.skill}` : ""}`;
 
+/*
+ * The parsed detail is a few kilobytes (paths, sizes, SKILL.md cut to 4000
+ * characters) however large the raw response is, so this is what gets cached.
+ * An unknown result throws, because unstable_cache does not store a throw: a
+ * skills.sh outage is retried on the next render, not remembered for an hour.
+ */
+const cachedSkillDetail = unstable_cache(
+  async (path: string) => {
+    const detail = parseSkillDetail(await getJson(path, true, false));
+    if (!detail) throw new Error(`skills.sh ${path}: no detail`);
+    return detail;
+  },
+  ["skills-sh-detail"],
+  { revalidate: REVALIDATE_SECONDS },
+);
+
 /** One skill's installs and files. Null for a pack, or when unknown. */
 export async function getSkillDetail(source: SkillSource): Promise<SkillDetail | null> {
   if (!source.skill) return null;
-  return parseSkillDetail(await getJson(`/${skillPath(source)}`, true));
+  try {
+    return await cachedSkillDetail(`/${skillPath(source)}`);
+  } catch {
+    // Already logged by getJson, or a shape we do not know.
+    return null;
+  }
 }
 
 /**
- * One skill's files with contents, for the ZIP download (VIB-132). Same
- * cached request as getSkillDetail, parsed differently. Empty for a pack or
+ * One skill's files with contents, for the ZIP download (VIB-132). Fetched
+ * fresh on each download: the contents are the megabytes that cannot be
+ * cached, and a download is rare next to a page view. Empty for a pack or
  * when unknown.
  */
 export async function getSkillFiles(source: SkillSource): Promise<{ path: string; contents: string }[]> {
   if (!source.skill) return [];
-  return parseSkillFiles(await getJson(`/${skillPath(source)}`, true));
+  return parseSkillFiles(await getJson(`/${skillPath(source)}`, true, false));
 }
 
 /**

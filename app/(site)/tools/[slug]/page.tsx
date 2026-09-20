@@ -33,6 +33,7 @@ import { toKeyFacts } from "@/lib/key-facts";
 import { outboundRel, safeOutboundUrl } from "@/lib/outbound";
 import { isBookmarked } from "@/lib/queries/bookmarks";
 import { countCollectionsContaining } from "@/lib/queries/collections";
+import { listComparisonsForTool } from "@/lib/queries/comparisons";
 import { listContentSharingTags } from "@/lib/queries/content";
 import { recordVisit } from "@/lib/queries/history";
 import { listPromptsForTool } from "@/lib/queries/prompts";
@@ -131,6 +132,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
     guides,
     liveModels,
     skillFacts,
+    comparisons,
   ] = await Promise.all([
     getToolTags(supabase, tool.id),
     auth.user
@@ -160,6 +162,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
     // Skills get the same treatment from skills.sh and GitHub (VIB-130):
     // cached, and null rather than throwing.
     getSkillPageFacts(tool),
+    listComparisonsForTool(supabase, tool.id),
   ]);
 
   const related = sameCategory
@@ -411,6 +414,23 @@ export default async function ToolPage({ params, searchParams }: Props) {
                 <Fact key={fact.label} label={fact.label} value={fact.value} />
               ))}
           </dl>
+
+          {comparisons.length ? (
+            <>
+              <h2 className="font-heading mt-8 text-lg font-medium">Compare</h2>
+              <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+                {comparisons.map((c) => (
+                  <li key={c.id}>
+                    <ResourceCard
+                      href={`/compare/${c.slug}`}
+                      title={`${c.tool_a.name} vs ${c.tool_b.name}`}
+                      eyebrow="Comparison"
+                    />
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
 
           {guides.length ? (
             <>

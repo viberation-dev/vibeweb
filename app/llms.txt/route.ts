@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/integrations/supabase/server";
 import { contentHref, LEARN_TYPE_VALUES } from "@/lib/learn";
+import { listPublishedComparisons } from "@/lib/queries/comparisons";
 import { listAllContent } from "@/lib/queries/content";
 import { listAllTools } from "@/lib/queries/tools";
 import { listWalkthroughs } from "@/lib/queries/walkthroughs";
@@ -18,10 +19,11 @@ const link = (title: string, path: string, note?: string | null) =>
 
 export async function GET() {
   const supabase = await createClient();
-  const [tools, content, walkthroughs] = await Promise.all([
+  const [tools, content, walkthroughs, comparisons] = await Promise.all([
     listAllTools(supabase),
     listAllContent(supabase),
     listWalkthroughs(supabase),
+    listPublishedComparisons(supabase),
   ]);
   const published = content.filter((c) => c.status === "published");
   const ofType = (types: readonly string[]) =>
@@ -38,11 +40,15 @@ export async function GET() {
     link("Tools", "/tools", "Directory of AI coding tools, models, agents and skills, with pricing, platform and who each is best for"),
     link("Learn", "/learn", "Guides and articles on building with AI"),
     link("Walkthroughs", "/walkthroughs", "Step-by-step guided builds"),
+    link("Compare", "/compare", "Side-by-side tool comparisons with a verdict"),
     link("Docs", "/docs", "Help for using Viberation itself"),
     link("Blog", "/blog", "Product news"),
     "",
     "## Tools",
     ...tools.map((t) => link(t.name, `/tools/${t.slug}`, t.tagline)),
+    "",
+    "## Comparisons",
+    ...comparisons.map((c) => link(`${c.tool_a.name} vs ${c.tool_b.name}`, `/compare/${c.slug}`)),
     "",
     "## Walkthroughs",
     ...walkthroughs.map((w) => link(w.title, `/walkthroughs/${w.slug}`)),

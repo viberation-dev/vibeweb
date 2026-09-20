@@ -40,6 +40,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
  */
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    date: "2026-09-21",
+    kind: "added",
+    title: "Nine more AI chats in the directory",
+    body: "Chats no longer stops at Claude.ai and ChatGPT. Gemini, Grok, Microsoft Copilot, DeepSeek, Qwen Chat, Z.ai, Le Chat, Perplexity and Kimi each have a page with what the free plan covers, what the paid one costs and where your data goes.",
+  },
+  {
     date: "2026-09-18",
     kind: "added",
     title: "Side-by-side comparisons",

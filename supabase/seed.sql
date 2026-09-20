@@ -4309,3 +4309,169 @@ join tools a on a.slug = v.a_slug
 join tools b on b.slug = v.b_slug
 cross join lateral (select v.a_slug || '-vs-' || v.b_slug as slug) s(slug)
 on conflict (slug) do nothing;
+
+-- More chat apps (VIB-185). The Chats category only had Claude.ai and
+-- ChatGPT. Checked against vendor pages on 2026-09-20.
+--
+-- Judgement calls on the names raised: GitHub Copilot stays a plugin and the
+-- Copilot coding agent stays an agent, so only the consumer Microsoft Copilot
+-- chat app is a chat. Gemini needed its own `gemini-app` row because `gemini`
+-- is the model family. Perplexity is included as the one people reach for to
+-- research a problem, which is the same browser-tab habit.
+insert into tools (name, slug, category, tagline, description, pricing_tier, outbound_url) values
+  ('Gemini', 'gemini-app', 'chats',
+   'Google''s chat app, with the rest of Google alongside it.',
+   'The chat interface for Gemini. Handles images, video and very long documents well, and reaches your Gmail, Docs and Drive when you let it. Free with a Flash model and limited use of the bigger one.',
+   'Freemium', 'https://gemini.google.com'),
+  ('Grok', 'grok', 'chats',
+   'xAI''s chat app, with live posts from X built in.',
+   'Grok answers in a looser, blunter style than most and can pull in what people are posting on X right now. Useful as a second opinion, and for checking whether a tool you are about to install is actually any good.',
+   'Freemium', 'https://grok.com'),
+  ('Microsoft Copilot', 'microsoft-copilot', 'chats',
+   'The AI chat built into Windows and Edge.',
+   'Microsoft''s consumer chat app, free in Windows, Edge and on the web. Worth knowing because it is already on the machine. Not to be confused with GitHub Copilot, which is the coding assistant in your editor.',
+   'Freemium', 'https://copilot.microsoft.com'),
+  ('DeepSeek', 'deepseek', 'chats',
+   'A free chat from the lab whose open models everyone benchmarks against.',
+   'DeepSeek''s chat app is free with no paid tier, and strong at code and maths for the price of nothing. Its models are open weights, so the same family turns up inside other tools and gateways.',
+   'Free', 'https://chat.deepseek.com'),
+  ('Qwen Chat', 'qwen-chat', 'chats',
+   'Alibaba''s free chat, over the open Qwen models.',
+   'A free chat app for the Qwen model family, which is open weights and widely used in other tools. Handy as a no-cost second opinion when your main tool is rate limited.',
+   'Free', 'https://chat.qwen.ai'),
+  ('Z.ai', 'z-ai', 'chats',
+   'Free chat over the GLM models, with a cheap coding plan behind it.',
+   'Z.ai runs a free chat on its GLM models. The reason coders know it is the GLM Coding Plan: a low monthly fee that lets GLM drive Claude Code, Cline and other tools instead of a pay-per-token API key.',
+   'Freemium', 'https://chat.z.ai'),
+  ('Le Chat', 'le-chat', 'chats',
+   'Mistral''s chat app, built and hosted in Europe.',
+   'The chat front end for Mistral''s models. The usual reason to pick it is where your data goes: Mistral is French and sells EU hosting. Pro is cheaper than the $20 plans, and includes in-chat coding.',
+   'Freemium', 'https://chat.mistral.ai'),
+  ('Perplexity', 'perplexity', 'chats',
+   'A chat that searches the web and shows its sources.',
+   'Ask a question and get an answer with links under it, rather than a confident paragraph you cannot check. The one to use when you need current facts about a library, an error or a price, instead of what a model remembers.',
+   'Freemium', 'https://www.perplexity.ai'),
+  ('Kimi', 'kimi', 'chats',
+   'Moonshot''s chat, good at long documents and code.',
+   'A free chat over the Kimi models, which are open weights and turn up in agent tools. Strong on very long inputs. Paid plans exist but have been sold out since July 2026, so treat the free tier as what you get.',
+   'Freemium', 'https://www.kimi.com')
+on conflict (slug) do update set
+  name         = excluded.name,
+  category     = excluded.category,
+  tagline      = excluded.tagline,
+  description  = excluded.description,
+  pricing_tier = excluded.pricing_tier,
+  outbound_url = excluded.outbound_url,
+  updated_at   = now();
+
+update tools t set platform = v.platform::text[], best_for = v.best_for::role_level
+from (values
+  ('gemini-app',        '{web,ios,android}',         'beginner'),
+  ('grok',              '{web,ios,android}',         'beginner'),
+  ('microsoft-copilot', '{web,windows,ios,android}', 'beginner'),
+  ('deepseek',          '{web,ios,android}',         'beginner'),
+  ('qwen-chat',         '{web,ios,android}',         'beginner'),
+  ('z-ai',              '{web}',                     'intermediate'),
+  ('le-chat',           '{web,ios,android}',         'beginner'),
+  ('perplexity',        '{web,ios,android}',         'beginner'),
+  ('kimi',              '{web,ios,android}',         'intermediate')
+) as v(slug, platform, best_for)
+where t.slug = v.slug;
+
+-- One new facet: whose models you can download and run yourself, which is
+-- the reason several of these chats matter beyond the chat window.
+insert into tags (name, slug, kind) values
+  ('Open weights', 'open-weights', 'facet')
+on conflict (slug) do update set name = excluded.name, kind = excluded.kind;
+
+insert into tool_tags (tool_id, tag_id)
+select t.id, g.id
+from (values
+  ('gemini-app','free-tier'), ('gemini-app','image-generation'), ('gemini-app','video-generation'), ('gemini-app','voice-mode'),
+  ('grok','free-tier'), ('grok','image-generation'), ('grok','voice-mode'),
+  ('microsoft-copilot','free-tier'), ('microsoft-copilot','image-generation'), ('microsoft-copilot','voice-mode'), ('microsoft-copilot','windows'),
+  ('deepseek','free-tier'), ('deepseek','open-weights'),
+  ('qwen-chat','free-tier'), ('qwen-chat','open-weights'), ('qwen-chat','image-generation'),
+  ('z-ai','free-tier'), ('z-ai','open-weights'), ('z-ai','coding-agent'),
+  ('le-chat','free-tier'), ('le-chat','image-generation'), ('le-chat','voice-mode'),
+  ('perplexity','free-tier'), ('perplexity','search'),
+  ('kimi','free-tier'), ('kimi','open-weights')
+) as m(tool_slug, tag_slug)
+join tools t on t.slug = m.tool_slug
+join tags  g on g.slug = m.tag_slug
+on conflict do nothing;
+
+update tools t set key_facts = v.facts::jsonb, updated_at = now()
+from (values
+  ('gemini-app', '[
+    {"label": "Free plan", "value": "Yes, with a Flash model and limited use of the bigger one"},
+    {"label": "Paid plans from", "value": "Google AI Pro, $19.99 a month, which also adds 5 TB of storage"},
+    {"label": "Models", "value": "Gemini"},
+    {"label": "Reaches", "value": "Gmail, Docs and Drive, when you connect them"},
+    {"label": "Good for", "value": "Images, video and very long documents"}
+  ]'),
+  ('grok', '[
+    {"label": "Free plan", "value": "Yes, with usage limits"},
+    {"label": "Paid plans from", "value": "$10 a month (SuperGrok Lite); SuperGrok is $30"},
+    {"label": "Also included with", "value": "X Premium+"},
+    {"label": "Models", "value": "Grok"},
+    {"label": "Good for", "value": "A blunt second opinion, and what people are posting right now"}
+  ]'),
+  ('microsoft-copilot', '[
+    {"label": "Free plan", "value": "Yes, in Windows, Edge and the app"},
+    {"label": "Paid plans from", "value": "Microsoft 365 Premium, $19.99 a month; standalone Copilot Pro is no longer sold to new customers"},
+    {"label": "Models", "value": "GPT, plus Microsoft''s own"},
+    {"label": "Not the same as", "value": "GitHub Copilot, the coding assistant in your editor"},
+    {"label": "Good for", "value": "Everyday questions on a machine that already has it"}
+  ]'),
+  ('deepseek', '[
+    {"label": "Free plan", "value": "Yes, and there is no paid plan to upgrade to"},
+    {"label": "Watch out", "value": "Busy periods show a Server Busy message rather than a paywall"},
+    {"label": "Models", "value": "DeepSeek, open weights"},
+    {"label": "Where your data goes", "value": "China; check your employer''s rules before pasting work code in"},
+    {"label": "Good for", "value": "Code and maths questions at no cost"}
+  ]'),
+  ('qwen-chat', '[
+    {"label": "Free plan", "value": "Yes, the chat app is free"},
+    {"label": "Models", "value": "Qwen, open weights"},
+    {"label": "Where your data goes", "value": "China; check your employer''s rules before pasting work code in"},
+    {"label": "Good for", "value": "A free second opinion when your main tool hits its limit"}
+  ]'),
+  ('z-ai', '[
+    {"label": "Free plan", "value": "Yes, chat at chat.z.ai is free"},
+    {"label": "Coding plan from", "value": "$18 a month (GLM Coding Plan Lite), for using GLM inside coding tools"},
+    {"label": "Works with", "value": "Claude Code, Cline and other tools that accept a custom endpoint"},
+    {"label": "Models", "value": "GLM, open weights"},
+    {"label": "Good for", "value": "Running an agent all month without a pay-per-token bill"}
+  ]'),
+  ('le-chat', '[
+    {"label": "Free plan", "value": "Yes, with usage limits"},
+    {"label": "Paid plans from", "value": "$14.99 a month (Pro), which includes in-chat coding"},
+    {"label": "Models", "value": "Mistral"},
+    {"label": "Where your data goes", "value": "The EU, which is the usual reason to pick it"},
+    {"label": "Good for", "value": "Teams that need to keep their data in Europe"}
+  ]'),
+  ('perplexity', '[
+    {"label": "Free plan", "value": "Yes, with limits on the deeper searches"},
+    {"label": "Paid plans from", "value": "$20 a month (Pro)"},
+    {"label": "Models", "value": "Claude, GPT and others, picked per question"},
+    {"label": "Shows sources", "value": "Yes, links under every answer"},
+    {"label": "Good for", "value": "Checking current facts about a library, an error or a price"}
+  ]'),
+  ('kimi', '[
+    {"label": "Free plan", "value": "Yes, chat is free"},
+    {"label": "Paid plans", "value": "From $19 a month, but sold out to new subscribers since July 2026"},
+    {"label": "Models", "value": "Kimi, open weights"},
+    {"label": "Where your data goes", "value": "China; check your employer''s rules before pasting work code in"},
+    {"label": "Good for", "value": "Very long documents and code in one go"}
+  ]')
+) as v(slug, facts)
+where t.slug = v.slug;
+
+-- The model family row already links to its chat for Claude and GPT; Gemini
+-- had the chat missing rather than the link.
+insert into tool_links (tool_id, linked_tool_id, kind, note, sort_order)
+select a.id, b.id, 'official'::tool_link_kind, null, 1
+from tools a, tools b
+where a.slug = 'gemini' and b.slug = 'gemini-app'
+on conflict (tool_id, linked_tool_id) do nothing;

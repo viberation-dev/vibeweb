@@ -21,8 +21,11 @@ import {
 import { outboundRel, safeOutboundUrl } from "@/lib/outbound";
 import { getComparisonBySlug } from "@/lib/queries/comparisons";
 import type { Tool } from "@/lib/queries/tools";
-import { breadcrumbLd, plainSummary } from "@/lib/structured-data";
-import { toolCategoryLabel } from "@/lib/tool-categories";
+import {
+  breadcrumbLd,
+  plainSummary,
+  softwareApplicationLd,
+} from "@/lib/structured-data";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -68,14 +71,7 @@ export default async function ComparePage({ params }: Props) {
     <main className="mx-auto w-full max-w-5xl p-6">
       <JsonLd
         data={[
-          ...[a, b].map((tool) => ({
-            "@context": "https://schema.org",
-            "@type": "SoftwareApplication",
-            name: tool.name,
-            description: tool.tagline ?? undefined,
-            applicationCategory: toolCategoryLabel(tool.category),
-            url: safeOutboundUrl(tool.outbound_url) ?? undefined,
-          })),
+          ...[a, b].map(softwareApplicationLd),
           breadcrumbLd([
             { name: "Compare", path: "/compare" },
             { name: `${a.name} vs ${b.name}`, path: `/compare/${page.slug}` },

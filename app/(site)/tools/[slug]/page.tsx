@@ -59,7 +59,7 @@ import { platformSummary } from "@/lib/tool-platforms";
 import { ROLE_LEVELS } from "@/lib/role-level";
 import { hasFreeTier, isOpenSource } from "@/lib/tool-facts";
 import { toolsHref } from "@/lib/tools-url";
-import { breadcrumbLd } from "@/lib/structured-data";
+import { breadcrumbLd, softwareApplicationLd } from "@/lib/structured-data";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -243,18 +243,7 @@ export default async function ToolPage({ params, searchParams }: Props) {
     <main className="mx-auto w-full max-w-6xl p-6">
       <JsonLd
         data={[
-          {
-            "@context": "https://schema.org",
-            "@type": "SoftwareApplication",
-            name: tool.name,
-            description: tool.tagline ?? tool.description ?? undefined,
-            applicationCategory: toolCategoryLabel(tool.category),
-            url: outbound ?? undefined,
-            // Only a stated free tier becomes an offer; paid prices are not stored.
-            ...(hasFreeTier(tool.pricing_tier)
-              ? { offers: { "@type": "Offer", price: "0", priceCurrency: "USD" } }
-              : {}),
-          },
+          softwareApplicationLd(tool),
           breadcrumbLd([
             { name: "Tools", path: "/tools" },
             {

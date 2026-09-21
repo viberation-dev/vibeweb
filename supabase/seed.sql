@@ -2540,10 +2540,15 @@ insert into tools (name, slug, category, tagline, description, pricing_tier, out
    'Amplify Hosting builds and deploys front ends and server-rendered Next.js apps, and can add logins and data backed by AWS. Covered by the AWS free tier to start, and a gentler way into AWS than configuring it by hand.',
    'Freemium', 'https://aws.amazon.com/amplify/hosting/'),
 
-  ('ChatGPT Sites', 'chatgpt-sites', 'app_builders',
-   'Ask ChatGPT for a website and it builds and hosts it.',
-   'Describe a site in chat and ChatGPT writes it, publishes it and gives you a link to share, with simple data storage for lightweight apps. In beta for paid ChatGPT plans, and not yet available in the UK, EU or Switzerland.',
-   'Paid', 'https://chatgpt.com')
+  -- A plugin, not an app builder (VIB-190): an app you use inside a ChatGPT
+  -- conversation, with its own skills, rather than a product you go to. It
+  -- sat in App Builders until 2026-09-21, which answered "which builder
+  -- should I use?" with "buy a ChatGPT plan". The old "not yet available in
+  -- the UK, EU or Switzerland" line went with it — it is in no OpenAI doc.
+  ('ChatGPT Sites', 'chatgpt-sites', 'plugins',
+   'An app inside ChatGPT that builds and hosts your site.',
+   'Sites is not a separate product you sign up for: it is an app you use inside a ChatGPT conversation, which creates, hosts and refines websites, web apps and games and gives you a link to share. Each site gets real storage, so a tracker or a dashboard can keep its data.',
+   'Paid', 'https://learn.chatgpt.com/docs/sites')
 on conflict (slug) do update set
   name         = excluded.name,
   category     = excluded.category,
@@ -2577,7 +2582,7 @@ from (values
   ('fly-io','deployment'), ('fly-io','backend'),
   ('digitalocean-app-platform','deployment'), ('digitalocean-app-platform','backend'), ('digitalocean-app-platform','free-tier'),
   ('aws-amplify','deployment'), ('aws-amplify','web-apps'), ('aws-amplify','free-tier'),
-  ('chatgpt-sites','web-apps'), ('chatgpt-sites','deployment')
+  ('chatgpt-sites','web-apps')
 ) as m(tool_slug, tag_slug)
 join tools t on t.slug = m.tool_slug
 join tags  g on g.slug = m.tag_slug
@@ -2956,13 +2961,13 @@ from (values
     {"label": "Custom domains", "value": "Yes, through Cloud Run"}
   ]'),
   ('chatgpt-sites', '[
-    {"label": "Free plan", "value": "None; needs a paid ChatGPT plan"},
-    {"label": "Paid plans from", "value": "ChatGPT Plus"},
-    {"label": "Builds", "value": "Websites and lightweight web apps"},
-    {"label": "Code it writes", "value": "Runs on Cloudflare Workers; no Node.js servers"},
-    {"label": "Backend", "value": "Simple storage on Cloudflare D1 and R2"},
-    {"label": "Hosting", "value": "Included, with a shareable link"},
-    {"label": "Custom domains", "value": "Yes, if you own the domain"}
+    {"label": "Where it runs", "value": "Inside ChatGPT, as an app with its own skills"},
+    {"label": "Plans", "value": "Plus, Pro, Business, Enterprise and Edu; not on Free or Go"},
+    {"label": "Status", "value": "Public beta, with usage limits per plan"},
+    {"label": "Makes", "value": "Websites, web apps and games, on a shareable link"},
+    {"label": "Storage", "value": "10 GB of database storage per site, plus file storage"},
+    {"label": "Sign-in", "value": "Optional Sign in with ChatGPT, for pages that know who is reading"},
+    {"label": "Good for", "value": "A tracker, dashboard or calculator that needs somewhere to live"}
   ]')
 ) as v(slug, facts)
 where t.slug = v.slug;
@@ -4828,5 +4833,7 @@ insert into tool_tags (tool_id, tag_id)
 select t.id, g.id
 from tools t
 join tags g on g.slug = 'extension'
-where t.category = 'plugins'
+-- Sites is a ChatGPT app rather than something installed in an editor, so it
+-- sits in this category without being an extension (VIB-190).
+where t.category = 'plugins' and t.slug <> 'chatgpt-sites'
 on conflict do nothing;

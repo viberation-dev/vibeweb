@@ -545,7 +545,7 @@ function StepReveal({
                 : `${tools.length} tools to start with`}
             </h2>
             <ul className="mt-5 space-y-3.5">
-              {tools.map(toolView).map((view) => (
+              {tools.map((tool) => toolView(tool)).map((view) => (
                 <li key={view.id} className="flex items-baseline gap-3">
                   <Link href={view.href} className="font-bold hover:underline">
                     {view.title}

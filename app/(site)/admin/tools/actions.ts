@@ -43,6 +43,7 @@ export async function saveToolAction(
     outbound_url: formData.get("outbound_url"),
     is_affiliate: formData.get("is_affiliate"),
     editor_pick: formData.get("editor_pick"),
+    badge: formData.get("badge"),
     openrouter_family: formData.get("openrouter_family"),
     openrouter_id: formData.get("openrouter_id"),
     skills_sh_source: formData.get("skills_sh_source"),

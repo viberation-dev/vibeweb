@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Tool } from "@/lib/queries/tools";
 import { SKILL_AGENTS, SKILL_CATEGORIES } from "@/lib/skill-taxonomy";
+import { BADGE_LABELS, TOOL_BADGES } from "@/lib/tool-badges";
 import { TOOL_CATEGORIES } from "@/lib/tool-categories";
 import { PRICING_TIERS } from "@/lib/tool-facts";
 import { TOOL_PLATFORMS } from "@/lib/tool-platforms";
@@ -293,6 +294,31 @@ export function ToolForm({ tool, action }: Props) {
             The row holds three, so keep it to the best three per category.
           </p>
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="badge">Card badge</Label>
+        <select
+          id="badge"
+          name="badge"
+          defaultValue={tool?.badge ?? ""}
+          className={selectClass}
+        >
+          <option value="">None</option>
+          {TOOL_BADGES.map((value) => (
+            <option key={value} value={value}>
+              {BADGE_LABELS[value]}
+            </option>
+          ))}
+        </select>
+        <p className="text-muted-foreground text-sm">
+          Shown on the card in the directory. Whether badges come from here,
+          from the view counts, or from both is set in{" "}
+          <Link href="/admin/settings" className="underline">
+            site settings
+          </Link>
+          .
+        </p>
       </div>
 
       {state.error ? (

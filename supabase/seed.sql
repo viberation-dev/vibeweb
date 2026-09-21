@@ -4475,3 +4475,23 @@ select a.id, b.id, 'official'::tool_link_kind, null, 1
 from tools a, tools b
 where a.slug = 'gemini' and b.slug = 'gemini-app'
 on conflict (tool_id, linked_tool_id) do nothing;
+
+-- Starter card badges (VIB-187). Staff re-badge in the tools editor; the
+-- site badge mode decides whether these are shown at all.
+--
+-- "New" is the nine chat apps added in VIB-185, which really are the newest
+-- rows. "Popular" is a short, defensible list rather than a long one: the
+-- tools a beginner is most likely to have already heard of. It is an
+-- editorial claim, which is exactly why it is a column staff own rather than
+-- a number the directory infers from its own pre-launch traffic.
+update tools set badge = 'new', updated_at = now()
+where slug in (
+  'gemini-app', 'grok', 'microsoft-copilot', 'deepseek', 'qwen-chat',
+  'z-ai', 'le-chat', 'perplexity', 'kimi'
+);
+
+update tools set badge = 'popular', updated_at = now()
+where slug in (
+  'claude-ai', 'chatgpt', 'claude-code', 'cursor', 'vs-code',
+  'github-copilot', 'lovable', 'vercel', 'nextjs', 'supabase'
+);

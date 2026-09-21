@@ -42,6 +42,12 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-21",
     kind: "added",
+    title: "New and Popular on tool cards",
+    body: "Cards in the directory can now carry a New or Popular badge, so the things worth looking at first stand out in a long grid.",
+  },
+  {
+    date: "2026-09-21",
+    kind: "added",
     title: "Nine more AI chats in the directory",
     body: "Chats no longer stops at Claude.ai and ChatGPT. Gemini, Grok, Microsoft Copilot, DeepSeek, Qwen Chat, Z.ai, Le Chat, Perplexity and Kimi each have a page with what the free plan covers, what the paid one costs and where your data goes.",
   },

@@ -2,6 +2,7 @@ import { contentPillarLabel, contentPreview, contentTypeLabel } from "@/lib/lear
 import type { Content } from "@/lib/queries/content";
 import type { Tool } from "@/lib/queries/tools";
 import type { RoleLevel } from "@/lib/role-level";
+import { toolBadgeLabel, type BadgeSettings } from "@/lib/tool-badges";
 import { toolCategoryLabel } from "@/lib/tool-categories";
 import type { Enums } from "@/types/supabase";
 
@@ -25,13 +26,20 @@ export type ResourceView = {
   eyebrow: string;
   description: string | null;
   badges?: string[];
+  /** Tools only — "New" or "Popular" (VIB-187). */
+  flag?: string;
   /** Content only — tools have no skill tier. Rendered as a DifficultyBadge. */
   difficulty?: RoleLevel;
   /** Quiet card meta. Reading time for content; tools have none. */
   meta?: string;
 };
 
-export function toolView(tool: Tool): ResourceView {
+/**
+ * `settings` is optional so a surface that has not read the settings row
+ * still renders a card — it just renders one with no badge, which is the
+ * same thing the default mode gives an unbadged tool.
+ */
+export function toolView(tool: Tool, settings?: BadgeSettings): ResourceView {
   return {
     targetType: "tool",
     id: tool.id,
@@ -40,6 +48,7 @@ export function toolView(tool: Tool): ResourceView {
     eyebrow: toolCategoryLabel(tool.category),
     description: tool.tagline,
     badges: tool.pricing_tier ? [tool.pricing_tier] : undefined,
+    flag: settings ? toolBadgeLabel(tool, settings) : undefined,
   };
 }
 

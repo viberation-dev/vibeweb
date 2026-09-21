@@ -6,6 +6,7 @@ import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { listBookmarks } from "@/lib/queries/bookmarks";
+import { getSiteSettings } from "@/lib/queries/settings";
 import {
   getCollectionBySlug,
   getCollectionEntries,
@@ -52,13 +53,16 @@ export default async function CollectionPage({ params }: Props) {
    * sign in. Only which ones read as saved needs a user. Both kinds are
    * fetched because a collection mixes tools and articles in one list.
    */
-  const [entries, bookmarks] = await Promise.all([
+  const [entries, bookmarks, settings] = await Promise.all([
     getCollectionEntries(supabase, collection.id),
     auth.user ? listBookmarks(supabase, auth.user.id) : Promise.resolve([]),
+    getSiteSettings(supabase),
   ]);
 
   const views = entries.map((entry) =>
-    entry.kind === "tool" ? toolView(entry.tool) : contentView(entry.content),
+    entry.kind === "tool"
+      ? toolView(entry.tool, settings)
+      : contentView(entry.content),
   );
   const bookmarkedIds = new Set(
     bookmarks.map((bookmark) => bookmark.target_id),
@@ -93,6 +97,7 @@ export default async function CollectionPage({ params }: Props) {
                 title={view.title}
                 eyebrow={view.eyebrow}
                 description={view.description}
+                flag={view.flag}
                 badges={view.badges}
                 difficulty={view.difficulty}
                 meta={view.meta}

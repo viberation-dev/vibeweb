@@ -362,6 +362,7 @@ export type ToolWrite = Pick<
   | "outbound_url"
   | "is_affiliate"
   | "editor_pick"
+  | "badge"
   | "openrouter_family"
   | "openrouter_id"
   | "skills_sh_source"

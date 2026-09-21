@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { DifficultyBadge } from "@/components/features/resource/DifficultyBadge";
+import { Badge } from "@/components/ui/badge";
 import { TagPill } from "@/components/ui/tag-pill";
 import type { RoleLevel } from "@/lib/role-level";
 import { cn } from "@/lib/utils";
@@ -17,6 +18,13 @@ export type ResourceCardProps = {
   description?: string | null;
   /** Short pills under the description: tags, pricing tier. */
   badges?: string[];
+  /**
+   * "New" or "Popular" (VIB-187). Deliberately one string, not a list, and
+   * rendered as the design system's Badge rather than a TagPill: it is a
+   * claim the site is making about the item, not a fact about the item the
+   * way a tag or a price is, so it should not read as one more tag.
+   */
+  flag?: string;
   /**
    * Skill tier, rendered as the design system's DifficultyBadge rather than
    * a plain pill — its hues are fixed per level so "Beginner" reads the same
@@ -56,6 +64,7 @@ export function ResourceCard({
   eyebrow,
   description,
   badges,
+  flag,
   difficulty,
   meta,
   action,
@@ -100,8 +109,9 @@ export function ResourceCard({
         </p>
       ) : null}
 
-      {badges?.length || difficulty || meta ? (
+      {badges?.length || flag || difficulty || meta ? (
         <div className="mt-4 flex flex-wrap items-center gap-2">
+          {flag ? <Badge variant="highlight">{flag}</Badge> : null}
           {difficulty ? <DifficultyBadge level={difficulty} /> : null}
           {badges?.map((badge) => (
             <TagPill key={badge}>{badge}</TagPill>

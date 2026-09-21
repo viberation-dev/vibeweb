@@ -9,6 +9,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { listBookmarks } from "@/lib/queries/bookmarks";
 import { listContent } from "@/lib/queries/content";
+import { getSiteSettings } from "@/lib/queries/settings";
 import { getToolTagsByIds, listTools } from "@/lib/queries/tools";
 import { cardBadges } from "@/lib/card-badges";
 import { contentView, toolView } from "@/lib/resource-view";
@@ -60,7 +61,7 @@ export default async function SkillsPage({ searchParams }: Props) {
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
 
-  const [ranked, { tools: tagged }, { tools: marketplaces }, { items: guides }, bookmarks] =
+  const [ranked, { tools: tagged }, { tools: marketplaces }, { items: guides }, bookmarks, settings] =
     await Promise.all([
       // Same ranking the homepage uses (VIB-131): cached per skill for an hour.
       listRankedSkills(supabase),
@@ -68,6 +69,7 @@ export default async function SkillsPage({ searchParams }: Props) {
       listTools(supabase, { tag: SELL_SKILLS_TAG, pageSize: HUB_LIMIT }),
       listContent(supabase, { tag: SKILLS_HUB_TAG, pageSize: HUB_LIMIT }),
       auth.user ? listBookmarks(supabase, auth.user.id, "tool") : [],
+      getSiteSettings(supabase),
     ]);
 
   // Filter fields (VIB-132). The creator is the GitHub owner, the same
@@ -206,7 +208,7 @@ export default async function SkillsPage({ searchParams }: Props) {
               return (
                 <li key={tool.id}>
                   <ResourceCard
-                    {...toolView(tool)}
+                    {...toolView(tool, settings)}
                     icon={<ToolIcon tool={tool} className="size-4" />}
                     action={
                       <>

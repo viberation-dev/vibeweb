@@ -238,7 +238,7 @@ export default async function WalkthroughRunnerPage({
             each.
           </p>
           <ul className="mt-4 grid items-start gap-4 sm:grid-cols-2">
-            {tools.map(toolView).map((view) => (
+            {tools.map((tool) => toolView(tool)).map((view) => (
               <li key={view.id}>
                 <ResourceCard
                   href={view.href}

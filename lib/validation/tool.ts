@@ -6,6 +6,7 @@ import { OPENROUTER_FAMILY, OPENROUTER_ID } from "../model-facts.ts";
 import { safeOutboundUrl } from "../outbound.ts";
 import { SKILLS_SH_SOURCE } from "../skill-facts.ts";
 import { SKILL_AGENT_IDS, SKILL_CATEGORY_VALUES } from "../skill-taxonomy.ts";
+import { TOOL_BADGES } from "../tool-badges.ts";
 import { PRICING_TIERS } from "../tool-facts.ts";
 import { TOOL_PLATFORM_VALUES } from "../tool-platforms.ts";
 
@@ -91,6 +92,14 @@ export const toolEditorSchema = z.object({
     .union([z.literal("on"), z.literal("")])
     .nullable()
     .transform((value) => value === "on"),
+  /**
+   * Card badge (VIB-187). Empty is the normal case — most tools carry none —
+   * and whether it is shown at all depends on the site badge mode.
+   */
+  badge: z
+    .union([z.enum(TOOL_BADGES), z.literal("")])
+    .nullish()
+    .transform((value) => (value ? (value as (typeof TOOL_BADGES)[number]) : null)),
   /*
    * Model family and its featured model (VIB-107). Checked against the same
    * shapes as the columns' CHECKs so a typo is a form error rather than a 500

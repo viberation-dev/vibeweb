@@ -8,6 +8,7 @@ import { SearchInput } from "@/components/features/search/SearchInput";
 import { search } from "@/lib/integrations/search";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { listBookmarks } from "@/lib/queries/bookmarks";
+import { getSiteSettings } from "@/lib/queries/settings";
 import { contentView, toolView } from "@/lib/resource-view";
 
 export const metadata: Metadata = {
@@ -34,9 +35,10 @@ export default async function SearchPage({ searchParams }: Props) {
    * The search and the session do not depend on each other, so they go out
    * together (VIB-56). Bookmarks need the user id, hence the second wave.
    */
-  const [results, { data: auth }] = await Promise.all([
+  const [results, { data: auth }, settings] = await Promise.all([
     search(supabase, q),
     supabase.auth.getUser(),
+    getSiteSettings(supabase),
   ]);
 
   const bookmarks = auth.user
@@ -89,7 +91,7 @@ export default async function SearchPage({ searchParams }: Props) {
 
             const view =
               hit.kind === "tool"
-                ? toolView(hit.tool)
+                ? toolView(hit.tool, settings)
                 : contentView(hit.content);
             return (
               <li key={`${view.targetType}:${view.id}`}>
@@ -98,6 +100,7 @@ export default async function SearchPage({ searchParams }: Props) {
                   title={view.title}
                   eyebrow={view.eyebrow}
                   description={view.description}
+                  flag={view.flag}
                   badges={view.badges}
                   difficulty={view.difficulty}
                   meta={view.meta}

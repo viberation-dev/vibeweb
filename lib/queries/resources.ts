@@ -37,7 +37,7 @@ export async function resolveTargetViews(
   ]);
 
   const views = new Map<string, ResourceView>();
-  for (const view of [...tools.map(toolView), ...content.map(contentView)]) {
+  for (const view of [...tools.map((tool) => toolView(tool)), ...content.map(contentView)]) {
     views.set(view.id, view);
   }
   return views;

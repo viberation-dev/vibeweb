@@ -61,7 +61,7 @@ export default async function TagPage({ params }: Props) {
   // Tools first, then guides: a tag is most often a thing you want before it
   // is a thing you want to read about.
   const views = [
-    ...tools.tools.map(toolView),
+    ...tools.tools.map((tool) => toolView(tool)),
     ...content.items.map(contentView),
   ];
   const total = tools.total + content.total;

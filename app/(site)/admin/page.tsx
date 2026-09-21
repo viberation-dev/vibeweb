@@ -1,4 +1,5 @@
 import {
+  IconAdjustments,
   IconArrowsLeftRight,
   IconBook2,
   IconQuote,
@@ -32,6 +33,12 @@ const EDITORS = [
     icon: IconQuote,
     title: "Testimonials",
     blurb: "Real quotes from real people, or the homepage shows none.",
+  },
+  {
+    href: "/admin/settings",
+    icon: IconAdjustments,
+    title: "Site settings",
+    blurb: "Where card badges come from, and the thresholds behind them.",
   },
   {
     href: "/admin/comparisons",

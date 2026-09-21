@@ -22,6 +22,8 @@ import { familyLine, familyMembers } from "@/lib/model-facts";
 import { toPageNumber } from "@/lib/pagination";
 import { listBookmarks } from "@/lib/queries/bookmarks";
 import { cardBadges } from "@/lib/card-badges";
+import { getSiteSettings } from "@/lib/queries/settings";
+import { toolBadgeLabel } from "@/lib/tool-badges";
 import { listCategoryTags } from "@/lib/queries/tags";
 import { getToolTagsByIds, listTools, type Tool } from "@/lib/queries/tools";
 import { normaliseQuery } from "@/lib/search-query";
@@ -135,7 +137,7 @@ export default async function ToolsPage({ searchParams }: Props) {
   // Picks usually also sit in the grid; the lookups below do not mind repeats.
   const onScreen = [...picks, ...tools];
 
-  const [toolTags, liveModels, skillLines] = await Promise.all([
+  const [toolTags, liveModels, skillLines, settings] = await Promise.all([
     // One round trip for the whole grid's tag pills rather than one per card.
     getToolTagsByIds(
       supabase,
@@ -149,6 +151,9 @@ export default async function ToolsPage({ searchParams }: Props) {
     // "881K installs · 176K stars" for skill cards (VIB-130); empty map when
     // this page has no skills, and missing lines rather than errors.
     getSkillCardLines(onScreen),
+    // Which badge source is in force, and the thresholds the derived one
+    // uses (VIB-187). One read for the whole grid.
+    getSiteSettings(supabase),
   ]);
 
   /** "15 models · from $0.25 per 1M" for a model family's card; undefined otherwise. */
@@ -177,6 +182,7 @@ export default async function ToolsPage({ searchParams }: Props) {
       title={tool.name}
       icon={<ToolIcon tool={tool} className="size-4" />}
       description={tool.tagline}
+      flag={toolBadgeLabel(tool, settings)}
       meta={familyFor(tool.openrouter_family) ?? skillLines.get(tool.id)}
       badges={
         // Hosts and app builders are chosen by price, trial and

@@ -384,6 +384,30 @@ export type Database = {
           },
         ]
       }
+      site_settings: {
+        Row: {
+          badge_new_days: number
+          badge_popular_views: number
+          id: boolean
+          tool_badge_mode: string
+          updated_at: string
+        }
+        Insert: {
+          badge_new_days?: number
+          badge_popular_views?: number
+          id?: boolean
+          tool_badge_mode?: string
+          updated_at?: string
+        }
+        Update: {
+          badge_new_days?: number
+          badge_popular_views?: number
+          id?: boolean
+          tool_badge_mode?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tags: {
         Row: {
           id: string
@@ -607,6 +631,7 @@ export type Database = {
       }
       tools: {
         Row: {
+          badge: Database["public"]["Enums"]["tool_badge"] | null
           best_for: Database["public"]["Enums"]["role_level"] | null
           bookmark_count: number
           category: Database["public"]["Enums"]["tool_category"]
@@ -633,6 +658,7 @@ export type Database = {
           view_count: number
         }
         Insert: {
+          badge?: Database["public"]["Enums"]["tool_badge"] | null
           best_for?: Database["public"]["Enums"]["role_level"] | null
           bookmark_count?: number
           category: Database["public"]["Enums"]["tool_category"]
@@ -659,6 +685,7 @@ export type Database = {
           view_count?: number
         }
         Update: {
+          badge?: Database["public"]["Enums"]["tool_badge"] | null
           best_for?: Database["public"]["Enums"]["role_level"] | null
           bookmark_count?: number
           category?: Database["public"]["Enums"]["tool_category"]
@@ -883,6 +910,7 @@ export type Database = {
         | "security"
         | "marketing_content"
         | "documents_office"
+      tool_badge: "new" | "popular"
       tool_category:
         | "models"
         | "agents"
@@ -1070,6 +1098,7 @@ export const Constants = {
         "marketing_content",
         "documents_office",
       ],
+      tool_badge: ["new", "popular"],
       tool_category: [
         "models",
         "agents",

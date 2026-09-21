@@ -3,7 +3,7 @@ import type { Enums } from "@/types/supabase";
 export type ToolCategory = Enums<"tool_category">;
 
 /**
- * The 16 canonical directory categories (artifact-type taxonomy, §24/§07).
+ * The 17 canonical directory categories (artifact-type taxonomy, §24/§07).
  *
  * Order is the display order in the category nav, not alphabetical: the
  * things a beginner meets first come first. The enum values double as URL
@@ -13,6 +13,7 @@ export type ToolCategory = Enums<"tool_category">;
 export const TOOL_CATEGORIES: ReadonlyArray<{ value: ToolCategory; label: string }> = [
   { value: "models", label: "Models" },
   { value: "chats", label: "Chats" },
+  { value: "desktop_apps", label: "Desktop Apps" },
   { value: "app_builders", label: "App Builders" },
   { value: "hosting", label: "Hosting" },
   { value: "agents", label: "Agents" },
@@ -33,6 +34,7 @@ export const TOOL_CATEGORIES: ReadonlyArray<{ value: ToolCategory; label: string
 export const CATEGORY_BLURBS: Record<ToolCategory, string> = {
   models: "The AI behind every tool. See what each one is good at.",
   chats: "Ask, plan and draft code with an AI in your browser.",
+  desktop_apps: "AI you install, that can see your files and act on your computer.",
   app_builders: "Describe an app in plain English and get a working one.",
   hosting: "Put your project online with a real link to share.",
   agents: "AI that plans and carries out coding tasks for you.",
@@ -63,7 +65,7 @@ export const BEGINNER_CATEGORIES: ReadonlyArray<ToolCategory> = [
 /** The "All tools" modal's tabs. Every category appears in exactly one group (tool-categories.test.ts). */
 export const CATEGORY_GROUPS: ReadonlyArray<{ label: string; categories: ReadonlyArray<ToolCategory> }> = [
   { label: "Build", categories: ["app_builders", "ides", "terminals", "clis", "agents"] },
-  { label: "AI", categories: ["models", "chats"] },
+  { label: "AI", categories: ["models", "chats", "desktop_apps"] },
   { label: "Extend", categories: ["skills", "mcp_servers", "plugins"] },
   { label: "Start from", categories: ["templates", "frameworks", "workflows"] },
   { label: "Ship", categories: ["hosting", "tools", "utilities"] },

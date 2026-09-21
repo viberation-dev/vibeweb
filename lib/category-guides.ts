@@ -139,6 +139,34 @@ export const CATEGORY_GUIDES: Readonly<Record<ToolCategory, CategoryGuide>> = {
     choose:
       "Starting out? Use whatever model your tool picks by default. Compare models only when the answers are not good enough, or the bill is too high.",
   },
+  // Desktop Apps (VIB-191). The question a reader actually has here is not
+  // "which one is best" but "why would I install anything when the website
+  // works?", so the explainer answers that first.
+  desktop_apps: {
+    title: "What is a desktop AI app?",
+    intro:
+      "The same assistant you use in a browser, installed on your computer, which lets it do things a web page cannot: open your files, see your screen, run commands and keep working while you do something else.",
+    kinds: [
+      {
+        name: "Works with your files",
+        body: "Point it at a folder and it reads and edits the real files, instead of you copying text into a chat box and the answer back out again.",
+        links: [{ label: "Show file access", category: "desktop_apps", tag: "local-files" }],
+      },
+      {
+        name: "Connects to your other apps",
+        body: "Desktop apps can run MCP servers, which plug the assistant into things like GitHub, Notion or your database, usually in one click.",
+        links: [{ label: "See MCP servers", category: "mcp_servers" }],
+      },
+      {
+        name: "Runs agents on your machine",
+        body: "The newer ones take a whole task and work through it on your computer, sometimes several at once, and tell you when they are done.",
+        links: [{ label: "Show coding agents", category: "desktop_apps", tag: "coding-agent" }],
+      },
+    ],
+    choose:
+      "Start in a chat. Install the desktop app when you are tired of copying files into it, and want the AI working where your work already lives.",
+  },
+
   chats: {
     title: "What is an AI chat?",
     intro:

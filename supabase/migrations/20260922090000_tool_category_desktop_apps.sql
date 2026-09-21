@@ -1,0 +1,19 @@
+-- Desktop Apps category (VIB-191).
+--
+-- An emerging class the directory had nowhere to put: AI you install, which
+-- can see your files and act on your computer. Claude for desktop adds local
+-- files, MCP servers and Cowork; the ChatGPT app carries Codex and can drive
+-- the machine; Qwen Studio reads your files and your screen; Kimi Work is a
+-- local agent sold apart from Kimi Chat; Antigravity 2.0 runs several agents
+-- on your codebase at once. None of that is what a browser tab does, which is
+-- why they do not belong in `chats`.
+--
+-- The rule for what goes in, agreed with Ali on 2026-09-22: a surface earns
+-- its own row when it changes what the tool can do, not merely where it runs.
+-- So OpenCode's desktop build stays a fact on its CLI entry, while
+-- Antigravity 2.0 — a different product from the Antigravity IDE — gets one.
+--
+-- Placed after `chats` to match the display order in lib/tool-categories.ts:
+-- the browser tab you start in, then the app you install once it is not
+-- enough.
+alter type tool_category add value if not exists 'desktop_apps' after 'chats';

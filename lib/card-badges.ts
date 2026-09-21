@@ -113,6 +113,17 @@ export const CARD_TAGS: Readonly<Record<string, readonly string[]>> = {
   // beyond text, and whether a coding agent comes with them.
   models: ["coding-agent", "image-generation", "video-generation"],
   chats: ["coding-agent", "skills-ecosystem", "image-generation", "voice-mode"],
+  // Desktop apps (VIB-191): what it can reach on your machine comes first,
+  // then which computers it runs on.
+  desktop_apps: [
+    "local-files",
+    "coding-agent",
+    "mcp-client",
+    "windows",
+    "macos",
+    "linux",
+    "open-source",
+  ],
   // Frameworks and templates: what you build, then the stack.
   frameworks: ["agent-framework", "web-apps", "python", "typescript", "react", "open-source"],
   templates: ["web-apps", "design", "nextjs", "react", "typescript", "database", "open-source"],

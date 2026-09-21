@@ -4837,3 +4837,175 @@ join tags g on g.slug = 'extension'
 -- sits in this category without being an extension (VIB-190).
 where t.category = 'plugins' and t.slug <> 'chatgpt-sites'
 on conflict do nothing;
+
+-- Desktop Apps (VIB-191). Checked against vendor download pages and docs on
+-- 2026-09-22. Same category as migration 20260922090000.
+--
+-- What unites them is not that they are downloads. It is that once installed
+-- they can reach the machine: your files, your screen, your terminal. That is
+-- the line between this category and `chats`, and it is why OpenCode's
+-- desktop build is not here — it is the terminal agent in a window, not a
+-- new capability — while Antigravity 2.0 is, being a different product from
+-- the Antigravity IDE.
+insert into tools (name, slug, category, tagline, description, pricing_tier, outbound_url) values
+  ('Claude for desktop', 'claude-desktop', 'desktop_apps',
+   'Claude with your files, your apps and an agent that works.',
+   'The Claude app for Mac and Windows. It reads and edits files on your computer, connects to apps like GitHub, Notion and Slack through MCP servers you install in a click, and runs Cowork, the agent that goes away and does a whole task. Signed in with the same plan as the website.',
+   'Freemium', 'https://claude.com/download'),
+  ('ChatGPT for desktop', 'chatgpt-desktop', 'desktop_apps',
+   'ChatGPT on your machine, with Codex and voice.',
+   'The ChatGPT app for Mac and Windows. Beyond the chat you get Codex for work on local files, repositories and your terminal, voice on a hotkey while you work in other apps, and the agent features of ChatGPT Work.',
+   'Freemium', 'https://chatgpt.com/download/'),
+  ('Qwen Studio', 'qwen-studio', 'desktop_apps',
+   'Alibaba''s free desktop app, which can see your screen.',
+   'The Qwen desktop app for Mac and Windows. It works with files on your computer and can read what is on screen, which makes it useful for asking about something you are looking at rather than describing it. Free, like the web chat.',
+   'Free', 'https://qwen.ai/download'),
+  ('Kimi Work', 'kimi-work', 'desktop_apps',
+   'Moonshot''s local agent, a separate app from Kimi Chat.',
+   'Kimi Work is the desktop agent rather than the chat: it takes a task and works through it on your own machine. Windows and Apple silicon Macs run the full thing; Intel Macs get Kimi Chat only.',
+   'Freemium', 'https://www.kimi.com/en/products/download'),
+  ('Antigravity 2.0', 'antigravity-desktop', 'desktop_apps',
+   'Google''s agent workspace: several agents, one window.',
+   'Shipped at I/O 2026 as a separate app from the Antigravity IDE. The editor is secondary here — the main surface is the Agent Manager, where you set several agents going on different parts of a codebase at once and check their work as it lands. There is a CLI and an SDK alongside it.',
+   'Freemium', 'https://antigravity.google/download/')
+on conflict (slug) do update set
+  name         = excluded.name,
+  category     = excluded.category,
+  tagline      = excluded.tagline,
+  description  = excluded.description,
+  pricing_tier = excluded.pricing_tier,
+  outbound_url = excluded.outbound_url,
+  updated_at   = now();
+
+update tools t set platform = v.platform::text[], best_for = v.best_for::role_level
+from (values
+  ('claude-desktop',      '{macos,windows}',       'beginner'),
+  ('chatgpt-desktop',     '{macos,windows}',       'beginner'),
+  ('qwen-studio',         '{macos,windows}',       'beginner'),
+  ('kimi-work',           '{macos,windows}',       'intermediate'),
+  ('antigravity-desktop', '{macos,windows,linux}', 'intermediate')
+) as v(slug, platform, best_for)
+where t.slug = v.slug;
+
+-- Two new facets, because "what can it reach on my machine?" is the question
+-- this whole category exists to answer.
+insert into tags (name, slug, kind) values
+  ('Works with your files', 'local-files', 'facet'),
+  ('Runs MCP servers',      'mcp-client',  'facet')
+on conflict (slug) do update set name = excluded.name, kind = excluded.kind;
+
+insert into tool_tags (tool_id, tag_id)
+select t.id, g.id
+from (values
+  ('claude-desktop','local-files'), ('claude-desktop','mcp-client'),
+  ('claude-desktop','coding-agent'), ('claude-desktop','voice-mode'),
+  ('claude-desktop','macos'), ('claude-desktop','windows'), ('claude-desktop','free-tier'),
+  ('chatgpt-desktop','local-files'), ('chatgpt-desktop','mcp-client'),
+  ('chatgpt-desktop','coding-agent'), ('chatgpt-desktop','voice-mode'),
+  ('chatgpt-desktop','macos'), ('chatgpt-desktop','windows'), ('chatgpt-desktop','free-tier'),
+  ('qwen-studio','local-files'), ('qwen-studio','macos'), ('qwen-studio','windows'),
+  ('qwen-studio','free-tier'), ('qwen-studio','open-weights'),
+  ('kimi-work','local-files'), ('kimi-work','coding-agent'),
+  ('kimi-work','macos'), ('kimi-work','windows'), ('kimi-work','open-weights'),
+  ('antigravity-desktop','local-files'), ('antigravity-desktop','coding-agent'),
+  ('antigravity-desktop','mcp-client'), ('antigravity-desktop','multi-agent'),
+  ('antigravity-desktop','macos'), ('antigravity-desktop','windows'),
+  ('antigravity-desktop','linux'), ('antigravity-desktop','free-tier')
+) as m(tool_slug, tag_slug)
+join tools t on t.slug = m.tool_slug
+join tags  g on g.slug = m.tag_slug
+on conflict do nothing;
+
+update tools t set key_facts = v.facts::jsonb, updated_at = now()
+from (values
+  ('claude-desktop', '[
+    {"label": "Runs on", "value": "macOS and Windows"},
+    {"label": "Cost", "value": "Free to install; it uses whichever Claude plan you are on"},
+    {"label": "Your files", "value": "Reads and edits folders you give it access to"},
+    {"label": "Connects to", "value": "GitHub, Notion, Slack and more, through MCP servers"},
+    {"label": "Install an MCP server", "value": "One click, with a Desktop Extension (.mcpb) file"},
+    {"label": "Agent", "value": "Cowork takes a whole task and works through it"},
+    {"label": "Good for", "value": "Stopping the copy-and-paste between a chat and your project"}
+  ]'),
+  ('chatgpt-desktop', '[
+    {"label": "Runs on", "value": "macOS and Windows"},
+    {"label": "Cost", "value": "Free to install; it uses whichever ChatGPT plan you are on"},
+    {"label": "Includes", "value": "Codex, for local files, repositories and your terminal"},
+    {"label": "Voice", "value": "On a hotkey, while you work in another app"},
+    {"label": "Good for", "value": "One app for everyday chat and for work on real code"}
+  ]'),
+  ('qwen-studio', '[
+    {"label": "Runs on", "value": "macOS and Windows"},
+    {"label": "Cost", "value": "Free"},
+    {"label": "Your files", "value": "Yes, and it can read what is on your screen"},
+    {"label": "Models", "value": "Qwen, open weights"},
+    {"label": "Where your data goes", "value": "China; check your employer''s rules before pasting work code in"},
+    {"label": "Good for", "value": "Asking about something you are looking at, for nothing"}
+  ]'),
+  ('kimi-work', '[
+    {"label": "Runs on", "value": "Windows and Apple silicon Macs; Intel Macs get Kimi Chat only"},
+    {"label": "Cost", "value": "Free to install; paid Kimi plans have been sold out since July 2026"},
+    {"label": "What it is", "value": "The local agent, a different app from Kimi Chat"},
+    {"label": "Models", "value": "Kimi, open weights"},
+    {"label": "Where your data goes", "value": "China; check your employer''s rules before pasting work code in"},
+    {"label": "Good for", "value": "Handing over a long task on files you already have"}
+  ]'),
+  ('antigravity-desktop', '[
+    {"label": "Runs on", "value": "macOS, Windows and Linux"},
+    {"label": "Cost", "value": "Same plans as Antigravity: a free tier with weekly limits, Pro from $20 a month"},
+    {"label": "Main surface", "value": "Agent Manager, with the editor secondary"},
+    {"label": "Agents at once", "value": "Up to five on different parts of a codebase"},
+    {"label": "Also ships", "value": "A CLI and a Python SDK"},
+    {"label": "Not the same as", "value": "The Antigravity IDE, which is still the editor"},
+    {"label": "Good for", "value": "Running several tasks in parallel and reviewing what lands"}
+  ]')
+) as v(slug, facts)
+where t.slug = v.slug;
+
+/*
+ * Links, so a reader lands on whichever surface they searched for and finds
+ * the others. The chat rows point at their desktop app as an official app,
+ * and the two entries that keep their old category say what the other thing
+ * is rather than leaving a reader to guess which Antigravity they have.
+ */
+insert into tool_links (tool_id, linked_tool_id, kind, note, sort_order)
+select a.id, b.id, v.kind::tool_link_kind, v.note, v.sort_order
+from (values
+  ('claude', 'claude-desktop', 'official', 'Mac and Windows', 3),
+  ('claude-ai', 'claude-desktop', 'official', 'the same account, on your computer', 0),
+  ('gpt', 'chatgpt-desktop', 'official', 'Mac and Windows', 1),
+  ('chatgpt', 'chatgpt-desktop', 'official', 'the same account, on your computer', 0),
+  ('qwen-chat', 'qwen-studio', 'official', 'the desktop app', 0),
+  ('kimi', 'kimi-work', 'official', 'the desktop agent', 0),
+  ('google-antigravity', 'antigravity-desktop', 'official', 'the separate agent workspace', 0),
+  ('antigravity-desktop', 'gemini', 'runs_in', null, 0),
+  ('claude-desktop', 'claude-code', 'pairs_with', null, 0),
+  ('claude-desktop', 'supabase-mcp-server', 'pairs_with', null, 1),
+  ('claude-desktop', 'playwright-mcp', 'pairs_with', null, 2)
+) as v(tool, linked, kind, note, sort_order)
+join tools a on a.slug = v.tool
+join tools b on b.slug = v.linked
+on conflict (tool_id, linked_tool_id) do update
+  set kind = excluded.kind, note = excluded.note, sort_order = excluded.sort_order;
+
+-- The two that keep their category, now that a namesake exists (VIB-191).
+update tools set
+  tagline = 'Google''s agent-first IDE, built around Gemini.',
+  description = 'A VS Code-style editor where agents plan, write and check code across your project while you review their work. The free Individual plan includes agent access with weekly limits, which makes it one of the cheapest ways to try an agentic IDE. This is the editor: Antigravity 2.0, the standalone agent workspace, is a separate app.',
+  updated_at = now()
+where slug = 'google-antigravity';
+
+update tools t set key_facts = v.facts::jsonb, updated_at = now()
+from (values
+  ('opencode', '[
+    {"label": "Free plan", "value": "Free and open source; bring your own provider"},
+    {"label": "Paid plans from", "value": "Optional: OpenCode Zen models from $10 a month"},
+    {"label": "Install", "value": "curl -fsSL https://opencode.ai/install | bash"},
+    {"label": "Also runs as", "value": "A desktop app for Mac, Windows and Linux, and extensions for VS Code, Cursor, Zed and Windsurf"},
+    {"label": "Models", "value": "75+ providers, including OpenAI, Google and open models"},
+    {"label": "Your own API key", "value": "Yes"},
+    {"label": "Local models", "value": "Yes, through Ollama"},
+    {"label": "Good for", "value": "One coding agent that is not tied to a single model company"}
+  ]')
+) as v(slug, facts)
+where t.slug = v.slug;

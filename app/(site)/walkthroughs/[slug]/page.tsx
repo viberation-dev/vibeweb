@@ -237,7 +237,7 @@ export default async function WalkthroughRunnerPage({
             Everything this walkthrough reaches for, with the directory entry for
             each.
           </p>
-          <ul className="mt-4 grid items-start gap-4 sm:grid-cols-2">
+          <ul className="mt-4 grid gap-4 sm:grid-cols-2">
             {tools.map((tool) => toolView(tool)).map((view) => (
               <li key={view.id}>
                 <ResourceCard

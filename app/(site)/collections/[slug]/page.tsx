@@ -89,7 +89,7 @@ export default async function CollectionPage({ params }: Props) {
       ) : null}
 
       {views.length ? (
-        <ul className="mt-8 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {views.map((view) => (
             <li key={`${view.targetType}:${view.id}`}>
               <ResourceCard

@@ -25,7 +25,7 @@ export default async function CompareIndexPage() {
       </p>
 
       {items.length ? (
-        <ul className="mt-8 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((item) => (
             <li key={item.id}>
               <ResourceCard

@@ -116,7 +116,7 @@ export default async function LearnPage({ searchParams }: Props) {
             (handoff §4). Both are pure CSS, so the grid stays a server
             component.
           */}
-          <ul className="mt-6 grid items-start gap-4 sm:grid-cols-2">
+          <ul className="mt-6 grid gap-4 sm:grid-cols-2">
             {items.map(contentView).map((view) => (
               <li key={view.id}>
                 <ResourceCard

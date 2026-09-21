@@ -148,7 +148,7 @@ export default async function SkillsPage({ searchParams }: Props) {
         </div>
 
         {skills.length ? (
-          <ul className="mt-8 grid items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {skills.map(({ tool, line }) => (
               <li key={tool.id}>
                 <ResourceCard
@@ -203,7 +203,7 @@ export default async function SkillsPage({ searchParams }: Props) {
             {group.title}
           </h2>
           <p className="text-muted-foreground mt-2 max-w-[60ch]">{group.blurb}</p>
-          <ul className="mt-6 grid items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {group.tools.map((tool) => {
               return (
                 <li key={tool.id}>
@@ -245,7 +245,7 @@ export default async function SkillsPage({ searchParams }: Props) {
           <p className="text-muted-foreground mt-2 max-w-[60ch]">
             What skills are, how to install them safely, and how to write your own.
           </p>
-          <ul className="mt-6 grid items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {guides.map((item) => (
               <li key={item.id}>
                 <ResourceCard {...contentView(item)} />

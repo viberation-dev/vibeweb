@@ -69,7 +69,7 @@ export default async function HistoryPage() {
       />
 
       {entries.length ? (
-        <ul className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {entries.map(({ id, target }) => (
             <li key={id}>
               <ResourceCard

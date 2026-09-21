@@ -8,6 +8,11 @@
  * mark only when the brand's own org ships it (vercel-labs, supabase, aws);
  * personal repos have no official identity and keep the generic icon.
  *
+ * Five marks come from elsewhere: ChatGPT Sites and ESLint are the files
+ * Ali supplied in Assets/Images/3rd Party Logos, and Error Lens, Live Server
+ * and Rainbow CSV are each extension’s own icon from its MIT repository,
+ * since neither icon set carries them.
+ *
  * A slug missing here falls back to the generic icon. To add one, drop the
  * file in public/logos and add the line with its extension.
  */
@@ -32,7 +37,7 @@ export const TOOL_LOGOS: Record<string, string> = {
   "canvas-design": "anthropic.svg",
   capafy: "capafy.png",
   chatgpt: "openai.svg",
-  "chatgpt-sites": "openai.svg",
+  "chatgpt-sites": "chatgpt-sites.svg",
   claude: "claude.svg",
   "claude-agent-sdk": "claude.svg",
   "claude-ai": "claude.svg",
@@ -61,7 +66,8 @@ export const TOOL_LOGOS: Record<string, string> = {
   "docx-skill": "anthropic.svg",
   "dotnet-performance": "dotnet.svg",
   emergent: "emergent.png",
-  eslint: "eslint.svg",
+  "error-lens": "errorlens.png",
+  eslint: "eslint.png",
   "fastapi-skill": "fastapi.svg",
   "figma-make": "figma-color.svg",
   "firebase-hosting": "firebase.svg",
@@ -105,6 +111,7 @@ export const TOOL_LOGOS: Record<string, string> = {
   langgraph: "langgraph-color.svg",
   "le-chat": "mistral-color.svg",
   "linear-mcp": "linear.svg",
+  "live-server": "liveserver.png",
   lovable: "lovable-color.svg",
   "macos-terminal": "macos.svg",
   mastra: "mastra.svg",
@@ -131,6 +138,7 @@ export const TOOL_LOGOS: Record<string, string> = {
   "qwen-chat": "qwen-color.svg",
   "qwen-code": "qwen-color.svg",
   railway: "railway.svg",
+  "rainbow-csv": "rainbowcsv.png",
   "react-native-best-practices": "vercel.svg",
   "redshift-guide": "aws-color.svg",
   relume: "relume.png",

@@ -83,7 +83,7 @@ export default async function TagPage({ params }: Props) {
       </p>
 
       {views.length ? (
-        <ul className="mt-6 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {views.map((view) => (
             <li key={`${view.targetType}:${view.id}`}>
               <ResourceCard

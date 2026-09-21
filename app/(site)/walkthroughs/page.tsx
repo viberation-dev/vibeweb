@@ -35,7 +35,7 @@ export default async function WalkthroughsPage() {
       </p>
 
       {walkthroughs.length ? (
-        <ul className="mt-8 grid items-start gap-4 sm:grid-cols-2">
+        <ul className="mt-8 grid gap-4 sm:grid-cols-2">
           {walkthroughs.map((walkthrough) => (
             <li key={walkthrough.id}>
               <Card className="relative h-full transition-colors hover:bg-muted/40 focus-within:ring-2 focus-within:ring-ring">

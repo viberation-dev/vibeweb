@@ -143,7 +143,7 @@ export default async function BookmarksPage({ searchParams }: Props) {
               {/* Unfiled is the absence of a folder, so there is nothing to rename. */}
               {folder === UNFILED ? null : <RenameFolderForm folder={folder} />}
             </div>
-            <ul className="mt-3 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {entries.map(({ bookmark, target }) => {
                 const modelName =
                   bookmark.model_id && models?.get(bookmark.model_id)?.name;

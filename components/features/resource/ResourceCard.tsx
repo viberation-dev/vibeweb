@@ -86,6 +86,9 @@ export function ResourceCard({
       <h3
         className={cn(
           "font-heading flex items-center gap-2.5 text-lg font-bold tracking-tight",
+          // Two lines at most: "Tailwind CSS IntelliSense" must not push the
+          // description down a row while its neighbours stay put.
+          "[&>a]:line-clamp-2",
           eyebrow && "mt-2.5",
         )}
       >
@@ -104,13 +107,13 @@ export function ResourceCard({
       </h3>
 
       {description ? (
-        <p className="text-muted-foreground mt-2.5 text-sm leading-relaxed">
+        <p className="text-muted-foreground mt-2.5 line-clamp-2 min-h-[2lh] text-sm leading-relaxed">
           {description}
         </p>
       ) : null}
 
       {badges?.length || flag || difficulty || meta ? (
-        <div className="mt-4 flex flex-wrap items-center gap-2">
+        <div className="mt-4 flex min-h-7 flex-wrap items-center gap-2">
           {flag ? <Badge variant="highlight">{flag}</Badge> : null}
           {difficulty ? <DifficultyBadge level={difficulty} /> : null}
           {badges?.map((badge) => (

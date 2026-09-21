@@ -314,7 +314,7 @@ export default async function ToolsPage({ searchParams }: Props) {
           <p className="text-muted-foreground mt-1 text-sm">
             Where we would start in {toolCategoryLabel(category)}.
           </p>
-          <ul className="mt-4 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {picks.map((tool) => (
               <li key={tool.id}>{card(tool)}</li>
             ))}
@@ -371,7 +371,7 @@ export default async function ToolsPage({ searchParams }: Props) {
                         →
                       </Link>
                     </div>
-                    <ul className="mt-4 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                       {row.tools.map((tool) => (
                         <li key={tool.id}>{card(tool)}</li>
                       ))}
@@ -384,7 +384,7 @@ export default async function ToolsPage({ searchParams }: Props) {
         </div>
       ) : tools.length ? (
         <>
-          <ul className="mt-6 grid items-start gap-4 sm:grid-cols-2">
+          <ul className="mt-6 grid gap-4 sm:grid-cols-2">
             {tools.map((tool) => (
               <li key={tool.id}>{card(tool)}</li>
             ))}

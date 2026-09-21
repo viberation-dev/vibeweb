@@ -71,7 +71,7 @@ export default async function SearchPage({ searchParams }: Props) {
       ) : null}
 
       {results.hits.length ? (
-        <ul className="mt-6 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {results.hits.map((hit) => {
             /*
              * Collections render as themselves rather than through

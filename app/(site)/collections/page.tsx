@@ -30,7 +30,7 @@ export default async function CollectionsPage() {
       </p>
 
       {collections.length ? (
-        <ul className="mt-8 grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {collections.map((collection) => {
             const count = counts.get(collection.id) ?? 0;
             return (

@@ -47,7 +47,7 @@ export const TOP_NAV: readonly NavItem[] = [
  *
  * The Directory group is derived from CATEGORY_GROUPS rather than restated,
  * so it reads Build / AI / Extend / Start from / Ship like the "All tools"
- * modal (VIB-174), and the 16 categories still have one definition.
+ * modal (VIB-174), and the 17 categories still have one definition.
  */
 export const SIDEBAR_GROUPS: ReadonlyArray<{ label?: string; items: readonly NavItem[] }> = [
   {
@@ -58,7 +58,7 @@ export const SIDEBAR_GROUPS: ReadonlyArray<{ label?: string; items: readonly Nav
     ],
   },
   {
-    label: "Directory · 16",
+    label: "Directory · 17",
     items: [
       { href: "/tools", label: "All tools", exclusive: ["category"] },
       ...CATEGORY_GROUPS.flatMap((group) =>
@@ -139,7 +139,7 @@ export function toSidebarMode(value: string | undefined): SidebarMode {
   return SIDEBAR_MODES.find((mode) => mode === value) ?? "hover";
 }
 
-/** A group's cookie id: the first word of its label, so "Directory · 16" is "Directory". */
+/** A group's cookie id: the first word of its label, so "Directory · 17" is "Directory". */
 export function sidebarGroupId(label: string): string {
   return label.split(" ")[0];
 }

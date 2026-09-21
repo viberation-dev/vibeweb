@@ -40,6 +40,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
  */
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    date: "2026-09-22",
+    kind: "added",
+    title: "Desktop Apps",
+    body: "A new category for AI you install rather than open in a tab: Claude, ChatGPT, Qwen Studio, Kimi Work and Antigravity 2.0. These can reach your files, your screen and your terminal, which is the reason to install one, and each entry says exactly what it can touch.",
+  },
+  {
     date: "2026-09-21",
     kind: "added",
     title: "Extensions for your editor",

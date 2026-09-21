@@ -5,6 +5,7 @@ import {
   IconBox,
   IconCloudUpload,
   IconCode,
+  IconDeviceLaptop,
   IconMessage2,
   IconPlug,
   IconPuzzle,
@@ -36,6 +37,7 @@ import type { ToolCategory } from "@/lib/tool-categories";
 export const CATEGORY_ICONS: Record<ToolCategory, Icon> = {
   models: IconBox,
   chats: IconMessage2,
+  desktop_apps: IconDeviceLaptop,
   app_builders: IconApps,
   hosting: IconCloudUpload,
   agents: IconRobot,

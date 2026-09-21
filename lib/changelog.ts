@@ -42,6 +42,12 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-21",
     kind: "added",
+    title: "Extensions for your editor",
+    body: "The directory now covers what goes inside VS Code and Cursor, not just the editors themselves: AI agents like Cline and Copilot Chat, and the everyday helpers that make AI code readable — ESLint, Prettier, Error Lens, GitLens, Live Server and more. Every editor page lists what you can install in it.",
+  },
+  {
+    date: "2026-09-21",
+    kind: "added",
     title: "New and Popular on tool cards",
     body: "Cards in the directory can now carry a New or Popular badge, so the things worth looking at first stand out in a long grid.",
   },

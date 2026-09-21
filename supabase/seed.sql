@@ -4495,3 +4495,323 @@ where slug in (
   'claude-ai', 'chatgpt', 'claude-code', 'cursor', 'vs-code',
   'github-copilot', 'lovable', 'vercel', 'nextjs', 'supabase'
 );
+-- Extensions: what to install inside your editor (VIB-188). Checked against
+-- marketplace listings, vendor docs and repositories on 2026-09-21.
+--
+-- The directory had editors and CLIs but almost nothing that goes *inside* an
+-- editor, so a reader who had just installed VS Code was left there. The AI
+-- agents and the everyday non-AI extensions are in one batch on purpose: the
+-- vibe-coding loop is "ask the agent, see the error, fix it, look at it in a
+-- browser", and ESLint, Error Lens and Live Server are three quarters of that
+-- loop.
+--
+-- Two entries state a status instead of making a recommendation, the way
+-- Continue does: Roo Code was archived on 2026-05-15, and Gemini Code
+-- Assist's IDE extensions stopped serving individual plans on 2026-06-18,
+-- with Google pointing individuals at Antigravity.
+insert into tools (name, slug, category, tagline, description, pricing_tier, outbound_url) values
+  ('Cline', 'cline', 'plugins',
+   'An open-source AI agent that lives in your editor.',
+   'Cline reads your project, edits files and runs commands, showing you each step before it takes it. You bring your own API key, so you pay the model provider directly instead of a subscription. Works in VS Code and JetBrains.',
+   'Open source', 'https://cline.bot'),
+  ('Roo Code', 'roo-code', 'plugins',
+   'A more powerful fork of Cline, no longer maintained.',
+   'Roo Code took Cline and added custom modes and faster default behaviour. Its repository was archived on 15 May 2026, so it gets no further updates. Listed because plenty of guides still point at it; for a new setup, install Cline.',
+   'Open source', 'https://github.com/RooCodeInc/Roo-Code'),
+  ('GitHub Copilot Chat', 'copilot-chat', 'plugins',
+   'The chat half of GitHub Copilot, as its own extension.',
+   'Ask questions about your code, get whole-file edits and run agent tasks in a side panel. It needs a Copilot plan, and installs alongside the completions extension rather than replacing it.',
+   'Freemium', 'https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat'),
+  ('Gemini Code Assist', 'gemini-code-assist', 'plugins',
+   'Google''s editor extension, now business plans only.',
+   'Completions and chat from Gemini inside VS Code and JetBrains. Since 18 June 2026 the IDE extensions no longer serve individual, Google AI Pro or Ultra plans: Google points individuals to Antigravity instead. Still sold to teams and businesses.',
+   'Paid', 'https://codeassist.google'),
+  ('ESLint', 'eslint', 'plugins',
+   'Catches broken JavaScript before you run it.',
+   'Underlines mistakes as you type and fixes many of them on save. Worth installing on day one with AI-written code: it flags the unused import or missing await that an agent left behind, in the editor rather than in a failed build.',
+   'Open source', 'https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint'),
+  ('Prettier', 'prettier', 'plugins',
+   'Formats your code the same way every time.',
+   'One opinionated formatter, run on save. It ends arguments about spacing and, more usefully here, keeps every AI-generated file looking like the rest of the project instead of like whichever model wrote it.',
+   'Open source', 'https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode'),
+  ('Python for VS Code', 'python-vscode', 'plugins',
+   'Microsoft''s Python support: running, debugging, environments.',
+   'The extension that makes VS Code a Python editor — run and debug files, pick an interpreter, manage virtual environments. Microsoft licenses it for its own products, so it does not install in Cursor and other forks.',
+   'Free', 'https://marketplace.visualstudio.com/items?itemName=ms-python.python'),
+  ('Jupyter for VS Code', 'jupyter-vscode', 'plugins',
+   'Notebooks inside your editor, no browser tab.',
+   'Opens .ipynb notebooks in VS Code with the same variables view and plots you get in the browser. The usual way to poke at data or try an API call a few times before it becomes real code. Same Microsoft licence as the Python extension.',
+   'Free', 'https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter'),
+  ('Live Server', 'live-server', 'plugins',
+   'Opens your HTML page and reloads it as you save.',
+   'Right-click an HTML file, pick Open with Live Server, and the page refreshes itself every time you save. The simplest way to see a plain HTML, CSS and JavaScript project without setting up a framework.',
+   'Open source', 'https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer'),
+  ('Rainbow CSV', 'rainbow-csv', 'plugins',
+   'Makes a CSV file readable in your editor.',
+   'Colours each column so you can see where one ends, names the column under your cursor, and lets you query the file with SQL-like syntax. Handy every time an AI hands you a data file to check.',
+   'Open source', 'https://marketplace.visualstudio.com/items?itemName=mechatroner.rainbow-csv'),
+  ('Shopify Liquid', 'shopify-liquid', 'plugins',
+   'Liquid theme editing, with Shopify''s own checks.',
+   'Shopify''s extension for theme work: syntax highlighting, formatting and Theme Check, which flags the mistakes that break a storefront. The one to install before asking an AI to edit a theme.',
+   'Open source', 'https://marketplace.visualstudio.com/items?itemName=Shopify.theme-check-vscode'),
+  ('GitLens', 'gitlens', 'plugins',
+   'Shows who changed a line, and when, without leaving the file.',
+   'Puts the last change to the line you are on at the end of it, and gives you readable history, blame and diffs. Useful when an agent has been editing your project and you want to see what it actually did.',
+   'Freemium', 'https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens'),
+  ('Tailwind CSS IntelliSense', 'tailwind-intellisense', 'plugins',
+   'Autocomplete and colour previews for Tailwind classes.',
+   'Suggests class names as you type, shows the colour beside each one and warns when two classes fight. Since AI tools write Tailwind by default, this is how you tell whether the class it invented is real.',
+   'Open source', 'https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss'),
+  ('Error Lens', 'error-lens', 'plugins',
+   'Prints the error next to the line instead of hiding it.',
+   'Errors and warnings appear inline, in colour, where they happen, rather than in a panel you have to open. It shortens the loop between an AI writing something broken and you noticing.',
+   'Open source', 'https://marketplace.visualstudio.com/items?itemName=usernamehw.errorlens'),
+
+  ('Qwen Code', 'qwen-code', 'clis',
+   'Alibaba''s terminal coding agent, tuned for Qwen models.',
+   'An open-source CLI agent adapted from Gemini CLI and tuned for the Qwen Coder models. Install with npm and point it at an API key or any OpenAI-compatible endpoint; the free Qwen OAuth sign-in ended in April 2026.',
+   'Open source', 'https://github.com/QwenLM/qwen-code'),
+  ('Kimi Code CLI', 'kimi-code', 'clis',
+   'Moonshot''s terminal agent, good at long files.',
+   'An open-source coding agent for the terminal that reads and edits your code and runs commands, with MCP support and IDE integration. Works with Kimi models out of the box, and can be pointed at Anthropic, OpenAI or Google instead.',
+   'Open source', 'https://github.com/MoonshotAI/kimi-code'),
+
+  ('Composer', 'composer', 'utilities',
+   'The package manager PHP projects are built on.',
+   'What npm is to JavaScript, Composer is to PHP: it installs the libraries a project lists and keeps their versions pinned in a lock file. Needed the moment an AI hands you a Laravel or WordPress project.',
+   'Open source', 'https://getcomposer.org')
+on conflict (slug) do update set
+  name         = excluded.name,
+  category     = excluded.category,
+  tagline      = excluded.tagline,
+  description  = excluded.description,
+  pricing_tier = excluded.pricing_tier,
+  outbound_url = excluded.outbound_url,
+  updated_at   = now();
+
+-- An extension runs wherever its editor does, so these are the editor's
+-- platforms rather than a claim of their own.
+update tools t set platform = v.platform::text[], best_for = v.best_for::role_level
+from (values
+  ('cline',                 '{macos,windows,linux}', 'intermediate'),
+  ('roo-code',              '{macos,windows,linux}', 'intermediate'),
+  ('copilot-chat',          '{macos,windows,linux}', 'beginner'),
+  ('gemini-code-assist',    '{macos,windows,linux}', 'intermediate'),
+  ('eslint',                '{macos,windows,linux}', 'beginner'),
+  ('prettier',              '{macos,windows,linux}', 'beginner'),
+  ('python-vscode',         '{macos,windows,linux}', 'intermediate'),
+  ('jupyter-vscode',        '{macos,windows,linux}', 'intermediate'),
+  ('live-server',           '{macos,windows,linux}', 'beginner'),
+  ('rainbow-csv',           '{macos,windows,linux}', 'beginner'),
+  ('shopify-liquid',        '{macos,windows,linux}', 'intermediate'),
+  ('gitlens',               '{macos,windows,linux}', 'beginner'),
+  ('tailwind-intellisense', '{macos,windows,linux}', 'beginner'),
+  ('error-lens',            '{macos,windows,linux}', 'beginner'),
+  ('qwen-code',             '{macos,windows,linux}', 'intermediate'),
+  ('kimi-code',             '{macos,windows,linux}', 'intermediate'),
+  ('composer',              '{macos,windows,linux}', 'intermediate')
+) as v(slug, platform, best_for)
+where t.slug = v.slug;
+
+insert into tool_tags (tool_id, tag_id)
+select t.id, g.id
+from (values
+  ('cline','coding-agent'), ('cline','vs-code'), ('cline','jetbrains'),
+  ('cline','byok'), ('cline','local-models'), ('cline','open-source'),
+  ('roo-code','no-longer-updated'), ('roo-code','coding-agent'),
+  ('roo-code','vs-code'), ('roo-code','byok'), ('roo-code','open-source'),
+  ('copilot-chat','coding-agent'), ('copilot-chat','vs-code'), ('copilot-chat','jetbrains'),
+  ('gemini-code-assist','no-longer-updated'), ('gemini-code-assist','coding-agent'),
+  ('gemini-code-assist','vs-code'), ('gemini-code-assist','jetbrains'),
+  ('eslint','vs-code'), ('eslint','typescript'), ('eslint','open-source'),
+  ('prettier','vs-code'), ('prettier','typescript'), ('prettier','open-source'),
+  ('python-vscode','vs-code'), ('python-vscode','python'),
+  ('jupyter-vscode','vs-code'), ('jupyter-vscode','python'),
+  ('live-server','vs-code'), ('live-server','websites'), ('live-server','open-source'),
+  ('rainbow-csv','vs-code'), ('rainbow-csv','open-source'),
+  ('shopify-liquid','vs-code'), ('shopify-liquid','official'), ('shopify-liquid','open-source'),
+  ('gitlens','vs-code'), ('gitlens','open-source'),
+  ('tailwind-intellisense','vs-code'), ('tailwind-intellisense','open-source'),
+  ('error-lens','vs-code'), ('error-lens','open-source'),
+  ('qwen-code','coding-agent'), ('qwen-code','byok'), ('qwen-code','open-source'),
+  ('kimi-code','coding-agent'), ('kimi-code','byok'), ('kimi-code','open-source'),
+  ('composer','open-source')
+) as m(tool_slug, tag_slug)
+join tools t on t.slug = m.tool_slug
+join tags  g on g.slug = m.tag_slug
+on conflict do nothing;
+
+update tools t set key_facts = v.facts::jsonb, updated_at = now()
+from (values
+  ('cline', '[
+    {"label": "Cost", "value": "Free and open source (Apache 2.0); you pay the model provider"},
+    {"label": "Works in", "value": "VS Code and JetBrains"},
+    {"label": "Install", "value": "Search for Cline in your editor''s extension marketplace"},
+    {"label": "Models", "value": "Anthropic, OpenAI, Google, Bedrock, or any OpenAI-compatible endpoint"},
+    {"label": "Local models", "value": "Yes, through Ollama or LM Studio"},
+    {"label": "Good for", "value": "An agent that asks before it acts, without a subscription"}
+  ]'),
+  ('roo-code', '[
+    {"label": "Status", "value": "Archived on 15 May 2026; no further updates"},
+    {"label": "Instead", "value": "Cline, which it was forked from"},
+    {"label": "Cost", "value": "Free and open source (Apache 2.0)"},
+    {"label": "Works in", "value": "VS Code"},
+    {"label": "Good for", "value": "Understanding guides that still reference it"}
+  ]'),
+  ('copilot-chat', '[
+    {"label": "Needs", "value": "A GitHub Copilot plan; the free one includes a monthly allowance of chats"},
+    {"label": "Paid plans from", "value": "GitHub Copilot Pro, $10 a month"},
+    {"label": "Works in", "value": "VS Code, Visual Studio and JetBrains"},
+    {"label": "Install", "value": "GitHub Copilot Chat, alongside the GitHub Copilot extension"},
+    {"label": "Models", "value": "Claude, GPT and Gemini, in the model picker"},
+    {"label": "Good for", "value": "Asking about your code where you already have Copilot"}
+  ]'),
+  ('gemini-code-assist', '[
+    {"label": "Status", "value": "Since 18 June 2026 the IDE extensions no longer serve individual, AI Pro or Ultra plans"},
+    {"label": "Instead", "value": "Google Antigravity, which Google points individuals to"},
+    {"label": "Still sold to", "value": "Teams and businesses, through Google Cloud"},
+    {"label": "Works in", "value": "VS Code and JetBrains"},
+    {"label": "Good for", "value": "Teams already on Google Cloud"}
+  ]'),
+  ('eslint', '[
+    {"label": "Cost", "value": "Free and open source (MIT)"},
+    {"label": "Install", "value": "ESLint by Microsoft, in the VS Code marketplace"},
+    {"label": "Needs", "value": "ESLint set up in the project; Next.js and most starters already do"},
+    {"label": "Fixes on save", "value": "Yes, once you turn it on in settings"},
+    {"label": "Good for", "value": "Catching what an AI left behind before you run it"}
+  ]'),
+  ('prettier', '[
+    {"label": "Cost", "value": "Free and open source (MIT)"},
+    {"label": "Install", "value": "Prettier - Code formatter, in the VS Code marketplace"},
+    {"label": "Set up", "value": "Make it the default formatter and tick Format on save"},
+    {"label": "Handles", "value": "JavaScript, TypeScript, CSS, HTML, JSON, Markdown and more"},
+    {"label": "Good for", "value": "Every file looking the same, whoever or whatever wrote it"}
+  ]'),
+  ('python-vscode', '[
+    {"label": "Cost", "value": "Free"},
+    {"label": "Works in", "value": "VS Code only: Microsoft licenses it for its own products, so Cursor and other forks cannot install it"},
+    {"label": "Install", "value": "Python by Microsoft, in the VS Code marketplace"},
+    {"label": "Includes", "value": "Running and debugging, interpreter and environment picking, Pylance"},
+    {"label": "Good for", "value": "Any Python project, scripts included"}
+  ]'),
+  ('jupyter-vscode', '[
+    {"label": "Cost", "value": "Free"},
+    {"label": "Works in", "value": "VS Code only, same Microsoft licence as the Python extension"},
+    {"label": "Install", "value": "Jupyter by Microsoft, in the VS Code marketplace"},
+    {"label": "Opens", "value": ".ipynb notebooks, with variables and plots beside the code"},
+    {"label": "Good for", "value": "Trying data or an API a few times before writing real code"}
+  ]'),
+  ('live-server', '[
+    {"label": "Cost", "value": "Free and open source (MIT)"},
+    {"label": "Install", "value": "Live Server by Ritwick Dey, in the VS Code marketplace"},
+    {"label": "How to use it", "value": "Right-click an HTML file and choose Open with Live Server"},
+    {"label": "Reloads on save", "value": "Yes"},
+    {"label": "Good for", "value": "Seeing a plain HTML page without setting up a framework"}
+  ]'),
+  ('rainbow-csv', '[
+    {"label": "Cost", "value": "Free and open source (MIT)"},
+    {"label": "Install", "value": "Rainbow CSV, in the VS Code marketplace"},
+    {"label": "What it does", "value": "Colours each column, names the one under your cursor, and queries the file"},
+    {"label": "Good for", "value": "Checking a data file an AI just produced"}
+  ]'),
+  ('shopify-liquid', '[
+    {"label": "Cost", "value": "Free and open source (MIT)"},
+    {"label": "Made by", "value": "Shopify"},
+    {"label": "Install", "value": "Shopify Liquid, in the VS Code marketplace"},
+    {"label": "Includes", "value": "Highlighting, formatting and Theme Check"},
+    {"label": "Good for", "value": "Theme work, especially before letting an AI edit one"}
+  ]'),
+  ('gitlens', '[
+    {"label": "Free plan", "value": "Yes; the paid plan adds cloud features for teams"},
+    {"label": "Install", "value": "GitLens, in the VS Code marketplace"},
+    {"label": "Shows", "value": "Who changed the line you are on, plus history, blame and diffs"},
+    {"label": "Good for", "value": "Seeing what an agent actually changed in your project"}
+  ]'),
+  ('tailwind-intellisense', '[
+    {"label": "Cost", "value": "Free and open source (MIT)"},
+    {"label": "Made by", "value": "Tailwind Labs"},
+    {"label": "Install", "value": "Tailwind CSS IntelliSense, in the VS Code marketplace"},
+    {"label": "Needs", "value": "Tailwind set up in the project"},
+    {"label": "Good for", "value": "Telling whether the class an AI wrote is a real one"}
+  ]'),
+  ('error-lens', '[
+    {"label": "Cost", "value": "Free and open source (MIT)"},
+    {"label": "Install", "value": "Error Lens, in the VS Code marketplace"},
+    {"label": "What it does", "value": "Shows errors and warnings inline, on the line they happen"},
+    {"label": "Pairs with", "value": "ESLint, whose warnings it surfaces"},
+    {"label": "Good for", "value": "Noticing a broken line the moment it appears"}
+  ]'),
+  ('qwen-code', '[
+    {"label": "Cost", "value": "Free and open source; you pay the model provider"},
+    {"label": "Install", "value": "npm install -g @qwen-code/qwen-code@latest"},
+    {"label": "Needs", "value": "Node.js 20 or newer"},
+    {"label": "Sign in", "value": "An API key or an OpenAI-compatible endpoint; free Qwen OAuth ended in April 2026"},
+    {"label": "Good for", "value": "A terminal agent on Qwen models"}
+  ]'),
+  ('kimi-code', '[
+    {"label": "Cost", "value": "Free and open source; you pay the model provider"},
+    {"label": "Install", "value": "The official install script, or npm"},
+    {"label": "Models", "value": "Kimi out of the box; Anthropic, OpenAI or Google through config"},
+    {"label": "Includes", "value": "MCP support, multi-file edits, and VS Code, Zed and JetBrains integration"},
+    {"label": "Good for", "value": "Very long files and multi-step terminal work"}
+  ]'),
+  ('composer', '[
+    {"label": "Cost", "value": "Free and open source (MIT)"},
+    {"label": "For", "value": "PHP, the way npm is for JavaScript"},
+    {"label": "Install", "value": "Download the installer from getcomposer.org"},
+    {"label": "Everyday commands", "value": "composer install, composer require, composer update"},
+    {"label": "Good for", "value": "Laravel and WordPress projects an AI hands you"}
+  ]')
+) as v(slug, facts)
+where t.slug = v.slug;
+
+/*
+ * Which editor each one installs into (VIB-109's `runs_in`), so the
+ * extension's page says "Use it in" and the editor's page lists them back
+ * under "Works with" — which is the whole feature: open VS Code in the
+ * directory and see what goes in it.
+ *
+ * Cursor is listed only where the extension is genuinely installable there.
+ * Microsoft licenses the Python, Jupyter and Copilot extensions for its own
+ * products, so they are VS Code rows only, and that is stated on their pages
+ * rather than left for someone to discover.
+ */
+insert into tool_links (tool_id, linked_tool_id, kind, note, sort_order)
+select a.id, b.id, v.kind::tool_link_kind, v.note, v.sort_order
+from (values
+  ('cline', 'vs-code', 'runs_in', null, 0),
+  ('cline', 'cursor', 'runs_in', null, 1),
+  ('cline', 'intellij-idea', 'runs_in', null, 2),
+  ('roo-code', 'vs-code', 'runs_in', 'archived; install Cline instead', 0),
+  ('copilot-chat', 'vs-code', 'runs_in', null, 0),
+  ('copilot-chat', 'intellij-idea', 'runs_in', null, 1),
+  ('gemini-code-assist', 'vs-code', 'runs_in', 'business plans only since June 2026', 0),
+  ('gemini-code-assist', 'intellij-idea', 'runs_in', null, 1),
+  ('eslint', 'vs-code', 'runs_in', null, 0),
+  ('eslint', 'cursor', 'runs_in', null, 1),
+  ('prettier', 'vs-code', 'runs_in', null, 0),
+  ('prettier', 'cursor', 'runs_in', null, 1),
+  ('python-vscode', 'vs-code', 'runs_in', 'VS Code only, by its licence', 0),
+  ('jupyter-vscode', 'vs-code', 'runs_in', 'VS Code only, by its licence', 0),
+  ('live-server', 'vs-code', 'runs_in', null, 0),
+  ('live-server', 'cursor', 'runs_in', null, 1),
+  ('rainbow-csv', 'vs-code', 'runs_in', null, 0),
+  ('rainbow-csv', 'cursor', 'runs_in', null, 1),
+  ('shopify-liquid', 'vs-code', 'runs_in', null, 0),
+  ('gitlens', 'vs-code', 'runs_in', null, 0),
+  ('gitlens', 'cursor', 'runs_in', null, 1),
+  ('tailwind-intellisense', 'vs-code', 'runs_in', null, 0),
+  ('tailwind-intellisense', 'cursor', 'runs_in', null, 1),
+  ('error-lens', 'vs-code', 'runs_in', null, 0),
+  ('error-lens', 'cursor', 'runs_in', null, 1),
+  -- The pairings worth stating: the formatter and the linter, and the two
+  -- extensions that only make sense with their stack.
+  ('error-lens', 'eslint', 'pairs_with', 'shows its warnings inline', 0),
+  ('prettier', 'eslint', 'pairs_with', null, 0),
+  ('tailwind-intellisense', 'shadcn-ui', 'pairs_with', null, 0),
+  ('jupyter-vscode', 'python-vscode', 'pairs_with', null, 0)
+) as v(tool, linked, kind, note, sort_order)
+join tools a on a.slug = v.tool
+join tools b on b.slug = v.linked
+on conflict (tool_id, linked_tool_id) do update
+  set kind = excluded.kind, note = excluded.note, sort_order = excluded.sort_order;

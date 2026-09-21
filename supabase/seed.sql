@@ -4815,3 +4815,18 @@ join tools a on a.slug = v.tool
 join tools b on b.slug = v.linked
 on conflict (tool_id, linked_tool_id) do update
   set kind = excluded.kind, note = excluded.note, sort_order = excluded.sort_order;
+
+-- The "Extension" facet (VIB-188 follow-up). Every plugin row is something
+-- you install into an editor, so the tag is redundant inside the Plugins
+-- category — it earns its place everywhere else a card appears: search,
+-- the home feed, and /tags/extension as a list of the lot.
+insert into tags (name, slug, kind) values
+  ('Extension', 'extension', 'facet')
+on conflict (slug) do update set name = excluded.name, kind = excluded.kind;
+
+insert into tool_tags (tool_id, tag_id)
+select t.id, g.id
+from tools t
+join tags g on g.slug = 'extension'
+where t.category = 'plugins'
+on conflict do nothing;

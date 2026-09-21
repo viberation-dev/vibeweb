@@ -96,6 +96,10 @@ export const CARD_TAGS: Readonly<Record<string, readonly string[]>> = {
   plugins: [
     "no-longer-updated",
     "extension",
+    // ChatGPT Sites sits here without being an editor extension (VIB-190),
+    // so its card has something true to show.
+    "websites",
+    "database",
     "vs-code",
     "jetbrains",
     "byok",

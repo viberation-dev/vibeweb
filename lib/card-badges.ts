@@ -95,6 +95,7 @@ export const CARD_TAGS: Readonly<Record<string, readonly string[]>> = {
   // it runs (VIB-148).
   plugins: [
     "no-longer-updated",
+    "extension",
     "vs-code",
     "jetbrains",
     "byok",

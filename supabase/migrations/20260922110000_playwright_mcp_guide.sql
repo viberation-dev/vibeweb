@@ -26,8 +26,10 @@ insert into content (type, title, slug, body, role_level, pillar, status, blocks
       {"key": "claude-code", "title": "Claude Code", "blocks": [
         {"kind": "text", "body": "One command, run in your terminal."},
         {"kind": "code", "language": "bash", "code": "claude mcp add playwright npx @playwright/mcp@latest", "expected": "A line confirming the server was added. Restart Claude Code, then run /mcp to see playwright listed as connected."},
-        {"kind": "text", "body": "That adds it for your user account, so every project gets it. To add it to one project only, so your team gets it through git, add --scope project:"},
-        {"kind": "code", "language": "bash", "code": "claude mcp add --scope project playwright npx @playwright/mcp@latest", "expected": "The same confirmation, and a .mcp.json file in your project folder. Commit that file."}
+        {"kind": "text", "body": "That adds it to this project only, and keeps it private to you. That is the default."},
+        {"kind": "code", "language": "bash", "code": "claude mcp add --scope user playwright npx @playwright/mcp@latest", "expected": "The same confirmation. Playwright MCP is now available in every project on your machine, still just for you."},
+        {"kind": "text", "body": "Or share it with your team through git, which writes a .mcp.json file in the project for you to commit:"},
+        {"kind": "code", "language": "bash", "code": "claude mcp add --scope project playwright npx @playwright/mcp@latest", "expected": "The same confirmation, and a .mcp.json file in your project folder. Commit that file so your team gets the same setup."}
       ]},
       {"key": "cursor", "title": "Cursor", "blocks": [
         {"kind": "text", "body": "Open Cursor Settings, then MCP, then Add new MCP Server. Give it the name playwright and the command npx @playwright/mcp@latest.\n\nIf you would rather edit the file directly, that panel is writing this:"},

@@ -16,6 +16,7 @@
 
 - **Test runner is `node:test`, not Jest or Vitest.** `npm test` runs `node --experimental-strip-types --test "**/*.test.ts"`. Single file: `node --experimental-strip-types --test lib/learn.test.ts`.
 - **Test imports use explicit `.ts` extensions** (`from "./learn.ts"`). Strip-types requires it. Non-test source uses the `@/` alias with no extension.
+- **A `lib/` file that a `node:test` file imports must not use the `@/` alias for a *value* import.** Strip-types does not resolve it and the test fails to run; `import type` is fine because it is erased. Use a relative import and say why in a comment. This binds `lib/validation/guide.ts` (Task 3). It does not bind `.tsx` components, which never run under node:test.
 - **Never call `supabase.from(...)` from a component.** Queries live in `lib/queries/`.
 - **RLS is the security boundary.** Do not add app-code row filtering as a substitute.
 - **One Supabase project serves production and every Vercel preview.** A migration applied on this branch is live for production visitors immediately. This is why the guide row is inserted as a draft in Task 6.
@@ -328,7 +329,14 @@ Create `lib/validation/guide.ts`:
 ```ts
 import { z } from "zod";
 
-import { sharedBlockSchema, type SharedBlock } from "@/lib/validation/blocks";
+/*
+ * Relative, not the `@/` alias: guide.test.ts runs under
+ * `node --experimental-strip-types`, which does not resolve the alias for a
+ * *value* import. Every `@/` import in a tested lib file is `import type`,
+ * which strip-types erases; `sharedBlockSchema` is a value. Same constraint
+ * lib/changelog.ts records ("Alias-free ... so it runs under plain node --test").
+ */
+import { sharedBlockSchema, type SharedBlock } from "./blocks";
 
 /**
  * The shape of `content.blocks` (VIB-192).

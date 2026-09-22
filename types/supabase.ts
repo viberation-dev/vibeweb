@@ -6,7 +6,8 @@
 // Produced by Supabase's own type generator, not the old scripts/gen-types.mjs
 // stopgap. Regenerate with the Supabase CLI:
 //   supabase gen types typescript --project-id <ref> > types/supabase.ts
-// or via the Supabase MCP server's generate_typescript_types tool.
+// or via the Supabase MCP server's generate_typescript_types tool. Both call
+// the same server-side generator, so they produce the same file.
 //
 // Do not hand-edit: the next regeneration overwrites the file.
 
@@ -22,7 +23,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.15"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -132,6 +133,7 @@ export type Database = {
       content: {
         Row: {
           audience: Database["public"]["Enums"]["docs_audience"] | null
+          blocks: Json | null
           body: string | null
           created_at: string
           id: string
@@ -147,6 +149,7 @@ export type Database = {
         }
         Insert: {
           audience?: Database["public"]["Enums"]["docs_audience"] | null
+          blocks?: Json | null
           body?: string | null
           created_at?: string
           id?: string
@@ -162,6 +165,7 @@ export type Database = {
         }
         Update: {
           audience?: Database["public"]["Enums"]["docs_audience"] | null
+          blocks?: Json | null
           body?: string | null
           created_at?: string
           id?: string
@@ -713,6 +717,38 @@ export type Database = {
         }
         Relationships: []
       }
+      welcome_emails: {
+        Row: {
+          created_at: string
+          last_step: number
+          next_send_at: string | null
+          unsubscribed_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          last_step: number
+          next_send_at?: string | null
+          unsubscribed_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          last_step?: number
+          next_send_at?: string | null
+          unsubscribed_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "welcome_emails_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wizard_progress: {
         Row: {
           checklist_state: Json
@@ -833,23 +869,13 @@ export type Database = {
         Args: { p_limit?: number; p_secret: string }
         Returns: {
           creating: string[]
-          display_name: string | null
+          display_name: string
           email: string
           role_level: Database["public"]["Enums"]["role_level"]
           step: number
           unsubscribe_sig: string
           user_id: string
         }[]
-      }
-      start_welcome_emails: {
-        Args: never
-        Returns: {
-          unsubscribe_sig: string
-        }[]
-      }
-      unsubscribe_welcome_emails: {
-        Args: { p_sig: string; p_user: string }
-        Returns: boolean
       }
       increment_content_views: {
         Args: { content_slug: string }
@@ -871,6 +897,16 @@ export type Database = {
           target_user: string
         }
         Returns: undefined
+      }
+      start_welcome_emails: {
+        Args: never
+        Returns: {
+          unsubscribe_sig: string
+        }[]
+      }
+      unsubscribe_welcome_emails: {
+        Args: { p_sig: string; p_user: string }
+        Returns: boolean
       }
     }
     Enums: {
@@ -894,8 +930,6 @@ export type Database = {
       docs_audience: "enduser" | "author" | "admin" | "seller"
       layout_mode: "essentials" | "advanced"
       role_level: "beginner" | "intermediate" | "expert"
-      tag_kind: "facet" | "audience" | "pricing"
-      target_kind: "tool" | "content" | "prompt" | "collection" | "wizard"
       skill_category:
         | "design_ui"
         | "frontend"
@@ -910,6 +944,8 @@ export type Database = {
         | "security"
         | "marketing_content"
         | "documents_office"
+      tag_kind: "facet" | "audience" | "pricing"
+      target_kind: "tool" | "content" | "prompt" | "collection" | "wizard"
       tool_badge: "new" | "popular"
       tool_category:
         | "models"
@@ -948,12 +984,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -977,11 +1013,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1002,11 +1038,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1027,11 +1063,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1044,11 +1080,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1082,8 +1118,6 @@ export const Constants = {
       docs_audience: ["enduser", "author", "admin", "seller"],
       layout_mode: ["essentials", "advanced"],
       role_level: ["beginner", "intermediate", "expert"],
-      tag_kind: ["facet", "audience", "pricing"],
-      target_kind: ["tool", "content", "prompt", "collection", "wizard"],
       skill_category: [
         "design_ui",
         "frontend",
@@ -1099,6 +1133,8 @@ export const Constants = {
         "marketing_content",
         "documents_office",
       ],
+      tag_kind: ["facet", "audience", "pricing"],
+      target_kind: ["tool", "content", "prompt", "collection", "wizard"],
       tool_badge: ["new", "popular"],
       tool_category: [
         "models",

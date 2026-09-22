@@ -13,6 +13,9 @@ import { z } from "zod";
  * `checklist` is deliberately *not* here. Its ticks live in
  * `wizard_progress.checklist_state`, keyed by walkthrough and step, so it
  * only makes sense inside a runner. It stays in walkthrough.ts.
+ *
+ * Tested through its consumers: lib/validation/walkthrough.test.ts and
+ * lib/validation/guide.test.ts.
  */
 
 export const textBlock = z.object({

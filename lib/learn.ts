@@ -131,8 +131,11 @@ export function learnHref(params: {
  * — "git status what is actually changed right now git diff what changed…".
  * One line of a cheatsheet still reads as a sentence.
  *
- * A guide authored as blocks has no `body` at all (VIB-192), so it falls
- * back to the first `text` block. Blocks are read structurally rather than
+ * A guide authored as blocks falls back to its first `text` block
+ * (VIB-192). By convention every structured guide also carries a short
+ * `body` (see lib/validation/guide.ts), so this is a safety net rather than
+ * a path taken today — a row that loses its body still gets a preview line
+ * instead of a blank card. Blocks are read structurally rather than
  * through the Zod schema: this runs for every card in a 24-row index, and a
  * preview line is not worth parsing a whole guide for. A row whose blocks
  * are malformed previews nothing, which is what it did before.

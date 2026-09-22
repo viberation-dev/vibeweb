@@ -18,6 +18,11 @@ import { sharedBlockSchema, type SharedBlock } from "./blocks.ts";
  * jsonb enforces nothing beyond "is this JSON", so this schema is the only
  * thing between an authoring typo in a migration and a visitor's page
  * throwing. Same arrangement as walkthroughStepsSchema.
+ *
+ * A structured guide still carries a short plain `body` alongside its
+ * blocks. `blocks` is the page, but `generateMetadata` and the JSON-LD both
+ * read `body`, so a guide without one is a guide search engines describe
+ * badly.
  */
 export const guideBlocksSchema = z.array(sharedBlockSchema).min(1);
 

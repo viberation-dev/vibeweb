@@ -1,10 +1,7 @@
-import { IconExternalLink } from "@tabler/icons-react";
 import Link from "next/link";
 
 import { toggleTaskAction } from "@/app/(site)/walkthroughs/[slug]/actions";
-import { CopyButton } from "@/components/features/walkthroughs/CopyButton";
-import { PromptBlock } from "@/components/features/walkthroughs/PromptBlock";
-import { TabsBlock } from "@/components/features/walkthroughs/TabsBlock";
+import { BlockView } from "@/components/features/resource/BlockView";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type {
@@ -24,18 +21,6 @@ type Props = {
   canSave: boolean;
 };
 
-const CALLOUT_TONES = {
-  info: "border-l-primary bg-muted/40",
-  tip: "border-l-primary bg-muted/40",
-  warning: "border-l-destructive bg-destructive/5",
-} as const;
-
-const CALLOUT_LABELS = {
-  info: "Note",
-  tip: "Tip",
-  warning: "Careful",
-} as const;
-
 /**
  * Renders one authored block (§26 §1 taxonomy, MVP subset).
  *
@@ -50,188 +35,84 @@ export function WalkthroughBlockView({
   checklistState,
   canSave,
 }: Props) {
-  switch (block.kind) {
-    case "text":
-      return (
-        <p className="leading-relaxed whitespace-pre-line">{block.body}</p>
-      );
+  // Every other kind is context-free and shared with guides (VIB-192).
+  if (block.kind !== "checklist") return <BlockView block={block} />;
 
-    case "callout":
-      return (
-        <aside
-          className={cn(
-            "rounded-r-lg border-l-4 p-4",
-            CALLOUT_TONES[block.tone],
-          )}
-        >
-          <p className="text-xs font-medium tracking-wide uppercase">
-            {CALLOUT_LABELS[block.tone]}
-          </p>
-          <p className="mt-1 leading-relaxed whitespace-pre-line">
-            {block.body}
-          </p>
-        </aside>
-      );
-
-    case "prompt":
-      return (
-        <PromptBlock
-          label={block.label}
-          prompt={block.prompt}
-          prompts={block.prompts}
-        />
-      );
-
-    case "code":
-      return (
-        <div className="rounded-lg border">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2">
-            <p className="font-mono text-xs text-muted-foreground">
-              {block.language}
-            </p>
-            <CopyButton text={block.code} />
-          </div>
-          <pre className="overflow-x-auto px-4 py-3 font-mono text-sm">
-            <code>{block.code}</code>
-          </pre>
-          {block.expected ? (
-            <div className="border-t px-4 py-3">
-              <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                What you should see
-              </p>
-              <pre className="mt-1 overflow-x-auto font-mono text-sm whitespace-pre-wrap">
-                <code>{block.expected}</code>
-              </pre>
-            </div>
-          ) : null}
-        </div>
-      );
-
-    case "links":
-      return (
-        <ul className="flex flex-wrap gap-2">
-          {block.links.map((link) => (
-            <li key={link.href}>
-              {link.href.startsWith("/") ? (
-                <Link href={link.href} className={buttonVariants({ variant: "outline", size: "sm" })}>
-                  {link.label}
-                </Link>
-              ) : (
-                <a
-                  href={link.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={buttonVariants({ variant: "outline", size: "sm" })}
+  return (
+    <ul className="flex flex-col gap-2">
+      {block.tasks.map((task) => {
+        const done = Boolean(checklistState[task.id]);
+        return (
+          <li key={task.id}>
+            {canSave ? (
+              /*
+                A form per task posting to a Server Action: ticking works
+                without JavaScript, and the tick is saved server-side
+                rather than held in a client store that a refresh loses.
+              */
+              <form action={toggleTaskAction}>
+                <input
+                  type="hidden"
+                  name="walkthrough_slug"
+                  value={walkthroughSlug}
+                />
+                <input type="hidden" name="step_index" value={stepIndex} />
+                <input type="hidden" name="task_id" value={task.id} />
+                <input
+                  type="hidden"
+                  name="done"
+                  value={done ? "false" : "true"}
+                />
+                <button
+                  type="submit"
+                  aria-pressed={done}
+                  className="flex w-full cursor-pointer items-start gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-muted/50"
                 >
-                  {link.label}
-                  <IconExternalLink aria-hidden />
-                  <span className="sr-only">(opens in a new tab)</span>
-                </a>
-              )}
-            </li>
-          ))}
-        </ul>
-      );
+                  <span
+                    aria-hidden
+                    className={cn(
+                      "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border text-xs",
+                      done &&
+                        "border-transparent bg-primary text-primary-foreground",
+                    )}
+                  >
+                    {done ? "✓" : ""}
+                  </span>
+                  <span
+                    className={cn(
+                      done && "text-muted-foreground line-through",
+                    )}
+                  >
+                    {task.label}
+                  </span>
+                </button>
+              </form>
+            ) : (
+              <div className="flex items-start gap-3 rounded-lg border p-3">
+                <span
+                  aria-hidden
+                  className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border text-xs"
+                />
+                <span>{task.label}</span>
+              </div>
+            )}
+          </li>
+        );
+      })}
 
-    case "tabs":
-      return (
-        <TabsBlock
-          label={block.label}
-          detect={block.detect}
-          tabs={block.tabs.map((tab) => ({
-            key: tab.key,
-            title: tab.title,
-            content: tab.blocks.map((inner, i) => (
-              <WalkthroughBlockView
-                key={i}
-                block={inner}
-                walkthroughSlug={walkthroughSlug}
-                stepIndex={stepIndex}
-                checklistState={checklistState}
-                canSave={canSave}
-              />
-            )),
-          }))}
-        />
-      );
-
-    case "checklist":
-      return (
-        <ul className="flex flex-col gap-2">
-          {block.tasks.map((task) => {
-            const done = Boolean(checklistState[task.id]);
-            return (
-              <li key={task.id}>
-                {canSave ? (
-                  /*
-                    A form per task posting to a Server Action: ticking works
-                    without JavaScript, and the tick is saved server-side
-                    rather than held in a client store that a refresh loses.
-                  */
-                  <form action={toggleTaskAction}>
-                    <input
-                      type="hidden"
-                      name="walkthrough_slug"
-                      value={walkthroughSlug}
-                    />
-                    <input type="hidden" name="step_index" value={stepIndex} />
-                    <input type="hidden" name="task_id" value={task.id} />
-                    <input
-                      type="hidden"
-                      name="done"
-                      value={done ? "false" : "true"}
-                    />
-                    <button
-                      type="submit"
-                      aria-pressed={done}
-                      className="flex w-full cursor-pointer items-start gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-muted/50"
-                    >
-                      <span
-                        aria-hidden
-                        className={cn(
-                          "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border text-xs",
-                          done &&
-                            "border-transparent bg-primary text-primary-foreground",
-                        )}
-                      >
-                        {done ? "✓" : ""}
-                      </span>
-                      <span
-                        className={cn(
-                          done && "text-muted-foreground line-through",
-                        )}
-                      >
-                        {task.label}
-                      </span>
-                    </button>
-                  </form>
-                ) : (
-                  <div className="flex items-start gap-3 rounded-lg border p-3">
-                    <span
-                      aria-hidden
-                      className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border text-xs"
-                    />
-                    <span>{task.label}</span>
-                  </div>
-                )}
-              </li>
-            );
-          })}
-
-          {canSave ? null : (
-            <li className="text-sm text-muted-foreground">
-              <Link
-                href={`/login?redirectTo=/walkthroughs/${walkthroughSlug}`}
-                className="underline"
-              >
-                Sign in
-              </Link>{" "}
-              to tick these off and pick up where you left them.
-            </li>
-          )}
-        </ul>
-      );
-  }
+      {canSave ? null : (
+        <li className="text-sm text-muted-foreground">
+          <Link
+            href={`/login?redirectTo=/walkthroughs/${walkthroughSlug}`}
+            className="underline"
+          >
+            Sign in
+          </Link>{" "}
+          to tick these off and pick up where you left them.
+        </li>
+      )}
+    </ul>
+  );
 }
 
 /** Prev / next control for the runner. Links, so each step is a real URL. */

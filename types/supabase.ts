@@ -132,6 +132,7 @@ export type Database = {
       content: {
         Row: {
           audience: Database["public"]["Enums"]["docs_audience"] | null
+          blocks: Json | null
           body: string | null
           created_at: string
           id: string
@@ -147,6 +148,7 @@ export type Database = {
         }
         Insert: {
           audience?: Database["public"]["Enums"]["docs_audience"] | null
+          blocks?: Json | null
           body?: string | null
           created_at?: string
           id?: string
@@ -162,6 +164,7 @@ export type Database = {
         }
         Update: {
           audience?: Database["public"]["Enums"]["docs_audience"] | null
+          blocks?: Json | null
           body?: string | null
           created_at?: string
           id?: string

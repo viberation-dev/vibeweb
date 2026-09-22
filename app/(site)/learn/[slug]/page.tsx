@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { after } from "next/server";
 
 import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
+import { BlockView } from "@/components/features/resource/BlockView";
 import { Badge } from "@/components/ui/badge";
 import { JsonLd } from "@/components/features/seo/JsonLd";
 import { breadcrumbLd, plainSummary } from "@/lib/structured-data";
@@ -18,6 +19,7 @@ import {
 } from "@/lib/queries/content";
 import { recordVisit } from "@/lib/queries/history";
 import { cn } from "@/lib/utils";
+import { toGuideBlocks } from "@/lib/validation/guide";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -89,6 +91,7 @@ export default async function ContentPage({ params }: Props) {
    * "most read by people who happened to be logged in".
    */
   const userId = auth.user?.id;
+  const blocks = toGuideBlocks(item.blocks);
   after(async () => {
     await incrementContentViews(supabase, item.slug);
     if (userId) {
@@ -142,12 +145,18 @@ export default async function ContentPage({ params }: Props) {
 
       <h1 className="mt-3 font-heading text-3xl font-semibold">{item.title}</h1>
 
-      {item.body ? (
+      {blocks ? (
+        <div className="mt-6 flex flex-col gap-5">
+          {blocks.map((block, i) => (
+            <BlockView key={i} block={block} />
+          ))}
+        </div>
+      ) : item.body ? (
         /*
          * ponytail: bodies render as preformatted text, not Markdown — no
          * parser, no sanitiser, no new dependency, and nothing an author can
-         * type becomes HTML. Swap in a Markdown renderer when authored
-         * content actually needs headings and links, and sanitise it then.
+         * type becomes HTML. Structured guides (VIB-192) take the branch
+         * above instead; this is still how every prose row renders.
          *
          * pre-wrap, not pre-line: pre-line collapses runs of spaces, which
          * is exactly what a cheatsheet uses to line its columns up. And

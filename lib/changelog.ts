@@ -40,6 +40,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
  */
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    date: "2026-09-23",
+    kind: "added",
+    title: "Guides you can follow along with",
+    body: "Guides can now include commands you can copy, tabs for your own setup, and what to expect when a command works. The first one covers Playwright MCP.",
+  },
+  {
     date: "2026-09-22",
     kind: "added",
     title: "Desktop Apps",

@@ -66,8 +66,9 @@ export function contentView(item: Content): ResourceView {
      */
     eyebrow: item.pillar ? contentPillarLabel(item.pillar) : contentTypeLabel(item.type),
     // `content` has no tagline column, so the preview is drawn from the body
-    // rather than a second stored field.
-    description: contentPreview(item.type, item.body),
+    // rather than a second stored field — or from the blocks, for a guide
+    // authored without one (VIB-192).
+    description: contentPreview(item.type, item.body, item.blocks),
     // The tier is a DifficultyBadge, not a `badges` string: it is its own
     // design-system surface with a fixed hue per level, and a raw lowercase
     // "expert" in a grey pill was never what the badge set is for.

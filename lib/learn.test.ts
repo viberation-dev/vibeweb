@@ -47,6 +47,39 @@ test("a long preview is truncated with an ellipsis", () => {
   assert.ok(preview.endsWith("…"));
 });
 
+test("a blocks-only guide previews its first text block", () => {
+  // Guides authored as blocks have no `body`, and a card with no preview
+  // line is a card with a hole in it.
+  assert.equal(
+    contentPreview("guide", null, [
+      { kind: "callout", tone: "info", body: "Runs on your own machine." },
+      {
+        kind: "text",
+        body: "Playwright MCP lets your agent drive a real browser.\n\nSecond paragraph.",
+      },
+    ]),
+    "Playwright MCP lets your agent drive a real browser.",
+  );
+});
+
+test("a body wins over blocks when both are present", () => {
+  assert.equal(
+    contentPreview("guide", "The stored body.", [{ kind: "text", body: "A block." }]),
+    "The stored body.",
+  );
+});
+
+test("blocks with no text block preview nothing", () => {
+  assert.equal(
+    contentPreview("guide", null, [
+      { kind: "code", language: "bash", code: "npx @playwright/mcp@latest" },
+    ]),
+    null,
+  );
+  assert.equal(contentPreview("guide", null, "not an array"), null);
+  assert.equal(contentPreview("guide", null, null), null);
+});
+
 test("the hub lists every content type except staff-facing role guides", () => {
   assert.ok(LEARN_TYPE_VALUES.includes("help_article"));
   assert.ok(!LEARN_TYPE_VALUES.includes("role_guide"));

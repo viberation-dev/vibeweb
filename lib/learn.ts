@@ -130,22 +130,41 @@ export function learnHref(params: {
  * table, and collapsing that runs the columns together into a wall of words
  * — "git status what is actually changed right now git diff what changed…".
  * One line of a cheatsheet still reads as a sentence.
+ *
+ * A guide authored as blocks has no `body` at all (VIB-192), so it falls
+ * back to the first `text` block. Blocks are read structurally rather than
+ * through the Zod schema: this runs for every card in a 24-row index, and a
+ * preview line is not worth parsing a whole guide for. A row whose blocks
+ * are malformed previews nothing, which is what it did before.
  */
 export function contentPreview(
   type: ContentType,
   body: string | null,
+  blocks?: unknown,
 ): string | null {
-  if (!body) return null;
+  const source = body?.trim() ? body : firstTextBlockBody(blocks);
+  if (!source) return null;
 
-  const trimmed = body.trim();
-  const source =
+  const trimmed = source.trim();
+  const opening =
     type === "cheatsheet" ? trimmed.split("\n")[0] : trimmed.split("\n\n")[0];
-  const collapsed = source.replace(/\s+/g, " ").trim();
+  const collapsed = opening.replace(/\s+/g, " ").trim();
 
   if (!collapsed) return null;
   return collapsed.length > 160
     ? `${collapsed.slice(0, 157).trimEnd()}…`
     : collapsed;
+}
+
+/** The body of the first `text` block, or null. Structural, not validated. */
+function firstTextBlockBody(blocks: unknown): string | null {
+  if (!Array.isArray(blocks)) return null;
+  for (const block of blocks) {
+    if (block?.kind === "text" && typeof block.body === "string") {
+      return block.body;
+    }
+  }
+  return null;
 }
 
 /**

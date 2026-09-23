@@ -232,3 +232,37 @@ export async function listCommentsForModeration(
     targetId: row.target_id,
   }));
 }
+
+/**
+ * The title of the thing a comment is on, for the staff notification
+ * (VIB-205).
+ *
+ * `content` and `wizards` are the only commentable targets today and both
+ * carry a `title`. Anything else returns null rather than guessing at a
+ * column name — the caller falls back to the path, which is always right.
+ *
+ * Never throws. A notification that cannot name the piece is worth sending;
+ * a comment that fails to save because its notification could not be
+ * addressed is not.
+ */
+export async function getCommentTargetTitle(
+  client: Client,
+  target: CommentTarget,
+): Promise<string | null> {
+  const table =
+    target.targetType === "content"
+      ? "content"
+      : // The database still calls walkthroughs wizards (VIB-120).
+        target.targetType === "wizard"
+        ? "wizards"
+        : null;
+  if (!table) return null;
+
+  const { data, error } = await client
+    .from(table)
+    .select("title")
+    .eq("id", target.targetId)
+    .maybeSingle();
+
+  return error ? null : (data?.title ?? null);
+}

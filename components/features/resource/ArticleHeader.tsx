@@ -161,7 +161,24 @@ export function ArticleHeader({
             {commentCount === 1 ? "comment" : "comments"}
           </a>
         ) : null}
+      </div>
 
+      {/*
+        The pills and Google's button share a row, bottoms aligned
+        (VIB-202). The button was on the stats line above, which left it
+        floating over a row of small grey text with nothing to line up
+        against; against the pills it has an edge to sit on.
+
+        `items-end` rather than `items-center`: the two are different
+        heights, and it is the bottoms that read as a line.
+
+        The pills also need room on three sides, not just above (VIB-201):
+        at 20px tall with 8px of padding they read as a caption glued to the
+        line above rather than as something you can click. `size="lg"` on
+        the badges does the inside; the gaps here do the outside.
+      */}
+      <div className="mt-7 flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
+        <div className="flex flex-wrap items-center gap-2.5">{badges}</div>
         {/*
           Google's own preferences page. It opts the reader into seeing more
           of this site in Top Stories; it is a link to Google, not a claim
@@ -171,7 +188,7 @@ export function ArticleHeader({
           href={preferredSourceUrl(siteDomain())}
           target="_blank"
           rel="noopener noreferrer"
-          className="border-border bg-card hover:border-primary ml-auto inline-flex items-center gap-2 rounded-full border py-1.5 pr-4 pl-2 text-sm font-medium transition-colors"
+          className="border-border bg-card hover:border-primary inline-flex items-center gap-2 rounded-full border py-1.5 pr-4 pl-2 text-sm font-medium transition-colors"
         >
           <span
             aria-hidden
@@ -182,16 +199,6 @@ export function ArticleHeader({
           Add as preferred source on Google
         </a>
       </div>
-
-      {/*
-        The pills need room on three sides, not just above (VIB-201): they
-        were 20px tall with 8px of padding, which reads as a caption glued
-        to the line above rather than as something you can click. `size="lg"`
-        on the badges themselves does the inside; this does the outside.
-      */}
-      {badges ? (
-        <div className="mt-7 flex flex-wrap items-center gap-2.5">{badges}</div>
-      ) : null}
 
       <hr className="border-border mt-10" />
     </header>

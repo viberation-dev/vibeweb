@@ -5,20 +5,27 @@ import { ReadingProgress } from "@/components/ui/reading-progress";
 import { hasOutline, type OutlineEntry } from "@/lib/article-outline";
 
 /**
- * The page frame every long-form route shares (VIB-198, VIB-200, VIB-201).
+ * The page frame every long-form route shares (VIB-198 → VIB-202).
  *
- * The article is a plain centred 70% column and nothing shares that space.
- * It was a grid of `[content][rail]` inside a shell of `70% + rail`, which
- * put the *shell* at 70%-and-a-bit and the text somewhere left of it — so
- * the column the reader sees started to the left of the site header's
- * container and stopped well short of its right edge. A column whose
- * position depends on whether the page happens to have an outline is not a
- * column, it is a coincidence.
+ * Two constraints, and the bug was keeping only one of them:
  *
- * The rail now lives in the right-hand gutter, outside the column: absolute
- * beside it, sticky within that. Its layout footprint is only the ticks —
- * the panel it opens is an overlay — so the gutter that 70% leaves over is
- * wide enough from xl up.
+ *   - 70% of the window, so the column grows with the screen;
+ *   - never wider than the site's own container, so it stays inside the box
+ *     the header and every other page already draw.
+ *
+ * `w-[70%] max-w-7xl` is min() of the two. Past about 1830px the 70% would
+ * overshoot `max-w-7xl`, and the article was sticking out past the header's
+ * left and right edges on exactly the screens Ali reviews on — the column
+ * read as off-centre because it *was*, relative to everything else on the
+ * page.
+ *
+ * `max-w-7xl px-6` is copied from the site header on purpose: the two
+ * containers have to agree, and the way to make them agree is to give them
+ * the same numbers rather than numbers that happen to match today.
+ *
+ * The rail is a column inside the container, not a float in the gutter
+ * beside it (VIB-202). Its footprint is the ticks — the panel it opens is
+ * an overlay — so 3rem is the whole cost of keeping it inside the box.
  */
 export function ArticleShell({
   outline,
@@ -32,19 +39,15 @@ export function ArticleShell({
   return (
     <>
       <ReadingProgress />
-      <div className="relative mx-auto w-full px-6 pb-20 xl:w-[70%] xl:px-0">
-        <main className="min-w-0">{children}</main>
-
-        {showRail ? (
-          /*
-           * inset-y-0 so the rail's sticky range is the article's height: it
-           * follows the reader down the piece and stops at the end of it,
-           * rather than floating over the footer of the page.
-           */
-          <div className="absolute inset-y-0 left-full hidden pl-8 xl:block">
-            <ArticleToc entries={outline} />
-          </div>
-        ) : null}
+      <div className="mx-auto w-full max-w-7xl px-6 pb-20 xl:w-[70%]">
+        <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_3rem]">
+          <main className="min-w-0">{children}</main>
+          {showRail ? (
+            <div className="hidden xl:block">
+              <ArticleToc entries={outline} />
+            </div>
+          ) : null}
+        </div>
       </div>
     </>
   );

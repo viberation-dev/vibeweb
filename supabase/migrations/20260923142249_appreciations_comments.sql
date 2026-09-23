@@ -10,6 +10,11 @@
 --
 -- Purely additive — nothing existing reads or writes these tables, so
 -- applying it before the deploy cannot break a running build.
+--
+-- APPLIED 2026-09-23 with Ali's go-ahead, ahead of the deploy. The filename
+-- carries the version the remote recorded (the apply time, not the time the
+-- file was written), so `supabase db push` sees it as done rather than
+-- running it again into "table already exists".
 
 -- ---------------------------------------------------------------------------
 -- Appreciations

@@ -40,6 +40,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
  */
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    date: "2026-09-24",
+    kind: "added",
+    title: "Jev, in Models",
+    body: "A new kind of model from TypeSafe AI: instead of writing an answer, it picks one of the answers you defined and tells you how confident it is. Useful if your app has to make the same small decision over and over. It does not write prose or code.",
+  },
+  {
     date: "2026-09-23",
     kind: "added",
     title: "Comments, and a way to say thanks",

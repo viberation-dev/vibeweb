@@ -371,3 +371,85 @@
     }
   }
 }
+
+/*
+ * Long-form reading (VIB-198).
+ *
+ * The reader's text-size choice is a CSS variable on <html>, so one control
+ * resizes the article without React re-rendering the page or every block
+ * component learning about a size prop. Three steps rather than a slider:
+ * the useful range for body copy is narrow, and a slider invites 14px.
+ *
+ * `ch` for the measure, not `rem`: the comfortable line length is a count of
+ * characters, so it has to scale with the font the reader picked. 68ch at
+ * 20px is roughly 640px, the width the prototype was reviewed at.
+ */
+:root {
+  --reading-size: 1.25rem; /* 20px */
+  --reading-leading: 1.9;
+}
+
+html[data-reading="s"] {
+  --reading-size: 1.125rem; /* 18px */
+  --reading-leading: 1.8;
+}
+
+html[data-reading="l"] {
+  --reading-size: 1.375rem; /* 22px */
+  --reading-leading: 1.95;
+}
+
+@layer components {
+  /*
+   * Type only. The walkthrough runner already spaces its blocks with a flex
+   * gap, so it wants the reader's size and leading without the paragraph
+   * rhythm `.reading` imposes — two spacing systems on one column add up.
+   */
+  .reading-type {
+    font-size: var(--reading-size);
+    line-height: var(--reading-leading);
+  }
+
+  .reading {
+    font-size: var(--reading-size);
+    line-height: var(--reading-leading);
+    max-width: 68ch;
+  }
+
+  /*
+   * Generous paragraph spacing is the other half of the line-height: at 1.9
+   * a 1em gap between paragraphs disappears into the leading, and the page
+   * reads as one undifferentiated block.
+   */
+  .reading > * + * {
+    margin-top: 1.4em;
+  }
+
+  .reading :where(h2, h3) {
+    /* Sticky header plus the utility bar — anchors land under both without this. */
+    scroll-margin-top: 6rem;
+  }
+
+  /*
+   * A heading belongs to what follows it, not to what came before, so the
+   * space above is large and the space below is small. Without this the
+   * section break lands in the wrong place and every heading reads as a
+   * footer for the paragraph above it.
+   */
+  .reading :where(h2) {
+    margin-top: 2.6em;
+  }
+
+  .reading :where(h3) {
+    margin-top: 1.8em;
+  }
+
+  .reading :where(h2, h3) + * {
+    margin-top: 0.6em;
+  }
+
+  .reading :where(h2):first-child,
+  .reading :where(h3):first-child {
+    margin-top: 0;
+  }
+}

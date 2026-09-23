@@ -23,6 +23,25 @@ export const textBlock = z.object({
   body: z.string().min(1),
 });
 
+/**
+ * A section heading inside a guide (VIB-198).
+ *
+ * The block that makes the "On this page" rail possible: the outline is read
+ * from these, not scraped out of rendered HTML, so the anchor an author sees
+ * in the database is the anchor the link points at.
+ *
+ * `level` is 2 or 3 and nothing else — the page's `h1` is the title, and a
+ * fourth level is a sign the section wanted to be its own piece. `eyebrow`
+ * is the small line above a heading ("Step 02"), optional because only
+ * sequential guides want one.
+ */
+export const headingBlock = z.object({
+  kind: z.literal("heading"),
+  level: z.union([z.literal(2), z.literal(3)]).default(2),
+  title: z.string().min(1),
+  eyebrow: z.string().min(1).optional(),
+});
+
 export const calloutBlock = z.object({
   kind: z.literal("callout"),
   tone: z.enum(["info", "tip", "warning"]).default("info"),
@@ -74,7 +93,12 @@ export const linksBlock = z.object({
   links: z.array(z.object({ label: z.string().min(1), href: linkHref })).min(1),
 });
 
-/** Blocks allowed inside a tab. No checklists or nested tabs: task ids stay top-level. */
+/**
+ * Blocks allowed inside a tab. No checklists or nested tabs: task ids stay
+ * top-level. No headings either — the outline is built from the top level,
+ * and a rail entry that jumps to a heading hidden behind an unselected tab
+ * is a broken link that looks like a working one.
+ */
 export const nestedBlockSchema = z.discriminatedUnion("kind", [
   textBlock,
   calloutBlock,
@@ -106,6 +130,7 @@ export const tabsBlock = z.object({
 /** Every kind both surfaces render. */
 export const sharedBlockSchema = z.discriminatedUnion("kind", [
   textBlock,
+  headingBlock,
   calloutBlock,
   promptBlock,
   codeBlock,

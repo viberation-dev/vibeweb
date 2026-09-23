@@ -1,4 +1,5 @@
 import { contentPillarLabel, contentPreview, contentTypeLabel } from "@/lib/learn";
+import { readingTimeLabel } from "@/lib/reading-time";
 import type { Content } from "@/lib/queries/content";
 import type { Tool } from "@/lib/queries/tools";
 import type { RoleLevel } from "@/lib/role-level";
@@ -30,7 +31,7 @@ export type ResourceView = {
   flag?: string;
   /** Content only — tools have no skill tier. Rendered as a DifficultyBadge. */
   difficulty?: RoleLevel;
-  /** Quiet card meta. Reading time for content; tools have none. */
+  /** Quiet card meta. Reading time and views for content; tools have none. */
   meta?: string;
 };
 
@@ -73,5 +74,18 @@ export function contentView(item: Content): ResourceView {
     // design-system surface with a fixed hue per level, and a raw lowercase
     // "expert" in a grey pill was never what the badge set is for.
     difficulty: item.role_level ?? undefined,
+    /*
+     * The two signals a reader uses to pick what to open (VIB-198): how long
+     * it will take, and whether anyone else found it worth the time.
+     *
+     * Views join only once there are some. A grid where every card reads
+     * "0 views" says nothing about any of them, and says it six times.
+     */
+    meta: [
+      readingTimeLabel(item.body, item.blocks),
+      item.view_count > 0 ? `${item.view_count.toLocaleString("en-GB")} views` : null,
+    ]
+      .filter(Boolean)
+      .join(" · "),
   };
 }

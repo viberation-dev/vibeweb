@@ -4,8 +4,11 @@ import { notFound } from "next/navigation";
 import { after } from "next/server";
 
 import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
-import { Badge } from "@/components/ui/badge";
+import { ArticleFooter } from "@/components/features/resource/ArticleFooter";
+import { ArticleHeader } from "@/components/features/resource/ArticleHeader";
+import { ArticleShell } from "@/components/features/resource/ArticleShell";
 import { JsonLd } from "@/components/features/seo/JsonLd";
+import { readingTimeLabel } from "@/lib/reading-time";
 import { breadcrumbLd, plainSummary } from "@/lib/structured-data";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { siteUrl } from "@/lib/site-url";
@@ -77,7 +80,12 @@ export default async function BlogPostPage({ params }: Props) {
   });
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-14">
+    /*
+     * No outline: an announcement is one short piece of prose with no
+     * heading blocks, so the rail has nothing to list. ArticleShell hides it
+     * on its own rather than each page deciding.
+     */
+    <ArticleShell outline={[]}>
       <JsonLd
         data={[
           {
@@ -95,27 +103,24 @@ export default async function BlogPostPage({ params }: Props) {
           ]),
         ]}
       />
-      <Link
-        href="/blog"
-        className="text-muted-foreground text-sm hover:underline"
-      >
-        &larr; All announcements
-      </Link>
 
-      <p className="text-muted-foreground mt-6 font-mono text-sm">
-        <time dateTime={item.created_at}>
-          {new Intl.DateTimeFormat("en-GB", {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-            timeZone: "UTC",
-          }).format(new Date(item.created_at))}
-        </time>
-      </p>
+      <div className="mx-auto max-w-[68ch] px-6 pt-6">
+        <Link
+          href="/blog"
+          className="text-muted-foreground text-sm hover:underline"
+        >
+          &larr; All announcements
+        </Link>
+      </div>
 
-      <h1 className="font-heading mt-3 text-3xl font-bold tracking-[-0.04em] lg:text-4xl">
-        {item.title}
-      </h1>
+      <ArticleHeader
+        kicker="Announcement"
+        title={item.title}
+        publishedAt={item.created_at}
+        updatedAt={item.updated_at}
+        readingTime={readingTimeLabel(item.body, item.blocks)}
+        viewCount={item.view_count}
+      />
 
       {item.body ? (
         /*
@@ -124,30 +129,24 @@ export default async function BlogPostPage({ params }: Props) {
          * dependency, and nothing an author types becomes HTML. Both swap
          * together when authored content needs headings and links.
          */
-        <div className="mt-8 leading-relaxed whitespace-pre-wrap">
+        <div className="reading mx-auto mt-10 px-6 whitespace-pre-wrap">
           {item.body}
         </div>
       ) : null}
 
-      <div className="mt-10 flex flex-wrap items-center gap-3 border-t pt-6">
-        <BookmarkButton
-          targetType="content"
-          targetId={item.id}
-          bookmarked={bookmarked}
-          returnTo={`/blog/${item.slug}`}
-        />
-      </div>
-
-      {tags.length ? (
-        <div className="mt-6 flex flex-wrap items-center gap-2">
-          <span className="text-muted-foreground text-sm">Tagged</span>
-          {tags.map((tag) => (
-            <Link key={tag.id} href={`/tags/${tag.slug}`}>
-              <Badge variant="outline">{tag.name}</Badge>
-            </Link>
-          ))}
-        </div>
-      ) : null}
-    </main>
+      <ArticleFooter
+        url={`${siteUrl}/blog/${item.slug}`}
+        title={item.title}
+        tags={tags}
+        action={
+          <BookmarkButton
+            targetType="content"
+            targetId={item.id}
+            bookmarked={bookmarked}
+            returnTo={`/blog/${item.slug}`}
+          />
+        }
+      />
+    </ArticleShell>
   );
 }

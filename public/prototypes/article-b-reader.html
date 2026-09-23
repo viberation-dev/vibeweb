@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prototype B — Reader</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --background:#fffff2; --foreground:#1a1a18; --card:#fff; --muted:#f2f2e4; --muted-foreground:#5a5a54;
+  --primary:#011aff; --primary-hover:#0014cc; --primary-foreground:#fff;
+  --highlight:#e4ff1a; --highlight-foreground:#050505; --border:#e3e3d2; --secondary:#f2f2e4;
+  --lvl:#0b6b4f;
+  --radius:.75rem; --font-body:20px; --lh:1.9; --measure:66ch;
+  --font-sans:Inter,ui-sans-serif,system-ui,sans-serif; --font-heading:Geist,var(--font-sans); --font-mono:"Geist Mono",ui-monospace,monospace;
+}
+html[data-theme=dark]{
+  --background:#07070c; --foreground:#f2f2f5; --card:#101018; --muted:#16161f; --muted-foreground:#9c9caa;
+  --primary:#6072ff; --primary-hover:#6b7eff; --primary-foreground:#07070c; --border:#23232e; --secondary:#16161f;
+  --lvl:#499b7c; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:90px}
+body{margin:0;background:var(--background);color:var(--foreground);font-family:var(--font-sans);
+  font-size:var(--font-body);line-height:var(--lh);-webkit-font-smoothing:antialiased;padding-bottom:84px}
+h1,h2,h3,h4,h5{font-family:var(--font-heading);letter-spacing:-.02em}
+a{color:inherit}
+#progress{position:fixed;inset:0 auto auto 0;height:3px;width:0;background:var(--highlight);z-index:99}
+.demo{background:var(--foreground);color:var(--background);font-size:14px;line-height:1.5;padding:9px 18px;text-align:center}
+.demo b{font-family:var(--font-heading)}
+
+header.top{position:sticky;top:0;z-index:60;background:color-mix(in oklab,var(--background) 88%,transparent);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.top-in{max-width:1180px;margin:0 auto;padding:11px 24px;display:flex;align-items:center;gap:18px}
+.brand{font-family:var(--font-heading);font-weight:800;font-size:20px;letter-spacing:-.03em}
+.brand i{color:var(--primary);font-style:normal}
+.top-title{font-size:14px;color:var(--muted-foreground);border-left:1px solid var(--border);padding-left:18px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:38ch;opacity:0;transition:opacity .2s}
+.top-title.show{opacity:1}
+.top-tools{margin-left:auto;display:flex;align-items:center;gap:8px}
+@media(max-width:700px){.top-title{display:none}}
+.ctl{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--border);background:var(--card);border-radius:999px;padding:4px}
+.ctl button{border:0;background:none;color:var(--muted-foreground);cursor:pointer;font-family:var(--font-heading);
+  padding:3px 11px;border-radius:999px;line-height:1.4}
+.ctl button:nth-child(1){font-size:13px}.ctl button:nth-child(2){font-size:15px}.ctl button:nth-child(3){font-size:17px}
+.ctl button[aria-pressed=true]{background:var(--primary);color:var(--primary-foreground);font-weight:600}
+.iconbtn{width:38px;height:38px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--foreground);
+  cursor:pointer;font-size:18px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.iconbtn:hover{background:var(--primary);color:var(--primary-foreground);border-color:var(--primary)}
+
+/* ---------- hero, centred ---------- */
+.hero{max-width:var(--measure);margin:0 auto;padding:44px 24px 0;text-align:center}
+.crumb{font-size:14px;color:var(--muted-foreground);margin:0 0 20px}
+.crumb a{text-decoration:none}.crumb a:hover{text-decoration:underline}
+.kicker{display:inline-flex;align-items:center;gap:8px;background:var(--highlight);color:var(--highlight-foreground);
+  font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:6px 14px;border-radius:999px}
+h1.title{font-size:clamp(32px,4.4vw,50px);line-height:1.1;letter-spacing:-.035em;margin:18px 0 18px;font-weight:800}
+p.lede{font-size:clamp(19px,1.9vw,22px);line-height:1.6;color:var(--muted-foreground);margin:0 auto 26px;max-width:52ch}
+.byline{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.avatar{width:44px;height:44px;border-radius:50%;background:var(--primary);color:var(--primary-foreground);
+  font-family:var(--font-heading);font-weight:700;display:flex;align-items:center;justify-content:center;font-size:15px;flex:0 0 auto}
+.byline .who{text-align:left}
+.byline b{display:block;font-size:16px;line-height:1.3}
+.byline small{color:var(--muted-foreground);font-size:14px}
+.stats{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 18px;font-size:15px;color:var(--muted-foreground);margin:20px 0 0}
+.stats span{display:inline-flex;align-items:center;gap:7px}
+.stats i{font-size:17px}
+.stats b{color:var(--foreground);font-weight:600}
+.badges{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:20px 0 0}
+.pill{font-size:13px;font-weight:600;padding:5px 12px;border-radius:999px;background:var(--secondary);border:1px solid var(--border)}
+.pill.lvl{background:color-mix(in oklab,var(--lvl) 13%,var(--card));border-color:color-mix(in oklab,var(--lvl) 70%,var(--card));color:var(--lvl)}
+.gsrc{display:inline-flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--border);border-radius:999px;
+  padding:7px 15px 7px 8px;font-size:14px;font-weight:500;text-decoration:none;margin-top:22px}
+.gsrc:hover{border-color:var(--primary)}
+.gsrc .g{width:26px;height:26px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;
+  justify-content:center;font-family:var(--font-heading);font-weight:700;color:#4285F4;background:#fff;font-size:14px}
+
+/* ---------- the reading sheet ---------- */
+.sheet{max-width:calc(var(--measure) + 120px);margin:36px auto 0;background:var(--card);border-radius:24px;
+  padding:clamp(24px,5vw,60px);box-shadow:0 30px 60px -40px rgba(0,0,0,.35)}
+html[data-theme=dark] .sheet{box-shadow:none;border:1px solid var(--border)}
+article{max-width:var(--measure);margin:0 auto}
+article h2{font-size:clamp(25px,2.5vw,31px);line-height:1.22;margin:60px 0 8px;font-weight:700;scroll-margin-top:90px;
+  padding-top:26px;border-top:1px solid var(--border)}
+article h2:first-child{margin-top:0;padding-top:0;border-top:0}
+article h3{font-size:20px;line-height:1.4;margin:34px 0 8px;font-weight:600;scroll-margin-top:90px}
+article p{margin:0 0 24px}
+article ul,article ol{margin:0 0 26px;padding-left:22px}
+article li{margin-bottom:12px}
+article p code,article li code,td code{background:var(--secondary);border:1px solid var(--border);padding:1px 6px;
+  border-radius:6px;font-family:var(--font-mono);font-size:.85em}
+p.sub{color:var(--muted-foreground);font-size:17px;margin:-4px 0 24px}
+.dropcap::first-letter{float:left;font-family:var(--font-heading);font-size:66px;line-height:.82;font-weight:800;
+  padding:6px 12px 0 0;color:var(--primary)}
+.callout{border-radius:var(--radius);background:var(--secondary);padding:20px 22px;margin:30px 0;
+  border-left:4px solid var(--primary)}
+.callout.warn{border-left-color:#d33a4b;background:color-mix(in oklab,#d33a4b 7%,var(--secondary))}
+.callout p{margin:0}
+.callout .lbl{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;display:block}
+blockquote{margin:34px 0;padding:0;text-align:center;font-family:var(--font-heading);font-size:25px;line-height:1.45;
+  font-weight:500;letter-spacing:-.02em}
+blockquote::before{content:"";display:block;width:44px;height:4px;background:var(--highlight);margin:0 auto 18px;border-radius:99px}
+blockquote footer{font-family:var(--font-sans);font-size:15px;font-weight:400;color:var(--muted-foreground);margin-top:12px}
+.codeblk{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:28px 0;background:var(--background)}
+.codeblk header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px;
+  border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px;color:var(--muted-foreground)}
+.codeblk header button{border:0;background:none;color:var(--muted-foreground);font:inherit;cursor:pointer;display:flex;gap:6px;align-items:center}
+.codeblk pre{margin:0;padding:16px;overflow:auto;font-family:var(--font-mono);font-size:14.5px;line-height:1.7}
+/* Wide blocks break the measure — a deliberate rhythm break, Substack style. */
+.bleed{margin-left:calc(-1 * clamp(0px,3vw,52px));margin-right:calc(-1 * clamp(0px,3vw,52px))}
+.figure{margin:32px 0}
+.figure .ph{border-radius:var(--radius);height:300px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--primary),var(--highlight) 190%);color:#fff;font-family:var(--font-heading);font-weight:700}
+.figure figcaption{font-size:14.5px;color:var(--muted-foreground);margin-top:10px;line-height:1.6;text-align:center}
+table{width:100%;border-collapse:collapse;font-size:16px;margin:28px 0}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--border)}
+th{background:var(--secondary);font-family:var(--font-heading);font-size:14px}
+
+/* ---------- collapsed tick TOC, expands on hover ---------- */
+.toc{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:55;display:flex;justify-content:flex-end}
+@media(max-width:1280px){.toc{display:none}}
+.toc .ticks{display:flex;flex-direction:column;gap:9px;align-items:flex-end;padding:10px 6px}
+.toc .ticks i{display:block;height:2px;width:18px;background:var(--border);border-radius:99px;transition:width .18s,background .18s}
+.toc .ticks i.on{width:30px;background:var(--primary)}
+.toc .panel{position:absolute;right:0;top:50%;transform:translateY(-50%) translateX(8px);opacity:0;pointer-events:none;
+  width:290px;max-height:72vh;overflow:auto;background:var(--card);border:1px solid var(--border);border-radius:16px;
+  padding:16px;box-shadow:0 24px 50px -28px rgba(0,0,0,.45);transition:opacity .18s,transform .18s}
+.toc:hover .panel,.toc:focus-within .panel{opacity:1;pointer-events:auto;transform:translateY(-50%) translateX(0)}
+.toc:hover .ticks,.toc:focus-within .ticks{opacity:0}
+.toc h4{margin:0 0 10px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted-foreground);
+  font-family:var(--font-sans);font-weight:700}
+.toc a{display:block;padding:7px 12px;border-left:2px solid var(--border);text-decoration:none;font-size:15px;
+  line-height:1.4;color:var(--muted-foreground)}
+.toc a.sub{padding-left:26px;font-size:14.5px}
+.toc a:hover{color:var(--foreground);border-left-color:var(--foreground);background:var(--secondary)}
+.toc a.active{color:var(--primary);border-left-color:var(--primary);font-weight:600}
+.toc .done{margin:14px 0 0;padding-top:12px;border-top:1px solid var(--border);font-size:13px;color:var(--muted-foreground)}
+
+/* ---------- sticky bottom action bar ---------- */
+.dock{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:70;display:flex;align-items:center;gap:6px;
+  background:var(--card);border:1px solid var(--border);border-radius:999px;padding:7px;
+  box-shadow:0 20px 44px -22px rgba(0,0,0,.45);max-width:calc(100vw - 28px)}
+.dock button,.dock a{border:0;background:none;color:var(--muted-foreground);font-family:inherit;font-size:15px;cursor:pointer;
+  padding:9px 15px;border-radius:999px;display:inline-flex;align-items:center;gap:8px;text-decoration:none;white-space:nowrap}
+.dock button:hover,.dock a:hover{background:var(--secondary);color:var(--foreground)}
+.dock .like-toggle[aria-pressed=true]{background:var(--highlight);color:var(--highlight-foreground);font-weight:700}
+.dock .sep{width:1px;height:24px;background:var(--border);margin:0 2px}
+.dock .sharewrap{position:relative}
+.dock .menu{position:absolute;bottom:calc(100% + 12px);right:0;background:var(--card);border:1px solid var(--border);
+  border-radius:16px;padding:8px;display:none;flex-direction:column;min-width:190px;box-shadow:0 20px 44px -22px rgba(0,0,0,.45)}
+.dock .sharewrap:hover .menu,.dock .sharewrap:focus-within .menu{display:flex}
+.dock .menu button{justify-content:flex-start;font-size:15px}
+@media(max-width:620px){.dock .lbl{display:none}.dock button,.dock a{padding:9px 12px}}
+
+/* ---------- end of article ---------- */
+.after{max-width:var(--measure);margin:0 auto}
+.endbar{margin-top:46px;padding-top:28px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.like{display:inline-flex;align-items:center;gap:10px;border:2px solid var(--foreground);background:transparent;color:inherit;
+  border-radius:999px;padding:11px 20px;font-size:16px;font-weight:700;font-family:var(--font-heading);cursor:pointer}
+.like[aria-pressed=true]{background:var(--highlight);border-color:var(--highlight);color:var(--highlight-foreground)}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);background:var(--card);color:inherit;
+  border-radius:999px;padding:10px 18px;font-family:var(--font-sans);font-size:15px;font-weight:600;cursor:pointer;text-decoration:none}
+.btn:hover{border-color:var(--primary);color:var(--primary)}
+.btn.solid{background:var(--primary);color:var(--primary-foreground);border-color:var(--primary)}
+.btn.solid:hover{background:var(--primary-hover);color:var(--primary-foreground)}
+.sharerow{margin-top:22px;padding:20px;background:var(--secondary);border-radius:18px;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.sharerow b{font-family:var(--font-heading);margin-right:8px}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.authorbox{display:flex;gap:16px;background:var(--secondary);border-radius:18px;padding:22px;margin-top:22px}
+.related{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+@media(max-width:760px){.related{grid-template-columns:1fr}}
+.rcard{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px;text-decoration:none;display:block}
+.rcard:hover{border-color:var(--primary)}
+.rcard .ey{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted-foreground)}
+.rcard h5{margin:8px 0 10px;font-size:17px;line-height:1.35;font-weight:700}
+.rcard .m{font-size:13px;color:var(--muted-foreground);display:flex;gap:12px;flex-wrap:wrap}
+
+#comments{max-width:var(--measure);margin:52px auto 70px;padding:0 24px;scroll-margin-top:90px}
+#comments h2{font-size:26px;margin:0 0 4px}
+.cform{display:grid;gap:10px;margin:20px 0 26px}
+.cform input,.cform textarea{border:1px solid var(--border);background:var(--card);color:inherit;border-radius:10px;
+  padding:12px 14px;font-family:inherit;font-size:16px;width:100%}
+.cform textarea{resize:vertical}
+.citem{display:flex;gap:14px;padding:20px 0;border-top:1px solid var(--border)}
+.citem .avatar{width:40px;height:40px;font-size:14px;background:var(--secondary);color:var(--foreground)}
+.citem b{font-size:16px}
+.citem time{font-size:13px;color:var(--muted-foreground);margin-left:9px}
+.citem p{margin:7px 0 10px;font-size:17px;line-height:1.7}
+.cact{display:flex;gap:6px}
+.cact button{border:0;background:none;color:var(--muted-foreground);font-family:inherit;font-size:14px;cursor:pointer;
+  padding:4px 10px;border-radius:999px;display:inline-flex;gap:6px;align-items:center}
+.cact button:hover{background:var(--secondary);color:var(--foreground)}
+.cact button[aria-pressed=true]{color:var(--primary);font-weight:600}
+.replies{margin-top:14px;padding-left:18px;border-left:2px solid var(--border)}
+
+#toTop{position:fixed;right:22px;bottom:84px;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);
+  background:var(--card);color:var(--foreground);font-size:19px;cursor:pointer;box-shadow:0 12px 28px -12px rgba(0,0,0,.4);
+  opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:80;transform:translateY(8px)}
+#toTop.show{opacity:1;pointer-events:auto;transform:none}
+#toTop:hover{background:var(--primary);color:var(--primary-foreground);border-color:var(--primary)}
+footer.site{border-top:1px solid var(--border);padding:28px;text-align:center;color:var(--muted-foreground);font-size:14px}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="demo"><b>PROTOTYPE B &mdash; &ldquo;Reader&rdquo;.</b> Centred sheet, collapsed tick-rail TOC that opens on hover, engagement docked to the bottom. Substack shape.</div>
+
+<header class="top"><div class="top-in">
+  <div class="brand">Vibe<i>ration</i></div>
+  <div class="top-title" id="topTitle">Run Playwright MCP with Claude Code</div>
+  <div class="top-tools">
+    <div class="ctl" role="group" aria-label="Text size">
+      <button data-f="18px" data-lh="1.8" aria-pressed="false">A</button>
+      <button data-f="20px" data-lh="1.9" aria-pressed="true">A</button>
+      <button data-f="22px" data-lh="1.95" aria-pressed="false">A</button>
+    </div>
+    <button class="iconbtn" id="theme" aria-label="Toggle dark mode"><i class="ti ti-moon"></i></button>
+  </div>
+</div></header>
+
+<div class="hero">
+  <p class="crumb"><a href="#">Home</a> / <a href="#">Learn</a> / <a href="#">Guides</a></p>
+  <span class="kicker"><i class="ti ti-book-2"></i> Guide</span>
+  <h1 class="title">Run Playwright MCP with Claude Code</h1>
+  <p class="lede">Give your agent a real browser it can click, type and screenshot in &mdash; without handing it your logged-in Chrome profile.</p>
+  <div class="byline">
+    <div class="avatar">AR</div>
+    <div class="who"><b>Ali Rizwan</b><small>Published 18 Sep 2026 &middot; Updated 22 Sep 2026</small></div>
+  </div>
+  <div class="stats">
+    <span><i class="ti ti-clock"></i><span id="rt">8 min read</span></span>
+    <span><i class="ti ti-eye"></i><b id="views">18,402</b> views</span>
+    <span><i class="ti ti-heart"></i><b id="likes-meta">248</b></span>
+    <span><i class="ti ti-message-circle"></i><b id="ccount-meta">3</b> comments</span>
+  </div>
+  <div class="badges">
+    <span class="pill lvl">Beginner</span><span class="pill">MCP</span><span class="pill">Playwright</span><span class="pill">Claude Code</span>
+  </div>
+  <a class="gsrc" href="https://www.google.com/preferences/source?q=viberation.dev" target="_blank" rel="noopener">
+    <span class="g">G</span> Add Viberation as a preferred source on Google</a>
+</div>
+
+<div class="sheet">
+  <article id="article">
+    <h2 id="s1">What Playwright MCP actually gives you</h2>
+    <p class="dropcap">Claude Code can read your files and run your commands. What it cannot do out of the box is <em>look</em> at the thing it just built. Playwright MCP closes that loop: the agent drives a real Chromium, reads the accessibility tree, and screenshots what it sees.</p>
+    <p>That matters for three jobs in particular &mdash; verifying a UI change, reproducing a bug report, and filling a form you would rather not fill by hand.</p>
+    <div class="callout"><span class="lbl">Note</span><p>MCP is a protocol, not a product. Playwright MCP is one server that speaks it; your editor is the client.</p></div>
+
+    <h2 id="s2">Install the server</h2>
+    <p class="sub">One command, no global install.</p>
+    <div class="codeblk bleed"><header><span>bash</span><button data-copy><i class="ti ti-copy"></i> Copy</button></header>
+<pre><code>claude mcp add playwright -- npx -y @playwright/mcp@latest</code></pre></div>
+    <p>Restart Claude Code and run <code>/mcp</code>. You should see <code>playwright</code> listed as connected.</p>
+
+    <h3 id="s2a">Confirming it is live</h3>
+    <p>Ask the agent to open a page and describe it. If it comes back with a structured list of headings and links rather than an apology, the server is wired up correctly.</p>
+
+    <h2 id="s3">Keep it out of your real browser</h2>
+    <p>The default profile is isolated, and you should leave it that way. Pointing the server at your everyday Chrome profile hands an automated agent every session cookie you own.</p>
+    <div class="callout warn"><span class="lbl">Careful</span><p>Never pass <code>--user-data-dir</code> pointing at your daily browser profile. Log the agent in to a throwaway account instead.</p></div>
+    <blockquote>The browser your agent drives should be one you would be comfortable handing to a stranger.<footer>&mdash; Viberation security note</footer></blockquote>
+
+    <h2 id="s4">A first real task</h2>
+    <p>Point it at your own dev server and ask for a verification pass rather than a click-by-click script. The agent plans the steps itself:</p>
+    <figure class="figure bleed"><div class="ph">Screenshot &mdash; agent driving the preview</div>
+      <figcaption>The accessibility tree is cheaper and more reliable to read than a screenshot. Ask for pixels only when the question is visual.</figcaption></figure>
+    <ul>
+      <li><b>Verify</b> &mdash; open localhost:3000/pricing, confirm the annual toggle updates all three cards.</li>
+      <li><b>Reproduce</b> &mdash; paste the bug report, let it walk the steps.</li>
+      <li><b>Capture</b> &mdash; screenshot the dashboard at mobile width, light and dark.</li>
+    </ul>
+
+    <h2 id="s5">When to reach for something else</h2>
+    <table class="bleed">
+      <tr><th>Job</th><th>Use</th><th>Why</th></tr>
+      <tr><td>Verify your own UI</td><td>Playwright MCP</td><td>Full control, isolated profile</td></tr>
+      <tr><td>Read one public page</td><td>Fetch</td><td>No browser to start</td></tr>
+      <tr><td>Act inside your logged-in session</td><td>Browser extension</td><td>You stay in the loop</td></tr>
+    </table>
+
+    <h2 id="s6">Where to go next</h2>
+    <p>Pair this with the Supabase MCP guide if your app has a database behind it &mdash; the two together let the agent check a write end to end, from the click to the row.</p>
+  </article>
+
+  <div class="after">
+    <div class="endbar">
+      <button class="like like-toggle" aria-pressed="false"><i class="ti ti-heart"></i> <span class="like-label">Appreciate this guide</span> &middot; <span class="likes-n">248</span></button>
+      <button class="btn" data-share="copy"><i class="ti ti-link"></i> Copy link</button>
+      <a class="btn" href="#comments"><i class="ti ti-message-circle"></i> Join the discussion</a>
+    </div>
+    <div class="sharerow">
+      <b>Share this guide</b>
+      <button class="btn" data-share="x"><i class="ti ti-brand-x"></i> X</button>
+      <button class="btn" data-share="facebook"><i class="ti ti-brand-facebook"></i> Facebook</button>
+      <button class="btn" data-share="linkedin"><i class="ti ti-brand-linkedin"></i> LinkedIn</button>
+      <button class="btn" data-share="threads"><i class="ti ti-brand-threads"></i> Threads</button>
+      <button class="btn" data-share="pinterest"><i class="ti ti-brand-pinterest"></i> Pinterest</button>
+      <button class="btn" data-share="instagram"><i class="ti ti-brand-instagram"></i> Instagram</button>
+    </div>
+    <div class="tags"><span class="pill">#mcp</span><span class="pill">#playwright</span><span class="pill">#claude-code</span><span class="pill">#testing</span></div>
+    <div class="authorbox"><div class="avatar">AR</div>
+      <div><b>Ali Rizwan</b><p style="margin:6px 0 0;font-size:16px;color:var(--muted-foreground)">Building Viberation. Writes about agent tooling that survives contact with a real codebase.</p></div></div>
+    <h3 style="margin:44px 0 0;font-size:21px">Keep reading</h3>
+    <div class="related">
+      <a class="rcard" href="#"><span class="ey">Guide</span><h5>Supabase MCP, leading with security</h5>
+        <span class="m"><span><i class="ti ti-clock"></i> 12 min</span><span><i class="ti ti-eye"></i> 9.1k</span></span></a>
+      <a class="rcard" href="#"><span class="ey">Walkthrough</span><h5>Ship a Next.js app to Vercel in one sitting</h5>
+        <span class="m"><span><i class="ti ti-clock"></i> 6 min</span><span><i class="ti ti-eye"></i> 22.4k</span></span></a>
+      <a class="rcard" href="#"><span class="ey">Cheatsheet</span><h5>Claude Code slash commands</h5>
+        <span class="m"><span><i class="ti ti-clock"></i> 4 min</span><span><i class="ti ti-eye"></i> 5.7k</span></span></a>
+    </div>
+  </div>
+</div>
+
+<section id="comments">
+  <h2>Comments (<span class="ccount">3</span>)</h2>
+  <p style="color:var(--muted-foreground);font-size:16px;margin:4px 0 0">Signed-in members post under their name. Replies and likes included.</p>
+  <div class="cform">
+    <input id="cname" placeholder="Your name" autocomplete="name">
+    <textarea id="ctext" rows="3" placeholder="Ask a question or share what worked..."></textarea>
+    <div><button class="btn solid" id="cpost"><i class="ti ti-send"></i> Post comment</button></div>
+  </div>
+  <div id="clist">
+    <div class="citem"><div class="avatar">S</div><div>
+      <b>Sana</b><time>20 Sep 2026</time>
+      <p>The isolated-profile warning saved me. I would have pointed it straight at my daily Chrome.</p>
+      <div class="cact"><button class="clike" aria-pressed="false"><i class="ti ti-heart"></i> 14</button><button class="creply">Reply</button></div>
+      <div class="replies"><div class="citem" style="border:0;padding:12px 0 0"><div class="avatar">AR</div><div>
+        <b>Ali Rizwan</b><time>20 Sep 2026</time><p>That is exactly why it is a callout and not a footnote.</p>
+        <div class="cact"><button class="clike" aria-pressed="false"><i class="ti ti-heart"></i> 3</button></div></div></div></div>
+    </div></div>
+    <div class="citem"><div class="avatar">D</div><div>
+      <b>Danish</b><time>21 Sep 2026</time>
+      <p>Reading time and view count on the cards is the bit I want most. Helps me pick what to open.</p>
+      <div class="cact"><button class="clike" aria-pressed="false"><i class="ti ti-heart"></i> 9</button><button class="creply">Reply</button></div></div></div>
+    <div class="citem"><div class="avatar">M</div><div>
+      <b>Maria</b><time>22 Sep 2026</time>
+      <p>Any chance of a Windows-specific note? npx behaves differently under PowerShell.</p>
+      <div class="cact"><button class="clike" aria-pressed="false"><i class="ti ti-heart"></i> 6</button><button class="creply">Reply</button></div></div></div>
+  </div>
+</section>
+
+<nav class="toc" aria-label="On this page" tabindex="0">
+  <div class="ticks" id="ticks" aria-hidden="true"></div>
+  <div class="panel">
+    <h4>On this page</h4>
+    <div id="tocnav"></div>
+    <p class="done"><span id="pct">0</span>% read &middot; <span id="left">8 min</span> left</p>
+  </div>
+</nav>
+
+<div class="dock">
+  <button class="like-toggle" aria-pressed="false"><i class="ti ti-heart"></i> <span class="likes-n">248</span></button>
+  <a href="#comments"><i class="ti ti-message-circle"></i> <span class="ccount">3</span></a>
+  <span class="sep"></span>
+  <div class="sharewrap">
+    <button aria-haspopup="true"><i class="ti ti-share-2"></i> <span class="lbl">Share</span></button>
+    <div class="menu">
+      <button data-share="x"><i class="ti ti-brand-x"></i> X</button>
+      <button data-share="facebook"><i class="ti ti-brand-facebook"></i> Facebook</button>
+      <button data-share="linkedin"><i class="ti ti-brand-linkedin"></i> LinkedIn</button>
+      <button data-share="threads"><i class="ti ti-brand-threads"></i> Threads</button>
+      <button data-share="pinterest"><i class="ti ti-brand-pinterest"></i> Pinterest</button>
+      <button data-share="instagram"><i class="ti ti-brand-instagram"></i> Instagram</button>
+      <button data-share="copy"><i class="ti ti-link"></i> Copy link</button>
+    </div>
+  </div>
+  <button><i class="ti ti-bookmark"></i> <span class="lbl">Save</span></button>
+</div>
+
+<button id="toTop" aria-label="Back to top"><i class="ti ti-arrow-up"></i></button>
+<footer class="site">Prototype B &middot; Viberation Blue/Lime tokens &middot; not wired to the database</footer>
+<script src="proto.js"></script>
+<script>
+/* B only: the collapsed tick rail mirrors the TOC, and the header shows the
+   article title once the hero has scrolled away. */
+(function(){
+  const nav=document.getElementById('tocnav'), ticks=document.getElementById('ticks');
+  if(nav&&ticks){
+    const paint=()=>{
+      const links=[...nav.querySelectorAll('a')];
+      ticks.innerHTML=links.map(()=>'<i></i>').join('');
+      const bars=[...ticks.children];
+      new MutationObserver(()=>{
+        links.forEach((a,i)=>bars[i]&&bars[i].classList.toggle('on',a.classList.contains('active')));
+      }).observe(nav,{subtree:true,attributes:true,attributeFilter:['class']});
+    };
+    // proto.js builds the list on load; wait a tick for it.
+    setTimeout(paint,0);
+  }
+  const t=document.getElementById('topTitle'), h1=document.querySelector('h1.title');
+  if(t&&h1){
+    new IntersectionObserver(([e])=>t.classList.toggle('show',!e.isIntersecting)).observe(h1);
+  }
+})();
+</script>
+</body></html>

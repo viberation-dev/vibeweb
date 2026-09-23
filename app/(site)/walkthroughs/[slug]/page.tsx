@@ -4,12 +4,14 @@ import { notFound } from "next/navigation";
 
 import { saveStepAction } from "@/app/(site)/walkthroughs/[slug]/actions";
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
+import { ShareChips } from "@/components/features/resource/ShareChips";
 import {
   WalkthroughBlockView,
   WalkthroughNav,
 } from "@/components/features/walkthroughs/WalkthroughBlocks";
 import { WalkthroughStepper } from "@/components/features/walkthroughs/WalkthroughStepper";
 import { Badge } from "@/components/ui/badge";
+import { TextSize } from "@/components/ui/text-size";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { JsonLd } from "@/components/features/seo/JsonLd";
 import { breadcrumbLd } from "@/lib/structured-data";
@@ -138,9 +140,17 @@ export default async function WalkthroughRunnerPage({
         ) : null}
       </div>
 
-      <h1 className="mt-3 font-heading text-3xl font-semibold">
-        {walkthrough.title}
-      </h1>
+      <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
+        <h1 className="font-heading text-3xl font-semibold">
+          {walkthrough.title}
+        </h1>
+        {/*
+          The runner is long-form reading too, so it gets the same size
+          control — one preference, set anywhere, applies everywhere
+          (VIB-198).
+        */}
+        <TextSize className="shrink-0" />
+      </div>
 
       <div className="mt-6">
         <WalkthroughStepper
@@ -157,7 +167,7 @@ export default async function WalkthroughRunnerPage({
           <p className="mt-2 text-muted-foreground">{step.intro}</p>
         ) : null}
 
-        <div className="mt-6 flex flex-col gap-5">
+        <div className="reading-type mt-6 flex max-w-[68ch] flex-col gap-5">
           {step.blocks.map((block, index) => (
             <WalkthroughBlockView
               // Blocks have no ids of their own — they are positional within
@@ -197,6 +207,21 @@ export default async function WalkthroughRunnerPage({
             </Link>
           </div>
         </section>
+      ) : null}
+
+      {/*
+        Share sits on the last step only. A walkthrough is read one step at a
+        time, and a link shared from step 3 of 9 sends the next person into
+        the middle of a build they have not started.
+      */}
+      {isLastStep ? (
+        <div className="bg-secondary mt-8 flex max-w-[68ch] flex-wrap items-center gap-2.5 rounded-[1.125rem] p-5">
+          <span className="font-heading mr-1 font-bold">Share this build</span>
+          <ShareChips
+            url={`${siteUrl}/walkthroughs/${walkthrough.slug}`}
+            title={walkthrough.title}
+          />
+        </div>
       ) : null}
 
       <WalkthroughNav

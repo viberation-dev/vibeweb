@@ -15,7 +15,21 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/admin", "/account", "/api", "/onboarding", "/email", "/go"],
+      /*
+       * /prototypes holds the static HTML mock-ups a change was reviewed
+       * against. They are served so a preview URL can show them, and they
+       * are not pages of the site — indexing one would put a mock-up of a
+       * guide into search results beside the guide itself (VIB-198).
+       */
+      disallow: [
+        "/admin",
+        "/account",
+        "/api",
+        "/onboarding",
+        "/email",
+        "/go",
+        "/prototypes",
+      ],
     },
     sitemap: `${siteUrl}/sitemap.xml`,
   };

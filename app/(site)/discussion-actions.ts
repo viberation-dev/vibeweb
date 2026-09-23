@@ -2,6 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
+
+import { isStaff } from "@/lib/app-role";
+import { notifyStaffOfComment } from "@/lib/comment-notifications";
 
 import { createClient } from "@/lib/integrations/supabase/server";
 import {
@@ -15,6 +19,7 @@ import {
   setCommentHidden,
   unappreciateComment,
 } from "@/lib/queries/comments";
+import { getCurrentProfile } from "@/lib/queries/profiles";
 import { safeRedirect } from "@/lib/validation/auth";
 import {
   appreciateCommentSchema,
@@ -122,14 +127,44 @@ export async function addCommentAction(formData: FormData): Promise<void> {
 
   const supabase = await createClient();
   const userId = await requireUserId(supabase, returnTo);
+  const target = {
+    targetType: parsed.data.target_type,
+    targetId: parsed.data.target_id,
+  };
 
-  await addComment(
-    supabase,
-    userId,
-    { targetType: parsed.data.target_type, targetId: parsed.data.target_id },
-    parsed.data.body,
-    parsed.data.parent_id,
-  );
+  await addComment(supabase, userId, target, parsed.data.body, parsed.data.parent_id);
+
+  /*
+   * Tell staff, after the response has gone out (VIB-205).
+   *
+   * In after() so the commenter is not waiting on Resend, and so a mail
+   * failure cannot fail a comment that is already saved — the arrangement
+   * the view counters use. Anything that goes wrong is logged, not thrown.
+   */
+  after(async () => {
+    /*
+     * Read in here, not before the response: the name and the role are only
+     * needed by the mail, and a profile lookup on the commenter's critical
+     * path would be latency spent on something they never see.
+     */
+    const profile = await getCurrentProfile(supabase);
+    const outcome = await notifyStaffOfComment(supabase, {
+      target,
+      body: parsed.data.body,
+      isReply: parsed.data.parent_id !== null,
+      /*
+       * The public display name, never the email: this mail quotes a
+       * member to a moderator, and their address is not part of that.
+       */
+      commenterName: profile?.username?.trim() || "A member",
+      commenterIsStaff: profile ? isStaff(profile.app_role) : false,
+      returnTo,
+    });
+
+    if (outcome.status === "failed") {
+      console.error("comment notification failed", outcome.detail);
+    }
+  });
 
   revalidatePath(returnTo.split("?")[0]);
 }

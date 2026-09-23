@@ -11,6 +11,7 @@ import { SocialRail } from "@/components/features/nav/SocialRail";
 import { ThemeRail } from "@/components/features/nav/ThemeRail";
 import { UtilityBar } from "@/components/features/nav/UtilityBar";
 import { SearchInput } from "@/components/features/search/SearchInput";
+import { BackToTop } from "@/components/ui/back-to-top";
 import { ButtonIcon, buttonVariants } from "@/components/ui/button";
 import { isSuperAdmin } from "@/lib/app-role";
 import { createClient } from "@/lib/integrations/supabase/server";
@@ -124,6 +125,13 @@ export default async function SiteLayout({
       ) : (
         <VisitorFooter hasAffiliateLinks={affiliateCount > 0} />
       )}
+
+      {/*
+        Site-wide rather than per-route (VIB-198): the directory and search
+        results run as long as any guide does, and a control that appears on
+        some long pages and not others is one a reader stops looking for.
+      */}
+      <BackToTop />
     </>
   );
 }

@@ -32,10 +32,43 @@ const CALLOUT_LABELS = {
  * import CopyButton from there, so this matches the existing arrangement
  * instead of churning five files.
  */
-export function BlockView({ block }: { block: SharedBlock | NestedBlock }) {
+export function BlockView({
+  block,
+  headingId,
+}: {
+  block: SharedBlock | NestedBlock;
+  /**
+   * The anchor for a `heading` block, from lib/article-outline (VIB-198).
+   *
+   * Passed in rather than derived here: two sections can share a title, and
+   * only the walk over the whole document knows which one this is. Deriving
+   * it locally would point both rail links at the first heading.
+   */
+  headingId?: string;
+}) {
   switch (block.kind) {
     case "text":
-      return <p className="leading-relaxed whitespace-pre-line">{block.body}</p>;
+      return <p className="whitespace-pre-line">{block.body}</p>;
+
+    case "heading": {
+      const Tag = block.level === 3 ? "h3" : "h2";
+      return (
+        <Tag
+          id={headingId}
+          className={cn(
+            "font-heading tracking-tight",
+            block.level === 3 ? "text-xl font-semibold" : "text-2xl font-bold lg:text-3xl",
+          )}
+        >
+          {block.eyebrow ? (
+            <span className="text-primary mb-2.5 block font-sans text-xs font-bold tracking-widest uppercase">
+              {block.eyebrow}
+            </span>
+          ) : null}
+          {block.title}
+        </Tag>
+      );
+    }
 
     case "callout":
       return (

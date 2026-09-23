@@ -41,6 +41,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-23",
+    kind: "improved",
+    title: "Guides and articles are easier to read",
+    body: "Bigger type with more room between the lines, a size control if you want it bigger or smaller still, an “On this page” rail that follows where you are, share buttons, reading time and view counts on every card, and a back-to-top button on long pages.",
+  },
+  {
+    date: "2026-09-23",
     kind: "added",
     title: "Guides you can follow along with",
     body: "Guides can now include commands you can copy, tabs for your own setup, and what to expect when a command works. The first one covers Playwright MCP.",

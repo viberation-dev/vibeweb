@@ -4,13 +4,18 @@ import { notFound } from "next/navigation";
 import { after } from "next/server";
 
 import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
-import { BlockView } from "@/components/features/resource/BlockView";
+import { ArticleBody } from "@/components/features/resource/ArticleBody";
+import { ArticleFooter } from "@/components/features/resource/ArticleFooter";
+import { ArticleHeader } from "@/components/features/resource/ArticleHeader";
+import { ArticleShell } from "@/components/features/resource/ArticleShell";
 import { Badge } from "@/components/ui/badge";
 import { JsonLd } from "@/components/features/seo/JsonLd";
+import { articleOutline } from "@/lib/article-outline";
+import { readingTimeLabel } from "@/lib/reading-time";
 import { breadcrumbLd, plainSummary } from "@/lib/structured-data";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { siteUrl } from "@/lib/site-url";
-import { contentTypeLabel, learnHref } from "@/lib/learn";
+import { contentPillarLabel, contentTypeLabel, learnHref } from "@/lib/learn";
 import { isBookmarked } from "@/lib/queries/bookmarks";
 import {
   getContentBySlug,
@@ -102,8 +107,11 @@ export default async function ContentPage({ params }: Props) {
     }
   });
 
+  const outline = articleOutline(item.blocks);
+  const url = `${siteUrl}/learn/${item.slug}`;
+
   return (
-    <main className="mx-auto w-full max-w-3xl p-6">
+    <ArticleShell outline={outline}>
       <JsonLd
         data={[
           {
@@ -121,36 +129,53 @@ export default async function ContentPage({ params }: Props) {
           ]),
         ]}
       />
-      <Link
-        href="/learn"
-        className="text-sm text-muted-foreground hover:underline"
-      >
-        ← All of Learn
-      </Link>
 
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        <Link href={learnHref({ type: item.type })}>
-          <Badge variant="secondary">{contentTypeLabel(item.type)}</Badge>
+      <div className="mx-auto max-w-[68ch] px-6 pt-6">
+        <Link
+          href="/learn"
+          className="text-muted-foreground text-sm hover:underline"
+        >
+          &larr; All of Learn
         </Link>
-        {item.role_level ? (
-          <Link href={learnHref({ level: item.role_level })}>
-            <Badge variant="outline">{item.role_level}</Badge>
-          </Link>
-        ) : null}
-        {/* Only role_guide rows carry an audience; it is null on everything else. */}
-        {item.audience ? (
-          <Badge variant="outline">{item.audience}</Badge>
-        ) : null}
       </div>
 
-      <h1 className="mt-3 font-heading text-3xl font-semibold">{item.title}</h1>
+      <ArticleHeader
+        kicker={
+          item.pillar ? contentPillarLabel(item.pillar) : contentTypeLabel(item.type)
+        }
+        title={item.title}
+        /*
+         * `body` is the standfirst for a structured guide and the whole
+         * piece for everything else (VIB-192 keeps a short plain summary
+         * beside the blocks). So it is the lede only when blocks exist —
+         * otherwise the article would be printed twice, once large and grey.
+         *
+         * Not the card preview: that truncates at 160 characters, which is
+         * right on a card and reads as a broken sentence under a headline.
+         */
+        lede={blocks ? item.body : null}
+        publishedAt={item.created_at}
+        updatedAt={item.updated_at}
+        readingTime={readingTimeLabel(item.body, item.blocks)}
+        viewCount={item.view_count}
+        badges={
+          <>
+            <Link href={learnHref({ type: item.type })}>
+              <Badge variant="secondary">{contentTypeLabel(item.type)}</Badge>
+            </Link>
+            {item.role_level ? (
+              <Link href={learnHref({ level: item.role_level })}>
+                <Badge variant="outline">{item.role_level}</Badge>
+              </Link>
+            ) : null}
+            {/* Only role_guide rows carry an audience; it is null on everything else. */}
+            {item.audience ? <Badge variant="outline">{item.audience}</Badge> : null}
+          </>
+        }
+      />
 
       {blocks ? (
-        <div className="mt-6 flex flex-col gap-5">
-          {blocks.map((block, i) => (
-            <BlockView key={i} block={block} />
-          ))}
-        </div>
+        <ArticleBody blocks={blocks} outline={outline} className="mx-auto mt-10 px-6" />
       ) : item.body ? (
         /*
          * ponytail: bodies render as preformatted text, not Markdown — no
@@ -161,38 +186,36 @@ export default async function ContentPage({ params }: Props) {
          * pre-wrap, not pre-line: pre-line collapses runs of spaces, which
          * is exactly what a cheatsheet uses to line its columns up. And
          * columns only line up in a fixed-width font, so cheatsheets get one.
+         *
+         * A cheatsheet opts out of the reader's text size as well: its
+         * columns are laid out in characters, and scaling it up is how a
+         * lined-up table becomes a wrapped one.
          */
         <div
           className={cn(
-            "mt-6 whitespace-pre-wrap",
+            "mx-auto mt-10 px-6 whitespace-pre-wrap",
             item.type === "cheatsheet"
-              ? "font-mono text-sm leading-6"
-              : "leading-relaxed",
+              ? "max-w-[68ch] font-mono text-sm leading-6"
+              : "reading",
           )}
         >
           {item.body}
         </div>
       ) : null}
 
-      <div className="mt-8 flex flex-wrap items-center gap-3 border-t pt-6">
-        <BookmarkButton
-          targetType="content"
-          targetId={item.id}
-          bookmarked={bookmarked}
-          returnTo={`/learn/${item.slug}`}
-        />
-      </div>
-
-      {tags.length ? (
-        <div className="mt-6 flex flex-wrap items-center gap-2">
-          <span className="text-sm text-muted-foreground">Tagged</span>
-          {tags.map((tag) => (
-            <Link key={tag.id} href={`/tags/${tag.slug}`}>
-              <Badge variant="outline">{tag.name}</Badge>
-            </Link>
-          ))}
-        </div>
-      ) : null}
-    </main>
+      <ArticleFooter
+        url={url}
+        title={item.title}
+        tags={tags}
+        action={
+          <BookmarkButton
+            targetType="content"
+            targetId={item.id}
+            bookmarked={bookmarked}
+            returnTo={`/learn/${item.slug}`}
+          />
+        }
+      />
+    </ArticleShell>
   );
 }

@@ -9,6 +9,11 @@
 -- sections were already there in the writing; they just had nothing to name
 -- them.
 --
+-- APPLIED 2026-09-23, after VIB-198 deployed to production. The filename
+-- carries the version the remote recorded (the apply time), so
+-- `supabase db push` sees it as done rather than running it a second time
+-- and inserting every heading twice.
+--
 -- Apply this with the deploy, not before it. A build from before VIB-198
 -- does not know the `heading` kind, so guideBlocksSchema rejects the whole
 -- array and the page falls back to `body` — degraded rather than broken,

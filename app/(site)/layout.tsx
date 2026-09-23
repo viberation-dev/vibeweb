@@ -112,6 +112,15 @@ export default async function SiteLayout({
             />
           </Suspense>
           <div className="min-w-0 flex-1">{children}</div>
+          {/*
+            The social rail belongs to both shells (VIB-202). It shipped as
+            visitor-only chrome, which meant "Follow us" quietly disappeared
+            the moment someone signed in — exactly the readers most likely
+            to follow. ThemeRail stays visitor-only: the signed-in header
+            carries its own theme control, and two of them on one screen is
+            a question about which one is authoritative.
+          */}
+          <SocialRail />
         </div>
       ) : (
         <>

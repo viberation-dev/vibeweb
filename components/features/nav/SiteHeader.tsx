@@ -13,6 +13,7 @@ import { SignOutButton } from "@/components/features/auth/SignOutButton";
 import { Logo } from "@/components/features/nav/Logo";
 import { Avatar } from "@/components/features/profile/Avatar";
 import { ThemeToggle } from "@/components/features/nav/ThemeToggle";
+import { TextSize } from "@/components/ui/text-size";
 import { TOOL_CATEGORIES } from "@/lib/tool-categories";
 import { toolsHref } from "@/lib/tools-url";
 
@@ -113,6 +114,14 @@ export function SiteHeader({
           </kbd>
         </div>
       </form>
+
+      {/*
+        The reader's text size, beside the search box (VIB-200 item 5).
+        Header rather than article header: it is a preference, not a property
+        of the piece you happen to be on, and burying it inside the article
+        meant it was only reachable once you were already squinting.
+      */}
+      <TextSize className="hidden shrink-0 sm:inline-flex" />
 
       <Link
         href="/account/bookmarks"

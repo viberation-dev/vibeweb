@@ -8,6 +8,7 @@ import { AppreciateButton } from "@/components/features/discussion/AppreciateBut
 import { ArticleDock } from "@/components/features/discussion/ArticleDock";
 import { CommentThread } from "@/components/features/discussion/CommentThread";
 import { ArticleBody } from "@/components/features/resource/ArticleBody";
+import { Breadcrumb } from "@/components/features/resource/Breadcrumb";
 import { ArticleFooter } from "@/components/features/resource/ArticleFooter";
 import { ArticleHeader } from "@/components/features/resource/ArticleHeader";
 import { ArticleShell } from "@/components/features/resource/ArticleShell";
@@ -145,14 +146,17 @@ export default async function ContentPage({ params }: Props) {
         ]}
       />
 
-      <div className="mx-auto max-w-[68ch] px-6 pt-6">
-        <Link
-          href="/learn"
-          className="text-muted-foreground text-sm hover:underline"
-        >
-          &larr; All of Learn
-        </Link>
-      </div>
+      <Breadcrumb
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Learn", href: "/learn" },
+          {
+            label: contentTypeLabel(item.type),
+            href: learnHref({ type: item.type }),
+          },
+          { label: item.title },
+        ]}
+      />
 
       <ArticleHeader
         kicker={
@@ -191,7 +195,7 @@ export default async function ContentPage({ params }: Props) {
       />
 
       {blocks ? (
-        <ArticleBody blocks={blocks} outline={outline} className="mx-auto mt-10 px-6" />
+        <ArticleBody blocks={blocks} outline={outline} className="mt-10" />
       ) : item.body ? (
         /*
          * ponytail: bodies render as preformatted text, not Markdown — no
@@ -209,7 +213,7 @@ export default async function ContentPage({ params }: Props) {
          */
         <div
           className={cn(
-            "mx-auto mt-10 px-6 whitespace-pre-wrap",
+            "mt-10 whitespace-pre-wrap",
             item.type === "cheatsheet"
               ? "max-w-[68ch] font-mono text-sm leading-6"
               : "reading",

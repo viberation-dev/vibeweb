@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { after } from "next/server";
 
@@ -8,6 +7,7 @@ import { AppreciateButton } from "@/components/features/discussion/AppreciateBut
 import { ArticleDock } from "@/components/features/discussion/ArticleDock";
 import { CommentThread } from "@/components/features/discussion/CommentThread";
 import { ArticleFooter } from "@/components/features/resource/ArticleFooter";
+import { Breadcrumb } from "@/components/features/resource/Breadcrumb";
 import { ArticleHeader } from "@/components/features/resource/ArticleHeader";
 import { ArticleShell } from "@/components/features/resource/ArticleShell";
 import { JsonLd } from "@/components/features/seo/JsonLd";
@@ -114,14 +114,13 @@ export default async function BlogPostPage({ params }: Props) {
         ]}
       />
 
-      <div className="mx-auto max-w-[68ch] px-6 pt-6">
-        <Link
-          href="/blog"
-          className="text-muted-foreground text-sm hover:underline"
-        >
-          &larr; All announcements
-        </Link>
-      </div>
+      <Breadcrumb
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Blog", href: "/blog" },
+          { label: item.title },
+        ]}
+      />
 
       <ArticleHeader
         kicker="Announcement"
@@ -140,7 +139,7 @@ export default async function BlogPostPage({ params }: Props) {
          * dependency, and nothing an author types becomes HTML. Both swap
          * together when authored content needs headings and links.
          */
-        <div className="reading mx-auto mt-10 px-6 whitespace-pre-wrap">
+        <div className="reading mt-10 whitespace-pre-wrap">
           {item.body}
         </div>
       ) : null}

@@ -410,10 +410,14 @@ html[data-reading="l"] {
     line-height: var(--reading-leading);
   }
 
+  /*
+   * No max-width. Since VIB-200 the article column itself is the measure —
+   * a 68ch cap in here would have quietly ignored the container width the
+   * shell was asked to produce.
+   */
   .reading {
     font-size: var(--reading-size);
     line-height: var(--reading-leading);
-    max-width: 68ch;
   }
 
   /*

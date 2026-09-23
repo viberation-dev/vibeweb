@@ -1,17 +1,20 @@
 import { IconClock, IconEye, IconMessageCircle } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 
-import { TextSize } from "@/components/ui/text-size";
 import { SITE_BYLINE } from "@/lib/byline";
 import { preferredSourceUrl } from "@/lib/share";
 import { siteUrl } from "@/lib/site-url";
 
 /**
- * The centred hero every long-form page opens with (VIB-198).
+ * The hero every long-form page opens with (VIB-198, re-laid out in VIB-200).
  *
  * One component for /learn, /blog and /docs: they are three views over the
  * same `content` table, and three hand-built headers would be three places
  * to forget the updated date.
+ *
+ * Left-aligned, not centred. A centred headline over a left-aligned body
+ * gives the page two different left edges, and the eye has to find the
+ * second one at the moment it starts reading. Prototype A had this right.
  */
 export type ArticleHeaderProps = {
   /** Small pill above the title — the pillar, or the content type. */
@@ -76,29 +79,34 @@ export function ArticleHeader({
   const revised = isRevised(publishedAt, updatedAt);
 
   return (
-    <header className="mx-auto max-w-[68ch] px-6 pt-10 text-center">
+    <header className="pt-8">
       <span className="bg-highlight text-highlight-foreground inline-flex items-center rounded-full px-3.5 py-1.5 text-xs font-bold tracking-widest uppercase">
         {kicker}
       </span>
 
-      <h1 className="font-heading mt-5 text-4xl leading-[1.1] font-extrabold tracking-[-0.035em] lg:text-5xl">
+      {/*
+        The headline is capped at 20 characters' worth of line even though
+        the column is now much wider (VIB-200 item 8). A 1200px headline is
+        one the eye has to track across rather than take in.
+      */}
+      <h1 className="font-heading mt-5 max-w-[22ch] text-4xl leading-[1.08] font-extrabold tracking-[-0.035em] lg:text-5xl">
         {title}
       </h1>
 
       {lede ? (
-        <p className="text-muted-foreground mx-auto mt-5 max-w-[52ch] text-lg leading-relaxed lg:text-xl">
+        <p className="text-muted-foreground mt-5 max-w-[62ch] text-lg leading-relaxed lg:text-xl">
           {lede}
         </p>
       ) : null}
 
-      <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+      <div className="mt-7 flex items-center gap-3">
         <span
           aria-hidden
-          className="bg-primary text-primary-foreground font-heading flex size-11 items-center justify-center rounded-full text-sm font-bold"
+          className="bg-primary text-primary-foreground font-heading flex size-11 shrink-0 items-center justify-center rounded-full text-sm font-bold"
         >
           {author.initials}
         </span>
-        <span className="text-left">
+        <span>
           <span className="block text-base leading-tight font-semibold">
             {author.name}
           </span>
@@ -118,7 +126,13 @@ export function ArticleHeader({
         </span>
       </div>
 
-      <div className="text-muted-foreground mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[0.9375rem]">
+      {/*
+        Stats left, Google's button pushed to the far edge of the column
+        (VIB-200 items 3 and 6). One row rather than two: they are both
+        "facts and actions about this piece", and the button has nothing to
+        sit beside on a line of its own.
+      */}
+      <div className="text-muted-foreground mt-5 flex flex-wrap items-center gap-x-5 gap-y-3 text-[0.9375rem]">
         <span className="inline-flex items-center gap-1.5">
           <IconClock aria-hidden className="size-[1.0625rem]" />
           {readingTime}
@@ -137,10 +151,6 @@ export function ArticleHeader({
             views
           </span>
         ) : null}
-        {/*
-          A link, because a count beside a jump target is the one stat a
-          reader wants to act on rather than just read.
-        */}
         {commentCount !== null && commentCount !== undefined ? (
           <a
             href="#comments"
@@ -151,15 +161,7 @@ export function ArticleHeader({
             {commentCount === 1 ? "comment" : "comments"}
           </a>
         ) : null}
-      </div>
 
-      {badges ? (
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-          {badges}
-        </div>
-      ) : null}
-
-      <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
         {/*
           Google's own preferences page. It opts the reader into seeing more
           of this site in Top Stories; it is a link to Google, not a claim
@@ -169,7 +171,7 @@ export function ArticleHeader({
           href={preferredSourceUrl(siteDomain())}
           target="_blank"
           rel="noopener noreferrer"
-          className="border-border bg-card hover:border-primary inline-flex items-center gap-2 rounded-full border py-1.5 pr-4 pl-2 text-sm font-medium transition-colors"
+          className="border-border bg-card hover:border-primary ml-auto inline-flex items-center gap-2 rounded-full border py-1.5 pr-4 pl-2 text-sm font-medium transition-colors"
         >
           <span
             aria-hidden
@@ -179,10 +181,14 @@ export function ArticleHeader({
           </span>
           Add as preferred source on Google
         </a>
-        <TextSize />
       </div>
 
-      <hr className="border-border mt-10" />
+      {/* Item 4: the pills sat tight under the stats line. */}
+      {badges ? (
+        <div className="mt-6 flex flex-wrap items-center gap-2">{badges}</div>
+      ) : null}
+
+      <hr className="border-border mt-9" />
     </header>
   );
 }

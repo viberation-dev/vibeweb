@@ -61,7 +61,13 @@ export function ArticleToc({ entries }: { entries: OutlineEntry[] }) {
        * in on hover or on focus reaching anything inside, so the rail is
        * usable by keyboard and not only by mouse.
        */
-      className="group sticky top-24 hidden justify-end xl:flex"
+      /*
+       * Vertically centred in the viewport (VIB-200 item 9) rather than
+       * pinned below the header: the rail is a position indicator, and one
+       * that sits at the top implies the top of the article is where you
+       * are. Centred, the ticks read as "here, in the middle of the page".
+       */
+      className="group sticky top-1/2 hidden -translate-y-1/2 justify-end xl:flex"
     >
       <ul aria-hidden className="flex flex-col items-end gap-2.5 p-2 transition-opacity group-hover:opacity-0 group-focus-within:opacity-0">
         {entries.map((entry) => (

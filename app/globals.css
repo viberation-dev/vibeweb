@@ -387,16 +387,28 @@
 :root {
   --reading-size: 1.25rem; /* 20px */
   --reading-leading: 1.9;
+  /*
+   * The widest a line of body copy is allowed to get: 90 characters at the
+   * reading size (VIB-200).
+   *
+   * A length, not `90ch`, because `ch` resolves against each element's own
+   * font-size — the body at 20px and the comment thread at 16px both asking
+   * for 90ch produced caps 200px apart, and the page below the article came
+   * out visibly narrower than the article. One token, one edge.
+   */
+  --article-measure: 71rem;
 }
 
 html[data-reading="s"] {
   --reading-size: 1.125rem; /* 18px */
   --reading-leading: 1.8;
+  --article-measure: 64rem;
 }
 
 html[data-reading="l"] {
   --reading-size: 1.375rem; /* 22px */
   --reading-leading: 1.95;
+  --article-measure: 78rem;
 }
 
 @layer components {
@@ -410,10 +422,30 @@ html[data-reading="l"] {
     line-height: var(--reading-leading);
   }
 
+  /*
+   * The column is 70% of the window (VIB-200 item 8), and prose capped at
+   * nothing follows it: ~110 characters a line at 1600px, ~180 on a 2560px
+   * monitor, which is the width at which the eye loses the start of the
+   * next line on the way back.
+   *
+   * 90 characters is the compromise Ali asked for: wider than the 68 the
+   * page shipped with, so the container is visibly doing something, and it
+   * only engages past a column of about 1135px — below that the column is
+   * still the measure.
+   */
   .reading {
     font-size: var(--reading-size);
     line-height: var(--reading-leading);
-    max-width: 68ch;
+    max-width: var(--article-measure);
+  }
+
+  /*
+   * Everything under the article shares that measure, so the page has one
+   * left-to-right rhythm below the rule. Without this the share row and the
+   * comment thread would run wider than the paragraphs above them.
+   */
+  .article-measure {
+    max-width: var(--article-measure);
   }
 
   /*

@@ -12,6 +12,7 @@ import { ThemeRail } from "@/components/features/nav/ThemeRail";
 import { UtilityBar } from "@/components/features/nav/UtilityBar";
 import { SearchInput } from "@/components/features/search/SearchInput";
 import { BackToTop } from "@/components/ui/back-to-top";
+import { TextSize } from "@/components/ui/text-size";
 import { ButtonIcon, buttonVariants } from "@/components/ui/button";
 import { isSuperAdmin } from "@/lib/app-role";
 import { createClient } from "@/lib/integrations/supabase/server";
@@ -183,6 +184,13 @@ function VisitorHeader() {
         <div className="ml-auto flex items-center gap-3 lg:ml-0">
           {/* §31 puts search in the top nav on every page, not just /search. */}
           <SearchInput compact className="hidden md:flex" />
+          {/*
+            The reader's text size, beside the search box (VIB-200 item 5) —
+            a preference about the reader, not about the article they are on.
+            Hidden on the narrowest widths, where the burger and the CTA have
+            already taken the row.
+          */}
+          <TextSize className="hidden shrink-0 lg:inline-flex" />
           {/*
             No theme switch here. Its three labelled buttons pushed the header
             past the viewport at every width below 1280px. ThemeRail owns it

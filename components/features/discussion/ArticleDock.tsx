@@ -62,7 +62,7 @@ export function ArticleDock({
           className="text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex items-center gap-2 rounded-full px-4 py-2 text-[0.9375rem] transition-colors"
         >
           <IconMessageCircle aria-hidden className="size-[1.1875rem]" />
-          {commentCount}
+          {commentCount}{" "}
           <span className="sr-only">comments — jump to the discussion</span>
         </a>
 

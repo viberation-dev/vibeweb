@@ -28,7 +28,7 @@ export function ArticleFooter({
   action?: ReactNode;
 }) {
   return (
-    <footer className="mt-12">
+    <footer className="article-measure mt-12">
       {action ? (
         <div className="border-border flex flex-wrap items-center gap-3 border-t pt-7">
           {action}

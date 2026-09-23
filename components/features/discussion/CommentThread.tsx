@@ -40,7 +40,7 @@ export function CommentThread({
   const total = countCommentNodes(comments);
 
   return (
-    <section id="comments" className="mt-14 scroll-mt-24">
+    <section id="comments" className="article-measure mt-14 scroll-mt-24">
       <h2 className="font-heading border-border border-t pt-8 text-2xl font-bold">
         {total === 0 ? "Comments" : `Comments (${total})`}
       </h2>

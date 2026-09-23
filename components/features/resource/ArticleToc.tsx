@@ -67,7 +67,7 @@ export function ArticleToc({ entries }: { entries: OutlineEntry[] }) {
        * that sits at the top implies the top of the article is where you
        * are. Centred, the ticks read as "here, in the middle of the page".
        */
-      className="group sticky top-1/2 hidden -translate-y-1/2 justify-end xl:flex"
+      className="group sticky top-1/2 flex -translate-y-1/2 justify-end"
     >
       <ul aria-hidden className="flex flex-col items-end gap-2.5 p-2 transition-opacity group-hover:opacity-0 group-focus-within:opacity-0">
         {entries.map((entry) => (
@@ -82,7 +82,14 @@ export function ArticleToc({ entries }: { entries: OutlineEntry[] }) {
         ))}
       </ul>
 
-      <div className="border-border bg-card pointer-events-none absolute top-0 right-0 w-64 translate-x-2 rounded-2xl border p-4 opacity-0 shadow-xl transition-all group-hover:pointer-events-auto group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-x-0 group-focus-within:opacity-100">
+      <div /*
+         * Opens leftward, over the article, not rightward off the edge of
+         * the window. `opacity-0` hides the panel but does not remove it
+         * from layout, so a panel anchored to its left edge extended the
+         * document past the viewport and put a horizontal scrollbar on
+         * every article (VIB-201).
+         */
+        className="border-border bg-card pointer-events-none absolute top-1/2 right-0 w-64 -translate-y-1/2 translate-x-2 rounded-2xl border p-4 opacity-0 shadow-xl transition-all group-hover:pointer-events-auto group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-x-0 group-focus-within:opacity-100">
         <h2 className="text-muted-foreground mb-2 text-[0.6875rem] font-bold tracking-widest uppercase">
           On this page
         </h2>

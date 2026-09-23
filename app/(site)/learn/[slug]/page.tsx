@@ -181,15 +181,19 @@ export default async function ContentPage({ params }: Props) {
         badges={
           <>
             <Link href={learnHref({ type: item.type })}>
-              <Badge variant="secondary">{contentTypeLabel(item.type)}</Badge>
+              <Badge variant="secondary" size="lg">
+                {contentTypeLabel(item.type)}
+              </Badge>
             </Link>
             {item.role_level ? (
               <Link href={learnHref({ level: item.role_level })}>
-                <Badge variant="outline">{item.role_level}</Badge>
+                <Badge variant="outline" size="lg">
+                  {item.role_level}
+                </Badge>
               </Link>
             ) : null}
             {/* Only role_guide rows carry an audience; it is null on everything else. */}
-            {item.audience ? <Badge variant="outline">{item.audience}</Badge> : null}
+            {item.audience ? <Badge variant="outline" size="lg">{item.audience}</Badge> : null}
           </>
         }
       />

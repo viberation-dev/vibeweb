@@ -183,12 +183,17 @@ export function ArticleHeader({
         </a>
       </div>
 
-      {/* Item 4: the pills sat tight under the stats line. */}
+      {/*
+        The pills need room on three sides, not just above (VIB-201): they
+        were 20px tall with 8px of padding, which reads as a caption glued
+        to the line above rather than as something you can click. `size="lg"`
+        on the badges themselves does the inside; this does the outside.
+      */}
       {badges ? (
-        <div className="mt-6 flex flex-wrap items-center gap-2">{badges}</div>
+        <div className="mt-7 flex flex-wrap items-center gap-2.5">{badges}</div>
       ) : null}
 
-      <hr className="border-border mt-9" />
+      <hr className="border-border mt-10" />
     </header>
   );
 }

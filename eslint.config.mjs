@@ -18,6 +18,10 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      // Build output anywhere, not just at the repo root, and the Claude Code
+      // worktrees under .claude/ that each carry their own .next.
+      "**/.next/**",
+      ".claude/**",
     ],
   },
 ];

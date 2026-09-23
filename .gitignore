@@ -46,3 +46,6 @@ supabase/.temp/
 
 # playwright-mcp scratch output
 .playwright-mcp/
+
+# claude code worktrees
+.claude/worktrees/

@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { saveStepAction } from "@/app/(site)/walkthroughs/[slug]/actions";
+import { AppreciateButton } from "@/components/features/discussion/AppreciateButton";
+import { CommentThread } from "@/components/features/discussion/CommentThread";
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import { ShareChips } from "@/components/features/resource/ShareChips";
 import {
@@ -16,6 +18,8 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { JsonLd } from "@/components/features/seo/JsonLd";
 import { breadcrumbLd } from "@/lib/structured-data";
 import { createClient } from "@/lib/integrations/supabase/server";
+import { getAppreciationState } from "@/lib/queries/appreciations";
+import { listComments } from "@/lib/queries/comments";
 import {
   getWalkthroughBySlug,
   getWalkthroughProgress,
@@ -74,11 +78,20 @@ export default async function WalkthroughRunnerPage({
     notFound();
   }
 
-  const [progress, tools] = await Promise.all([
+  /*
+   * The database still calls a walkthrough a wizard (VIB-120) — the rename
+   * was UI and code only — so that is the target kind the discussion hangs
+   * off, the same one bookmarks use.
+   */
+  const target = { targetType: "wizard", targetId: walkthrough.id } as const;
+
+  const [progress, tools, appreciation, comments] = await Promise.all([
     auth.user
       ? getWalkthroughProgress(supabase, auth.user.id, walkthrough.id)
       : Promise.resolve(null),
     getWalkthroughTools(supabase, walkthrough.id),
+    getAppreciationState(supabase, target, auth.user?.id),
+    listComments(supabase, target, auth.user?.id),
   ]);
 
   const stepIndex = resolveStepIndex(
@@ -252,6 +265,30 @@ export default async function WalkthroughRunnerPage({
           </p>
         )}
       </WalkthroughNav>
+
+      {/*
+        One thread for the whole build, shown on every step rather than only
+        at the end: the person with a question is the person stuck on step
+        three, and making them finish first to ask it is how the question
+        goes unasked.
+      */}
+      <div className="mt-12 max-w-[68ch]">
+        <div className="flex flex-wrap items-center gap-3">
+          <AppreciateButton
+            target={target}
+            count={appreciation.count}
+            mine={appreciation.mine}
+            returnTo={`/walkthroughs/${walkthrough.slug}?step=${stepIndex + 1}`}
+          />
+        </div>
+      </div>
+
+      <CommentThread
+        target={target}
+        returnTo={`/walkthroughs/${walkthrough.slug}?step=${stepIndex + 1}`}
+        comments={comments}
+        signedIn={Boolean(auth.user)}
+      />
 
       {tools.length ? (
         <section className="mt-12 border-t pt-8">

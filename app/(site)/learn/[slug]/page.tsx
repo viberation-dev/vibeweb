@@ -4,6 +4,9 @@ import { notFound } from "next/navigation";
 import { after } from "next/server";
 
 import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
+import { AppreciateButton } from "@/components/features/discussion/AppreciateButton";
+import { ArticleDock } from "@/components/features/discussion/ArticleDock";
+import { CommentThread } from "@/components/features/discussion/CommentThread";
 import { ArticleBody } from "@/components/features/resource/ArticleBody";
 import { ArticleFooter } from "@/components/features/resource/ArticleFooter";
 import { ArticleHeader } from "@/components/features/resource/ArticleHeader";
@@ -16,7 +19,10 @@ import { breadcrumbLd, plainSummary } from "@/lib/structured-data";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { siteUrl } from "@/lib/site-url";
 import { contentPillarLabel, contentTypeLabel, learnHref } from "@/lib/learn";
+import { countCommentNodes } from "@/lib/comment-tree";
+import { getAppreciationState } from "@/lib/queries/appreciations";
 import { isBookmarked } from "@/lib/queries/bookmarks";
+import { listComments } from "@/lib/queries/comments";
 import {
   getContentBySlug,
   getContentTags,
@@ -74,15 +80,24 @@ export default async function ContentPage({ params }: Props) {
    * Signed-out visitors still see the button — pressing it sends them to
    * sign in and back. Only the saved/unsaved state needs a user.
    */
-  const [tags, bookmarked] = await Promise.all([
+  const target = { targetType: "content", targetId: item.id } as const;
+
+  const [tags, bookmarked, appreciation, comments] = await Promise.all([
     getContentTags(supabase, item.id),
     auth.user
-      ? isBookmarked(supabase, auth.user.id, {
-          targetType: "content",
-          targetId: item.id,
-        })
+      ? isBookmarked(supabase, auth.user.id, target)
       : Promise.resolve(false),
+    /*
+     * Both discussion reads run in the same wave as the tags. They do not
+     * depend on each other and the page cannot render without either, so
+     * serialising them would add two round trips to a database that is a
+     * continent away (the VIB-56 argument, again).
+     */
+    getAppreciationState(supabase, target, auth.user?.id),
+    listComments(supabase, target, auth.user?.id),
   ]);
+
+  const commentCount = countCommentNodes(comments);
 
   /*
    * after() runs once the response has been sent, so neither write adds
@@ -158,6 +173,7 @@ export default async function ContentPage({ params }: Props) {
         updatedAt={item.updated_at}
         readingTime={readingTimeLabel(item.body, item.blocks)}
         viewCount={item.view_count}
+        commentCount={commentCount}
         badges={
           <>
             <Link href={learnHref({ type: item.type })}>
@@ -208,13 +224,38 @@ export default async function ContentPage({ params }: Props) {
         title={item.title}
         tags={tags}
         action={
-          <BookmarkButton
-            targetType="content"
-            targetId={item.id}
-            bookmarked={bookmarked}
-            returnTo={`/learn/${item.slug}`}
-          />
+          <>
+            <AppreciateButton
+              target={target}
+              count={appreciation.count}
+              mine={appreciation.mine}
+              returnTo={`/learn/${item.slug}`}
+            />
+            <BookmarkButton
+              targetType="content"
+              targetId={item.id}
+              bookmarked={bookmarked}
+              returnTo={`/learn/${item.slug}`}
+            />
+          </>
         }
+      />
+
+      <CommentThread
+        target={target}
+        returnTo={`/learn/${item.slug}`}
+        comments={comments}
+        signedIn={Boolean(auth.user)}
+      />
+
+      <ArticleDock
+        target={target}
+        returnTo={`/learn/${item.slug}`}
+        appreciations={appreciation.count}
+        appreciated={appreciation.mine}
+        commentCount={commentCount}
+        url={url}
+        title={item.title}
       />
     </ArticleShell>
   );

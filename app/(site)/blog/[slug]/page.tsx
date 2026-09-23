@@ -4,6 +4,9 @@ import { notFound } from "next/navigation";
 import { after } from "next/server";
 
 import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
+import { AppreciateButton } from "@/components/features/discussion/AppreciateButton";
+import { ArticleDock } from "@/components/features/discussion/ArticleDock";
+import { CommentThread } from "@/components/features/discussion/CommentThread";
 import { ArticleFooter } from "@/components/features/resource/ArticleFooter";
 import { ArticleHeader } from "@/components/features/resource/ArticleHeader";
 import { ArticleShell } from "@/components/features/resource/ArticleShell";
@@ -12,7 +15,10 @@ import { readingTimeLabel } from "@/lib/reading-time";
 import { breadcrumbLd, plainSummary } from "@/lib/structured-data";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { siteUrl } from "@/lib/site-url";
+import { countCommentNodes } from "@/lib/comment-tree";
+import { getAppreciationState } from "@/lib/queries/appreciations";
 import { isBookmarked } from "@/lib/queries/bookmarks";
+import { listComments } from "@/lib/queries/comments";
 import {
   getContentBySlug,
   getContentTags,
@@ -56,15 +62,19 @@ export default async function BlogPostPage({ params }: Props) {
     notFound();
   }
 
-  const [tags, bookmarked] = await Promise.all([
+  const target = { targetType: "content", targetId: item.id } as const;
+
+  // One wave — see /learn/[slug] for why the discussion reads join it.
+  const [tags, bookmarked, appreciation, comments] = await Promise.all([
     getContentTags(supabase, item.id),
     auth.user
-      ? isBookmarked(supabase, auth.user.id, {
-          targetType: "content",
-          targetId: item.id,
-        })
+      ? isBookmarked(supabase, auth.user.id, target)
       : Promise.resolve(false),
+    getAppreciationState(supabase, target, auth.user?.id),
+    listComments(supabase, target, auth.user?.id),
   ]);
+
+  const commentCount = countCommentNodes(comments);
 
   // after() runs once the response is sent, so neither write adds latency to
   // the page the reader is waiting on — same pattern as /learn/[slug].
@@ -120,6 +130,7 @@ export default async function BlogPostPage({ params }: Props) {
         updatedAt={item.updated_at}
         readingTime={readingTimeLabel(item.body, item.blocks)}
         viewCount={item.view_count}
+        commentCount={commentCount}
       />
 
       {item.body ? (
@@ -139,13 +150,38 @@ export default async function BlogPostPage({ params }: Props) {
         title={item.title}
         tags={tags}
         action={
-          <BookmarkButton
-            targetType="content"
-            targetId={item.id}
-            bookmarked={bookmarked}
-            returnTo={`/blog/${item.slug}`}
-          />
+          <>
+            <AppreciateButton
+              target={target}
+              count={appreciation.count}
+              mine={appreciation.mine}
+              returnTo={`/blog/${item.slug}`}
+            />
+            <BookmarkButton
+              targetType="content"
+              targetId={item.id}
+              bookmarked={bookmarked}
+              returnTo={`/blog/${item.slug}`}
+            />
+          </>
         }
+      />
+
+      <CommentThread
+        target={target}
+        returnTo={`/blog/${item.slug}`}
+        comments={comments}
+        signedIn={Boolean(auth.user)}
+      />
+
+      <ArticleDock
+        target={target}
+        returnTo={`/blog/${item.slug}`}
+        appreciations={appreciation.count}
+        appreciated={appreciation.mine}
+        commentCount={commentCount}
+        url={`${siteUrl}/blog/${item.slug}`}
+        title={item.title}
       />
     </ArticleShell>
   );

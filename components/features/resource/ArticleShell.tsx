@@ -5,22 +5,20 @@ import { ReadingProgress } from "@/components/ui/reading-progress";
 import { hasOutline, type OutlineEntry } from "@/lib/article-outline";
 
 /**
- * The page frame every long-form route shares (VIB-198, widened in VIB-200).
+ * The page frame every long-form route shares (VIB-198, VIB-200, VIB-201).
  *
- * The reading column is 70% of the space the shell is given. The rail
- * (13rem) and the gap between them (2rem) sit outside that, so the shell is
- * `70% + 15rem` — add only the rail and the column measures 67%, because
- * the gap has to come out of something.
+ * The article is a plain centred 70% column and nothing shares that space.
+ * It was a grid of `[content][rail]` inside a shell of `70% + rail`, which
+ * put the *shell* at 70%-and-a-bit and the text somewhere left of it — so
+ * the column the reader sees started to the left of the site header's
+ * container and stopped well short of its right edge. A column whose
+ * position depends on whether the page happens to have an outline is not a
+ * column, it is a coincidence.
  *
- * The width is on the shell rather than on the rail's presence, so a page
- * with no outline is exactly as wide as one with a rail.
- *
- * Below xl there is one column, full width, and no rail: a collapsed rail
- * needs hover to open it, and a phone has none.
- *
- * ponytail: the measure is now the container rather than a character count,
- * so on a very wide monitor the lines get long. A `max-w-[90ch]` on the
- * body would cap that without narrowing anything below ~1400px.
+ * The rail now lives in the right-hand gutter, outside the column: absolute
+ * beside it, sticky within that. Its layout footprint is only the ticks —
+ * the panel it opens is an overlay — so the gutter that 70% leaves over is
+ * wide enough from xl up.
  */
 export function ArticleShell({
   outline,
@@ -34,11 +32,19 @@ export function ArticleShell({
   return (
     <>
       <ReadingProgress />
-      <div className="mx-auto grid w-full grid-cols-1 gap-8 px-6 pb-20 xl:w-[calc(70%+15rem)] xl:grid-cols-[minmax(0,1fr)_13rem] xl:px-0">
+      <div className="relative mx-auto w-full px-6 pb-20 xl:w-[70%] xl:px-0">
         <main className="min-w-0">{children}</main>
-        <div className="hidden xl:block">
-          {showRail ? <ArticleToc entries={outline} /> : null}
-        </div>
+
+        {showRail ? (
+          /*
+           * inset-y-0 so the rail's sticky range is the article's height: it
+           * follows the reader down the piece and stops at the end of it,
+           * rather than floating over the footer of the page.
+           */
+          <div className="absolute inset-y-0 left-full hidden pl-8 xl:block">
+            <ArticleToc entries={outline} />
+          </div>
+        ) : null}
       </div>
     </>
   );

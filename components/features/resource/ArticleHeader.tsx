@@ -1,4 +1,4 @@
-import { IconClock, IconEye } from "@tabler/icons-react";
+import { IconClock, IconEye, IconMessageCircle } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 
 import { TextSize } from "@/components/ui/text-size";
@@ -26,6 +26,8 @@ export type ArticleHeaderProps = {
   updatedAt?: string | null;
   readingTime: string;
   viewCount?: number | null;
+  /** Links to the thread when there is one. Absent where comments are off. */
+  commentCount?: number | null;
   /** Rendered after the stats — difficulty, audience, tags. */
   badges?: ReactNode;
 };
@@ -68,6 +70,7 @@ export function ArticleHeader({
   updatedAt,
   readingTime,
   viewCount,
+  commentCount,
   badges,
 }: ArticleHeaderProps) {
   const revised = isRevised(publishedAt, updatedAt);
@@ -135,10 +138,19 @@ export function ArticleHeader({
           </span>
         ) : null}
         {/*
-          The comment count belongs beside these two and lands here with
-          VIB-199. A link to an empty #comments section would be a promise
-          this slice does not keep.
+          A link, because a count beside a jump target is the one stat a
+          reader wants to act on rather than just read.
         */}
+        {commentCount !== null && commentCount !== undefined ? (
+          <a
+            href="#comments"
+            className="hover:text-foreground inline-flex items-center gap-1.5"
+          >
+            <IconMessageCircle aria-hidden className="size-[1.0625rem]" />
+            <span className="text-foreground font-semibold">{commentCount}</span>{" "}
+            {commentCount === 1 ? "comment" : "comments"}
+          </a>
+        ) : null}
       </div>
 
       {badges ? (

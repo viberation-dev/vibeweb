@@ -2,6 +2,7 @@ import {
   IconAdjustments,
   IconArrowsLeftRight,
   IconBook2,
+  IconMessageCircle,
   IconQuote,
   IconStack2,
 } from "@tabler/icons-react";
@@ -33,6 +34,12 @@ const EDITORS = [
     icon: IconQuote,
     title: "Testimonials",
     blurb: "Real quotes from real people, or the homepage shows none.",
+  },
+  {
+    href: "/admin/comments",
+    icon: IconMessageCircle,
+    title: "Comments",
+    blurb: "What readers are saying, and the one control that hides a comment.",
   },
   {
     href: "/admin/settings",

@@ -41,6 +41,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-09-23",
+    kind: "added",
+    title: "Comments, and a way to say thanks",
+    body: "Every guide, article and walkthrough now has a discussion under it: sign in to comment, reply once, and appreciate a piece or someone else’s comment. Counts show in the header and on the bar at the bottom of the page.",
+  },
+  {
+    date: "2026-09-23",
     kind: "improved",
     title: "Guides and articles are easier to read",
     body: "Bigger type with more room between the lines, a size control if you want it bigger or smaller still, an “On this page” rail that follows where you are, share buttons, reading time and view counts on every card, and a back-to-top button on long pages.",

@@ -40,6 +40,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
  */
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    date: "2026-09-25",
+    kind: "added",
+    title: "Fourteen more model families",
+    body: "Models now covers Qwen, DeepSeek, Kimi, Grok, GLM, Llama, Gemma, Nemotron, MiniMax, MiMo, Ling, Hy, Voxtral and one anonymous model on free trial. Each page lists that family’s models with live prices and context sizes, and says whether you can run it yourself.",
+  },
+  {
     date: "2026-09-24",
     kind: "added",
     title: "Jev, in Models",

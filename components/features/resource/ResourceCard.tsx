@@ -15,6 +15,17 @@ export type ResourceCardProps = {
   icon?: ReactNode;
   /** Small label above the title — a category, content type, or collection name. */
   eyebrow?: string;
+  /**
+   * Render the eyebrow beside the title instead of above it (VIB-208).
+   *
+   * For search results, where the grid is mixed and two results can share a
+   * name — "Grok" the chat app and "Grok" the model family are different
+   * rows. Above the title the label reads as a section heading and the eye
+   * skips it; beside the name it reads as part of the answer to "which
+   * Grok?". Everywhere else the grid is already one kind of thing, so the
+   * eyebrow stays where the mockups put it.
+   */
+  inlineEyebrow?: boolean;
   description?: string | null;
   /** Short pills under the description: tags, pricing tier. */
   badges?: string[];
@@ -62,6 +73,7 @@ export function ResourceCard({
   title,
   icon,
   eyebrow,
+  inlineEyebrow,
   description,
   badges,
   flag,
@@ -77,7 +89,7 @@ export function ResourceCard({
         className,
       )}
     >
-      {eyebrow ? (
+      {eyebrow && !inlineEyebrow ? (
         <span className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
           {eyebrow}
         </span>
@@ -89,7 +101,7 @@ export function ResourceCard({
           // Two lines at most: "Tailwind CSS IntelliSense" must not push the
           // description down a row while its neighbours stay put.
           "[&>a]:line-clamp-2",
-          eyebrow && "mt-2.5",
+          eyebrow && !inlineEyebrow && "mt-2.5",
         )}
       >
         {icon ? (
@@ -104,6 +116,17 @@ export function ResourceCard({
         <Link href={href} className="outline-none after:absolute after:inset-0">
           {title}
         </Link>
+        {eyebrow && inlineEyebrow ? (
+          /*
+            shrink-0 so the label survives a long title rather than being
+            squeezed to nothing — it is the part that disambiguates.
+            self-baseline sits it on the title's first line, so a title that
+            wraps to two lines does not leave it floating in the middle.
+          */
+          <span className="text-muted-foreground shrink-0 self-baseline text-xs font-bold tracking-widest uppercase">
+            {eyebrow}
+          </span>
+        ) : null}
       </h3>
 
       {description ? (

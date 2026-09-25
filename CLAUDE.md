@@ -53,6 +53,7 @@ Lucide was the shadcn default and shipped here first; it was removed on 2026-09-
 - PR and commit titles reference the Linear issue ID (e.g. `feat(tools): add category filter [VIB-23]`).
 - Every PR gets a Vercel preview URL automatically — always open a PR, even for a small change, since that preview link is how Ali reviews your work.
 - Lint + typecheck + build run in CI on every PR.
+- **Squash is the only merge method.** Merge commits and rebase merges are switched off on the repository (2026-09-25), so a branch lands as one commit whose message is the PR title — which is why the Linear ID belongs in that title. Head branches delete themselves on merge, and auto-merge is available: arm it and the PR lands by itself once CI is green. Arm it only when Ali asks.
 
 ## Working across sessions
 

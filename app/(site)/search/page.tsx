@@ -99,6 +99,7 @@ export default async function SearchPage({ searchParams }: Props) {
                   href={view.href}
                   title={view.title}
                   eyebrow={view.eyebrow}
+                  inlineEyebrow
                   description={view.description}
                   flag={view.flag}
                   badges={view.badges}

@@ -132,6 +132,8 @@ export const TOOL_LOGOS: Record<string, string> = {
   mastra: "mastra.svg",
   mimo: "xiaomimimo.svg",
   minimax: "minimax-color.svg",
+  mistral: "mistral-color.svg",
+  muse: "meta-color.svg",
   "microsoft-agent-framework": "microsoft-color.svg",
   "microsoft-copilot": "copilot-color.svg",
   n8n: "n8n-color.svg",

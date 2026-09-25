@@ -26,17 +26,22 @@
 -- openrouter_id is null on both: null means "newest in the family", which
 -- stays right on its own, and here the newest is the one to show in each
 -- case.
-insert into tools (name, slug, category, tagline, description, pricing_tier, outbound_url, best_for, openrouter_family, openrouter_id)
+--
+-- badge 'new' is set here rather than left to fill in later. Badge mode is
+-- 'staff', so the column is the only source — a new row without it simply
+-- never shows the badge, which is what VIB-206 got wrong (see the migration
+-- beside this one).
+insert into tools (name, slug, category, tagline, description, pricing_tier, outbound_url, best_for, openrouter_family, openrouter_id, badge)
 values
   ('Mistral', 'mistral', 'models',
    'France''s frontier lab, with the small models everyone self-hosts.',
    'Mistral is the main model family from the French lab of the same name, and it splits in a way worth knowing about: the Small models publish their weights so you can download and run them, while Medium and Large are sold through the API only. Small 4 folds several older models into one and is cheap enough to use by default; Medium 3.5 is the one to reach for on agentic and coding work. Mistral''s other lines are separate products with their own names — Devstral and Codestral for code, Ministral for tiny on-device models, and Voxtral for speech, which has its own entry here.',
-   'Freemium', 'https://mistral.ai/models', 'intermediate', 'mistralai/mistral', null),
+   'Freemium', 'https://mistral.ai/models', 'intermediate', 'mistralai/mistral', null, 'new'),
 
   ('Muse', 'muse', 'models',
    'Meta''s current line, built for long multi-agent runs.',
    'Muse is what Meta Superintelligence Labs ships now, and the family to look at rather than Llama if you want Meta''s recent work. The Spark models are multimodal reasoning models for long-running agentic and multi-agent workflows — they read text, images, video, audio and files with a million-token context, and are built to hold onto what they learned early in a long task. Each Spark release also has a cheaper "Contributor" tier meant for experimenting rather than production. Glimmer 30B is the odd one out and the interesting one: open weights, distilled from Spark, small enough to run autonomous agents on ordinary hardware.',
-   'Paid', 'https://ai.meta.com', 'expert', 'meta/muse', null)
+   'Paid', 'https://ai.meta.com', 'expert', 'meta/muse', null, 'new')
 on conflict (slug) do nothing;
 
 update tools set key_facts = f.facts, updated_at = now()

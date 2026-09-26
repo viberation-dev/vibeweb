@@ -40,6 +40,18 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
  */
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    date: "2026-09-26",
+    kind: "added",
+    title: "The GitHub Copilot app",
+    body: "GitHub’s desktop app is now in Desktop Apps. It runs GitHub’s own cloud agent, Claude Code and Codex against the same repository, in one window, on Mac, Windows and Linux.",
+  },
+  {
+    date: "2026-09-26",
+    kind: "improved",
+    title: "Model cards say what each model is for",
+    body: "Every model family now shows whether it is built for coding and what you can feed it: images, video or audio. Before this, the families added last week showed only their price.",
+  },
+  {
     date: "2026-09-25",
     kind: "added",
     title: "Fourteen more model families",

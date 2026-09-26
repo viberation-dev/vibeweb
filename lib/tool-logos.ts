@@ -91,6 +91,7 @@ export const TOOL_LOGOS: Record<string, string> = {
   ghostty: "ghostty.svg",
   "git-bash": "gitforwindows.svg",
   "github-copilot": "githubcopilot.svg",
+  "github-copilot-app": "githubcopilot.svg",
   "github-mcp-server": "github.svg",
   "github-pages": "github.svg",
   gitlens: "gitlens.svg",

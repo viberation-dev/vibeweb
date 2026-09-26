@@ -111,7 +111,22 @@ export const CARD_TAGS: Readonly<Record<string, readonly string[]>> = {
   terminals: ["built-in", "coding-agent", "windows", "macos", "linux", "open-source"],
   // The last seven (VIB-158). Models and chat apps: what they can make
   // beyond text, and whether a coding agent comes with them.
-  models: ["coding-agent", "image-generation", "video-generation"],
+  //
+  // Models gained input modalities in VIB-211, and the order is the order a
+  // reader asks: is it good at code, does an agent come with it, what can I
+  // feed it, what can it make. Four tags fit, so `audio` and `video-input`
+  // only reach a card when the model has no coding or image claim ahead of
+  // them — which is right: a speech model has nothing else to say.
+  models: [
+    "code-generation",
+    "coding-agent",
+    "vision",
+    "image-generation",
+    "video-generation",
+    "audio",
+    "video-input",
+    "open-weights",
+  ],
   chats: ["coding-agent", "skills-ecosystem", "image-generation", "voice-mode"],
   // Desktop apps (VIB-191): what it can reach on your machine comes first,
   // then which computers it runs on.

@@ -21,6 +21,7 @@
  */
 export const TOOL_LOGOS: Record<string, string> = {
   "agent-skills": "claude.svg",
+  "agents-md": "agentsmd.png",
   aider: "aider.png",
   alacritty: "alacritty.svg",
   "android-studio": "androidstudio.svg",
@@ -130,6 +131,7 @@ export const TOOL_LOGOS: Record<string, string> = {
   "le-chat": "mistral-color.svg",
   ling: "inclusionai.jpg",
   llama: "meta-color.svg",
+  "llms-txt": "llmstxt.png",
   "linear-mcp": "linear.svg",
   "live-server": "liveserver.png",
   lovable: "lovable-color.svg",

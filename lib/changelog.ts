@@ -42,6 +42,12 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-10-01",
     kind: "added",
+    title: "AGENTS.md and llms.txt",
+    body: "Two more of the plain files agents read. AGENTS.md goes in your repo and tells a coding agent how to build, test and style your project. llms.txt goes on your site and gives agents a clean map of your docs instead of HTML to scrape.",
+  },
+  {
+    date: "2026-10-01",
+    kind: "added",
     title: "DESIGN.md, and where to get one",
     body: "Google’s open format for telling a coding agent what your app should look like: one file in your repo, with your colours, type and spacing in it. Added alongside Google Stitch, which generates one from a description, and two community libraries of ready-made files.",
   },

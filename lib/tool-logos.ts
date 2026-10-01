@@ -156,6 +156,7 @@ export const TOOL_LOGOS: Record<string, string> = {
   "product-launch-video": "heygen.ico",
   promptbase: "promptbase.png",
   "python-vscode": "python.svg",
+  qoder: "qoder.svg",
   qwen: "qwen-color.svg",
   "qwen-chat": "qwen-color.svg",
   "qwen-code": "qwen-color.svg",

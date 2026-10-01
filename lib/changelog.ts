@@ -40,6 +40,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
  */
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    date: "2026-10-01",
+    kind: "added",
+    title: "Qoder, in IDEs",
+    body: "Alibaba’s agentic IDE. It builds a wiki of your codebase and keeps it between sessions, and its Quest mode takes a described feature and writes it across files on its own. Runs on Qwen, DeepSeek, Kimi and GLM rather than Claude or GPT.",
+  },
+  {
     date: "2026-09-26",
     kind: "added",
     title: "The GitHub Copilot app",

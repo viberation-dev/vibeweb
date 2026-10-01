@@ -42,6 +42,12 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-10-01",
     kind: "added",
+    title: "DESIGN.md, and where to get one",
+    body: "Google’s open format for telling a coding agent what your app should look like: one file in your repo, with your colours, type and spacing in it. Added alongside Google Stitch, which generates one from a description, and two community libraries of ready-made files.",
+  },
+  {
+    date: "2026-10-01",
+    kind: "added",
     title: "Qoder, in IDEs",
     body: "Alibaba’s agentic IDE. It builds a wiki of your codebase and keeps it between sessions, and its Quest mode takes a described feature and writes it across files on its own. Runs on Qwen, DeepSeek, Kimi and GLM rather than Claude or GPT.",
   },

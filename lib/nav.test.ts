@@ -94,3 +94,8 @@ test("an unknown sidebar mode cookie falls back to expand-on-hover", () => {
   assert.equal(toSidebarMode("<script>"), "hover");
   assert.equal(toSidebarMode(undefined), "hover");
 });
+
+test("the sidebar's first group links to What's new", () => {
+  const first = SIDEBAR_GROUPS[0].items.map((item) => item.href);
+  assert.deepEqual(first, ["/", "/new", "/account/bookmarks"]);
+});

@@ -53,6 +53,9 @@ export const SIDEBAR_GROUPS: ReadonlyArray<{ label?: string; items: readonly Nav
   {
     items: [
       { href: "/", label: "Home" },
+      // VIB-230. Sits beside Home because it answers the question a returning
+      // member arrives with.
+      { href: "/new", label: "What's new" },
       // VIB-69 moved this out of the top-level /bookmarks route.
       { href: "/account/bookmarks", label: "Saved" },
     ],

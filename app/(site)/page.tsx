@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Greeting } from "@/components/features/home/Greeting";
 import { MarketingHome } from "@/components/features/marketing/MarketingHome";
 import { CategoryPicker } from "@/components/features/tools/CategoryPicker";
+import { WhatsNewCard } from "@/components/features/whats-new/WhatsNewCard";
 import { Badge } from "@/components/ui/badge";
 import { ButtonIcon, buttonVariants } from "@/components/ui/button";
 import { Panel } from "@/components/ui/panel";
@@ -163,15 +164,20 @@ export default async function HomePage({ searchParams }: Props) {
       tagWeight.set(tagId, (tagWeight.get(tagId) ?? 0) + 1);
     }
   }
-  const feed = pickFeedTabs(pool, {
-    roleLevel: profile?.role_level ?? undefined,
-    read,
-    affinity: (id) =>
-      (poolTags.get(id) ?? []).reduce(
-        (sum, tagId) => sum + (tagWeight.get(tagId) ?? 0),
-        0,
-      ),
-  })[tab];
+  // Only the selected tab pays for its query.
+  const whatsNew = tab === "whats-new" ? await listWhatsNew(supabase, { limit: 12 }) : [];
+  const feed =
+    tab === "whats-new"
+      ? []
+      : pickFeedTabs(pool, {
+          roleLevel: profile?.role_level ?? undefined,
+          read,
+          affinity: (id) =>
+            (poolTags.get(id) ?? []).reduce(
+              (sum, tagId) => sum + (tagWeight.get(tagId) ?? 0),
+              0,
+            ),
+        })[tab];
 
   /*
    * Nothing deletes a history row when its tool goes away — no foreign key
@@ -307,39 +313,55 @@ export default async function HomePage({ searchParams }: Props) {
           </div>
 
           <ul className="space-y-3">
-            {/* The walkthrough and collections are For you's; the other tabs are the library ranked. */}
-            {flagship && tab === "for-you" ? (
-              <li>
-                <FeedCard
-                  href={`/walkthroughs/${flagship.slug}`}
-                  eyebrow="Walkthrough"
-                  title={flagship.title}
-                  meta={`${flagship.steps.length} steps`}
-                />
-              </li>
-            ) : null}
-            {feed.map((item) => (
-              <li key={item.id}>
-                <FeedCard
-                  href={`/learn/${item.slug}`}
-                  eyebrow={[contentTypeLabel(item.type), item.role_level]
-                    .filter(Boolean)
-                    .join(" · ")}
-                  title={item.title}
-                  meta={null}
-                />
-              </li>
-            ))}
-            {(tab === "for-you" ? collections : []).map((collection) => (
-              <li key={collection.id}>
-                <FeedCard
-                  href={`/collections/${collection.slug}`}
-                  eyebrow="New in directory"
-                  title={collection.title}
-                  meta={`Collection · ${collectionCounts.get(collection.id) ?? 0} tools`}
-                />
-              </li>
-            ))}
+            {tab === "whats-new" ? (
+              whatsNew.length ? (
+                whatsNew.map((item) => (
+                  <li key={`${item.kind}-${item.id ?? item.title}-${item.at}`}>
+                    <WhatsNewCard item={item} />
+                  </li>
+                ))
+              ) : (
+                <li className="text-muted-foreground leading-relaxed">
+                  Nothing to show here yet.
+                </li>
+              )
+            ) : (
+              <>
+                {/* The walkthrough and collections are For you's; the other tabs are the library ranked. */}
+                {flagship && tab === "for-you" ? (
+                  <li>
+                    <FeedCard
+                      href={`/walkthroughs/${flagship.slug}`}
+                      eyebrow="Walkthrough"
+                      title={flagship.title}
+                      meta={`${flagship.steps.length} steps`}
+                    />
+                  </li>
+                ) : null}
+                {feed.map((item) => (
+                  <li key={item.id}>
+                    <FeedCard
+                      href={`/learn/${item.slug}`}
+                      eyebrow={[contentTypeLabel(item.type), item.role_level]
+                        .filter(Boolean)
+                        .join(" · ")}
+                      title={item.title}
+                      meta={null}
+                    />
+                  </li>
+                ))}
+                {(tab === "for-you" ? collections : []).map((collection) => (
+                  <li key={collection.id}>
+                    <FeedCard
+                      href={`/collections/${collection.slug}`}
+                      eyebrow="New in directory"
+                      title={collection.title}
+                      meta={`Collection · ${collectionCounts.get(collection.id) ?? 0} tools`}
+                    />
+                  </li>
+                ))}
+              </>
+            )}
           </ul>
         </div>
 

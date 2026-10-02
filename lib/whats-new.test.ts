@@ -149,10 +149,11 @@ test("the filter helpers narrow untrusted query values", () => {
 
 test("at is canonicalised, whatever spelling the source used", () => {
   // The real inputs: a Postgres timestamptz, a bare changelog date, and a Z form.
+  // Input order is deliberately not chronological to verify the sort works.
   const entries = merge([
-    input({ id: "pg", title: "A", addedAt: "2026-09-30T00:00:00+00:00" }),
     input({ id: "changelog", title: "B", kind: "feature", addedAt: "2026-09-29" }),
     input({ id: "z", title: "C", addedAt: "2026-09-28T00:00:00Z" }),
+    input({ id: "pg", title: "A", addedAt: "2026-09-30T00:00:00+00:00" }),
   ]);
   assert.deepEqual(
     entries.map((e) => e.at),

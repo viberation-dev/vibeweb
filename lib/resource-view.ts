@@ -1,4 +1,9 @@
-import { contentPillarLabel, contentPreview, contentTypeLabel } from "@/lib/learn";
+import {
+  contentHref,
+  contentPillarLabel,
+  contentPreview,
+  contentTypeLabel,
+} from "@/lib/learn";
 import { readingTimeLabel } from "@/lib/reading-time";
 import type { Content } from "@/lib/queries/content";
 import type { Tool } from "@/lib/queries/tools";
@@ -57,7 +62,10 @@ export function contentView(item: Content): ResourceView {
   return {
     targetType: "content",
     id: item.id,
-    href: `/learn/${item.slug}`,
+    // Announcements live at /blog/[slug], not /learn/[slug] (VIB-106). This
+    // was hardcoded, so any announcement in a feed, a bookmark list or the
+    // home rail linked to a 404.
+    href: contentHref(item.type, item.slug),
     title: item.title,
     /*
      * The mockup's Learn card is eyebrowed with the pillar, not the content

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  contentHref,
   contentPreview,
   contentTypeLabel,
   learnHref,
@@ -133,4 +134,11 @@ test("an unknown ?pillar= is dropped rather than guessed", () => {
   assert.equal(toContentPillar("walkthroughs"), "walkthroughs");
   assert.equal(toContentPillar("Fundamentals"), undefined);
   assert.equal(toContentPillar(undefined), undefined);
+});
+
+test("contentHref sends announcements to the blog and everything else to learn", () => {
+  assert.equal(contentHref("announcement", "ship-log"), "/blog/ship-log");
+  assert.equal(contentHref("guide", "scope-spine"), "/learn/scope-spine");
+  assert.equal(contentHref("help_article", "bookmarks"), "/learn/bookmarks");
+  assert.equal(contentHref("role_guide", "seller"), "/learn/seller");
 });

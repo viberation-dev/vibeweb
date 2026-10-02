@@ -7,6 +7,7 @@ import { TabsBlock } from "@/components/features/walkthroughs/TabsBlock";
 import { buttonVariants } from "@/components/ui/button";
 import { cliConfigTabs } from "@/lib/coding-clis";
 import { mcpConnectTabs, mcpInstallTabs } from "@/lib/mcp-clients";
+import { skillInstallTabs } from "@/lib/skill-taxonomy";
 import { cn } from "@/lib/utils";
 import type {
   NestedBlock,
@@ -158,6 +159,20 @@ export function BlockView({
             command: block.command,
             label: block.label,
             clients: block.clients,
+          })}
+        />
+      );
+
+    /* Per-agent skill install, from SKILL_AGENTS (VIB-225). */
+    case "skill_install":
+      return (
+        <Tabs
+          block={skillInstallTabs({
+            owner: block.owner,
+            repo: block.repo,
+            skill: block.skill,
+            label: block.label,
+            agents: block.agents,
           })}
         />
       );

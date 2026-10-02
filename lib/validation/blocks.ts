@@ -197,6 +197,23 @@ export const cliConfigBlock = z.object({
   clis: z.array(z.string().min(1)).min(1).optional(),
 });
 
+/**
+ * Install tabs for one skill, generated from SKILL_AGENTS (VIB-225).
+ *
+ * The fourth generated kind. A skill lives in a GitHub repo, so that is what
+ * the author names; which agents exist, which take a command and which take a
+ * ZIP upload comes from the matrix.
+ */
+export const skillInstallBlock = z.object({
+  kind: z.literal("skill_install"),
+  owner: z.string().min(1),
+  repo: z.string().min(1),
+  /** One skill from a repo holding several. Omitted installs the lot. */
+  skill: z.string().min(1).nullish(),
+  label: z.string().min(1).default("Install it in"),
+  agents: z.array(z.string().min(1)).min(1).optional(),
+});
+
 /** Every kind both surfaces render. */
 export const sharedBlockSchema = z.discriminatedUnion("kind", [
   textBlock,
@@ -209,6 +226,7 @@ export const sharedBlockSchema = z.discriminatedUnion("kind", [
   mcpInstallBlock,
   mcpConnectBlock,
   cliConfigBlock,
+  skillInstallBlock,
 ]);
 
 export type SharedBlock = z.infer<typeof sharedBlockSchema>;

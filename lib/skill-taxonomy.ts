@@ -6,6 +6,13 @@
  * `skill_category` enum and the `tools_skill_agents_excluded_known` CHECK.
  */
 
+/*
+ * Type-only, so strip-types erases it and this file still runs under plain
+ * `node --test`. Relative, not the `@/` alias, for the reason
+ * lib/validation/guide.ts records.
+ */
+import type { NestedBlock, TabsBlock } from "./validation/blocks.ts";
+
 // ---------------------------------------------------------------------------
 // Categories
 
@@ -310,4 +317,73 @@ export function categoryCounts(
     counts.set(skill.category, (counts.get(skill.category) ?? 0) + 1);
   }
   return counts;
+}
+
+/**
+ * Install tabs for one skill, built from SKILL_AGENTS (VIB-225).
+ *
+ * The fourth generated block, after mcp_install, mcp_connect and cli_config.
+ * Same argument each time: the per-agent facts have one home, and a guide
+ * that hand-copies them becomes the stale copy.
+ *
+ * The two kinds of agent get genuinely different panels rather than a command
+ * and an apology. A folder agent takes the skills CLI; a chat app takes a ZIP
+ * through its own settings screen, and no command exists that would change
+ * that.
+ */
+export function skillInstallTabs({
+  owner,
+  repo,
+  skill = null,
+  label = "Install it in",
+  agents,
+}: {
+  owner: string;
+  repo: string;
+  /** One skill from a repo that holds several. Null installs the lot. */
+  skill?: string | null;
+  label?: string;
+  /** Which agents to show, in order. Defaults to every one. */
+  agents?: readonly string[];
+}): TabsBlock {
+  const ids = agents
+    ? agents.map(toSkillAgent).filter((id): id is SkillAgentId => id !== undefined)
+    : SKILL_AGENT_IDS;
+
+  return {
+    kind: "tabs",
+    label,
+    tabs: ids.map((id) => {
+      /*
+       * Widened to the declared type on the way in: `as const` narrows each
+       * entry to its own literal shape, and only some of them carry a `note`,
+       * so reading it off the union directly does not typecheck.
+       */
+      const agent: SkillAgent = SKILL_AGENTS.find((a) => a.id === id)!;
+      const blocks: NestedBlock[] = [];
+
+      if (agent.kind === "upload") {
+        blocks.push({
+          kind: "text",
+          body: agent.steps.map((step, i) => `${i + 1}. ${step}`).join("\n"),
+        });
+      } else {
+        blocks.push({
+          kind: "code",
+          language: "bash",
+          code: agentInstallCommand({ owner, repo, skill }, agent.cliAgent),
+          expected: `The skill's files written into ${agent.projectPath}. Run it with / and the skill's name.`,
+        });
+        blocks.push({
+          kind: "text",
+          body: `That puts it in ${agent.projectPath} for this project, committed if you commit it. Add --global to put it in ${agent.personalPath} for every project instead.`,
+        });
+      }
+
+      if (agent.note) blocks.push({ kind: "callout", tone: "info", body: agent.note });
+      blocks.push({ kind: "links", links: [{ label: `${agent.label} docs`, href: agent.docs }] });
+
+      return { key: agent.id, title: agent.label, blocks };
+    }),
+  };
 }

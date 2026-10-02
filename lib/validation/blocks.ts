@@ -184,6 +184,19 @@ export const mcpConnectBlock = z.object({
   clients: z.array(z.string().min(1)).min(1).optional(),
 });
 
+/**
+ * Where each coding CLI keeps its settings and instructions (VIB-221).
+ *
+ * Generated from CODING_CLIS, for the same reason `mcp_install` is generated
+ * from MCP_CLIENTS: the scope guide needs exactly that table, and authoring
+ * it into the guide would put a second copy of those paths in the database.
+ */
+export const cliConfigBlock = z.object({
+  kind: z.literal("cli_config"),
+  label: z.string().min(1).default("Look it up for"),
+  clis: z.array(z.string().min(1)).min(1).optional(),
+});
+
 /** Every kind both surfaces render. */
 export const sharedBlockSchema = z.discriminatedUnion("kind", [
   textBlock,
@@ -195,6 +208,7 @@ export const sharedBlockSchema = z.discriminatedUnion("kind", [
   tabsBlock,
   mcpInstallBlock,
   mcpConnectBlock,
+  cliConfigBlock,
 ]);
 
 export type SharedBlock = z.infer<typeof sharedBlockSchema>;

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readdirSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import { toGuideBlocks } from "./guide.ts";
@@ -56,4 +57,51 @@ test("absent or empty blocks are null, not an error", () => {
   assert.equal(toGuideBlocks(undefined), null);
   assert.equal(toGuideBlocks([]), null);
   assert.equal(toGuideBlocks("not an array"), null);
+});
+
+test("every guide authored in a migration survives this schema", () => {
+  /*
+   * The failure this catches is silent: toGuideBlocks returns null for any
+   * validation error and the page falls back to rendering plain `body`, so a
+   * typo in a migration ships a guide that looks like one paragraph of
+   * summary text and raises nothing anywhere. Cheaper to fail here.
+   *
+   * Reads the jsonb literal out of each migration that writes `blocks`, and
+   * undoubles SQL's escaped apostrophes on the way.
+   */
+  const dir = new URL("../../supabase/migrations/", import.meta.url);
+  let checked = 0;
+
+  for (const name of readdirSync(dir).filter((f) => f.endsWith(".sql"))) {
+    const sql = readFileSync(new URL(name, dir), "utf8");
+
+    // Split on the closing delimiter and take what follows each opening one:
+    // the literals span hundreds of lines, and a regex over that is a thing
+    // nobody wants to debug at 3am.
+    for (const chunk of sql.split("]'::jsonb").slice(0, -1)) {
+      /*
+       * `'[\n` specifically. A one-line `'[{"kind": "tabs", ...}]'::jsonb` is
+       * a `@>` containment operand — a fragment matching one block, not a
+       * guide — and it fails this schema by design, since it carries only the
+       * fields being matched on.
+       */
+      const open = chunk.lastIndexOf("'[\n");
+      if (open === -1) continue;
+
+      const raw = `${chunk.slice(open + 1)}]`.replaceAll("''", "'");
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        // Not a blocks array — some migrations carry other jsonb literals.
+        continue;
+      }
+      if (!Array.isArray(parsed) || !parsed.every((b) => typeof b?.kind === "string")) continue;
+
+      assert.ok(toGuideBlocks(parsed), `${name}: blocks rejected, the guide would render as body`);
+      checked += 1;
+    }
+  }
+
+  assert.ok(checked > 0, "found no authored blocks — has the migration format changed?");
 });

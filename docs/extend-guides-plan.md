@@ -131,23 +131,27 @@ client list in the brief is partly unverified here. Before writing a single
 `code` block, confirm each cell against the vendor's own docs and record the
 date, the way `SKILL_AGENTS` already does.
 
-| Client | MCP install | Skills install | CLI install |
+| Client | MCP install | Skills install | CLI config |
 |---|---|---|---|
-| Claude Code | verified — `MCP_CLIENTS` | verified — `SKILL_AGENTS` | confirm |
+| Claude Code | verified — `MCP_CLIENTS` | verified — `SKILL_AGENTS` | verified — `CODING_CLIS` |
 | Claude Desktop | verified — `MCP_CLIENTS`, no project scope | n/a | n/a |
 | Claude.ai | verified — hosted connectors only | verified — upload flow | n/a |
 | ChatGPT | verified — hosted connectors only | verified — upload, safety scan | n/a |
-| Codex | verified — `MCP_CLIENTS` (TOML) | verified — `.agents/skills` | confirm |
-| Cursor | verified — `MCP_CLIENTS` | verified — `.cursor/skills` | confirm |
-| VS Code / Copilot | verified — `MCP_CLIENTS` | verified — `.github/skills` | confirm |
-| Antigravity | verified — `MCP_CLIENTS` | verified — `.agents/skills` | confirm |
-| Gemini CLI | verified — `MCP_CLIENTS` | verified — `.gemini/skills` | confirm |
-| opencode | verified — `MCP_CLIENTS` (own `mcp` shape) | **confirm** | **confirm** |
+| Codex | verified — `MCP_CLIENTS` (TOML) | verified — `.agents/skills` | verified — `CODING_CLIS` |
+| Cursor | verified — `MCP_CLIENTS` | verified — `.cursor/skills` | n/a |
+| VS Code / Copilot | verified — `MCP_CLIENTS` | verified — `.github/skills` | n/a |
+| Antigravity | verified — `MCP_CLIENTS` | verified — `.agents/skills` | n/a |
+| Gemini CLI | verified — `MCP_CLIENTS` | verified — `.gemini/skills` | verified — `CODING_CLIS` |
+| opencode | verified — `MCP_CLIENTS` (own `mcp` shape) | **confirm** | verified — `CODING_CLIS` |
+| Aider | n/a | **confirm** | verified — `CODING_CLIS` |
+| Qwen Code | **confirm** | **confirm** | verified — `CODING_CLIS` |
+| Kimi Code | **confirm** | **confirm** | **docs too thin — left out** |
 
-The MCP column is closed: [lib/mcp-clients.ts](lib/mcp-clients.ts) (VIB-215)
-holds all ten clients, checked against each vendor's own docs on 2026-10-02 and
-dated in the file. The CLI column is still open, and the right answer there is
-probably the same move a third time rather than prose.
+All three columns now have a code-backed matrix behind them:
+[lib/mcp-clients.ts](lib/mcp-clients.ts) (VIB-215),
+[lib/coding-clis.ts](lib/coding-clis.ts) (VIB-216) and the existing
+`SKILL_AGENTS`. Each is dated in its file comment and each is the one place a
+guide reads those facts from.
 
 It settled the two cells that needed a decision rather than research:
 **ChatGPT and Claude.ai take remote connectors and cannot run a local server at
@@ -155,7 +159,7 @@ all.** They carry `kind: "hosted"` with the route they do have, mirroring
 `folder` vs `upload` in the Skills matrix. The guides say so plainly instead of
 offering a workaround.
 
-Two findings worth knowing before authoring:
+Findings worth knowing before authoring:
 
 - **Four of the ten clients have no add command** (Claude Desktop, Cursor,
   Antigravity, opencode). "One command" is not the universal shape, so the
@@ -165,36 +169,50 @@ Two findings worth knowing before authoring:
   uses `servers`, Codex uses TOML `[mcp_servers.<name>]`, and opencode uses
   `mcp` with the command as an array. A guide that shows one JSON blob "for
   every editor" is wrong for three of them.
+- **"They all read AGENTS.md now" is false**, and in four different ways.
+  Codex, opencode and Qwen Code read it. Claude Code reads it only where there
+  is no CLAUDE.md. Gemini CLI reads GEMINI.md until you name AGENTS.md in
+  `context.fileName`. Aider loads no instruction file at all unless you pass
+  `--read`. This is row 6's spine, and `CODING_CLIS.agentsMd` encodes it.
+- **The AGENTS.md directory row may overstate this.** Its "Read by" key fact
+  lists Gemini CLI, which per Google's own docs reads GEMINI.md by default.
+  Worth a follow-up on that row (VIB-214).
 
 ---
 
-## The follow-on worth more than the three articles
+## The three matrices
 
-Skills has `SKILL_AGENTS`: one typed, dated, code-backed matrix that every
-surface renders from. MCP and CLIs have nothing — their install facts live
-hand-copied inside individual guide rows, which is why guide 3 will contradict
-guide 1 within a quarter.
+Skills had `SKILL_AGENTS`: one typed, dated, code-backed matrix every surface
+renders from. MCP and CLIs had nothing, so their facts lived hand-copied inside
+individual guide rows — which is why guide 3 would have contradicted guide 1
+within a quarter. Both now exist:
 
-**Build `MCP_CLIENTS` in the same shape as `SKILL_AGENTS`** (client id, label,
-`kind: "config-file" | "command" | "hosted"`, project config path, personal
-config path, add-command, docs URL, checked-on date). Then the install tabs in
-every MCP guide render from it, `/tools/[slug]` for any MCP server can show "how
-to add this to your tool", and the facts have one home.
+| Matrix | File | Covers |
+|---|---|---|
+| `SKILL_AGENTS` | `lib/skill-taxonomy.ts` | 8 agents: skill folders, upload steps, CLI agent value |
+| `MCP_CLIENTS` | `lib/mcp-clients.ts` | 10 clients: add command, config paths, config key |
+| `CODING_CLIS` | `lib/coding-clis.ts` | 6 CLIs: binary, config dir, instruction files, AGENTS.md |
 
-That is one file, it kills the drift the brief would create, and it turns a
-third of each article into generated output. Worth doing before guides 1 and 2
-rather than after.
+Each is dated in its file comment and each is the only place a guide should
+read those facts from. Between them they turn roughly a third of each planned
+article into generated output rather than prose someone has to re-check.
+
+Still to do: render the guide install tabs from `MCP_CLIENTS` instead of the
+hand-authored ones in the two shipped guides. Until that lands, the matrices
+are the source of truth and the guides are a stale copy of part of it.
 
 ---
 
 ## Sequence
 
-1. `MCP_CLIENTS` constant plus the fact gate filled in (one PR, one Linear
-   issue).
-2. Row 0, the scope spine. Everything links to it, so it goes first.
-3. Rows 1, 3, 5 — the beginner triad, each with install tabs rendered from the
+1. ~~`MCP_CLIENTS` plus the fact gate~~ — done, VIB-215.
+2. ~~`CODING_CLIS`~~ — done, VIB-216.
+3. Render the two shipped guides' install tabs from `MCP_CLIENTS`, so the
+   pattern exists before six more rows use it.
+4. Row 0, the scope spine. Everything links to it, so it goes first.
+5. Rows 1, 3, 5 — the beginner triad, each with install tabs rendered from the
    matrix.
-4. Rows 2, 4, 6 — the second tier, one per topic, each answering its own
+6. Rows 2, 4, 6 — the second tier, one per topic, each answering its own
    question rather than being "advanced".
 
 One Linear issue and one branch per row, per CLAUDE.md. Each row is a draft

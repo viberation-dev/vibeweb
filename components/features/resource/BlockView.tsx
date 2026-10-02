@@ -5,8 +5,13 @@ import { CopyButton } from "@/components/features/walkthroughs/CopyButton";
 import { PromptBlock } from "@/components/features/walkthroughs/PromptBlock";
 import { TabsBlock } from "@/components/features/walkthroughs/TabsBlock";
 import { buttonVariants } from "@/components/ui/button";
+import { mcpInstallTabs } from "@/lib/mcp-clients";
 import { cn } from "@/lib/utils";
-import type { NestedBlock, SharedBlock } from "@/lib/validation/blocks";
+import type {
+  NestedBlock,
+  SharedBlock,
+  TabsBlock as TabsBlockData,
+} from "@/lib/validation/blocks";
 
 const CALLOUT_TONES = {
   info: "border-l-primary bg-muted/40",
@@ -136,16 +141,38 @@ export function BlockView({
       );
 
     case "tabs":
+      return <Tabs block={block} />;
+
+    /*
+     * Generated install tabs (VIB-217). Expanded here rather than in the
+     * schema so the facts come from MCP_CLIENTS at render time: a vendor
+     * moving a config path is one edit there, with no migration to rewrite
+     * the guides that mention it.
+     */
+    case "mcp_install":
       return (
-        <TabsBlock
-          label={block.label}
-          detect={block.detect}
-          tabs={block.tabs.map((tab) => ({
-            key: tab.key,
-            title: tab.title,
-            content: tab.blocks.map((inner, i) => <BlockView key={i} block={inner} />),
-          }))}
+        <Tabs
+          block={mcpInstallTabs({
+            server: block.server,
+            command: block.command,
+            label: block.label,
+            clients: block.clients,
+          })}
         />
       );
   }
+}
+
+function Tabs({ block }: { block: TabsBlockData }) {
+  return (
+    <TabsBlock
+      label={block.label}
+      detect={block.detect}
+      tabs={block.tabs.map((tab) => ({
+        key: tab.key,
+        title: tab.title,
+        content: tab.blocks.map((inner, i) => <BlockView key={i} block={inner} />),
+      }))}
+    />
+  );
 }

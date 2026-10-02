@@ -214,8 +214,9 @@ are the source of truth and the guides are a stale copy of part of it.
 5. ~~Rows 1, 3, 5 — the beginner triad~~ — done, VIB-223 (MCP), VIB-225
    (skills) and VIB-224 (CLIs). Each links back to row 0 rather than
    re-explaining scope.
-6. Rows 2, 4, 6 — the second tier, one per topic, each answering its own
-   question rather than being "advanced". Still to write.
+6. ~~Rows 2, 4, 6 — the second tier~~ — done, VIB-226 (MCP trust), VIB-227
+   (writing skills) and VIB-228 (several CLIs). Each answers its own question
+   rather than being "advanced".
 
 Four block kinds now generate what guides used to author: `mcp_install`,
 `mcp_connect`, `cli_config` and `skill_install`. A new row should reach for
@@ -223,3 +224,21 @@ those before writing a path into the database by hand.
 
 One Linear issue and one branch per row, per CLAUDE.md. Each row is a draft
 insert plus a publish migration.
+
+---
+
+## Shipped
+
+All seven rows are live. What the set turned out to be worth, beyond the
+guides themselves:
+
+- Four matrices and generated block kinds that did not exist when the brief
+  was written, and that any future guide renders from rather than re-authors.
+- Three corrections to facts the directory already carried, found only because
+  building the matrices meant checking every cell against a vendor's own docs:
+  Gemini CLI and Aider on AGENTS.md (VIB-219), Zed's precedence (VIB-220).
+- A CI check that no guide can ship as a silent fallback to plain `body`.
+
+The next guide on any of these topics should start by asking which matrix
+already holds the facts, and add to it rather than writing paths into a
+migration.

@@ -4,6 +4,7 @@ import { test } from "node:test";
 
 import {
   agentsMdLine,
+  cliConfigTabs,
   codingCliLabel,
   CODING_CLI_IDS,
   CODING_CLIS,
@@ -103,4 +104,42 @@ test("every CLI listed here is a tool in the directory", () => {
   for (const id of CODING_CLI_IDS) {
     assert.ok(sql.includes(`'${id}'`), `${id} is not inserted by seed.sql or any migration`);
   }
+});
+
+test("config tabs carry the paths and the AGENTS.md answer for every CLI", () => {
+  const tabs = cliConfigTabs();
+
+  assert.equal(tabs.kind, "tabs");
+  assert.deepEqual(
+    tabs.tabs.map((tab) => tab.key),
+    [...CODING_CLI_IDS],
+  );
+
+  for (const tab of tabs.tabs) {
+    const [summary] = tab.blocks;
+    assert.equal(summary.kind, "text");
+    assert.match(summary.body, /^Command: /, tab.key);
+    assert.match(summary.body, /Settings and sign-in: ~\//, tab.key);
+    assert.match(summary.body, /AGENTS\.md: /, tab.key);
+    // Every tab ends with a way out to the vendor's own docs.
+    assert.equal(tab.blocks.at(-1)!.kind, "links");
+  }
+});
+
+test("the generated line names the file without claiming it loads itself", () => {
+  // Aider is the one that would make an over-stated line wrong: it names
+  // CONVENTIONS.md but reads nothing unless you pass it.
+  const [aider] = cliConfigTabs({ clis: ["aider"] }).tabs;
+  const body = (aider.blocks[0] as { body: string }).body;
+  assert.match(body, /Instructions for this project: CONVENTIONS\.md/);
+  assert.doesNotMatch(body, /committed/);
+  // The caveat is carried by its note instead.
+  assert.ok(
+    aider.blocks.some((b) => b.kind === "callout" && /loads nothing automatically/.test(b.body)),
+  );
+  // And an unknown id is dropped, not thrown on, as in the MCP builders.
+  assert.deepEqual(
+    cliConfigTabs({ clis: ["codex", "not-a-cli"] }).tabs.map((t) => t.key),
+    ["codex"],
+  );
 });

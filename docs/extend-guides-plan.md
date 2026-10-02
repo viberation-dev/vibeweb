@@ -207,13 +207,18 @@ are the source of truth and the guides are a stale copy of part of it.
 
 1. ~~`MCP_CLIENTS` plus the fact gate~~ — done, VIB-215.
 2. ~~`CODING_CLIS`~~ — done, VIB-216.
-3. Render the two shipped guides' install tabs from `MCP_CLIENTS`, so the
-   pattern exists before six more rows use it.
-4. Row 0, the scope spine. Everything links to it, so it goes first.
+3. ~~Render the shipped guides' tabs from `MCP_CLIENTS`~~ — done, VIB-217
+   (local) and VIB-218 (remote).
+4. ~~Row 0, the scope spine~~ — done, VIB-221. It also added `cli_config`, so
+   a guide can render the CLI table from `CODING_CLIS` the same way.
 5. Rows 1, 3, 5 — the beginner triad, each with install tabs rendered from the
-   matrix.
+   matrix, each linking back to row 0 rather than re-explaining scope.
 6. Rows 2, 4, 6 — the second tier, one per topic, each answering its own
    question rather than being "advanced".
+
+Three block kinds now generate what guides used to author: `mcp_install`,
+`mcp_connect` and `cli_config`. A new row should reach for those before
+writing a path into the database by hand.
 
 One Linear issue and one branch per row, per CLAUDE.md. Each row is a draft
 insert plus a publish migration.

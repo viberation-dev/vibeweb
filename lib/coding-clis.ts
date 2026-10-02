@@ -23,6 +23,13 @@
  * four instruction files that each tool reads differently.
  */
 
+/*
+ * Type-only, so strip-types erases it and this file still runs under plain
+ * `node --test`. Relative, not the `@/` alias, for the reason
+ * lib/validation/guide.ts records.
+ */
+import type { NestedBlock, TabsBlock } from "./validation/blocks.ts";
+
 /**
  * What a CLI does with an `AGENTS.md` it finds in the repo. Four real
  * behaviours, and the difference between them is the single most common
@@ -190,4 +197,65 @@ export function instructionFilesFor(ids: readonly CodingCliId[]): string[] {
     if (cli.projectInstructions) files.add(cli.projectInstructions);
   }
   return [...files];
+}
+
+/**
+ * Where each CLI keeps its settings and instructions, as guide tabs (VIB-221).
+ *
+ * The sibling of mcpInstallTabs, for the other half of the scope question. A
+ * guide asking "where does my tool look for its config" needs exactly this
+ * table, and hand-authoring it into the guide would recreate the duplication
+ * this file exists to remove — by the same hand that removed it.
+ *
+ * Returns a plain `tabs` block, so BlockView already knows how to draw it.
+ */
+export function cliConfigTabs({
+  label = "Look it up for",
+  clis,
+}: {
+  label?: string;
+  /** Which CLIs to show, in order. Defaults to all of them. */
+  clis?: readonly string[];
+} = {}): TabsBlock {
+  const ids = clis
+    ? clis.map(toCodingCli).filter((id): id is CodingCliId => id !== undefined)
+    : CODING_CLI_IDS;
+
+  return {
+    kind: "tabs",
+    label,
+    tabs: ids.map((id) => {
+      const cli = CODING_CLIS.find((c) => c.id === id)!;
+      const blocks: NestedBlock[] = [
+        {
+          kind: "text",
+          body: [
+            `Command: ${cli.binary}`,
+            `Settings and sign-in: ${cli.globalConfig}`,
+            /*
+             * Named, not described. "Committed, so your team gets it" is true
+             * of five of these and not of Aider, which reads CONVENTIONS.md
+             * only when you pass it — so the claim belongs in the guide's
+             * prose and the caveat in each CLI's own note, not in a line
+             * generated the same way for all of them.
+             */
+            cli.projectInstructions
+              ? `Instructions for this project: ${cli.projectInstructions}`
+              : "Instructions for this project: none it reads on its own.",
+            cli.personalInstructions
+              ? `Instructions for every project, yours only: ${cli.personalInstructions}`
+              : null,
+            `AGENTS.md: ${agentsMdLine(id)}`,
+          ]
+            .filter((line): line is string => line !== null)
+            .join("\n"),
+        },
+      ];
+
+      if (cli.note) blocks.push({ kind: "callout", tone: "info", body: cli.note });
+      blocks.push({ kind: "links", links: [{ label: `${cli.label} docs`, href: cli.docs }] });
+
+      return { key: cli.id, title: cli.label, blocks };
+    }),
+  };
 }

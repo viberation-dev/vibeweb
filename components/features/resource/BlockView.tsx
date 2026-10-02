@@ -5,6 +5,7 @@ import { CopyButton } from "@/components/features/walkthroughs/CopyButton";
 import { PromptBlock } from "@/components/features/walkthroughs/PromptBlock";
 import { TabsBlock } from "@/components/features/walkthroughs/TabsBlock";
 import { buttonVariants } from "@/components/ui/button";
+import { cliConfigTabs } from "@/lib/coding-clis";
 import { mcpConnectTabs, mcpInstallTabs } from "@/lib/mcp-clients";
 import { cn } from "@/lib/utils";
 import type {
@@ -160,6 +161,10 @@ export function BlockView({
           })}
         />
       );
+
+    /* Where each CLI keeps its config, from CODING_CLIS (VIB-221). */
+    case "cli_config":
+      return <Tabs block={cliConfigTabs({ label: block.label, clis: block.clis })} />;
 
     /* The same, for a server you connect to by URL rather than run (VIB-218). */
     case "mcp_connect":

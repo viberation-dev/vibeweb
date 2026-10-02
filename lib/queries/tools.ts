@@ -405,3 +405,24 @@ export async function updateTool(
   }
   return data;
 }
+
+/**
+ * Tools ordered for the What's new stream (VIB-230): whichever is later of
+ * when it was added and when it was last revised.
+ *
+ * `surfaced_at` is a generated column so this can be an `.order()` — see the
+ * migration's comment on why the expression could not live here.
+ */
+export async function listToolsSurfaced(client: Client, limit: number): Promise<Tool[]> {
+  const { data, error } = await client
+    .from("tools")
+    .select("*")
+    .not("surfaced_at", "is", null)
+    .order("surfaced_at", { ascending: false })
+    // Ties need a stable second key or rows repeat across pages.
+    .order("slug", { ascending: true })
+    .limit(limit);
+
+  if (error) throw new Error(`listToolsSurfaced: ${error.message}`);
+  return data ?? [];
+}

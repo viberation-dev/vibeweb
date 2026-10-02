@@ -415,3 +415,24 @@ export async function countContentByPillar(
   }
   return counts;
 }
+
+/**
+ * Published content ordered for the What's new stream (VIB-230).
+ *
+ * The `status` filter is the actual guard, not a backstop: unpublishing a row
+ * clears `published_at` but leaves a revised row's `surfaced_at` set, so the
+ * null filter alone would surface a draft.
+ */
+export async function listContentSurfaced(client: Client, limit: number): Promise<Content[]> {
+  const { data, error } = await client
+    .from("content")
+    .select("*")
+    .eq("status", "published")
+    .not("surfaced_at", "is", null)
+    .order("surfaced_at", { ascending: false })
+    .order("slug", { ascending: true })
+    .limit(limit);
+
+  if (error) throw new Error(`listContentSurfaced: ${error.message}`);
+  return data ?? [];
+}

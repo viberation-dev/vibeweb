@@ -208,6 +208,6 @@ export async function listCollectionsSurfaced(
     .order("slug", { ascending: true })
     .limit(limit);
 
-  if (error) throw new Error(`listCollectionsSurfaced: ${error.message}`);
+  if (error) throw new Error(`listCollectionsSurfaced: ${error.message}`, { cause: error });
   return data ?? [];
 }

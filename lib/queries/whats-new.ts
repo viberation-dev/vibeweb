@@ -7,6 +7,7 @@ import { getSiteSettings } from "@/lib/queries/settings";
 import { listToolsSurfaced } from "@/lib/queries/tools";
 import { contentView, toolView, type ResourceView } from "@/lib/resource-view";
 import {
+  changelogInputs,
   mergeWhatsNew,
   type WhatsNewEntry,
   type WhatsNewEvent,
@@ -26,8 +27,23 @@ export type WhatsNewOptions = {
   event?: WhatsNewEvent;
 };
 
-/** How many rows to pull per source before merging. */
+/**
+ * How many rows to pull per source before merging. This is also the ceiling
+ * for any one kind: `kind=tool&limit=60` returns at most this many tools.
+ */
 const PER_SOURCE = 40;
+
+/*
+ * A failing source costs that source, not the page — a reader is better served
+ * by three kinds of news than by an empty one. But it must not fail invisibly:
+ * a 42501 after a bad grant, or a missing column after a migration, would
+ * otherwise drop a whole kind of entry with nothing in the logs to explain it.
+ */
+function sourceRows<T>(result: PromiseSettledResult<T[]>, source: string): T[] {
+  if (result.status === "fulfilled") return result.value;
+  console.error(`listWhatsNew: ${source} source failed`, result.reason);
+  return [];
+}
 
 /**
  * The What's new stream (VIB-230): additions and announced revisions across
@@ -57,10 +73,9 @@ export async function listWhatsNew(
   ]);
 
   const [toolsResult, contentResult, collectionsResult] = sources;
-  const tools = toolsResult.status === "fulfilled" ? toolsResult.value : [];
-  const content = contentResult.status === "fulfilled" ? contentResult.value : [];
-  const collections =
-    collectionsResult.status === "fulfilled" ? collectionsResult.value : [];
+  const tools = sourceRows(toolsResult, "tools");
+  const content = sourceRows(contentResult, "content");
+  const collections = sourceRows(collectionsResult, "collections");
 
   const views = new Map<string, ResourceView>();
   for (const tool of tools) views.set(tool.id, toolView(tool, settings));
@@ -92,19 +107,7 @@ export async function listWhatsNew(
       revisedAt: null,
       note: null,
     })),
-    /*
-     * Features come from the repo constant, not a table — a changelog entry is
-     * written in the pull request that causes it. `added` is an addition;
-     * `improved` and `fixed` are updates, and the entry's own body is the note.
-     */
-    ...CHANGELOG.map((entry) => ({
-      kind: "feature" as const,
-      title: entry.title,
-      href: "/changelog",
-      addedAt: entry.kind === "added" ? entry.date : null,
-      revisedAt: entry.kind === "added" ? null : entry.date,
-      note: entry.body,
-    })),
+    ...changelogInputs(CHANGELOG),
   ];
 
   const merged = mergeWhatsNew(inputs, { newDays: settings.badge_new_days });

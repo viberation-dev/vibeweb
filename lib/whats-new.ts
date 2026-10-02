@@ -129,3 +129,23 @@ export function toWhatsNewKind(value: string | undefined): WhatsNewKind | undefi
 export function toWhatsNewEvent(value: string | undefined): WhatsNewEvent | undefined {
   return WHATS_NEW_EVENTS.find((event) => event === value);
 }
+
+/**
+ * Changelog entries as stream inputs (VIB-230).
+ *
+ * `added` is an addition; `improved` and `fixed` are updates, and the entry's
+ * own body is the note. A feature has no row, so it carries an href instead of
+ * an id and never joins to a view.
+ */
+export function changelogInputs(
+  entries: readonly { date: string; title: string; body: string; kind: string }[],
+): WhatsNewInput[] {
+  return entries.map((entry) => ({
+    kind: "feature" as const,
+    title: entry.title,
+    href: "/changelog",
+    addedAt: entry.kind === "added" ? entry.date : null,
+    revisedAt: entry.kind === "added" ? null : entry.date,
+    note: entry.body,
+  }));
+}

@@ -433,6 +433,6 @@ export async function listContentSurfaced(client: Client, limit: number): Promis
     .order("slug", { ascending: true })
     .limit(limit);
 
-  if (error) throw new Error(`listContentSurfaced: ${error.message}`);
+  if (error) throw new Error(`listContentSurfaced: ${error.message}`, { cause: error });
   return data ?? [];
 }

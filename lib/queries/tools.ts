@@ -423,6 +423,6 @@ export async function listToolsSurfaced(client: Client, limit: number): Promise<
     .order("slug", { ascending: true })
     .limit(limit);
 
-  if (error) throw new Error(`listToolsSurfaced: ${error.message}`);
+  if (error) throw new Error(`listToolsSurfaced: ${error.message}`, { cause: error });
   return data ?? [];
 }

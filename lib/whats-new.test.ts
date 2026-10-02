@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  changelogInputs,
   mergeWhatsNew,
   toWhatsNewEvent,
   toWhatsNewKind,
@@ -164,4 +165,31 @@ test("at is canonicalised, whatever spelling the source used", () => {
     ],
     "every at is canonical ISO, so localeCompare ordering is format-proof",
   );
+});
+
+test("changelog additions and updates map to the right event", () => {
+  const [added, improved, fixed] = changelogInputs([
+    { date: "2026-10-01", title: "A", body: "a body", kind: "added" },
+    { date: "2026-09-30", title: "B", body: "b body", kind: "improved" },
+    { date: "2026-09-29", title: "C", body: "c body", kind: "fixed" },
+  ]);
+  assert.equal(added.addedAt, "2026-10-01");
+  assert.equal(added.revisedAt, null);
+  assert.equal(improved.revisedAt, "2026-09-30");
+  assert.equal(improved.addedAt, null);
+  assert.equal(fixed.revisedAt, "2026-09-29");
+  assert.equal(fixed.addedAt, null);
+});
+
+test("a changelog entry carries its body and no id, so it joins to no view", () => {
+  const [entry] = changelogInputs([
+    { date: "2026-10-01", title: "A", body: "what shipped", kind: "improved" },
+  ]);
+  assert.equal(entry.note, "what shipped");
+  assert.equal(entry.id, undefined);
+  assert.equal(entry.href, "/changelog");
+  // Through the merge, that body becomes the entry's visible line.
+  const [merged] = mergeWhatsNew([entry], { newDays: 14, now: NOW });
+  assert.equal(merged.event, "updated");
+  assert.equal(merged.note, "what shipped");
 });

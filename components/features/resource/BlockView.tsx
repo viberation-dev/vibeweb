@@ -5,7 +5,7 @@ import { CopyButton } from "@/components/features/walkthroughs/CopyButton";
 import { PromptBlock } from "@/components/features/walkthroughs/PromptBlock";
 import { TabsBlock } from "@/components/features/walkthroughs/TabsBlock";
 import { buttonVariants } from "@/components/ui/button";
-import { mcpInstallTabs } from "@/lib/mcp-clients";
+import { mcpConnectTabs, mcpInstallTabs } from "@/lib/mcp-clients";
 import { cn } from "@/lib/utils";
 import type {
   NestedBlock,
@@ -155,6 +155,19 @@ export function BlockView({
           block={mcpInstallTabs({
             server: block.server,
             command: block.command,
+            label: block.label,
+            clients: block.clients,
+          })}
+        />
+      );
+
+    /* The same, for a server you connect to by URL rather than run (VIB-218). */
+    case "mcp_connect":
+      return (
+        <Tabs
+          block={mcpConnectTabs({
+            server: block.server,
+            url: block.url,
             label: block.label,
             clients: block.clients,
           })}

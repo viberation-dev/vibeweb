@@ -136,11 +136,7 @@ export const tabsBlock = z.object({
  * meant an edit per guide with one of them missed.
  *
  * **Local (stdio) servers only** — ones with a command to run, which is what
- * `command` is. A remote server is a URL and a transport, every client spells
- * that differently again, and the two hosted clients *can* take one, so the
- * default client list would be wrong as well. The Supabase guide is remote and
- * stays hand-authored until that variant exists; do not reach for this block
- * for a URL.
+ * `command` is. For a remote server, reach for `mcp_connect` below.
  *
  * Expands into a `tabs` block at render time, so it is top-level only for the
  * same reason `tabs` is: a rail entry pointing inside an unselected tab is a
@@ -165,6 +161,29 @@ export const mcpInstallBlock = z.object({
   clients: z.array(z.string().min(1)).min(1).optional(),
 });
 
+/**
+ * Connect tabs for one remote MCP server (VIB-218).
+ *
+ * `mcp_install`'s sibling rather than a flag on it, because a remote server is
+ * a different question per client rather than a variation on the same one.
+ * Claude Desktop writes a config file for a local server and sends you to a
+ * settings screen for a remote one. The URL field is spelled `url`,
+ * `serverUrl` or `httpUrl` depending on the client. And the two clients that
+ * cannot run a local server at all take a remote one happily, so even the
+ * default list of tabs is different.
+ *
+ * `url` is authored as-is, placeholders included: a server whose endpoint
+ * carries a project ref wants `YOUR_PROJECT_REF` in the tab, not a fake one.
+ */
+export const mcpConnectBlock = z.object({
+  kind: z.literal("mcp_connect"),
+  server: z.string().min(1),
+  /** The https:// endpoint. */
+  url: z.string().min(1),
+  label: z.string().min(1).default("Connect it in"),
+  clients: z.array(z.string().min(1)).min(1).optional(),
+});
+
 /** Every kind both surfaces render. */
 export const sharedBlockSchema = z.discriminatedUnion("kind", [
   textBlock,
@@ -175,6 +194,7 @@ export const sharedBlockSchema = z.discriminatedUnion("kind", [
   linksBlock,
   tabsBlock,
   mcpInstallBlock,
+  mcpConnectBlock,
 ]);
 
 export type SharedBlock = z.infer<typeof sharedBlockSchema>;

@@ -23,6 +23,21 @@
 import type { NestedBlock, TabsBlock } from "./validation/blocks.ts";
 
 /**
+ * How a client takes a remote server (VIB-218).
+ *
+ * `command` fills a flag into the client's own add command, `config` names
+ * the field that holds the URL, and `steps` is a settings screen rather than
+ * a file — which is what a remote server is for Claude Desktop, even though a
+ * local one there is a config file.
+ */
+export type RemoteSupport =
+  /** Its own add command, with `{name}` and `{url}` filled in. */
+  | { via: "command"; template: string }
+  | { via: "config"; field: "url" | "serverUrl" | "httpUrl"; type?: string }
+  | { via: "steps"; steps: readonly string[] }
+  | null;
+
+/**
  * How a server gets in.
  *
  * `local` clients run the server on your machine, so they have config files
@@ -63,6 +78,19 @@ export type McpClient =
       projectPath: string | null;
       /** Top-level key inside that file. Four clients, four spellings. */
       configKey: "mcpServers" | "servers" | "mcp" | "mcp_servers";
+      /**
+       * How this client takes a *remote* server — one with a URL rather than
+       * a command. Null when it cannot.
+       *
+       * A separate field because the answer is not a variation on the local
+       * one. Claude Desktop writes a config file for a local server and sends
+       * you to a settings screen for a remote one; Gemini CLI has an add
+       * command for local and a different config field for remote; and the
+       * field name itself is `url`, `serverUrl` or `httpUrl` depending on the
+       * client, with Antigravity's docs saying outright that `url` and
+       * `httpUrl` are not accepted.
+       */
+      remote: RemoteSupport;
       note?: string;
       docs: string;
     }
@@ -84,6 +112,7 @@ export const MCP_CLIENTS = [
     personalPath: "~/.claude.json",
     projectPath: ".mcp.json",
     configKey: "mcpServers",
+    remote: { via: "command", template: "claude mcp add --transport http {name} {url}" },
     note: "Three scopes: --scope local (the default, this project and only you), --scope project (writes .mcp.json for you to commit), --scope user (every project on your machine).",
     docs: "https://code.claude.com/docs/en/mcp",
   },
@@ -98,6 +127,19 @@ export const MCP_CLIENTS = [
     // there is nothing for a project scope to be scoped to.
     projectPath: null,
     configKey: "mcpServers",
+    /*
+     * Not the config file. A remote server is a Custom Connector, added in
+     * the same settings screen Claude.ai uses — so for a URL this client
+     * behaves like the hosted ones, not like Cursor.
+     */
+    remote: {
+      via: "steps",
+      steps: [
+        "Press Ctrl+, or open File > Settings, then Connectors.",
+        "Add > Add custom connector, and paste the server's https:// URL.",
+        "Complete whatever sign-in the server asks for.",
+      ],
+    },
     note: "Settings > Developer > Edit Config opens this file. Many servers also ship as a one-click Desktop Extension under Settings > Extensions, which is the easier route when one exists. Restart the app fully after editing.",
     docs: "https://modelcontextprotocol.io/docs/develop/connect-local-servers",
   },
@@ -130,6 +172,7 @@ export const MCP_CLIENTS = [
     personalPath: "~/.codex/config.toml",
     projectPath: ".codex/config.toml",
     configKey: "mcp_servers",
+    remote: { via: "command", template: "codex mcp add {name} --url {url}" },
     note: "TOML, not JSON: servers are [mcp_servers.<name>] tables. Project config applies in trusted projects. Pass secrets with --env KEY=VALUE rather than writing them into the file.",
     docs: "https://learn.chatgpt.com/docs/extend/mcp?surface=cli",
   },
@@ -141,6 +184,7 @@ export const MCP_CLIENTS = [
     personalPath: "~/.cursor/mcp.json",
     projectPath: ".cursor/mcp.json",
     configKey: "mcpServers",
+    remote: { via: "config", field: "url" },
     note: "Added through Settings > MCP, or by writing the file yourself. The panel writes the same JSON either way.",
     docs: "https://cursor.com/docs/context/mcp",
   },
@@ -160,6 +204,7 @@ export const MCP_CLIENTS = [
     personalPath: null,
     projectPath: ".vscode/mcp.json",
     configKey: "servers",
+    remote: { via: "config", field: "url", type: "http" },
     note: "`servers`, not `mcpServers`, in .vscode/mcp.json. `code --add-mcp` writes your user profile instead; for the profile file, run MCP: Open User Configuration from the command palette. A root .mcp.json is also read, and that one uses mcpServers.",
     docs: "https://code.visualstudio.com/docs/copilot/customization/mcp-servers",
   },
@@ -171,6 +216,7 @@ export const MCP_CLIENTS = [
     personalPath: "~/.gemini/config/mcp_config.json",
     projectPath: ".agents/mcp_config.json",
     configKey: "mcpServers",
+    remote: { via: "config", field: "serverUrl" },
     note: "Type /mcp in the prompt panel to open the MCP manager, reload config and read connection logs.",
     docs: "https://antigravity.google/docs/mcp",
   },
@@ -182,6 +228,8 @@ export const MCP_CLIENTS = [
     personalPath: "~/.gemini/settings.json",
     projectPath: ".gemini/settings.json",
     configKey: "mcpServers",
+    // httpUrl, not url: `url` is the SSE field and a different transport.
+    remote: { via: "config", field: "httpUrl" },
     note: "Takes -s/--scope to choose which settings file it writes. The MCP block shares the file with every other Gemini CLI setting, so edit it rather than replacing it.",
     docs: "https://google-gemini.github.io/gemini-cli/docs/tools/mcp-server.html",
   },
@@ -193,6 +241,7 @@ export const MCP_CLIENTS = [
     personalPath: "~/.config/opencode/opencode.json",
     projectPath: "opencode.json",
     configKey: "mcp",
+    remote: { via: "config", field: "url", type: "remote" },
     note: 'Its own shape, not the mcpServers one: `"mcp": { "<name>": { "type": "local", "command": ["npx", "-y", "<package>"] } }`, with the command as an array. Project config is found by walking up to the nearest git root.',
     docs: "https://opencode.ai/docs/mcp-servers/",
   },
@@ -392,6 +441,121 @@ export function mcpInstallTabs({
       if (scope) blocks.push({ kind: "text", body: scope });
       if (client.note) blocks.push({ kind: "callout", tone: "info", body: client.note });
 
+      return { key: client.id, title: client.label, blocks };
+    }),
+  };
+}
+
+/** Clients that can take a remote server: the hosted two, plus any with `remote`. */
+export function remoteMcpClients(): readonly McpClient[] {
+  return MCP_CLIENTS.filter((client) => client.kind === "hosted" || client.remote !== null);
+}
+
+/** The config a client needs for a remote server, in that client's own shape. */
+export function mcpRemoteSnippet(
+  id: McpClientId,
+  server: string,
+  url: string,
+): { language: string; code: string } {
+  const client = MCP_CLIENTS.find((c) => c.id === id)!;
+  if (client.kind !== "local" || client.remote?.via !== "config") {
+    throw new Error(`${id} takes no remote config file`);
+  }
+
+  /*
+   * Widened on the way in: `as const` narrows each entry to its own literal
+   * shape, and only the two clients that need a `type` have the property at
+   * all, so reading it off the union directly does not typecheck.
+   */
+  const remote: Extract<RemoteSupport, { via: "config" }> = client.remote;
+  const entry = { ...(remote.type ? { type: remote.type } : {}), [remote.field]: url };
+
+  return {
+    language: "json",
+    code: JSON.stringify({ [client.configKey]: { [server]: entry } }, null, 2),
+  };
+}
+
+/** The filled-in add command for a remote server, or null when there is none. */
+export function mcpConnectCommand(id: McpClientId, server: string, url: string): string | null {
+  const client = MCP_CLIENTS.find((c) => c.id === id)!;
+  if (client.kind !== "local" || client.remote?.via !== "command") return null;
+
+  return client.remote.template.replace("{name}", server).replace("{url}", url);
+}
+
+/**
+ * The connect tabs for one remote MCP server (VIB-218).
+ *
+ * The sibling of `mcpInstallTabs`, and deliberately not a flag on it. A
+ * remote server is a different question per client, not a variation: Claude
+ * Desktop writes a file for a local server and uses a settings screen for a
+ * remote one, the URL field is spelled three different ways, and the two
+ * hosted clients that cannot run a local server take a remote one happily —
+ * so even the default list of clients is different.
+ */
+export function mcpConnectTabs({
+  server,
+  url,
+  label = "Connect it in",
+  clients,
+}: {
+  server: string;
+  /** The server's https:// endpoint, placeholders and all. */
+  url: string;
+  label?: string;
+  /** Which clients to show, in order. Defaults to every one that can. */
+  clients?: readonly string[];
+}): TabsBlock {
+  const ids = clients
+    ? clients.map(toMcpClient).filter((id): id is McpClientId => id !== undefined)
+    : remoteMcpClients().map((client) => client.id as McpClientId);
+
+  return {
+    kind: "tabs",
+    label,
+    tabs: ids.map((id) => {
+      const client = MCP_CLIENTS.find((c) => c.id === id)!;
+      const blocks: NestedBlock[] = [];
+
+      const steps =
+        client.kind === "hosted"
+          ? client.steps
+          : client.remote?.via === "steps"
+            ? client.remote.steps
+            : null;
+
+      if (steps) {
+        blocks.push({
+          kind: "text",
+          body: steps.map((step, i) => `${i + 1}. ${step}`).join("\n"),
+        });
+        blocks.push({ kind: "code", language: "text", code: url, expected: "The server's URL, to paste into that dialog." });
+        if (client.note) blocks.push({ kind: "callout", tone: "info", body: client.note });
+        return { key: client.id, title: client.label, blocks };
+      }
+
+      const command = mcpConnectCommand(id, server, url);
+      if (command) {
+        blocks.push({
+          kind: "code",
+          language: "bash",
+          code: command,
+          expected: `A line confirming the server was added, then a browser window to sign in and approve access.`,
+        });
+      } else if (client.kind === "local" && client.remote?.via === "config") {
+        const snippet = mcpRemoteSnippet(id, server, url);
+        blocks.push({
+          kind: "code",
+          language: snippet.language,
+          code: snippet.code,
+          expected: `${server} appears in ${client.label}'s MCP list, and a browser window opens to sign in.`,
+        });
+        const scope = mcpScopeLine(id);
+        if (scope) blocks.push({ kind: "text", body: scope });
+      }
+
+      if (client.note) blocks.push({ kind: "callout", tone: "info", body: client.note });
       return { key: client.id, title: client.label, blocks };
     }),
   };

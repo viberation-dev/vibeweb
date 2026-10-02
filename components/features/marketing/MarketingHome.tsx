@@ -19,6 +19,7 @@ import { NewsletterForm } from "@/components/features/marketing/NewsletterForm";
 import { ProductPanel } from "@/components/features/marketing/ProductPanel";
 import { CategoryIcon } from "@/components/features/tools/CategoryIcon";
 import { ToolIcon } from "@/components/features/tools/ToolIcon";
+import { WhatsNewCard } from "@/components/features/whats-new/WhatsNewCard";
 import { ButtonIcon, buttonVariants } from "@/components/ui/button";
 import { IconTile } from "@/components/ui/icon-tile";
 import { SectionHead } from "@/components/ui/section-head";
@@ -28,6 +29,7 @@ import type { Content } from "@/lib/queries/content";
 import type { Testimonial } from "@/lib/queries/testimonials";
 import type { Tool } from "@/lib/queries/tools";
 import type { Walkthrough } from "@/lib/queries/walkthroughs";
+import type { WhatsNewItem } from "@/lib/queries/whats-new";
 import { initialsFrom } from "@/lib/testimonials";
 import { CATEGORY_BLURBS, TOOL_CATEGORIES } from "@/lib/tool-categories";
 import { toolsHref } from "@/lib/tools-url";
@@ -42,6 +44,15 @@ type Props = {
    */
   testimonials: Testimonial[];
   latest: Content[];
+  /**
+   * The newest additions and announced updates (VIB-230). Six, and no count
+   * in the heading: this page shows no number a visitor could check
+   * (VIB-116). Each card carries its own date, which is what keeps the
+   * section honest: on launch day most of the directory was created inside
+   * the same month, so a heading claiming recency would overclaim where six
+   * dated cards cannot.
+   */
+  whatsNew: WhatsNewItem[];
   /**
    * The most-installed skills, best first (VIB-131). Ranked by installs but
    * shown without them: this page carries no numbers (VIB-116).
@@ -75,6 +86,7 @@ export function MarketingHome({
   collections,
   testimonials,
   latest,
+  whatsNew,
   topSkills,
   appBuilders,
   flagship,
@@ -366,6 +378,24 @@ export function MarketingHome({
                     </span>
                   </span>
                 </Link>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      ) : null}
+
+      {/* ── What's new ───────────────────────────────────────────────── */}
+      {whatsNew.length ? (
+        <Section>
+          <SectionHead
+            eyebrow="What's new"
+            title="Recently added and updated."
+            action={{ label: "See everything new", href: "/new" }}
+          />
+          <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {whatsNew.map((item) => (
+              <li key={`${item.kind}-${item.id ?? item.title}-${item.at}`}>
+                <WhatsNewCard item={item} />
               </li>
             ))}
           </ul>

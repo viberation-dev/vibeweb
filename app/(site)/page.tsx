@@ -33,6 +33,7 @@ import { resolveTargetViews } from "@/lib/queries/resources";
 import { listPopularTags } from "@/lib/queries/tags";
 import { listPublishedTestimonials } from "@/lib/queries/testimonials";
 import { listTools } from "@/lib/queries/tools";
+import { listWhatsNew } from "@/lib/queries/whats-new";
 import { listRankedSkills } from "@/lib/skill-live";
 import {
   getWalkthroughProgress,
@@ -106,13 +107,17 @@ export default async function HomePage({ searchParams }: Props) {
     // The marketing page shows no counts (VIB-116), so it no longer asks for
     // any. Real quotes, or none — the proof section falls back to describing
     // who the product is for rather than inventing anyone (VIB-102).
-    const testimonials = await listPublishedTestimonials(supabase);
+    const [testimonials, whatsNew] = await Promise.all([
+      listPublishedTestimonials(supabase),
+      listWhatsNew(supabase, { limit: 6 }),
+    ]);
     return (
       <MarketingHome
         previewTools={tools.slice(0, 3)}
         collections={collections}
         testimonials={testimonials}
         latest={latest}
+        whatsNew={whatsNew}
         topSkills={topSkills.map(({ tool }) => tool)}
         appBuilders={appBuilders}
         flagship={flagship}

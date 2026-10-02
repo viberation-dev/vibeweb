@@ -211,14 +211,15 @@ are the source of truth and the guides are a stale copy of part of it.
    (local) and VIB-218 (remote).
 4. ~~Row 0, the scope spine~~ — done, VIB-221. It also added `cli_config`, so
    a guide can render the CLI table from `CODING_CLIS` the same way.
-5. Rows 1, 3, 5 — the beginner triad, each with install tabs rendered from the
-   matrix, each linking back to row 0 rather than re-explaining scope.
+5. ~~Rows 1, 3, 5 — the beginner triad~~ — done, VIB-223 (MCP), VIB-225
+   (skills) and VIB-224 (CLIs). Each links back to row 0 rather than
+   re-explaining scope.
 6. Rows 2, 4, 6 — the second tier, one per topic, each answering its own
-   question rather than being "advanced".
+   question rather than being "advanced". Still to write.
 
-Three block kinds now generate what guides used to author: `mcp_install`,
-`mcp_connect` and `cli_config`. A new row should reach for those before
-writing a path into the database by hand.
+Four block kinds now generate what guides used to author: `mcp_install`,
+`mcp_connect`, `cli_config` and `skill_install`. A new row should reach for
+those before writing a path into the database by hand.
 
 One Linear issue and one branch per row, per CLAUDE.md. Each row is a draft
 insert plus a publish migration.

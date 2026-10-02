@@ -14,6 +14,7 @@ import {
   SKILL_AGENT_IDS,
   SKILL_AGENTS,
   SKILL_CATEGORY_VALUES,
+  skillInstallTabs,
   skillsHref,
   toSkillFilters,
 } from "./skill-taxonomy.ts";
@@ -123,4 +124,45 @@ test("an empty chat-app filter explains itself, and only when the agent is the c
   assert.equal(emptyAgentReason(skills, { category: "devops_deploy", agent: "cursor" }), null);
   // Nothing matches even without the agent: the creator emptied it, not ChatGPT.
   assert.equal(emptyAgentReason(skills, { category: "devops_deploy", agent: "chatgpt", creator: "obra" }), null);
+});
+
+test("skill install tabs give a command to folder agents and steps to chat apps", () => {
+  const tabs = skillInstallTabs({ owner: "anthropics", repo: "skills", skill: "frontend-design" });
+
+  assert.deepEqual(
+    tabs.tabs.map((tab) => tab.key),
+    [...SKILL_AGENT_IDS],
+  );
+
+  const claude = tabs.tabs.find((tab) => tab.key === "claude-code")!;
+  assert.ok(
+    claude.blocks.some(
+      (b) =>
+        b.kind === "code" &&
+        b.code ===
+          "npx skills add https://github.com/anthropics/skills --skill frontend-design -a claude-code",
+    ),
+  );
+  // And it says where that lands, plus how to put it everywhere instead.
+  assert.ok(
+    claude.blocks.some((b) => b.kind === "text" && /\.claude\/skills.*--global/s.test(b.body)),
+  );
+
+  // A chat app gets its real steps, not a command it cannot run.
+  const chatgpt = tabs.tabs.find((tab) => tab.key === "chatgpt")!;
+  assert.equal(chatgpt.blocks.filter((b) => b.kind === "code").length, 0);
+  assert.match((chatgpt.blocks[0] as { body: string }).body, /^1\. /);
+
+  // Every tab ends with a way out to the vendor's own docs.
+  for (const tab of tabs.tabs) assert.equal(tab.blocks.at(-1)!.kind, "links");
+});
+
+test("a whole-repo install drops the --skill flag, and unknown agents are dropped", () => {
+  const tabs = skillInstallTabs({ owner: "obra", repo: "superpowers", agents: ["codex", "nope"] });
+  assert.deepEqual(tabs.tabs.map((t) => t.key), ["codex"]);
+  assert.ok(
+    tabs.tabs[0].blocks.some(
+      (b) => b.kind === "code" && b.code === "npx skills add https://github.com/obra/superpowers -a codex",
+    ),
+  );
 });

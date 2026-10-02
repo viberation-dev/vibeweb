@@ -40,6 +40,30 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
  */
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    date: "2026-10-02",
+    kind: "added",
+    title: "Global or project: where your AI tool looks for its config",
+    body: "Every tool asks the same question when you install something into it, in different words: just you or the whole team, this project or all of them. One guide answering it properly, with the real file paths for each tool, so the rest of our guides can stop re-explaining it.",
+  },
+  {
+    date: "2026-10-02",
+    kind: "added",
+    title: "Two guides on MCP servers",
+    body: "What a server actually does and when one is worth adding, including the context cost nobody mentions. Plus a harder one on running servers you don’t fully trust: what a server can reach, and why a read-only server is still a way in when it returns text other people wrote.",
+  },
+  {
+    date: "2026-10-02",
+    kind: "added",
+    title: "Two guides on skills",
+    body: "The difference between a skill and an MCP server, which is the thing most people get wrong first: a server gives your tool new abilities, a skill gives it new habits. Then a guide on writing one that actually fires, because a skill your tool ignores produces no error at all.",
+  },
+  {
+    date: "2026-10-02",
+    kind: "added",
+    title: "Two guides on coding CLIs",
+    body: "Why a terminal agent is a different kind of thing from a chat window, and what to do once you have three of them on one machine: four instruction files that disagree, four sign-ins you forgot about, and no idea which tool a repo was set up for.",
+  },
+  {
     date: "2026-10-01",
     kind: "added",
     title: "AGENTS.md and llms.txt",

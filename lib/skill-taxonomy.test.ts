@@ -145,7 +145,8 @@ test("skill install tabs give a command to folder agents and steps to chat apps"
   );
   // And it says where that lands, plus how to put it everywhere instead.
   assert.ok(
-    claude.blocks.some((b) => b.kind === "text" && /\.claude\/skills.*--global/s.test(b.body)),
+    // [\s\S] rather than the `s` flag, which this tsconfig's target rejects.
+    claude.blocks.some((b) => b.kind === "text" && /\.claude\/skills[\s\S]*--global/.test(b.body)),
   );
 
   // A chat app gets its real steps, not a command it cannot run.

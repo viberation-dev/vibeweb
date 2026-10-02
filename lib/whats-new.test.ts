@@ -3,6 +3,7 @@ import { test } from "node:test";
 
 import {
   changelogInputs,
+  groupByMonth,
   mergeWhatsNew,
   toWhatsNewEvent,
   toWhatsNewKind,
@@ -192,4 +193,27 @@ test("a changelog entry carries its body and no id, so it joins to no view", () 
   const [merged] = mergeWhatsNew([entry], { newDays: 14, now: NOW });
   assert.equal(merged.event, "updated");
   assert.equal(merged.note, "what shipped");
+});
+
+test("groupByMonth groups consecutive entries and keeps the caller's order", () => {
+  const groups = groupByMonth([
+    { at: "2026-10-02T00:00:00.000Z" },
+    { at: "2026-10-01T00:00:00.000Z" },
+    { at: "2026-09-30T00:00:00.000Z" },
+  ]);
+  assert.deepEqual(
+    groups.map(([label, items]) => [label, items.length]),
+    [["October 2026", 2], ["September 2026", 1]],
+  );
+});
+
+test("groupByMonth labels months in UTC, so a date never slips to the previous month", () => {
+  // Midnight UTC on the 1st. Formatted in a zone behind UTC this would read as
+  // the 30th of the previous month and group under it.
+  const [[label]] = groupByMonth([{ at: "2026-10-01T00:00:00.000Z" }]);
+  assert.equal(label, "October 2026");
+});
+
+test("groupByMonth returns nothing for an empty list", () => {
+  assert.deepEqual(groupByMonth([]), []);
 });

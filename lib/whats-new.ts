@@ -149,3 +149,29 @@ export function changelogInputs(
     note: entry.body,
   }));
 }
+
+/**
+ * Entries grouped by the month they happened in, newest month first (VIB-230).
+ *
+ * Relies on the caller's order rather than re-sorting: listWhatsNew already
+ * returns newest-first, and a second sort here would be a second opinion about
+ * ordering that could silently disagree with the first.
+ *
+ * UTC, for the same reason lib/changelog.ts formats in UTC: a changelog date is
+ * a bare YYYY-MM-DD parsed as midnight UTC, and formatting it in a local zone
+ * behind UTC would print the previous day and group it under the wrong month.
+ */
+export function groupByMonth<T extends { at: string }>(items: readonly T[]): [string, T[]][] {
+  const groups = new Map<string, T[]>();
+  for (const item of items) {
+    const label = new Date(item.at).toLocaleDateString("en-GB", {
+      month: "long",
+      year: "numeric",
+      timeZone: "UTC",
+    });
+    const group = groups.get(label);
+    if (group) group.push(item);
+    else groups.set(label, [item]);
+  }
+  return [...groups];
+}

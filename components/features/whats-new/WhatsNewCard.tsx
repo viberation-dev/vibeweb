@@ -8,6 +8,8 @@ function dateLabel(iso: string): string {
     day: "numeric",
     month: "short",
     year: "numeric",
+    // UTC: changelog dates are bare YYYY-MM-DD, parsed as midnight UTC.
+    timeZone: "UTC",
   });
 }
 

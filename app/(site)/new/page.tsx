@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { WhatsNewCard } from "@/components/features/whats-new/WhatsNewCard";
 import { WhatsNewFilters } from "@/components/features/whats-new/WhatsNewFilters";
 import { createClient } from "@/lib/integrations/supabase/server";
-import { listWhatsNew, type WhatsNewItem } from "@/lib/queries/whats-new";
-import { toWhatsNewEvent, toWhatsNewKind } from "@/lib/whats-new";
+import { listWhatsNew } from "@/lib/queries/whats-new";
+import { groupByMonth, toWhatsNewEvent, toWhatsNewKind } from "@/lib/whats-new";
 
 export const metadata: Metadata = {
   title: "What's new",
@@ -15,20 +15,6 @@ export const metadata: Metadata = {
 type Props = {
   searchParams: Promise<{ kind?: string; event?: string }>;
 };
-
-/** Entries grouped by the month they happened in, newest month first. */
-function byMonth(items: WhatsNewItem[]): [string, WhatsNewItem[]][] {
-  const groups = new Map<string, WhatsNewItem[]>();
-  for (const item of items) {
-    const label = new Date(item.at).toLocaleDateString("en-GB", {
-      month: "long",
-      year: "numeric",
-    });
-    groups.set(label, [...(groups.get(label) ?? []), item]);
-  }
-  // Insertion order follows the already-sorted list, so no re-sort is needed.
-  return [...groups];
-}
 
 export default async function WhatsNewPage({ searchParams }: Props) {
   const params = await searchParams;
@@ -53,7 +39,7 @@ export default async function WhatsNewPage({ searchParams }: Props) {
 
       {items.length ? (
         <div className="mt-8 space-y-10">
-          {byMonth(items).map(([month, group]) => (
+          {groupByMonth(items).map(([month, group]) => (
             <section key={month}>
               <h2 className="font-heading text-muted-foreground text-sm font-bold tracking-widest uppercase">
                 {month}

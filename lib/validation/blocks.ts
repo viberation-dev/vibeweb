@@ -127,6 +127,44 @@ export const tabsBlock = z.object({
     .min(2),
 });
 
+/**
+ * Install tabs for one MCP server, generated rather than authored (VIB-217).
+ *
+ * The author names the server and what runs it; which clients exist and what
+ * each one's panel says comes from MCP_CLIENTS. Before this, every guide
+ * carried its own copy of the same three commands, and a vendor moving a path
+ * meant an edit per guide with one of them missed.
+ *
+ * **Local (stdio) servers only** — ones with a command to run, which is what
+ * `command` is. A remote server is a URL and a transport, every client spells
+ * that differently again, and the two hosted clients *can* take one, so the
+ * default client list would be wrong as well. The Supabase guide is remote and
+ * stays hand-authored until that variant exists; do not reach for this block
+ * for a URL.
+ *
+ * Expands into a `tabs` block at render time, so it is top-level only for the
+ * same reason `tabs` is: a rail entry pointing inside an unselected tab is a
+ * broken link that looks like a working one.
+ */
+export const mcpInstallBlock = z.object({
+  kind: z.literal("mcp_install"),
+  /** The name the server gets in config, e.g. `playwright`. */
+  server: z.string().min(1),
+  /** What runs it, e.g. `npx @playwright/mcp@latest`. */
+  command: z.string().min(1),
+  label: z.string().min(1).default("Install it in"),
+  /**
+   * Which clients to show, in order. Omitted means every client that can run
+   * a local server — the right default, and one that grows on its own when a
+   * client is added to the matrix.
+   *
+   * Not narrowed to `McpClientId` here: this schema parses whatever a
+   * migration wrote, and an id that no longer exists should fail in
+   * mcpInstallTabs with a name to grep for, not vanish into a `catch`.
+   */
+  clients: z.array(z.string().min(1)).min(1).optional(),
+});
+
 /** Every kind both surfaces render. */
 export const sharedBlockSchema = z.discriminatedUnion("kind", [
   textBlock,
@@ -136,7 +174,9 @@ export const sharedBlockSchema = z.discriminatedUnion("kind", [
   codeBlock,
   linksBlock,
   tabsBlock,
+  mcpInstallBlock,
 ]);
 
 export type SharedBlock = z.infer<typeof sharedBlockSchema>;
 export type NestedBlock = z.infer<typeof nestedBlockSchema>;
+export type TabsBlock = z.infer<typeof tabsBlock>;

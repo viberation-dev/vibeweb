@@ -15,6 +15,13 @@
  * entry here is stale everywhere at once.
  */
 
+/*
+ * Type-only, so `node --experimental-strip-types` erases it and this file
+ * still runs under plain `node --test`. Relative rather than the `@/` alias,
+ * for the reason lib/validation/guide.ts records.
+ */
+import type { NestedBlock, TabsBlock } from "./validation/blocks.ts";
+
 /**
  * How a server gets in.
  *
@@ -34,6 +41,11 @@ export type McpClient =
        * The command that adds a server for you, as a template. Null when the
        * only route is editing the file by hand — four of these clients have no
        * add command, and inventing one is worse than saying so.
+       *
+       * `{name}` is the server's name, `{command}` the command and arguments
+       * that run it, and `{inline}` the one-line JSON object VS Code wants.
+       * `mcpInstallCommand` fills them in; the template reads correctly as-is
+       * in a reference table, which is the other thing this field is for.
        */
       addCommand: string | null;
       /**
@@ -68,7 +80,7 @@ export const MCP_CLIENTS = [
     id: "claude-code",
     label: "Claude Code",
     kind: "local",
-    addCommand: "claude mcp add <name> -- <command> [args...]",
+    addCommand: "claude mcp add {name} -- {command}",
     personalPath: "~/.claude.json",
     projectPath: ".mcp.json",
     configKey: "mcpServers",
@@ -114,7 +126,7 @@ export const MCP_CLIENTS = [
     id: "codex",
     label: "Codex",
     kind: "local",
-    addCommand: "codex mcp add <name> -- <command> [args...]",
+    addCommand: "codex mcp add {name} -- {command}",
     personalPath: "~/.codex/config.toml",
     projectPath: ".codex/config.toml",
     configKey: "mcp_servers",
@@ -142,7 +154,7 @@ export const MCP_CLIENTS = [
     id: "vs-code",
     label: "VS Code",
     kind: "local",
-    addCommand: 'code --add-mcp \'{"name":"<name>","command":"<command>","args":["<arg>"]}\'',
+    addCommand: "code --add-mcp '{inline}'",
     // No documented user-profile path — the vendor routes you through the
     // command palette, so naming a path here would be a guess.
     personalPath: null,
@@ -166,7 +178,7 @@ export const MCP_CLIENTS = [
     id: "gemini-cli",
     label: "Gemini CLI",
     kind: "local",
-    addCommand: "gemini mcp add <name> <commandOrUrl> [args...]",
+    addCommand: "gemini mcp add {name} {command}",
     personalPath: "~/.gemini/settings.json",
     projectPath: ".gemini/settings.json",
     configKey: "mcpServers",
@@ -208,6 +220,181 @@ export function mcpClientLabel(id: McpClientId): string {
  */
 export function localMcpClients(): readonly Extract<McpClient, { kind: "local" }>[] {
   return MCP_CLIENTS.filter((client) => client.kind === "local");
+}
+
+/**
+ * A command string split into the binary and its arguments.
+ *
+ * Whitespace, nothing cleverer: every MCP server command in the directory is
+ * `npx some-package` or `uvx some-package`, and a real argument parser here
+ * would be code written for a case that does not exist. A server whose
+ * command needs a quoted argument wants a hand-authored `tabs` block instead.
+ */
+function splitCommand(command: string): { bin: string; args: string[] } {
+  const [bin, ...args] = command.trim().split(/\s+/);
+  return { bin, args };
+}
+
+/**
+ * The config a client needs for this server, in that client's own shape.
+ *
+ * Three shapes, told apart by `configKey` rather than a fourth field on every
+ * entry: `mcpServers`/`servers` are the same JSON with a different key,
+ * `mcp_servers` is Codex's TOML, and `mcp` is opencode's own form with the
+ * command as an array.
+ */
+export function mcpConfigSnippet(
+  id: McpClientId,
+  server: string,
+  command: string,
+): { language: string; code: string } {
+  const client = MCP_CLIENTS.find((c) => c.id === id)!;
+  if (client.kind !== "local") throw new Error(`${id} takes no local config`);
+  const { bin, args } = splitCommand(command);
+
+  if (client.configKey === "mcp_servers") {
+    return {
+      language: "toml",
+      code: [
+        `[mcp_servers.${server}]`,
+        `command = ${JSON.stringify(bin)}`,
+        `args = ${JSON.stringify(args)}`,
+      ].join("\n"),
+    };
+  }
+
+  const entry =
+    client.configKey === "mcp"
+      ? { type: "local", command: [bin, ...args] }
+      : { command: bin, args };
+
+  return {
+    language: "json",
+    code: JSON.stringify({ [client.configKey]: { [server]: entry } }, null, 2),
+  };
+}
+
+/** The filled-in add command for a client, or null when it has none. */
+export function mcpInstallCommand(
+  id: McpClientId,
+  server: string,
+  command: string,
+): string | null {
+  const client = MCP_CLIENTS.find((c) => c.id === id)!;
+  if (client.kind !== "local" || client.addCommand === null) return null;
+  const { bin, args } = splitCommand(command);
+
+  return client.addCommand
+    .replace("{name}", server)
+    .replace("{command}", command)
+    .replace("{inline}", JSON.stringify({ name: server, command: bin, args }));
+}
+
+/**
+ * Which file to put it in, as one sentence.
+ *
+ * Says what each scope *means* rather than just naming the file: "committed,
+ * so everyone who clones the repo gets it" is the part a reader needs, and
+ * `.mcp.json` on its own does not say it.
+ */
+export function mcpScopeLine(id: McpClientId): string | null {
+  const client = MCP_CLIENTS.find((c) => c.id === id)!;
+  if (client.kind !== "local") return null;
+
+  const project = client.projectPath
+    ? `${client.projectPath} in the project, committed so everyone who clones the repo gets it`
+    : null;
+  const personal = client.personalPath
+    ? `${client.personalPath} for every project on your machine, just you`
+    : null;
+
+  if (project && personal) return `Put it in ${project}, or ${personal}.`;
+  if (project) return `Put it in ${project}.`;
+  if (personal) return `Put it in ${personal}.`;
+  return null;
+}
+
+/**
+ * The install tabs for one MCP server, built from the matrix (VIB-217).
+ *
+ * Replaces the hand-authored `tabs` block that both shipped guides carried a
+ * copy of. A guide now says which server it is installing and this decides
+ * what each client's panel contains, so a vendor moving a path is one edit in
+ * MCP_CLIENTS rather than one per guide.
+ *
+ * Returns a plain `tabs` block, so nothing new renders it — BlockView already
+ * knows how.
+ */
+export function mcpInstallTabs({
+  server,
+  command,
+  label = "Install it in",
+  clients,
+}: {
+  /** The name the server gets in config, e.g. `playwright`. */
+  server: string;
+  /** What runs it, e.g. `npx @playwright/mcp@latest`. */
+  command: string;
+  label?: string;
+  /** Which clients to show, in order. Defaults to every local one. */
+  clients?: readonly string[];
+}): TabsBlock {
+  /*
+   * Unknown ids are dropped rather than thrown on. This runs while rendering
+   * a published guide, and a 500 on the whole page is a worse answer to an
+   * authoring typo than a missing tab. The typo is caught in CI instead:
+   * mcp-clients.test.ts validates every `mcp_install` block in every migration
+   * against MCP_CLIENT_IDS.
+   */
+  const ids = clients
+    ? clients.map(toMcpClient).filter((id): id is McpClientId => id !== undefined)
+    : localMcpClients().map((client) => client.id as McpClientId);
+
+  return {
+    kind: "tabs",
+    label,
+    tabs: ids.map((id) => {
+      const client = MCP_CLIENTS.find((c) => c.id === id)!;
+      const blocks: NestedBlock[] = [];
+
+      if (client.kind === "hosted") {
+        blocks.push({
+          kind: "text",
+          body: client.steps.map((step, i) => `${i + 1}. ${step}`).join("\n"),
+        });
+        if (client.note) blocks.push({ kind: "callout", tone: "warning", body: client.note });
+        return { key: client.id, title: client.label, blocks };
+      }
+
+      const command_ = mcpInstallCommand(id, server, command);
+      if (command_) {
+        blocks.push({
+          kind: "code",
+          language: "bash",
+          code: command_,
+          expected: `A line confirming the server was added. Restart ${client.label}, then check its MCP list for ${server}.`,
+        });
+      } else {
+        const snippet = mcpConfigSnippet(id, server, command);
+        blocks.push({
+          kind: "text",
+          body: `${client.label} has no add command — you write the config yourself.`,
+        });
+        blocks.push({
+          kind: "code",
+          language: snippet.language,
+          code: snippet.code,
+          expected: `${server} appears in ${client.label}'s MCP list once it connects.`,
+        });
+      }
+
+      const scope = mcpScopeLine(id);
+      if (scope) blocks.push({ kind: "text", body: scope });
+      if (client.note) blocks.push({ kind: "callout", tone: "info", body: client.note });
+
+      return { key: client.id, title: client.label, blocks };
+    }),
+  };
 }
 
 /**

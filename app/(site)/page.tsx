@@ -21,6 +21,7 @@ import {
 import { createClient } from "@/lib/integrations/supabase/server";
 import { contentTypeLabel, LEARN_TYPE_VALUES } from "@/lib/learn";
 import { newsletterFormEnabled } from "@/lib/newsletter";
+import { countLabel } from "@/lib/plural";
 import {
   countCollectionItems,
   listFeaturedCollections,
@@ -309,7 +310,7 @@ export default async function HomePage({ searchParams }: Props) {
                   href={`/walkthroughs/${flagship.slug}`}
                   eyebrow="Walkthrough"
                   title={flagship.title}
-                  meta={`${flagship.steps.length} steps`}
+                  meta={countLabel(flagship.steps.length, "step")}
                 />
               </li>
             ) : null}
@@ -331,7 +332,7 @@ export default async function HomePage({ searchParams }: Props) {
                   href={`/collections/${collection.slug}`}
                   eyebrow="New in directory"
                   title={collection.title}
-                  meta={`Collection · ${collectionCounts.get(collection.id) ?? 0} tools`}
+                  meta={`Collection · ${countLabel(collectionCounts.get(collection.id) ?? 0, "tool")}`}
                 />
               </li>
             ))}

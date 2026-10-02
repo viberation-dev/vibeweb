@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { saveToolAction } from "@/app/(site)/admin/tools/actions";
 import { ToolForm } from "@/components/features/admin/ToolForm";
 import { createClient } from "@/lib/integrations/supabase/server";
+import { countLabel } from "@/lib/plural";
 import { getToolById } from "@/lib/queries/tools";
 import { ButtonIcon, buttonVariants } from "@/components/ui/button";
 import { Panel } from "@/components/ui/panel";
@@ -52,7 +53,8 @@ export default async function EditToolPage({
           increment_tool_views() and the bookmark trigger — so show them here
           rather than leaving staff wondering where the numbers went. */}
       <p className="text-muted-foreground text-sm">
-        {tool.view_count} views · {tool.bookmark_count} bookmarks. Both are
+        {countLabel(tool.view_count, "view")} ·{" "}
+        {countLabel(tool.bookmark_count, "bookmark")}. Both are
         maintained automatically and are not editable.
       </p>
       <Panel>

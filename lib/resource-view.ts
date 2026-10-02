@@ -1,4 +1,5 @@
 import { contentPillarLabel, contentPreview, contentTypeLabel } from "@/lib/learn";
+import { countLabel } from "@/lib/plural";
 import { readingTimeLabel } from "@/lib/reading-time";
 import type { Content } from "@/lib/queries/content";
 import type { Tool } from "@/lib/queries/tools";
@@ -83,7 +84,7 @@ export function contentView(item: Content): ResourceView {
      */
     meta: [
       readingTimeLabel(item.body, item.blocks),
-      item.view_count > 0 ? `${item.view_count.toLocaleString("en-GB")} views` : null,
+      item.view_count > 0 ? countLabel(item.view_count, "view") : null,
     ]
       .filter(Boolean)
       .join(" · "),

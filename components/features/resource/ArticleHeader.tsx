@@ -2,6 +2,7 @@ import { IconClock, IconEye, IconMessageCircle } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 
 import { SITE_BYLINE } from "@/lib/byline";
+import { formatCount, pluralise } from "@/lib/plural";
 import { preferredSourceUrl } from "@/lib/share";
 import { siteUrl } from "@/lib/site-url";
 
@@ -146,9 +147,9 @@ export function ArticleHeader({
           <span className="inline-flex items-center gap-1.5">
             <IconEye aria-hidden className="size-[1.0625rem]" />
             <span className="text-foreground font-semibold">
-              {viewCount.toLocaleString("en-GB")}
+              {formatCount(viewCount)}
             </span>{" "}
-            views
+            {pluralise(viewCount, "view")}
           </span>
         ) : null}
         {commentCount !== null && commentCount !== undefined ? (
@@ -157,8 +158,8 @@ export function ArticleHeader({
             className="hover:text-foreground inline-flex items-center gap-1.5"
           >
             <IconMessageCircle aria-hidden className="size-[1.0625rem]" />
-            <span className="text-foreground font-semibold">{commentCount}</span>{" "}
-            {commentCount === 1 ? "comment" : "comments"}
+            <span className="text-foreground font-semibold">{formatCount(commentCount)}</span>{" "}
+            {pluralise(commentCount, "comment")}
           </a>
         ) : null}
       </div>

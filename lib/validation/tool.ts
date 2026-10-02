@@ -136,6 +136,18 @@ export const toolEditorSchema = z.object({
     .array(z.string())
     .nullish()
     .transform((values) => (values ?? []).filter((v) => (SKILL_AGENT_IDS as readonly string[]).includes(v))),
+  /*
+   * "This is worth announcing" (VIB-230). A revision reaches the What's new
+   * stream only when somebody ticks this: `updated_at` is touched by every
+   * write, including typo fixes and tag reorders, so it cannot carry the
+   * claim. The note is required alongside it because an entry saying only
+   * "Updated" tells a reader nothing.
+   */
+  announce_revision: z
+    .union([z.literal("on"), z.literal("")])
+    .nullable()
+    .transform((value) => value === "on"),
+  revision_note: z.string().trim().nullable().optional(),
 })
   // Mirrors tools_openrouter_id_in_family: featuring a GPT on the Claude page
   // would be a wrong fact, not a style choice.
@@ -148,7 +160,20 @@ export const toolEditorSchema = z.object({
         "The featured model has to belong to the family, e.g. anthropic/claude-sonnet-5 in anthropic/claude.",
       path: ["openrouter_id"],
     },
-  );
+  )
+  // Resolve the pair, then check it: the refinement sees the resolved values
+  // and the error lands on the field the editor typed into. Mirrors the
+  // database's check constraint, but gives a message instead of a 500.
+  .transform(({ announce_revision, revision_note, ...rest }) => ({
+    ...rest,
+    revised_at: announce_revision ? new Date().toISOString() : null,
+    revision_note: announce_revision ? revision_note || null : null,
+  }))
+  .refine((value) => value.revised_at === null || Boolean(value.revision_note), {
+    message: "Say what changed, in one line, or untick the announce box.",
+    path: ["revision_note"],
+  });
+
 
 export type ToolEditorInput = z.infer<typeof toolEditorSchema>;
 

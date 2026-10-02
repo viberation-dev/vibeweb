@@ -321,6 +321,36 @@ export function ToolForm({ tool, action }: Props) {
         </p>
       </div>
 
+      {/*
+        * Unticked on every load, even when `revised_at` is already set: ticking
+        * means "announce this edit, now", not "this row was revised before".
+        */}
+      <div className="flex items-start gap-3">
+        <input
+          id="announce_revision"
+          name="announce_revision"
+          type="checkbox"
+          className="border-input mt-0.5 size-4 rounded border"
+        />
+        <div className="space-y-1">
+          <Label htmlFor="announce_revision">Announce this change</Label>
+          <p className="text-muted-foreground text-sm">
+            Puts it in What&rsquo;s new, dated today. Leave unticked for a
+            typo, a tag change or anything a reader would not care about.
+          </p>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="revision_note">What changed</Label>
+        <Input
+          id="revision_note"
+          name="revision_note"
+          defaultValue={tool?.revision_note ?? ""}
+          placeholder="Added Opus 5.5 pricing"
+        />
+      </div>
+
       {state.error ? (
         <p role="alert" className="text-destructive text-sm">
           {state.error}

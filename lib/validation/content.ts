@@ -63,6 +63,31 @@ export const contentEditorSchema = z.object({
     ])
     .transform((value) => (value === "" ? null : value)),
   status: z.enum(["draft", "published"]),
-});
+  /*
+   * "This is worth announcing" (VIB-230). A revision reaches the What's new
+   * stream only when somebody ticks this: `updated_at` is touched by every
+   * write, including typo fixes and tag reorders, so it cannot carry the
+   * claim. The note is required alongside it because an entry saying only
+   * "Updated" tells a reader nothing.
+   */
+  announce_revision: z
+    .union([z.literal("on"), z.literal("")])
+    .nullable()
+    .transform((value) => value === "on"),
+  revision_note: z.string().trim().nullable().optional(),
+})
+  // Resolve the pair, then check it: the refinement sees the resolved values
+  // and the error lands on the field the editor typed into. Mirrors the
+  // database's check constraint, but gives a message instead of a 500.
+  .transform(({ announce_revision, revision_note, ...rest }) => ({
+    ...rest,
+    revised_at: announce_revision ? new Date().toISOString() : null,
+    revision_note: announce_revision ? revision_note || null : null,
+  }))
+  .refine((value) => value.revised_at === null || Boolean(value.revision_note), {
+    message: "Say what changed, in one line, or untick the announce box.",
+    path: ["revision_note"],
+  });
+
 
 export type ContentEditorInput = z.infer<typeof contentEditorSchema>;

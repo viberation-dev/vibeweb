@@ -264,10 +264,14 @@ export type Database = {
           created_at: string
           id: string
           pillar: Database["public"]["Enums"]["content_pillar"] | null
+          published_at: string | null
+          revised_at: string | null
+          revision_note: string | null
           role_level: Database["public"]["Enums"]["role_level"] | null
           search_vector: unknown
           slug: string
           status: Database["public"]["Enums"]["content_status"]
+          surfaced_at: string | null
           title: string
           type: Database["public"]["Enums"]["content_type"]
           updated_at: string
@@ -280,10 +284,14 @@ export type Database = {
           created_at?: string
           id?: string
           pillar?: Database["public"]["Enums"]["content_pillar"] | null
+          published_at?: string | null
+          revised_at?: string | null
+          revision_note?: string | null
           role_level?: Database["public"]["Enums"]["role_level"] | null
           search_vector?: unknown
           slug: string
           status?: Database["public"]["Enums"]["content_status"]
+          surfaced_at?: string | null
           title: string
           type: Database["public"]["Enums"]["content_type"]
           updated_at?: string
@@ -296,10 +304,14 @@ export type Database = {
           created_at?: string
           id?: string
           pillar?: Database["public"]["Enums"]["content_pillar"] | null
+          published_at?: string | null
+          revised_at?: string | null
+          revision_note?: string | null
           role_level?: Database["public"]["Enums"]["role_level"] | null
           search_vector?: unknown
           slug?: string
           status?: Database["public"]["Enums"]["content_status"]
+          surfaced_at?: string | null
           title?: string
           type?: Database["public"]["Enums"]["content_type"]
           updated_at?: string
@@ -778,11 +790,14 @@ export type Database = {
           outbound_url: string
           platform: string[]
           pricing_tier: string | null
+          revised_at: string | null
+          revision_note: string | null
           search_vector: unknown
           skill_agents_excluded: string[]
           skill_category: Database["public"]["Enums"]["skill_category"] | null
           skills_sh_source: string | null
           slug: string
+          surfaced_at: string | null
           tagline: string | null
           updated_at: string
           view_count: number
@@ -805,11 +820,14 @@ export type Database = {
           outbound_url?: string
           platform?: string[]
           pricing_tier?: string | null
+          revised_at?: string | null
+          revision_note?: string | null
           search_vector?: unknown
           skill_agents_excluded?: string[]
           skill_category?: Database["public"]["Enums"]["skill_category"] | null
           skills_sh_source?: string | null
           slug: string
+          surfaced_at?: string | null
           tagline?: string | null
           updated_at?: string
           view_count?: number
@@ -832,11 +850,14 @@ export type Database = {
           outbound_url?: string
           platform?: string[]
           pricing_tier?: string | null
+          revised_at?: string | null
+          revision_note?: string | null
           search_vector?: unknown
           skill_agents_excluded?: string[]
           skill_category?: Database["public"]["Enums"]["skill_category"] | null
           skills_sh_source?: string | null
           slug?: string
+          surfaced_at?: string | null
           tagline?: string | null
           updated_at?: string
           view_count?: number

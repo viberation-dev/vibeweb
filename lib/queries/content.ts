@@ -429,6 +429,15 @@ export async function listContentSurfaced(client: Client, limit: number): Promis
     .from("content")
     .select("*")
     .eq("status", "published")
+    /*
+     * Role guides are staff-facing (seller, admin, author) and are already
+     * excluded from the Learn indexes for that reason — see LEARN_TYPES in
+     * lib/learn.ts. The stream reaches further than Learn does: its six
+     * newest land on the logged-out marketing homepage, which is the last
+     * place a seller onboarding guide belongs. Help articles stay, because
+     * they are written for the reader looking at them.
+     */
+    .neq("type", "role_guide")
     .not("surfaced_at", "is", null)
     .order("surfaced_at", { ascending: false })
     .order("slug", { ascending: true })

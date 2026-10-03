@@ -35,7 +35,11 @@ export const ANNOUNCE_FIELDS = {
    */
   clear_announcement: z
     .union([z.literal("on"), z.literal("")])
-    .nullish()
+    // Nullable, not nullish, exactly like announce_revision: an unticked box
+    // posts nothing, so null is ordinary, but the key itself has to be there.
+    // It was .nullish() for one commit, and a caller that forgot to read the
+    // field parsed clean and silently meant "keep" — the clear did nothing.
+    .nullable()
     .transform((value) => value === "on"),
   revision_note: z.string().trim().nullable().optional(),
 };

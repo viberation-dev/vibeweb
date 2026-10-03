@@ -50,6 +50,7 @@ export async function saveToolAction(
     skill_category: formData.get("skill_category"),
     skill_agents_excluded: formData.getAll("skill_agents_excluded"),
     announce_revision: formData.get("announce_revision"),
+    clear_announcement: formData.get("clear_announcement"),
     revision_note: formData.get("revision_note"),
   });
 

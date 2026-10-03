@@ -5,6 +5,7 @@ import { toolEditorSchema } from "./tool.ts";
 
 const valid = {
   announce_revision: null,
+  clear_announcement: null,
   name: "  Claude Code  ",
   slug: "Claude-Code",
   category: "clis",
@@ -246,10 +247,18 @@ test("announcing and clearing at once is an error rather than a guess", () => {
   assert.deepEqual(parsed.error!.issues[0].path, ["clear_announcement"]);
 });
 
-test("an absent clear_announcement leaves an announcement alone", () => {
-  // The field only renders on an already-announced row, so most saves post
-  // nothing for it. That must read as "keep", not as a clear.
-  const parsed = toolEditorSchema.parse({ ...valid });
+test("an unticked clear_announcement leaves an announcement alone", () => {
+  // The box only renders on an already-announced row, and an unticked box
+  // posts nothing, so null is the ordinary case. It must read as "keep".
+  const parsed = toolEditorSchema.parse({ ...valid, clear_announcement: null });
   assert.equal("revised_at" in parsed, false);
   assert.equal("revision_note" in parsed, false);
+});
+
+test("a caller that forgets the field is an error, not a silent keep", () => {
+  // How the first version of the clear shipped broken: the save action built
+  // its parse input field by field and never read clear_announcement, which
+  // an optional field accepted as "keep". The box did nothing, quietly.
+  const { clear_announcement: _omitted, ...withoutField } = valid;
+  assert.equal(toolEditorSchema.safeParse(withoutField).success, false);
 });

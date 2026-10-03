@@ -56,6 +56,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-10-03",
+    kind: "added",
+    title: "Announcements can be taken back",
+    body: "When a tool or a guide is announced as updated in What's new, that announcement can now be withdrawn from the editor, so a note that was wrong or badly worded does not have to stay on the list. Until now only a developer could remove one.",
+  },
+  {
+    date: "2026-10-03",
     kind: "fixed",
     title: "Menus close when you click away",
     body: "The Browse menu, the filters and the account menu stayed open until you clicked the same button again, and several could sit open at once. They now close when you click anywhere else or press Escape, and opening one closes the others.",

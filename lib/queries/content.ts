@@ -342,9 +342,8 @@ export type ContentWrite = Pick<
   | "audience"
   | "pillar"
   | "status"
-  | "revised_at"
-  | "revision_note"
->;
+>
+  & Partial<Pick<TablesInsert<"content">, "revised_at" | "revision_note">>;
 
 export async function createContent(
   client: Client,
@@ -365,20 +364,14 @@ export async function createContent(
 export async function updateContent(
   client: Client,
   id: string,
-  { revised_at, revision_note, ...values }: ContentWrite,
+  values: ContentWrite,
 ): Promise<Content> {
-  // An unticked save carries nulls for the revision pair. Writing them would
-  // wipe the previous announced revision, so only a ticked save touches it.
   const { data, error } = await client
     .from("content")
     // No `updated_at` trigger on this table (migration 03 only defaults it),
     // so an edit would otherwise keep its original timestamp and the editor's
     // most-recent-first list would be a lie.
-    .update({
-      ...values,
-      ...(revised_at ? { revised_at, revision_note } : {}),
-      updated_at: new Date().toISOString(),
-    })
+    .update({ ...values, updated_at: new Date().toISOString() })
     .eq("id", id)
     .select("*")
     .single();

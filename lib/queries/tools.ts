@@ -368,9 +368,8 @@ export type ToolWrite = Pick<
   | "skills_sh_source"
   | "skill_category"
   | "skill_agents_excluded"
-  | "revised_at"
-  | "revision_note"
->;
+>
+  & Partial<Pick<TablesInsert<"tools">, "revised_at" | "revision_note">>;
 
 export async function createTool(
   client: Client,
@@ -391,19 +390,13 @@ export async function createTool(
 export async function updateTool(
   client: Client,
   id: string,
-  { revised_at, revision_note, ...values }: ToolWrite,
+  values: ToolWrite,
 ): Promise<Tool> {
-  // An unticked save carries nulls for the revision pair. Writing them would
-  // wipe the previous announced revision, so only a ticked save touches it.
   const { data, error } = await client
     .from("tools")
     // Same as updateContent: no `updated_at` trigger on this table, so an
     // edit would otherwise keep its original timestamp.
-    .update({
-      ...values,
-      ...(revised_at ? { revised_at, revision_note } : {}),
-      updated_at: new Date().toISOString(),
-    })
+    .update({ ...values, updated_at: new Date().toISOString() })
     .eq("id", id)
     .select("*")
     .single();

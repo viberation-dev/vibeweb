@@ -166,14 +166,20 @@ export const toolEditorSchema = z.object({
   // database's check constraint, but gives a message instead of a 500.
   .transform(({ announce_revision, revision_note, ...rest }) => ({
     ...rest,
-    revised_at: announce_revision ? new Date().toISOString() : null,
-    revision_note: announce_revision ? revision_note || null : null,
+    /*
+     * Omitted, not nulled, when the box is unticked (VIB-230). An unticked
+     * save is an ordinary edit and must leave any existing announcement
+     * alone — nulling the pair here would mean every later edit silently
+     * dropped the row out of What's new.
+     */
+    ...(announce_revision
+      ? { revised_at: new Date().toISOString(), revision_note: revision_note || null }
+      : {}),
   }))
-  .refine((value) => value.revised_at === null || Boolean(value.revision_note), {
+  .refine((value) => !value.revised_at || Boolean(value.revision_note), {
     message: "Say what changed, in one line, or untick the announce box.",
     path: ["revision_note"],
   });
-
 
 export type ToolEditorInput = z.infer<typeof toolEditorSchema>;
 

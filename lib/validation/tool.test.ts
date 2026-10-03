@@ -206,12 +206,14 @@ test("an announced revision resolves to a timestamp and the note", () => {
   assert.ok(parsed.revised_at, "revised_at is stamped");
 });
 
-test("not announcing leaves both null, whatever is in the note field", () => {
+test("an unticked save omits the revision keys, so an existing announcement survives", () => {
   const parsed = toolEditorSchema.parse({
     ...valid,
     announce_revision: null,
     revision_note: "typed then unticked",
   });
-  assert.equal(parsed.revised_at, null);
-  assert.equal(parsed.revision_note, null);
+  // Omitted, not null: the update payload must not mention these columns at
+  // all, or a plain edit would wipe a previously announced revision.
+  assert.equal("revised_at" in parsed, false);
+  assert.equal("revision_note" in parsed, false);
 });

@@ -346,9 +346,12 @@ export function ToolForm({ tool, action }: Props) {
         <Input
           id="revision_note"
           name="revision_note"
-          defaultValue={tool?.revision_note ?? ""}
+          defaultValue=""
           placeholder="Added Opus 5.5 pricing"
         />
+        <p className="text-muted-foreground text-sm">
+          Used only when Announce this change is ticked.
+        </p>
       </div>
 
       {state.error ? (

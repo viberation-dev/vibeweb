@@ -16,6 +16,7 @@ import { ThemeToggle } from "@/components/features/nav/ThemeToggle";
 import { TextSize } from "@/components/ui/text-size";
 import { TOOL_CATEGORIES } from "@/lib/tool-categories";
 import { toolsHref } from "@/lib/tools-url";
+import { MENU_NAME } from "@/components/features/nav/MenuDismiss";
 
 /**
  * The app-shell header (VIB-78, handoff Screen 2).
@@ -64,9 +65,12 @@ export function SiteHeader({
 
       {/*
         Native <details> rather than a menu library: it opens on click and on
-        Enter, closes on Escape, and is announced without any ARIA of ours.
+        Enter and is announced without any ARIA of ours. It does NOT close on
+        Escape or on an outside click — <details> is a disclosure widget, not
+        a menu, and the spec gives it neither. MenuDismiss adds both, and the
+        shared `name` makes the menus mutually exclusive natively (VIB-233).
       */}
-      <details className="relative">
+      <details name={MENU_NAME} className="relative">
         <summary className="text-muted-foreground hover:text-foreground flex cursor-pointer list-none items-center gap-1 text-sm">
           Browse
           <IconChevronDown aria-hidden className="size-3.5" />
@@ -144,7 +148,7 @@ export function SiteHeader({
         app — SignOutButton lives in AuthStatus, and AuthStatus only renders
         on the signed-out header.
       */}
-      <details className="relative">
+      <details name={MENU_NAME} className="relative">
         <summary
           aria-label="Your account"
           className="flex shrink-0 cursor-pointer list-none rounded-full"

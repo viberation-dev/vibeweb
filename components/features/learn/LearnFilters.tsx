@@ -14,6 +14,7 @@ import {
 } from "@/lib/learn";
 import { ALL_LEVELS, ROLE_LEVELS, type LevelParam, type RoleLevel } from "@/lib/role-level";
 import { cn } from "@/lib/utils";
+import { MENU_NAME } from "@/components/features/nav/MenuDismiss";
 
 type Props = {
   type?: ContentType;
@@ -144,7 +145,7 @@ export function LearnFilters({
           JavaScript, no client component, and each option stays a real link
           with a shareable URL behind it. Same control as the directory's sort.
         */}
-        <details className="relative">
+        <details name={MENU_NAME} className="relative">
           <summary className={control}>
             For: {effectiveLevel ? levelLabel(effectiveLevel) : "All levels"}
             <IconChevronDown aria-hidden className="size-3.5" />
@@ -189,7 +190,7 @@ export function LearnFilters({
           </div>
         </details>
 
-        <details className="relative">
+        <details name={MENU_NAME} className="relative">
           <summary className={control}>
             Sort: {learnSortOrder(activeSort).label}
             <IconChevronDown aria-hidden className="size-3.5" />

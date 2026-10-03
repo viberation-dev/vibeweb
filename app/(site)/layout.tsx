@@ -5,6 +5,7 @@ import { Suspense } from "react";
 
 import { AppSidebar } from "@/components/features/nav/AppSidebar";
 import { HamburgerMenu } from "@/components/features/nav/HamburgerMenu";
+import { MenuDismiss } from "@/components/features/nav/MenuDismiss";
 import { Logo } from "@/components/features/nav/Logo";
 import { SiteHeader } from "@/components/features/nav/SiteHeader";
 import { SocialRail } from "@/components/features/nav/SocialRail";
@@ -163,6 +164,13 @@ function VisitorHeader() {
           behind it, which <dialog> does properly and <details> does not.
         */}
         <HamburgerMenu />
+
+        {/*
+          Closes the header and filter menus on an outside click or Escape —
+          the two things native <details> does not do (VIB-233). Mounted once
+          here because those menus are server-rendered across several trees.
+        */}
+        <MenuDismiss />
 
         {/* Wordmark at 26px — 30% up from the shipped 20px (VIB-101). */}
         <Link href="/" aria-label="Viberation — home" className="shrink-0">

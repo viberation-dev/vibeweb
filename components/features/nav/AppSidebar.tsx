@@ -36,6 +36,7 @@ import {
 import { TOOL_CATEGORIES } from "@/lib/tool-categories";
 import { toolsHref } from "@/lib/tools-url";
 import { cn } from "@/lib/utils";
+import { MENU_NAME } from "@/components/features/nav/MenuDismiss";
 
 /**
  * One icon per link, keyed by href. The icon rail (VIB-174) needs every item
@@ -148,8 +149,8 @@ export function AppSidebar({
           </div>
 
           <div className="border-t px-2 py-2">
-            {/* Native <details>, like the header menus: Escape and focus handled by the browser. */}
-            <details ref={menu} className="relative">
+            {/* Native <details>, like the header menus. Escape and outside-click come from MenuDismiss (VIB-233). */}
+            <details ref={menu} name={MENU_NAME} className="relative">
               <summary
                 aria-label="Sidebar control"
                 title="Sidebar control"

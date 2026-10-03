@@ -152,6 +152,7 @@ test("a caller that forgets the field is an error, not a silent keep", () => {
   // How the first version of the clear shipped broken: the save action built
   // its parse input field by field and never read clear_announcement, which
   // an optional field accepted as "keep". The box did nothing, quietly.
-  const { clear_announcement: _omitted, ...withoutField } = valid;
+  const withoutField: Record<string, unknown> = { ...valid };
+  delete withoutField.clear_announcement;
   assert.equal(contentEditorSchema.safeParse(withoutField).success, false);
 });

@@ -88,7 +88,7 @@ export function hasAnnouncementNote(value: AnnouncePair): boolean {
 export const ANNOUNCEMENT_NOTE_ISSUE = {
   message: "Say what changed, in one line, or untick the announce box.",
   path: ["revision_note"],
-} as const;
+};
 
 /**
  * Announcing and clearing in the same save is contradictory, so it is an
@@ -106,4 +106,4 @@ export function announceAndClearAgree(value: {
 export const ANNOUNCE_CONFLICT_ISSUE = {
   message: "Announce this change or clear the announcement, not both.",
   path: ["clear_announcement"],
-} as const;
+};

@@ -13,6 +13,7 @@ import {
 } from "@/lib/tool-sorts";
 import { toolsHref } from "@/lib/tools-url";
 import { cn } from "@/lib/utils";
+import { MENU_NAME } from "@/components/features/nav/MenuDismiss";
 
 type Props = {
   category?: ToolCategory;
@@ -139,7 +140,7 @@ export function DirectoryFilters({
         JavaScript, no client component, and each option stays a real link
         with a shareable URL behind it.
       */}
-        <details className="relative ml-auto">
+        <details name={MENU_NAME} className="relative ml-auto">
           <summary className="text-muted-foreground hover:text-foreground flex cursor-pointer list-none items-center gap-1 text-sm">
             Sort: {toolSortOrder(activeSort).label}
             <IconChevronDown aria-hidden className="size-3.5" />

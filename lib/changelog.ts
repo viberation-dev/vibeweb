@@ -41,6 +41,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-10-03",
+    kind: "fixed",
+    title: "Menus close when you click away",
+    body: "The Browse menu, the filters and the account menu stayed open until you clicked the same button again, and several could sit open at once. They now close when you click anywhere else or press Escape, and opening one closes the others.",
+  },
+  {
+    date: "2026-10-03",
     kind: "added",
     title: "What's new",
     body: "Everything recently added to the site, and everything meaningfully updated, now has one place to see it: a section on the homepage, a tab when you are signed in, and the full list at /new. Tools, guides, collections and shipped changes, newest first.",

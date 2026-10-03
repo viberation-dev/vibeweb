@@ -21,6 +21,7 @@ function readForm(formData: FormData) {
     pillar: formData.get("pillar"),
     status: formData.get("status"),
     announce_revision: formData.get("announce_revision"),
+    clear_announcement: formData.get("clear_announcement"),
     revision_note: formData.get("revision_note"),
   });
 }

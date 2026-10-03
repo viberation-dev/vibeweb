@@ -112,7 +112,10 @@ export default async function HomePage({ searchParams }: Props) {
     // who the product is for rather than inventing anyone (VIB-102).
     const [testimonials, whatsNew] = await Promise.all([
       listPublishedTestimonials(supabase),
-      listWhatsNew(supabase, { limit: 6 }),
+      // No changelog entries here: most of them announce content that is
+      // already in these six as its own card, and a visitor meeting the same
+      // news twice in six slots is a poor use of them. /new keeps features.
+      listWhatsNew(supabase, { limit: 6, exclude: ["feature"] }),
     ]);
     return (
       <MarketingHome

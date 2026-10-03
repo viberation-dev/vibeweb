@@ -25,6 +25,14 @@ export type WhatsNewOptions = {
   limit?: number;
   kind?: WhatsNewKind;
   event?: WhatsNewEvent;
+  /**
+   * Kinds to leave out. The marketing homepage drops `feature` (VIB-230):
+   * most changelog entries announce content that is already in the stream as
+   * its own card, so a visitor's six slots would carry the same news twice —
+   * "Two guides on skills" beside the skills guide it announces. `/new` and
+   * the signed-in tab keep them, because there the reader asked what changed.
+   */
+  exclude?: readonly WhatsNewKind[];
 };
 
 /**
@@ -57,7 +65,7 @@ function sourceRows<T>(result: PromiseSettledResult<T[]>, source: string): T[] {
  */
 export async function listWhatsNew(
   client: Client,
-  { limit, kind, event }: WhatsNewOptions = {},
+  { limit, kind, event, exclude }: WhatsNewOptions = {},
 ): Promise<WhatsNewItem[]> {
   /*
    * allSettled for the three table reads, because one source failing should
@@ -117,7 +125,8 @@ export async function listWhatsNew(
   const filtered = merged.filter(
     (entry) =>
       (kind === undefined || entry.kind === kind) &&
-      (event === undefined || entry.event === event),
+      (event === undefined || entry.event === event) &&
+      !exclude?.includes(entry.kind),
   );
 
   // Filter before capping, so `?kind=tool&limit=6` gives six tools rather

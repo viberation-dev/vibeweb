@@ -159,9 +159,23 @@ export function changelogInputs(
     title: string;
     body: string;
     kind: string;
+    feature?: true;
   }[],
+  limit?: number,
 ): WhatsNewInput[] {
-  return entries.map((entry) => ({
+  /*
+   * Only entries marked as a capability (VIB-234). `kind` is added/improved/
+   * fixed, which is a different question — it says how the software changed,
+   * not whether a reader gained something to go and use. Without this the
+   * stream called a typo fix a feature, and called every guide announcement
+   * one too, beside the guide it was announcing.
+   *
+   * The cap is applied after the filter, not by the caller before it, or
+   * unflagged entries would crowd the real features out of their own source.
+   */
+  const features = entries.filter((entry) => entry.feature);
+
+  return (limit === undefined ? features : features.slice(0, limit)).map((entry) => ({
     kind: "feature" as const,
     title: entry.title,
     href: "/changelog",

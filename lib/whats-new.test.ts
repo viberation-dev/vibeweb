@@ -203,9 +203,9 @@ test("at is canonicalised, whatever spelling the source used", () => {
 
 test("changelog additions and updates map to the right event", () => {
   const [added, improved, fixed] = changelogInputs([
-    { date: "2026-10-01", title: "A", body: "a body", kind: "added" },
-    { date: "2026-09-30", title: "B", body: "b body", kind: "improved" },
-    { date: "2026-09-29", title: "C", body: "c body", kind: "fixed" },
+    { date: "2026-10-01", title: "A", body: "a body", kind: "added", feature: true },
+    { date: "2026-09-30", title: "B", body: "b body", kind: "improved", feature: true },
+    { date: "2026-09-29", title: "C", body: "c body", kind: "fixed", feature: true },
   ]);
   assert.equal(added.addedAt, "2026-10-01");
   assert.equal(added.revisedAt, null);
@@ -215,9 +215,44 @@ test("changelog additions and updates map to the right event", () => {
   assert.equal(fixed.addedAt, null);
 });
 
+test("only entries marked as a capability reach the stream", () => {
+  /*
+   * The whole point of the flag (VIB-234): `kind` says how the software
+   * changed, not whether a reader gained something to use. A bug fix and a
+   * guide announcement are both changelog entries and neither is a feature.
+   */
+  const inputs = changelogInputs([
+    { date: "2026-10-03", title: "Menus close when you click away", body: "b", kind: "fixed" },
+    { date: "2026-10-02", title: "Two guides on skills", body: "b", kind: "added" },
+    { date: "2026-10-01", title: "Desktop Apps", body: "b", kind: "added", feature: true },
+  ]);
+  assert.deepEqual(
+    inputs.map((i) => i.title),
+    ["Desktop Apps"],
+  );
+});
+
+test("the cap counts features, not entries", () => {
+  // Applied after the filter, or a run of unflagged entries would crowd the
+  // real features out of their own source before the merge ever saw them.
+  const entries = [
+    ...Array.from({ length: 30 }, (_, i) => ({
+      date: "2026-10-02",
+      title: `noise ${i}`,
+      body: "b",
+      kind: "fixed",
+    })),
+    { date: "2026-10-01", title: "Desktop Apps", body: "b", kind: "added", feature: true as const },
+  ];
+  assert.deepEqual(
+    changelogInputs(entries, 2).map((i) => i.title),
+    ["Desktop Apps"],
+  );
+});
+
 test("a changelog entry carries its body and no id, so it joins to no view", () => {
   const [entry] = changelogInputs([
-    { date: "2026-10-01", title: "A", body: "what shipped", kind: "improved" },
+    { date: "2026-10-01", title: "A", body: "what shipped", kind: "improved", feature: true },
   ]);
   assert.equal(entry.note, "what shipped");
   assert.equal(entry.id, undefined);

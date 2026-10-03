@@ -3,6 +3,14 @@ import { z } from "zod";
 // Relative, with the extension: this module is imported by a plain
 // `node --test` file, which resolves no "@/" alias.
 import { OPENROUTER_FAMILY, OPENROUTER_ID } from "../model-facts.ts";
+import {
+  ANNOUNCE_CONFLICT_ISSUE,
+  ANNOUNCE_FIELDS,
+  ANNOUNCEMENT_NOTE_ISSUE,
+  announceAndClearAgree,
+  hasAnnouncementNote,
+  resolveAnnouncement,
+} from "./announce.ts";
 import { safeOutboundUrl } from "../outbound.ts";
 import { SKILLS_SH_SOURCE } from "../skill-facts.ts";
 import { SKILL_AGENT_IDS, SKILL_CATEGORY_VALUES } from "../skill-taxonomy.ts";
@@ -136,18 +144,7 @@ export const toolEditorSchema = z.object({
     .array(z.string())
     .nullish()
     .transform((values) => (values ?? []).filter((v) => (SKILL_AGENT_IDS as readonly string[]).includes(v))),
-  /*
-   * "This is worth announcing" (VIB-230). A revision reaches the What's new
-   * stream only when somebody ticks this: `updated_at` is touched by every
-   * write, including typo fixes and tag reorders, so it cannot carry the
-   * claim. The note is required alongside it because an entry saying only
-   * "Updated" tells a reader nothing.
-   */
-  announce_revision: z
-    .union([z.literal("on"), z.literal("")])
-    .nullable()
-    .transform((value) => value === "on"),
-  revision_note: z.string().trim().nullable().optional(),
+  ...ANNOUNCE_FIELDS,
 })
   // Mirrors tools_openrouter_id_in_family: featuring a GPT on the Claude page
   // would be a wrong fact, not a style choice.
@@ -161,25 +158,15 @@ export const toolEditorSchema = z.object({
       path: ["openrouter_id"],
     },
   )
+  .refine(announceAndClearAgree, ANNOUNCE_CONFLICT_ISSUE)
   // Resolve the pair, then check it: the refinement sees the resolved values
   // and the error lands on the field the editor typed into. Mirrors the
   // database's check constraint, but gives a message instead of a 500.
-  .transform(({ announce_revision, revision_note, ...rest }) => ({
+  .transform(({ announce_revision, clear_announcement, revision_note, ...rest }) => ({
     ...rest,
-    /*
-     * Omitted, not nulled, when the box is unticked (VIB-230). An unticked
-     * save is an ordinary edit and must leave any existing announcement
-     * alone — nulling the pair here would mean every later edit silently
-     * dropped the row out of What's new.
-     */
-    ...(announce_revision
-      ? { revised_at: new Date().toISOString(), revision_note: revision_note || null }
-      : {}),
+    ...resolveAnnouncement({ announce_revision, clear_announcement, revision_note }),
   }))
-  .refine((value) => !value.revised_at || Boolean(value.revision_note), {
-    message: "Say what changed, in one line, or untick the announce box.",
-    path: ["revision_note"],
-  });
+  .refine(hasAnnouncementNote, ANNOUNCEMENT_NOTE_ISSUE);
 
 export type ToolEditorInput = z.infer<typeof toolEditorSchema>;
 

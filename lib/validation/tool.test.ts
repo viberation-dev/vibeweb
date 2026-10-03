@@ -217,3 +217,39 @@ test("an unticked save omits the revision keys, so an existing announcement surv
   assert.equal("revised_at" in parsed, false);
   assert.equal("revision_note" in parsed, false);
 });
+
+test("clearing writes both columns as null, which the check constraint requires", () => {
+  const parsed = toolEditorSchema.parse({
+    ...valid,
+    clear_announcement: "on",
+  });
+  // Null, not omitted: this is the one save that is meant to change these
+  // columns back, and tools_revision_pair / content_revision_pair reject a
+  // row with one set and the other null.
+  assert.equal(parsed.revised_at, null);
+  assert.equal(parsed.revision_note, null);
+});
+
+test("clearing needs no note of its own", () => {
+  // The note refinement guards an announcement. A clear has nothing to say.
+  assert.ok(toolEditorSchema.safeParse({ ...valid, clear_announcement: "on" }).success);
+});
+
+test("announcing and clearing at once is an error rather than a guess", () => {
+  const parsed = toolEditorSchema.safeParse({
+    ...valid,
+    announce_revision: "on",
+    revision_note: "Added Opus 5.5 pricing",
+    clear_announcement: "on",
+  });
+  assert.equal(parsed.success, false);
+  assert.deepEqual(parsed.error!.issues[0].path, ["clear_announcement"]);
+});
+
+test("an absent clear_announcement leaves an announcement alone", () => {
+  // The field only renders on an already-announced row, so most saves post
+  // nothing for it. That must read as "keep", not as a clear.
+  const parsed = toolEditorSchema.parse({ ...valid });
+  assert.equal("revised_at" in parsed, false);
+  assert.equal("revision_note" in parsed, false);
+});

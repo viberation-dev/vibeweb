@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { contentTypeLabel, CONTENT_PILLARS, CONTENT_TYPES } from "@/lib/learn";
 import type { Content } from "@/lib/queries/content";
+import { dateLabel } from "@/lib/whats-new";
 
 type Props = {
   /** Null when creating. Its presence is what makes this an edit form. */
@@ -210,6 +211,33 @@ export function ContentForm({ content, action }: Props) {
               Used only when Announce this change is ticked.
             </p>
           </div>
+
+          {/*
+           * Only when there is something to take back (VIB-232). Its own
+           * control, not an unticked announce box: unticking means "this edit
+           * is not worth announcing" and must leave an earlier announcement
+           * alone, which is why the two cannot be the same checkbox.
+           */}
+          {content.revised_at ? (
+            <div className="flex items-start gap-3">
+              <input
+                id="clear_announcement"
+                name="clear_announcement"
+                type="checkbox"
+                className="border-input mt-0.5 size-4 rounded border"
+              />
+              <div className="space-y-1">
+                <Label htmlFor="clear_announcement">
+                  Clear the announcement
+                </Label>
+                <p className="text-muted-foreground text-sm">
+                  Takes it out of What&rsquo;s new. Announced{" "}
+                  {dateLabel(content.revised_at)}: &ldquo;{content.revision_note}
+                  &rdquo;.
+                </p>
+              </div>
+            </div>
+          ) : null}
         </>
       ) : null}
 

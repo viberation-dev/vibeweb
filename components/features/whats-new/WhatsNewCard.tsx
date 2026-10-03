@@ -1,17 +1,6 @@
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import type { WhatsNewItem } from "@/lib/queries/whats-new";
-import { EVENT_LABELS, KIND_LABELS } from "@/lib/whats-new";
-
-/** The stream's date format. Short, unambiguous, no time of day. */
-function dateLabel(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    // UTC: changelog dates are bare YYYY-MM-DD, parsed as midnight UTC.
-    timeZone: "UTC",
-  });
-}
+import { dateLabel, EVENT_LABELS, KIND_LABELS } from "@/lib/whats-new";
 
 /**
  * One entry in the What's new stream (VIB-230).

@@ -8,6 +8,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Tool } from "@/lib/queries/tools";
+import { dateLabel } from "@/lib/whats-new";
 import { SKILL_AGENTS, SKILL_CATEGORIES } from "@/lib/skill-taxonomy";
 import { BADGE_LABELS, TOOL_BADGES } from "@/lib/tool-badges";
 import { TOOL_CATEGORIES } from "@/lib/tool-categories";
@@ -358,6 +359,33 @@ export function ToolForm({ tool, action }: Props) {
               Used only when Announce this change is ticked.
             </p>
           </div>
+
+          {/*
+           * Only when there is something to take back (VIB-232). Its own
+           * control, not an unticked announce box: unticking means "this edit
+           * is not worth announcing" and must leave an earlier announcement
+           * alone, which is why the two cannot be the same checkbox.
+           */}
+          {tool.revised_at ? (
+            <div className="flex items-start gap-3">
+              <input
+                id="clear_announcement"
+                name="clear_announcement"
+                type="checkbox"
+                className="border-input mt-0.5 size-4 rounded border"
+              />
+              <div className="space-y-1">
+                <Label htmlFor="clear_announcement">
+                  Clear the announcement
+                </Label>
+                <p className="text-muted-foreground text-sm">
+                  Takes it out of What&rsquo;s new. Announced{" "}
+                  {dateLabel(tool.revised_at)}: &ldquo;{tool.revision_note}
+                  &rdquo;.
+                </p>
+              </div>
+            </div>
+          ) : null}
         </>
       ) : null}
 

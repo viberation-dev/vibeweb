@@ -203,6 +203,21 @@ export function whatsNewKey(entry: {
 }
 
 /**
+ * The stream's date format. Short, unambiguous, no time of day.
+ *
+ * UTC, like groupByMonth: changelog dates are bare YYYY-MM-DD parsed as
+ * midnight UTC, and a local zone behind UTC would print the previous day.
+ */
+export function dateLabel(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+/**
  * Entries grouped by the month they happened in, newest month first (VIB-230).
  *
  * Relies on the caller's order rather than re-sorting: listWhatsNew already

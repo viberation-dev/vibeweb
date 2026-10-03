@@ -30,6 +30,7 @@ import type { Testimonial } from "@/lib/queries/testimonials";
 import type { Tool } from "@/lib/queries/tools";
 import type { Walkthrough } from "@/lib/queries/walkthroughs";
 import type { WhatsNewItem } from "@/lib/queries/whats-new";
+import { whatsNewKey } from "@/lib/whats-new";
 import { initialsFrom } from "@/lib/testimonials";
 import { CATEGORY_BLURBS, TOOL_CATEGORIES } from "@/lib/tool-categories";
 import { toolsHref } from "@/lib/tools-url";
@@ -102,7 +103,10 @@ export function MarketingHome({
             visitor has no use for "categories retagged".
           */}
           {flagship ? (
-            <AnnouncementChip badge="New" href={`/walkthroughs/${flagship.slug}`}>
+            <AnnouncementChip
+              badge="New"
+              href={`/walkthroughs/${flagship.slug}`}
+            >
               {flagship.title}: free, guided, start to finish
             </AnnouncementChip>
           ) : null}
@@ -285,7 +289,10 @@ export function MarketingHome({
         */}
         <ul className="grid overflow-hidden rounded-2xl border sm:grid-cols-2 lg:grid-cols-4">
           {TOOL_CATEGORIES.map((category) => (
-            <li key={category.value} className="-mt-px -ml-px border-t border-l">
+            <li
+              key={category.value}
+              className="-mt-px -ml-px border-t border-l"
+            >
               <Link
                 href={toolsHref({ category: category.value })}
                 className="hover:bg-secondary flex h-full flex-col p-7 transition-colors"
@@ -313,7 +320,10 @@ export function MarketingHome({
             eyebrow="App builders"
             title="Describe an app and watch it get built."
             lede="The quickest way to start: tools that turn a plain-English description into a working app or website, no editor needed."
-            action={{ label: "Explore app builders", href: toolsHref({ category: "app_builders" }) }}
+            action={{
+              label: "Explore app builders",
+              href: toolsHref({ category: "app_builders" }),
+            }}
           />
           <ToolTiles tools={appBuilders} cta="See the builder" />
         </Section>
@@ -394,7 +404,7 @@ export function MarketingHome({
           />
           <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {whatsNew.map((item) => (
-              <li key={`${item.kind}-${item.id ?? item.title}-${item.at}`}>
+              <li key={whatsNewKey(item)}>
                 <WhatsNewCard item={item} />
               </li>
             ))}

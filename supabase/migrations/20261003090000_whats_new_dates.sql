@@ -98,9 +98,12 @@ comment on column content.revision_note is
 
 -- ── surfaced_at: the stream's sort key ────────────────────────────────────
 /*
- * `greatest` ignores nulls, so a tool always has one and a draft's is null —
- * which keeps drafts out of the stream by construction rather than by a
- * filter somebody has to remember to write.
+ * `greatest` ignores nulls, so a tool always has one. A content row's is null
+ * only if it has never been published and never been announced; a draft with
+ * `revised_at` set has `surfaced_at = revised_at`. So this column does NOT keep
+ * drafts out of the stream: the `status = 'published'` filter in
+ * listContentSurfaced is required, and for a staff user (RLS is
+ * `status = 'published' OR is_staff()`) it is the only thing doing so.
  */
 alter table tools add column surfaced_at timestamptz
   generated always as (greatest(revised_at, created_at)) stored;
@@ -111,7 +114,7 @@ alter table content add column surfaced_at timestamptz
 comment on column tools.surfaced_at is
   'Sort key for the What''s new stream (VIB-230): the revision date if there is one, else when it was added.';
 comment on column content.surfaced_at is
-  'Sort key for the What''s new stream (VIB-230): the revision date if there is one, else the publish date. Null while draft, which excludes it.';
+  'Sort key for the What''s new stream (VIB-230): the revision date if there is one, else the publish date. Null only if never published and never announced; a draft with revised_at set still has one, so queries must filter status = published.';
 
 create index tools_surfaced_at_idx on tools (surfaced_at desc nulls last);
 create index content_surfaced_at_idx on content (surfaced_at desc nulls last);

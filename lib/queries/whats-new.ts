@@ -28,8 +28,10 @@ export type WhatsNewOptions = {
 };
 
 /**
- * How many rows to pull per source before merging. This is also the ceiling
- * for any one kind: `kind=tool&limit=60` returns at most this many tools.
+ * How many rows to pull per source before merging, changelog included. This is
+ * also the ceiling for any one kind: `kind=tool&limit=60` returns at most this
+ * many tools. Capping every source alike means a thin older month is thin for
+ * every kind equally, rather than silently features-only.
  */
 const PER_SOURCE = 40;
 
@@ -107,7 +109,7 @@ export async function listWhatsNew(
       revisedAt: null,
       note: null,
     })),
-    ...changelogInputs(CHANGELOG),
+    ...changelogInputs(CHANGELOG.slice(0, PER_SOURCE)),
   ];
 
   const merged = mergeWhatsNew(inputs, { newDays: settings.badge_new_days });

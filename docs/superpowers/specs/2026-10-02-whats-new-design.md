@@ -227,9 +227,12 @@ surfaced_at timestamptz generated always as (greatest(revised_at, created_at)) s
 surfaced_at timestamptz generated always as (greatest(revised_at, published_at)) stored
 ```
 
-`greatest` ignores nulls, so a tool always has a `surfaced_at` and a draft's is
-null — which excludes drafts from the stream by construction rather than by a
-filter somebody has to remember. Each gets a descending index, and each source
+`greatest` ignores nulls, so a tool always has a `surfaced_at`, and a content
+row's is null only if it has never been published and never been announced. A
+draft with `revised_at` set has `surfaced_at = revised_at`, so the column does
+not exclude drafts: `listContentSurfaced`'s `status = 'published'` filter is
+required, not defensive, and for a staff user (RLS is
+`status = 'published' OR is_staff()`) it is the only thing keeping drafts out. Each gets a descending index, and each source
 query is `.order("surfaced_at", { ascending: false }).limit(limit)`. The merge
 then only ever handles a few dozen rows.
 
@@ -284,8 +287,9 @@ Two additions, both small:
   the home page a member sees on arrival does not change; `toFeedTab` already
   narrows untrusted `?feed=` values.
 - **A sidebar link to `/new`** in the first `SIDEBAR_GROUPS` group, beside Home
-  and Saved, carrying a count of entries inside `badge_new_days` when that
-  count is non-zero.
+  and Saved. A count of recent entries was dropped: `NavItem` has no count slot,
+  and it would mean running the whole stream query in the sidebar on every page
+  render.
 
 No read state, no dismissal, no write on page view — the consequence of
 choosing global recency.
@@ -326,7 +330,7 @@ the same page, the shell differs because the route group's layout differs.
 
 Against the database, after applying the migration: flipping a row's status in
 both directions sets and then clears `published_at`; `revised_at` without a
-note is rejected by the check constraint; `surfaced_at` is null for a draft,
+note is rejected by the check constraint; `surfaced_at` is null for a draft that was never announced,
 equals `published_at` once published, and moves to `revised_at` when one is
 set.
 

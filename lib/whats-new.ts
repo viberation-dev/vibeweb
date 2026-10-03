@@ -8,7 +8,12 @@
  * on `id` once the merge has decided what is in the stream.
  */
 
-export const WHATS_NEW_KINDS = ["tool", "content", "collection", "feature"] as const;
+export const WHATS_NEW_KINDS = [
+  "tool",
+  "content",
+  "collection",
+  "feature",
+] as const;
 export type WhatsNewKind = (typeof WHATS_NEW_KINDS)[number];
 
 export const WHATS_NEW_EVENTS = ["added", "updated"] as const;
@@ -78,7 +83,11 @@ function at(value: string | null): number | null {
  * labelling it Updated at a date older than its own publication would be a lie
  * the reader can see.
  */
-function toEntry(item: WhatsNewInput, newDays: number, now: number): WhatsNewEntry | null {
+function toEntry(
+  item: WhatsNewInput,
+  newDays: number,
+  now: number,
+): WhatsNewEntry | null {
   const added = at(item.addedAt);
   const revised = at(item.revisedAt);
 
@@ -90,7 +99,8 @@ function toEntry(item: WhatsNewInput, newDays: number, now: number): WhatsNewEnt
   if (!candidates.length) return null;
 
   const when = Math.max(...candidates);
-  const event: WhatsNewEvent = revised !== null && when === revised ? "updated" : "added";
+  const event: WhatsNewEvent =
+    revised !== null && when === revised ? "updated" : "added";
 
   return {
     id: item.id,
@@ -115,18 +125,24 @@ export function mergeWhatsNew(
     return entry ? [entry] : [];
   });
 
-  entries.sort((a, b) => b.at.localeCompare(a.at) || a.title.localeCompare(b.title));
+  entries.sort(
+    (a, b) => b.at.localeCompare(a.at) || a.title.localeCompare(b.title),
+  );
 
   return limit === undefined ? entries : entries.slice(0, limit);
 }
 
 /** Narrows an untrusted `?kind=` value. Undefined means "no filter". */
-export function toWhatsNewKind(value: string | undefined): WhatsNewKind | undefined {
+export function toWhatsNewKind(
+  value: string | undefined,
+): WhatsNewKind | undefined {
   return WHATS_NEW_KINDS.find((kind) => kind === value);
 }
 
 /** Narrows an untrusted `?event=` value. Undefined means "no filter". */
-export function toWhatsNewEvent(value: string | undefined): WhatsNewEvent | undefined {
+export function toWhatsNewEvent(
+  value: string | undefined,
+): WhatsNewEvent | undefined {
   return WHATS_NEW_EVENTS.find((event) => event === value);
 }
 
@@ -138,7 +154,12 @@ export function toWhatsNewEvent(value: string | undefined): WhatsNewEvent | unde
  * an id and never joins to a view.
  */
 export function changelogInputs(
-  entries: readonly { date: string; title: string; body: string; kind: string }[],
+  entries: readonly {
+    date: string;
+    title: string;
+    body: string;
+    kind: string;
+  }[],
 ): WhatsNewInput[] {
   return entries.map((entry) => ({
     kind: "feature" as const,
@@ -148,6 +169,23 @@ export function changelogInputs(
     revisedAt: entry.kind === "added" ? null : entry.date,
     note: entry.body,
   }));
+}
+
+/**
+ * A stable React key for a stream entry (VIB-230).
+ *
+ * A feature has no row and therefore no id, so it falls back to its title —
+ * and `event` is in the key because two changelog entries could otherwise
+ * share a title and a date.
+ */
+export function whatsNewKey(entry: {
+  kind: string;
+  event: string;
+  id?: string;
+  title: string;
+  at: string;
+}): string {
+  return `${entry.kind}-${entry.event}-${entry.id ?? entry.title}-${entry.at}`;
 }
 
 /**
@@ -161,7 +199,9 @@ export function changelogInputs(
  * a bare YYYY-MM-DD parsed as midnight UTC, and formatting it in a local zone
  * behind UTC would print the previous day and group it under the wrong month.
  */
-export function groupByMonth<T extends { at: string }>(items: readonly T[]): [string, T[]][] {
+export function groupByMonth<T extends { at: string }>(
+  items: readonly T[],
+): [string, T[]][] {
   const groups = new Map<string, T[]>();
   for (const item of items) {
     const label = new Date(item.at).toLocaleDateString("en-GB", {

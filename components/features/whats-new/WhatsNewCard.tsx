@@ -26,8 +26,13 @@ function dateLabel(iso: string): string {
  * only entry kind that is not bookmarkable.
  */
 export function WhatsNewCard({ item }: { item: WhatsNewItem }) {
-  const eyebrow = `${EVENT_LABELS[item.event]} · ${KIND_LABELS[item.kind]}`;
-  const meta = [dateLabel(item.at), item.view?.meta].filter(Boolean).join(" · ");
+  // The view already knows its own label (pillar or content type); KIND_LABELS
+  // is the coarse four-way taxonomy of the /new filter chips, and would call an
+  // announcement a "Guide".
+  const eyebrow = `${EVENT_LABELS[item.event]} · ${item.view?.eyebrow ?? KIND_LABELS[item.kind]}`;
+  const meta = [dateLabel(item.at), item.view?.meta]
+    .filter(Boolean)
+    .join(" · ");
 
   if (!item.view) {
     return (
@@ -50,7 +55,10 @@ export function WhatsNewCard({ item }: { item: WhatsNewItem }) {
       // item's own description.
       description={item.note ?? item.view.description}
       badges={item.view.badges}
-      flag={item.isNew ? "New" : undefined}
+      // isNew is computed from the surfaced date, but the site's "New" means
+      // recently created, so only an addition may claim it; an update keeps
+      // the view's own badge.
+      flag={item.event === "added" && item.isNew ? "New" : item.view.flag}
       difficulty={item.view.difficulty}
       meta={meta}
     />

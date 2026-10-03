@@ -4,7 +4,12 @@ import { WhatsNewCard } from "@/components/features/whats-new/WhatsNewCard";
 import { WhatsNewFilters } from "@/components/features/whats-new/WhatsNewFilters";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { listWhatsNew } from "@/lib/queries/whats-new";
-import { groupByMonth, toWhatsNewEvent, toWhatsNewKind } from "@/lib/whats-new";
+import {
+  groupByMonth,
+  toWhatsNewEvent,
+  toWhatsNewKind,
+  whatsNewKey,
+} from "@/lib/whats-new";
 
 export const metadata: Metadata = {
   title: "What's new",
@@ -46,7 +51,7 @@ export default async function WhatsNewPage({ searchParams }: Props) {
               </h2>
               <ul className="mt-4 grid gap-4 sm:grid-cols-2">
                 {group.map((item) => (
-                  <li key={`${item.kind}-${item.id ?? item.title}-${item.at}`}>
+                  <li key={whatsNewKey(item)}>
                     <WhatsNewCard item={item} />
                   </li>
                 ))}

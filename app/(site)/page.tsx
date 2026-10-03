@@ -35,6 +35,7 @@ import { listPopularTags } from "@/lib/queries/tags";
 import { listPublishedTestimonials } from "@/lib/queries/testimonials";
 import { listTools } from "@/lib/queries/tools";
 import { listWhatsNew } from "@/lib/queries/whats-new";
+import { whatsNewKey } from "@/lib/whats-new";
 import { listRankedSkills } from "@/lib/skill-live";
 import {
   getWalkthroughProgress,
@@ -165,7 +166,8 @@ export default async function HomePage({ searchParams }: Props) {
     }
   }
   // Only the selected tab pays for its query.
-  const whatsNew = tab === "whats-new" ? await listWhatsNew(supabase, { limit: 12 }) : [];
+  const whatsNew =
+    tab === "whats-new" ? await listWhatsNew(supabase, { limit: 12 }) : [];
   const feed =
     tab === "whats-new"
       ? []
@@ -316,7 +318,7 @@ export default async function HomePage({ searchParams }: Props) {
             {tab === "whats-new" ? (
               whatsNew.length ? (
                 whatsNew.map((item) => (
-                  <li key={`${item.kind}-${item.id ?? item.title}-${item.at}`}>
+                  <li key={whatsNewKey(item)}>
                     <WhatsNewCard item={item} />
                   </li>
                 ))

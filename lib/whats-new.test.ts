@@ -7,6 +7,7 @@ import {
   mergeWhatsNew,
   toWhatsNewEvent,
   toWhatsNewKind,
+  whatsNewKey,
   type WhatsNewInput,
 } from "./whats-new.ts";
 
@@ -54,7 +55,11 @@ test("a revision is labelled updated, at its revision date, carrying the note", 
 
 test("a revised item appears once, not twice", () => {
   const entries = merge([
-    input({ addedAt: "2026-03-01T00:00:00Z", revisedAt: "2026-10-01T00:00:00Z", note: "n" }),
+    input({
+      addedAt: "2026-03-01T00:00:00Z",
+      revisedAt: "2026-10-01T00:00:00Z",
+      note: "n",
+    }),
   ]);
   assert.equal(entries.length, 1);
 });
@@ -63,7 +68,11 @@ test("the event follows the chosen date, not the presence of revisedAt", () => {
   // Data entry error: revised before it was ever published. greatest() picks
   // the added date, so the label must say Added, not Updated at an older date.
   const [entry] = merge([
-    input({ addedAt: "2026-10-01T00:00:00Z", revisedAt: "2026-02-01T00:00:00Z", note: "n" }),
+    input({
+      addedAt: "2026-10-01T00:00:00Z",
+      revisedAt: "2026-02-01T00:00:00Z",
+      note: "n",
+    }),
   ]);
   assert.equal(entry.event, "added");
   assert.equal(entry.at, "2026-10-01T00:00:00.000Z");
@@ -73,8 +82,18 @@ test("the event follows the chosen date, not the presence of revisedAt", () => {
 test("newest first, across kinds, ties broken on title", () => {
   const entries = merge([
     input({ id: "old", title: "Older", addedAt: "2026-09-01T00:00:00Z" }),
-    input({ id: "new", kind: "content", title: "Newer", addedAt: "2026-10-01T00:00:00Z" }),
-    input({ id: "tie-b", kind: "collection", title: "Beta", addedAt: "2026-10-01T00:00:00Z" }),
+    input({
+      id: "new",
+      kind: "content",
+      title: "Newer",
+      addedAt: "2026-10-01T00:00:00Z",
+    }),
+    input({
+      id: "tie-b",
+      kind: "collection",
+      title: "Beta",
+      addedAt: "2026-10-01T00:00:00Z",
+    }),
   ]);
   assert.deepEqual(
     entries.map((e) => e.title),
@@ -105,7 +124,10 @@ test("an item whose only date is in the future is excluded", () => {
     input({ id: "future", addedAt: "2027-01-01T00:00:00Z" }),
     input({ id: "fine" }),
   ]);
-  assert.deepEqual(entries.map((e) => e.id), ["fine"]);
+  assert.deepEqual(
+    entries.map((e) => e.id),
+    ["fine"],
+  );
 });
 
 test("a null or unparseable date is excluded, not sorted first", () => {
@@ -114,7 +136,10 @@ test("a null or unparseable date is excluded, not sorted first", () => {
     input({ id: "junk", addedAt: "not a date" }),
     input({ id: "fine" }),
   ]);
-  assert.deepEqual(entries.map((e) => e.id), ["fine"]);
+  assert.deepEqual(
+    entries.map((e) => e.id),
+    ["fine"],
+  );
 });
 
 test("isNew is inclusive at the badge_new_days boundary", () => {
@@ -133,7 +158,10 @@ test("limit caps the result after sorting, keeping the newest", () => {
     ],
     { newDays: 14, limit: 1, now: NOW },
   );
-  assert.deepEqual(entries.map((e) => e.id), ["b"]);
+  assert.deepEqual(
+    entries.map((e) => e.id),
+    ["b"],
+  );
 });
 
 test("an empty input returns an empty array", () => {
@@ -153,7 +181,12 @@ test("at is canonicalised, whatever spelling the source used", () => {
   // The real inputs: a Postgres timestamptz, a bare changelog date, and a Z form.
   // Input order is deliberately not chronological to verify the sort works.
   const entries = merge([
-    input({ id: "changelog", title: "B", kind: "feature", addedAt: "2026-09-29" }),
+    input({
+      id: "changelog",
+      title: "B",
+      kind: "feature",
+      addedAt: "2026-09-29",
+    }),
     input({ id: "z", title: "C", addedAt: "2026-09-28T00:00:00Z" }),
     input({ id: "pg", title: "A", addedAt: "2026-09-30T00:00:00+00:00" }),
   ]);
@@ -203,7 +236,10 @@ test("groupByMonth groups consecutive entries and keeps the caller's order", () 
   ]);
   assert.deepEqual(
     groups.map(([label, items]) => [label, items.length]),
-    [["October 2026", 2], ["September 2026", 1]],
+    [
+      ["October 2026", 2],
+      ["September 2026", 1],
+    ],
   );
 });
 
@@ -216,4 +252,16 @@ test("groupByMonth labels months in UTC, so a date never slips to the previous m
 
 test("groupByMonth returns nothing for an empty list", () => {
   assert.deepEqual(groupByMonth([]), []);
+});
+
+test("two features sharing a title and date but not an event get different keys", () => {
+  const base = {
+    kind: "feature",
+    title: "Same",
+    at: "2026-10-01T00:00:00.000Z",
+  };
+  assert.notEqual(
+    whatsNewKey({ ...base, event: "added" }),
+    whatsNewKey({ ...base, event: "updated" }),
+  );
 });

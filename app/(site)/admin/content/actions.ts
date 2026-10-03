@@ -20,6 +20,8 @@ function readForm(formData: FormData) {
     audience: formData.get("audience"),
     pillar: formData.get("pillar"),
     status: formData.get("status"),
+    announce_revision: formData.get("announce_revision"),
+    revision_note: formData.get("revision_note"),
   });
 }
 
@@ -66,6 +68,7 @@ export async function saveContentAction(
   // The article's own page, the hub and the home feed can all show it.
   revalidatePath("/learn", "layout");
   revalidatePath("/");
+  revalidatePath("/new");
   revalidatePath("/admin/content");
 
   // redirect() throws, so it must sit outside the try above.

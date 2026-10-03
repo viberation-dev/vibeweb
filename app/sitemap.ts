@@ -20,6 +20,7 @@ const STATIC_PATHS = [
   "/blog",
   "/docs",
   "/changelog",
+  "/new",
   "/privacy",
   "/terms",
 ];

@@ -190,3 +190,24 @@ export async function countCollectionsContaining(
   }
   return count ?? 0;
 }
+
+/**
+ * Collections newest first, for the What's new stream (VIB-230).
+ *
+ * Additions only: a collection has no status column — a row existing is the
+ * row being live — and it is not revised in a way worth announcing.
+ */
+export async function listCollectionsSurfaced(
+  client: Client,
+  limit: number,
+): Promise<Collection[]> {
+  const { data, error } = await client
+    .from("collections")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .order("slug", { ascending: true })
+    .limit(limit);
+
+  if (error) throw new Error(`listCollectionsSurfaced: ${error.message}`, { cause: error });
+  return data ?? [];
+}

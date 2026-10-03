@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Greeting } from "@/components/features/home/Greeting";
 import { MarketingHome } from "@/components/features/marketing/MarketingHome";
 import { CategoryPicker } from "@/components/features/tools/CategoryPicker";
+import { WhatsNewCard } from "@/components/features/whats-new/WhatsNewCard";
 import { Badge } from "@/components/ui/badge";
 import { ButtonIcon, buttonVariants } from "@/components/ui/button";
 import { Panel } from "@/components/ui/panel";
@@ -34,6 +35,8 @@ import { resolveTargetViews } from "@/lib/queries/resources";
 import { listPopularTags } from "@/lib/queries/tags";
 import { listPublishedTestimonials } from "@/lib/queries/testimonials";
 import { listTools } from "@/lib/queries/tools";
+import { listWhatsNew } from "@/lib/queries/whats-new";
+import { whatsNewKey } from "@/lib/whats-new";
 import { listRankedSkills } from "@/lib/skill-live";
 import {
   getWalkthroughProgress,
@@ -107,13 +110,20 @@ export default async function HomePage({ searchParams }: Props) {
     // The marketing page shows no counts (VIB-116), so it no longer asks for
     // any. Real quotes, or none — the proof section falls back to describing
     // who the product is for rather than inventing anyone (VIB-102).
-    const testimonials = await listPublishedTestimonials(supabase);
+    const [testimonials, whatsNew] = await Promise.all([
+      listPublishedTestimonials(supabase),
+      // No changelog entries here: most of them announce content that is
+      // already in these six as its own card, and a visitor meeting the same
+      // news twice in six slots is a poor use of them. /new keeps features.
+      listWhatsNew(supabase, { limit: 6, exclude: ["feature"] }),
+    ]);
     return (
       <MarketingHome
         previewTools={tools.slice(0, 3)}
         collections={collections}
         testimonials={testimonials}
         latest={latest}
+        whatsNew={whatsNew}
         topSkills={topSkills.map(({ tool }) => tool)}
         appBuilders={appBuilders}
         flagship={flagship}
@@ -159,15 +169,21 @@ export default async function HomePage({ searchParams }: Props) {
       tagWeight.set(tagId, (tagWeight.get(tagId) ?? 0) + 1);
     }
   }
-  const feed = pickFeedTabs(pool, {
-    roleLevel: profile?.role_level ?? undefined,
-    read,
-    affinity: (id) =>
-      (poolTags.get(id) ?? []).reduce(
-        (sum, tagId) => sum + (tagWeight.get(tagId) ?? 0),
-        0,
-      ),
-  })[tab];
+  // Only the selected tab pays for its query.
+  const whatsNew =
+    tab === "whats-new" ? await listWhatsNew(supabase, { limit: 12 }) : [];
+  const feed =
+    tab === "whats-new"
+      ? []
+      : pickFeedTabs(pool, {
+          roleLevel: profile?.role_level ?? undefined,
+          read,
+          affinity: (id) =>
+            (poolTags.get(id) ?? []).reduce(
+              (sum, tagId) => sum + (tagWeight.get(tagId) ?? 0),
+              0,
+            ),
+        })[tab];
 
   /*
    * Nothing deletes a history row when its tool goes away — no foreign key
@@ -303,39 +319,55 @@ export default async function HomePage({ searchParams }: Props) {
           </div>
 
           <ul className="space-y-3">
-            {/* The walkthrough and collections are For you's; the other tabs are the library ranked. */}
-            {flagship && tab === "for-you" ? (
-              <li>
-                <FeedCard
-                  href={`/walkthroughs/${flagship.slug}`}
-                  eyebrow="Walkthrough"
-                  title={flagship.title}
-                  meta={countLabel(flagship.steps.length, "step")}
-                />
-              </li>
-            ) : null}
-            {feed.map((item) => (
-              <li key={item.id}>
-                <FeedCard
-                  href={`/learn/${item.slug}`}
-                  eyebrow={[contentTypeLabel(item.type), item.role_level]
-                    .filter(Boolean)
-                    .join(" · ")}
-                  title={item.title}
-                  meta={null}
-                />
-              </li>
-            ))}
-            {(tab === "for-you" ? collections : []).map((collection) => (
-              <li key={collection.id}>
-                <FeedCard
-                  href={`/collections/${collection.slug}`}
-                  eyebrow="New in directory"
-                  title={collection.title}
-                  meta={`Collection · ${countLabel(collectionCounts.get(collection.id) ?? 0, "tool")}`}
-                />
-              </li>
-            ))}
+            {tab === "whats-new" ? (
+              whatsNew.length ? (
+                whatsNew.map((item) => (
+                  <li key={whatsNewKey(item)}>
+                    <WhatsNewCard item={item} />
+                  </li>
+                ))
+              ) : (
+                <li className="text-muted-foreground leading-relaxed">
+                  Nothing to show here yet.
+                </li>
+              )
+            ) : (
+              <>
+                {/* The walkthrough and collections are For you's; the other tabs are the library ranked. */}
+                {flagship && tab === "for-you" ? (
+                  <li>
+                    <FeedCard
+                      href={`/walkthroughs/${flagship.slug}`}
+                      eyebrow="Walkthrough"
+                      title={flagship.title}
+                      meta={countLabel(flagship.steps.length, "step")}
+                    />
+                  </li>
+                ) : null}
+                {feed.map((item) => (
+                  <li key={item.id}>
+                    <FeedCard
+                      href={`/learn/${item.slug}`}
+                      eyebrow={[contentTypeLabel(item.type), item.role_level]
+                        .filter(Boolean)
+                        .join(" · ")}
+                      title={item.title}
+                      meta={null}
+                    />
+                  </li>
+                ))}
+                {(tab === "for-you" ? collections : []).map((collection) => (
+                  <li key={collection.id}>
+                    <FeedCard
+                      href={`/collections/${collection.slug}`}
+                      eyebrow="New in directory"
+                      title={collection.title}
+                      meta={`Collection · ${countLabel(collectionCounts.get(collection.id) ?? 0, "tool")}`}
+                    />
+                  </li>
+                ))}
+              </>
+            )}
           </ul>
         </div>
 

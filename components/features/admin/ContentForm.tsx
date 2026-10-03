@@ -175,6 +175,44 @@ export function ContentForm({ content, action }: Props) {
         </p>
       </div>
 
+      {/* Create has nothing to announce: ticking it would stamp revised_at on a brand-new row. */}
+      {content ? (
+        <>
+          {/*
+           * Unticked on every load, even when `revised_at` is already set: ticking
+           * means "announce this edit, now", not "this row was revised before".
+           */}
+          <div className="flex items-start gap-3">
+            <input
+              id="announce_revision"
+              name="announce_revision"
+              type="checkbox"
+              className="border-input mt-0.5 size-4 rounded border"
+            />
+            <div className="space-y-1">
+              <Label htmlFor="announce_revision">Announce this change</Label>
+              <p className="text-muted-foreground text-sm">
+                Puts it in What&rsquo;s new, dated today. Leave unticked for a
+                typo, a tag change or anything a reader would not care about.
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="revision_note">What changed</Label>
+            <Input
+              id="revision_note"
+              name="revision_note"
+              defaultValue=""
+              placeholder="Added Opus 5.5 pricing"
+            />
+            <p className="text-muted-foreground text-sm">
+              Used only when Announce this change is ticked.
+            </p>
+          </div>
+        </>
+      ) : null}
+
       {state.error ? (
         <p role="alert" className="text-destructive text-sm">
           {state.error}

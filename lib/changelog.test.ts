@@ -57,6 +57,16 @@ test("dates render in UTC, so the day never slips by timezone", () => {
   assert.equal(formatChangelogDate("2026-01-01"), "1 January 2026");
 });
 
+test("the constant is stored newest first", () => {
+  /*
+   * The page sorts, so this was only a convention until What's new (VIB-230)
+   * started taking `CHANGELOG.slice(0, PER_SOURCE)` — which caps the newest
+   * entries only if the array is already in that order.
+   */
+  const dates = CHANGELOG.map((item) => item.date);
+  assert.deepEqual(dates, [...dates].sort().reverse(), "entries are out of order");
+});
+
 test("every shipped entry is well-formed", () => {
   for (const item of CHANGELOG) {
     assert.match(item.date, /^\d{4}-\d{2}-\d{2}$/, `bad date: ${item.title}`);

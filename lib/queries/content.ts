@@ -342,7 +342,8 @@ export type ContentWrite = Pick<
   | "audience"
   | "pillar"
   | "status"
->;
+>
+  & Partial<Pick<TablesInsert<"content">, "revised_at" | "revision_note">>;
 
 export async function createContent(
   client: Client,
@@ -414,4 +415,34 @@ export async function countContentByPillar(
     }
   }
   return counts;
+}
+
+/**
+ * Published content ordered for the What's new stream (VIB-230).
+ *
+ * The `status` filter is the actual guard, not a backstop: unpublishing a row
+ * clears `published_at` but leaves a revised row's `surfaced_at` set, so the
+ * null filter alone would surface a draft.
+ */
+export async function listContentSurfaced(client: Client, limit: number): Promise<Content[]> {
+  const { data, error } = await client
+    .from("content")
+    .select("*")
+    .eq("status", "published")
+    /*
+     * Role guides are staff-facing (seller, admin, author) and are already
+     * excluded from the Learn indexes for that reason — see LEARN_TYPES in
+     * lib/learn.ts. The stream reaches further than Learn does: its six
+     * newest land on the logged-out marketing homepage, which is the last
+     * place a seller onboarding guide belongs. Help articles stay, because
+     * they are written for the reader looking at them.
+     */
+    .neq("type", "role_guide")
+    .not("surfaced_at", "is", null)
+    .order("surfaced_at", { ascending: false })
+    .order("slug", { ascending: true })
+    .limit(limit);
+
+  if (error) throw new Error(`listContentSurfaced: ${error.message}`, { cause: error });
+  return data ?? [];
 }

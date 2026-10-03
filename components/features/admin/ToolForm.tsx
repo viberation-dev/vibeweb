@@ -213,10 +213,10 @@ export function ToolForm({ tool, action }: Props) {
           autoCapitalize="none"
         />
         <p className="text-muted-foreground text-sm">
-          Skills only. The part after <code>skills.sh/</code> in the skill&apos;s
-          URL, for live installs, security audits and files. Use just{" "}
-          <code>owner/repo</code> for a pack of skills. Blank for everything
-          else.
+          Skills only. The part after <code>skills.sh/</code> in the
+          skill&apos;s URL, for live installs, security audits and files. Use
+          just <code>owner/repo</code> for a pack of skills. Blank for
+          everything else.
         </p>
       </div>
 
@@ -249,7 +249,9 @@ export function ToolForm({ tool, action }: Props) {
                 type="checkbox"
                 name="skill_agents_excluded"
                 value={agent.id}
-                defaultChecked={tool?.skill_agents_excluded?.includes(agent.id) ?? false}
+                defaultChecked={
+                  tool?.skill_agents_excluded?.includes(agent.id) ?? false
+                }
                 className="border-input size-4 rounded border"
               />
               {agent.label}
@@ -290,8 +292,8 @@ export function ToolForm({ tool, action }: Props) {
         <div className="space-y-1">
           <Label htmlFor="editor_pick">Editor&apos;s pick</Label>
           <p className="text-muted-foreground text-sm">
-            Shows in the Editor&apos;s picks row at the top of its category.
-            The row holds three, so keep it to the best three per category.
+            Shows in the Editor&apos;s picks row at the top of its category. The
+            row holds three, so keep it to the best three per category.
           </p>
         </div>
       </div>
@@ -320,6 +322,44 @@ export function ToolForm({ tool, action }: Props) {
           .
         </p>
       </div>
+
+      {/* Create has nothing to announce: ticking it would stamp revised_at on a brand-new row. */}
+      {tool ? (
+        <>
+          {/*
+           * Unticked on every load, even when `revised_at` is already set: ticking
+           * means "announce this edit, now", not "this row was revised before".
+           */}
+          <div className="flex items-start gap-3">
+            <input
+              id="announce_revision"
+              name="announce_revision"
+              type="checkbox"
+              className="border-input mt-0.5 size-4 rounded border"
+            />
+            <div className="space-y-1">
+              <Label htmlFor="announce_revision">Announce this change</Label>
+              <p className="text-muted-foreground text-sm">
+                Puts it in What&rsquo;s new, dated today. Leave unticked for a
+                typo, a tag change or anything a reader would not care about.
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="revision_note">What changed</Label>
+            <Input
+              id="revision_note"
+              name="revision_note"
+              defaultValue=""
+              placeholder="Added Opus 5.5 pricing"
+            />
+            <p className="text-muted-foreground text-sm">
+              Used only when Announce this change is ticked.
+            </p>
+          </div>
+        </>
+      ) : null}
 
       {state.error ? (
         <p role="alert" className="text-destructive text-sm">

@@ -49,6 +49,8 @@ export async function saveToolAction(
     skills_sh_source: formData.get("skills_sh_source"),
     skill_category: formData.get("skill_category"),
     skill_agents_excluded: formData.getAll("skill_agents_excluded"),
+    announce_revision: formData.get("announce_revision"),
+    revision_note: formData.get("revision_note"),
   });
 
   if (!parsed.success) {
@@ -73,6 +75,7 @@ export async function saveToolAction(
   // The directory, the tool's own page and the home feed can all show it.
   revalidatePath("/tools", "layout");
   revalidatePath("/skills");
+  revalidatePath("/new");
   revalidatePath("/");
   revalidatePath("/admin/tools");
 

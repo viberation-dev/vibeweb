@@ -9,6 +9,14 @@ import type { RoleLevel } from "./role-level.ts";
 
 /** The feed tabs the mockup shows. */
 export const FEED_TABS = [
+  /*
+   * First in the row, and deliberately not the default (VIB-230): the Latest
+   * tab below reads `content` rows only, which is why a new tool, collection
+   * or shipped change never surfaced anywhere in the signed-in app. This tab
+   * is the merged stream. `for-you` stays the landing tab, so the page a
+   * member arrives at does not change.
+   */
+  { value: "whats-new", label: "What's new" },
   { value: "for-you", label: "For you" },
   { value: "latest", label: "Latest" },
   /*
@@ -21,6 +29,14 @@ export const FEED_TABS = [
 ] as const;
 
 export type FeedTab = (typeof FEED_TABS)[number]["value"];
+
+/**
+ * The tabs the content pool is ranked into — every tab except What's new,
+ * which is a merged stream from `lib/queries/whats-new.ts` and is not ranked
+ * from this pool at all. Keeping it out of `pickFeedTabs`'s key is what stops
+ * that function claiming to produce something it knows nothing about.
+ */
+export type ContentFeedTab = Exclude<FeedTab, "whats-new">;
 
 /** Narrows an untrusted `?feed=` value to a selectable tab. */
 export function toFeedTab(value: string | undefined): FeedTab {
@@ -69,7 +85,7 @@ export function pickFeedTabs<T extends FeedItem>(
   pool: readonly T[],
   signals: FeedSignals,
   size = 3,
-): Record<FeedTab, T[]> {
+): Record<ContentFeedTab, T[]> {
   const taken = new Set<string>();
 
   const fill = (candidates: readonly T[], order: (a: T, b: T) => number) => {

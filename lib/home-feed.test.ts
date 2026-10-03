@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  FEED_TABS,
   greetingFor,
   pickFeedTabs,
   progressLabel,
@@ -97,4 +98,16 @@ test("For you keeps to the tier, unread first, then tag overlap", () => {
 test("a short pool tops tabs up rather than leaving them empty", () => {
   const tabs = pickFeedTabs(pool.slice(0, 2), none, 2);
   assert.equal(tabs.latest.length, 2);
+});
+
+test("What's new is a selectable tab and is not the default", () => {
+  assert.equal(toFeedTab("whats-new"), "whats-new");
+  // The default landing tab does not change: a member arriving at / still
+  // gets For you.
+  assert.equal(toFeedTab(undefined), "for-you");
+  assert.equal(toFeedTab("nonsense"), "for-you");
+});
+
+test("What's new is first in the tab row", () => {
+  assert.equal(FEED_TABS[0].value, "whats-new");
 });

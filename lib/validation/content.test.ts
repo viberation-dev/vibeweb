@@ -4,6 +4,7 @@ import { test } from "node:test";
 import { contentEditorSchema } from "./content.ts";
 
 const valid = {
+  announce_revision: null,
   type: "guide",
   title: "  Ship your first project  ",
   slug: "Ship-Your-First-Project",
@@ -75,4 +76,37 @@ test("an unfiled pillar is null, and an invented one is rejected", () => {
     contentEditorSchema.safeParse({ ...valid, pillar: "Fundamentals" }).success,
     false,
   );
+});
+
+test("announcing a revision requires a note", () => {
+  const parsed = contentEditorSchema.safeParse({
+    ...valid,
+    announce_revision: "on",
+    revision_note: "   ",
+  });
+  assert.equal(parsed.success, false);
+  assert.match(parsed.error!.issues[0].message, /what changed/i);
+  assert.deepEqual(parsed.error!.issues[0].path, ["revision_note"]);
+});
+
+test("an announced revision resolves to a timestamp and the note", () => {
+  const parsed = contentEditorSchema.parse({
+    ...valid,
+    announce_revision: "on",
+    revision_note: "Added Opus 5.5 pricing",
+  });
+  assert.equal(parsed.revision_note, "Added Opus 5.5 pricing");
+  assert.ok(parsed.revised_at, "revised_at is stamped");
+});
+
+test("an unticked save omits the revision keys, so an existing announcement survives", () => {
+  const parsed = contentEditorSchema.parse({
+    ...valid,
+    announce_revision: null,
+    revision_note: "typed then unticked",
+  });
+  // Omitted, not null: the update payload must not mention these columns at
+  // all, or a plain edit would wipe a previously announced revision.
+  assert.equal("revised_at" in parsed, false);
+  assert.equal("revision_note" in parsed, false);
 });

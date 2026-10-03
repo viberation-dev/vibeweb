@@ -10,6 +10,21 @@ export type ChangelogEntry = {
   /** One or two sentences a visitor would understand. No issue IDs. */
   body: string;
   kind: ChangelogKind;
+  /**
+   * A capability, not a change: a new section, a new category, something a
+   * reader can go and use. Only these reach the What's new stream (VIB-234).
+   *
+   * Set by hand, because it cannot be derived. `kind` says whether something
+   * was added, improved or fixed — a different axis entirely. "Desktop Apps"
+   * and "Qoder, in IDEs" are both `added`, and only the first is a feature;
+   * "Browse tools by category" is `improved` and arguably is one. No rule
+   * separates them, so the person writing the entry decides.
+   *
+   * Most entries are not features, and that is the expected ratio: catalogue
+   * additions and content announcements already reach the stream as their own
+   * cards, and a bug fix is not news a visitor wants in a list of what is new.
+   */
+  feature?: true;
 };
 
 export const CHANGELOG_KINDS = ["added", "improved", "fixed"] as const;
@@ -49,6 +64,7 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
     date: "2026-10-03",
     kind: "added",
     title: "What's new",
+    feature: true,
     body: "Everything recently added to the site, and everything meaningfully updated, now has one place to see it: a section on the homepage, a tab when you are signed in, and the full list at /new. Tools, guides, collections and shipped changes, newest first.",
   },
   {
@@ -121,6 +137,7 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
     date: "2026-09-23",
     kind: "added",
     title: "Comments, and a way to say thanks",
+    feature: true,
     body: "Every guide, article and walkthrough now has a discussion under it: sign in to comment, reply once, and appreciate a piece or someone else’s comment. Counts show in the header and on the bar at the bottom of the page.",
   },
   {
@@ -139,12 +156,14 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
     date: "2026-09-22",
     kind: "added",
     title: "Desktop Apps",
+    feature: true,
     body: "A new category for AI you install rather than open in a tab: Claude, ChatGPT, Qwen Studio, Kimi Work and Antigravity 2.0. These can reach your files, your screen and your terminal, which is the reason to install one, and each entry says exactly what it can touch.",
   },
   {
     date: "2026-09-21",
     kind: "added",
     title: "Extensions for your editor",
+    feature: true,
     body: "The directory now covers what goes inside VS Code and Cursor, not just the editors themselves: AI agents like Cline and Copilot Chat, and the everyday helpers that make AI code readable — ESLint, Prettier, Error Lens, GitLens, Live Server and more. Every editor page lists what you can install in it.",
   },
   {
@@ -163,6 +182,7 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
     date: "2026-09-18",
     kind: "added",
     title: "Side-by-side comparisons",
+    feature: true,
     body: "New comparison pages put two tools next to each other, with their pricing, platforms and key facts in one table and a straight answer on which to pick. Start with Claude vs GPT, Cursor vs Devin Desktop and Lovable vs Replit.",
   },
   {
@@ -241,6 +261,7 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
     date: "2026-09-16",
     kind: "added",
     title: "Terminals category",
+    feature: true,
     body: "A new directory category for the window you type commands in. It explains terminal and shell in plain words, shows how to open the one already on your computer, and lists Windows Terminal, PowerShell, Git Bash, WSL, the Mac Terminal, iTerm2, Ptyxis, Konsole, Warp, Wave, Ghostty, WezTerm, Kitty, Alacritty and Tabby.",
   },
   {
@@ -355,6 +376,7 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
     date: "2026-09-14",
     kind: "added",
     title: "Hosting category",
+    feature: true,
     body: "A new directory category for putting what you build online. Vercel moves into it, joined by Netlify, Cloudflare Workers, GitHub Pages, Hostinger, Firebase Hosting, Render, Railway, Fly.io, DigitalOcean App Platform and AWS Amplify. ChatGPT Sites joins App Builders.",
   },
   {
@@ -367,6 +389,7 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
     date: "2026-09-14",
     kind: "added",
     title: "App Builders category",
+    feature: true,
     body: "A new directory category for tools that build an app or website from a description. Lovable and Replit move into it, joined by Bolt, Base44, v0, Figma Make, Google AI Studio, Emergent, Mocha, Rork, Bubble, FlutterFlow, Softr, Relume, Framer, Webflow and Durable.",
   },
   {
@@ -397,6 +420,7 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
     date: "2026-09-13",
     kind: "added",
     title: "A home for agent skills",
+    feature: true,
     body: "The new Skills page ranks skills by real installs, and each skill's page now shows its install command, GitHub stars, independent security checks and the files inside. It also lists the package managers, directories and guides for going further.",
   },
   {

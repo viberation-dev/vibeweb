@@ -8,22 +8,7 @@ import { listAllContent } from "@/lib/queries/content";
 import { listAllTools } from "@/lib/queries/tools";
 import { listWalkthroughs } from "@/lib/queries/walkthroughs";
 import { siteUrl } from "@/lib/site-url";
-
-const STATIC_PATHS = [
-  "",
-  "/tools",
-  "/skills",
-  "/learn",
-  "/walkthroughs",
-  "/collections",
-  "/compare",
-  "/blog",
-  "/docs",
-  "/changelog",
-  "/new",
-  "/privacy",
-  "/terms",
-];
+import { STATIC_PATHS } from "@/lib/static-routes";
 
 // Regenerated at most hourly rather than on every crawler hit.
 export const revalidate = 3600;

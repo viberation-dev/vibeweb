@@ -1,7 +1,11 @@
 "use server";
 
 import { sendFeedback } from "@/lib/feedback";
-import { SUBMITTED_NOTICE, isBotSubmission } from "@/lib/feedback-guard";
+import {
+  SUBMITTED_NOTICE,
+  isBotSubmission,
+  usernameOrNull,
+} from "@/lib/feedback-guard";
 import { createClient } from "@/lib/integrations/supabase/server";
 import { getCurrentProfile } from "@/lib/queries/profiles";
 import { siteUrl } from "@/lib/site-url";
@@ -46,14 +50,14 @@ export async function submitFeedbackAction(
   /*
    * Read from the session, never from the form: a username is a claim about
    * who someone is, and a form field saying "rafa" is worth nothing.
+   *
+   * Through usernameOrNull because the lookup throws on a Supabase error, and
+   * losing someone's feedback over the name on it is the wrong trade.
    */
   const supabase = await createClient();
-  const profile = await getCurrentProfile(supabase);
+  const username = await usernameOrNull(() => getCurrentProfile(supabase));
 
-  const result = await sendFeedback(
-    { ...parsed.data, username: profile?.username ?? null },
-    siteUrl,
-  );
+  const result = await sendFeedback({ ...parsed.data, username }, siteUrl);
 
   switch (result.status) {
     case "sent":

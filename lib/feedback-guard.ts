@@ -18,3 +18,27 @@ export const SUBMITTED_NOTICE = "Thanks — that's gone through. We read every o
 export function isBotSubmission(honeypot: FormDataEntryValue | null): boolean {
   return typeof honeypot === "string" ? honeypot.length > 0 : honeypot !== null;
 }
+
+/**
+ * The submitter's username, or null, and never a thrown error.
+ *
+ * The profile lookup throws on any Supabase error (`getProfile` in
+ * lib/queries/profiles.ts does not swallow one), and an uncaught throw out of
+ * a server action renders the visitor neither a notice nor an error — their
+ * feedback is gone and they have nothing to retry from.
+ *
+ * The username is decorative: it changes who the email says it is from and
+ * nothing else. So a failed lookup degrades to "a visitor" rather than taking
+ * the submission down with it. Takes the lookup as a function so the failure
+ * is testable without a session.
+ */
+export async function usernameOrNull(
+  lookup: () => Promise<{ username: string | null } | null>,
+): Promise<string | null> {
+  try {
+    return (await lookup())?.username ?? null;
+  } catch (error) {
+    console.error("feedback: profile lookup failed", error);
+    return null;
+  }
+}

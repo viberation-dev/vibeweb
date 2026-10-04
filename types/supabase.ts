@@ -1033,6 +1033,16 @@ export type Database = {
       }
       increment_tool_views: { Args: { tool_slug: string }; Returns: undefined }
       is_staff: { Args: never; Returns: boolean }
+      new_members_for_digest: {
+        Args: { p_secret: string }
+        Returns: {
+          created_at: string
+          email: string
+          role_level: Database["public"]["Enums"]["role_level"]
+          user_id: string
+          username: string
+        }[]
+      }
       search_all: {
         Args: { q: string; result_limit?: number }
         Returns: {

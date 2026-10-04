@@ -362,17 +362,23 @@ export async function createContent(
   return data;
 }
 
+/**
+ * `touch: false` leaves `updated_at` alone, for a save that changed nothing a
+ * reader can see — crediting a contributor (VIB-238). The caller decides, by
+ * comparing the rows; this just does as it is told.
+ */
 export async function updateContent(
   client: Client,
   id: string,
   values: ContentWrite,
+  { touch = true }: { touch?: boolean } = {},
 ): Promise<Content> {
   const { data, error } = await client
     .from("content")
     // No `updated_at` trigger on this table (migration 03 only defaults it),
     // so an edit would otherwise keep its original timestamp and the editor's
     // most-recent-first list would be a lie.
-    .update({ ...values, updated_at: new Date().toISOString() })
+    .update(touch ? { ...values, updated_at: new Date().toISOString() } : values)
     .eq("id", id)
     .select("*")
     .single();

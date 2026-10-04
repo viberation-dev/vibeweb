@@ -3,8 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { onlyContributorChanged } from "@/lib/content-diff";
 import { createClient } from "@/lib/integrations/supabase/server";
-import { createContent, updateContent } from "@/lib/queries/content";
+import { createContent, getContentById, updateContent } from "@/lib/queries/content";
 import { requireStaff } from "@/lib/staff";
 import { contentEditorSchema } from "@/lib/validation/content";
 
@@ -56,7 +57,18 @@ export async function saveContentAction(
 
   try {
     if (id) {
-      await updateContent(supabase, id, parsed.data);
+      /*
+       * Crediting a contributor is not a revision — the words did not change,
+       * and bumping `updated_at` would print a false "Updated" date under the
+       * headline (VIB-238). Compared rather than exempting the column, so a
+       * save that credits someone *and* edits the piece still counts.
+       *
+       * A row that cannot be read back is treated as a revision: the safe
+       * default is the behaviour this table had before.
+       */
+      const before = await getContentById(supabase, id);
+      const touch = !before || !onlyContributorChanged(before, parsed.data);
+      await updateContent(supabase, id, parsed.data, { touch });
     } else {
       await createContent(supabase, parsed.data);
     }

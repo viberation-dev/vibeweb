@@ -20,6 +20,7 @@ function readForm(formData: FormData) {
     audience: formData.get("audience"),
     pillar: formData.get("pillar"),
     status: formData.get("status"),
+    contributor_key: formData.get("contributor_key"),
     announce_revision: formData.get("announce_revision"),
     clear_announcement: formData.get("clear_announcement"),
     revision_note: formData.get("revision_note"),

@@ -11,6 +11,7 @@ import { Breadcrumb } from "@/components/features/resource/Breadcrumb";
 import { ArticleHeader } from "@/components/features/resource/ArticleHeader";
 import { ArticleShell } from "@/components/features/resource/ArticleShell";
 import { JsonLd } from "@/components/features/seo/JsonLd";
+import { person } from "@/lib/byline";
 import { readingTimeLabel } from "@/lib/reading-time";
 import { breadcrumbLd, plainSummary } from "@/lib/structured-data";
 import { createClient } from "@/lib/integrations/supabase/server";
@@ -125,6 +126,7 @@ export default async function BlogPostPage({ params }: Props) {
       <ArticleHeader
         kicker="Announcement"
         title={item.title}
+        contributor={person(item.contributor_key)}
         publishedAt={item.created_at}
         updatedAt={item.updated_at}
         readingTime={readingTimeLabel(item.body, item.blocks)}

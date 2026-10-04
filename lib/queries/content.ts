@@ -342,6 +342,7 @@ export type ContentWrite = Pick<
   | "audience"
   | "pillar"
   | "status"
+  | "contributor_key"
 >
   & Partial<Pick<TablesInsert<"content">, "revised_at" | "revision_note">>;
 

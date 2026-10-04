@@ -15,6 +15,7 @@ import { ArticleShell } from "@/components/features/resource/ArticleShell";
 import { Badge } from "@/components/ui/badge";
 import { JsonLd } from "@/components/features/seo/JsonLd";
 import { articleOutline } from "@/lib/article-outline";
+import { person } from "@/lib/byline";
 import { readingTimeLabel } from "@/lib/reading-time";
 import { breadcrumbLd, plainSummary } from "@/lib/structured-data";
 import { createClient } from "@/lib/integrations/supabase/server";
@@ -173,6 +174,7 @@ export default async function ContentPage({ params }: Props) {
          * right on a card and reads as a broken sentence under a headline.
          */
         lede={blocks ? item.body : null}
+        contributor={person(item.contributor_key)}
         publishedAt={item.created_at}
         updatedAt={item.updated_at}
         readingTime={readingTimeLabel(item.body, item.blocks)}

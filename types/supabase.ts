@@ -261,6 +261,7 @@ export type Database = {
           audience: Database["public"]["Enums"]["docs_audience"] | null
           blocks: Json | null
           body: string | null
+          contributor_key: string | null
           created_at: string
           id: string
           pillar: Database["public"]["Enums"]["content_pillar"] | null
@@ -281,6 +282,7 @@ export type Database = {
           audience?: Database["public"]["Enums"]["docs_audience"] | null
           blocks?: Json | null
           body?: string | null
+          contributor_key?: string | null
           created_at?: string
           id?: string
           pillar?: Database["public"]["Enums"]["content_pillar"] | null
@@ -301,6 +303,7 @@ export type Database = {
           audience?: Database["public"]["Enums"]["docs_audience"] | null
           blocks?: Json | null
           body?: string | null
+          contributor_key?: string | null
           created_at?: string
           id?: string
           pillar?: Database["public"]["Enums"]["content_pillar"] | null

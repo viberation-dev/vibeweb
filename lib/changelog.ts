@@ -55,6 +55,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
  */
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    date: "2026-10-04",
+    kind: "added",
+    title: "Guides and articles credit who worked on them",
+    body: "Pieces that someone else helped shape, draft or edit now say so under the headline, rather than crediting one name for everything on the site.",
+  },
+  {
     date: "2026-10-03",
     kind: "added",
     title: "Announcements can be taken back",

@@ -1,7 +1,7 @@
 import { IconClock, IconEye, IconMessageCircle } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 
-import { SITE_BYLINE } from "@/lib/byline";
+import { SITE_BYLINE, type Person } from "@/lib/byline";
 import { formatCount, pluralise } from "@/lib/plural";
 import { preferredSourceUrl } from "@/lib/share";
 import { siteUrl } from "@/lib/site-url";
@@ -23,8 +23,13 @@ export type ArticleHeaderProps = {
   title: string;
   /** One-line standfirst. The card preview, where a piece has no lede. */
   lede?: string | null;
-  /** Defaults to the site byline — `content` has no author column yet. */
-  author?: { name: string; initials: string; bio?: string };
+  /** Defaults to the site byline, which is still every row's author. */
+  author?: Person;
+  /**
+   * Credited after the author for shaping, drafting or editing it (VIB-235).
+   * Absent on a piece nobody else worked on, which is most of them.
+   */
+  contributor?: Person | null;
   publishedAt: string;
   /** Only shown when it is a real revision, not the row's creation write. */
   updatedAt?: string | null;
@@ -70,6 +75,7 @@ export function ArticleHeader({
   title,
   lede,
   author = SITE_BYLINE,
+  contributor,
   publishedAt,
   updatedAt,
   readingTime,
@@ -110,6 +116,17 @@ export function ArticleHeader({
         <span>
           <span className="block text-base leading-tight font-semibold">
             {author.name}
+            {/*
+              "with", not a second byline: a contributor shaped, drafted or
+              edited the piece rather than writing it end to end, and the
+              word has to say which of the two it is.
+            */}
+            {contributor ? (
+              <>
+                <span className="text-muted-foreground font-normal"> with </span>
+                {contributor.name}
+              </>
+            ) : null}
           </span>
           <span className="text-muted-foreground block text-sm">
             <time dateTime={publishedAt}>

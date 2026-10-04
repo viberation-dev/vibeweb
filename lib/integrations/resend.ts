@@ -85,6 +85,12 @@ export type OutgoingEmail = {
   subject: string;
   html: string;
   text: string;
+  /**
+   * Overrides the site's default reply address. Set by mail that is *about* a
+   * person who gave their address — feedback (VIB-237) — so replying from the
+   * inbox reaches them rather than the site's own mailbox.
+   */
+  replyTo?: string;
   /** One-click unsubscribe (RFC 8058), so Gmail and Apple Mail show their own button. */
   unsubscribeUrl?: string;
 };
@@ -116,7 +122,8 @@ export async function sendEmail(email: OutgoingEmail): Promise<SendResult> {
       },
       body: JSON.stringify({
         from: process.env.EMAIL_FROM ?? "Viberation <hello@mail.viberation.dev>",
-        reply_to: process.env.EMAIL_REPLY_TO ?? "hello@viberation.dev",
+        reply_to:
+          email.replyTo ?? process.env.EMAIL_REPLY_TO ?? "hello@viberation.dev",
         to: [email.to],
         subject: email.subject,
         html: email.html,

@@ -266,6 +266,13 @@ const FOOTER_COLUMNS = [
       { label: "Affiliate disclosure", href: "/terms#affiliate-disclosure" },
     ],
   },
+  {
+    heading: "Say hello",
+    links: [
+      { label: "Send feedback", href: "/feedback" },
+      { label: "Docs and support", href: "/docs" },
+    ],
+  },
 ] as const;
 
 /** v3's visitor footer (VIB-98). */
@@ -273,7 +280,7 @@ function VisitorFooter({ hasAffiliateLinks }: { hasAffiliateLinks: boolean }) {
   return (
     <footer className="mt-20 border-t">
       <div className="mx-auto max-w-7xl px-6 py-12">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr]">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
           <div>
             <Logo className="h-5" />
             <p className="text-muted-foreground mt-4 max-w-[34ch] text-sm">

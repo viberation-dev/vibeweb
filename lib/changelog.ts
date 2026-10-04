@@ -57,6 +57,12 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-10-04",
     kind: "added",
+    title: "Send feedback",
+    body: "There is now a page for telling us what to change, add or fix. No account needed, and you can leave your email off if you would rather not hear back.",
+  },
+  {
+    date: "2026-10-04",
+    kind: "added",
     title: "Guides and articles credit who worked on them",
     body: "Pieces that someone else helped shape, draft or edit now say so under the headline, rather than crediting one name for everything on the site.",
   },

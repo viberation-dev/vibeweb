@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+/* Relative, with the extension, for the same reason `./announce.ts` is:
+ * this module is loaded by a plain `node --test` test, which does not
+ * resolve the `@/` alias. */
+import { PERSON_KEYS } from "../byline.ts";
 import {
   ANNOUNCE_CONFLICT_ISSUE,
   ANNOUNCE_FIELDS,
@@ -72,6 +76,18 @@ export const contentEditorSchema = z.object({
     ])
     .transform((value) => (value === "" ? null : value)),
   status: z.enum(["draft", "published"]),
+  /*
+   * The keys come from the PEOPLE map, so adding a person there is the only
+   * edit needed — and a key this does not recognise cannot be stored, which
+   * is the whole reason the column is validated rather than free text.
+   */
+  contributor_key: z
+    .union([z.enum(PERSON_KEYS), z.literal(""), z.null()])
+    .optional()
+    // Absent, empty and null all mean "author only". `formData.get` returns
+    // null for a field the submitted form never had, which is what a browser
+    // holding an older version of the editor sends.
+    .transform((value) => value || null),
   ...ANNOUNCE_FIELDS,
 })
   .refine(announceAndClearAgree, ANNOUNCE_CONFLICT_ISSUE)

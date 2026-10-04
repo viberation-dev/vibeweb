@@ -7,6 +7,7 @@ import type { ContentFormState } from "@/app/(site)/admin/content/actions";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PEOPLE } from "@/lib/byline";
 import { contentTypeLabel, CONTENT_PILLARS, CONTENT_TYPES } from "@/lib/learn";
 import type { Content } from "@/lib/queries/content";
 import { dateLabel } from "@/lib/whats-new";
@@ -34,6 +35,15 @@ const AUDIENCES = [
   { value: "admin", label: "Admin" },
   { value: "seller", label: "Seller" },
 ] as const;
+
+/*
+ * Everyone creditable, built from the map rather than listed again (VIB-235).
+ * "No one" is first because most pieces have no contributor.
+ */
+const CONTRIBUTORS = [
+  { value: "", label: "No one — author only" },
+  ...Object.entries(PEOPLE).map(([value, p]) => ({ value, label: p.name })),
+];
 
 /** Native selects, same as ProfileForm: keyboard and screen-reader behaviour for free. */
 const selectClass =
@@ -159,6 +169,25 @@ export function ContentForm({ content, action }: Props) {
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="contributor_key">Contributor</Label>
+          <select
+            id="contributor_key"
+            name="contributor_key"
+            defaultValue={content?.contributor_key ?? ""}
+            className={selectClass}
+          >
+            {CONTRIBUTORS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <p className="text-muted-foreground text-sm">
+            Credited beside the byline for shaping, drafting or editing it.
+          </p>
         </div>
       </div>
 

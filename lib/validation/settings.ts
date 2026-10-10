@@ -13,7 +13,9 @@ import { BADGE_MODES } from "../tool-badges.ts";
 const designModeSchema = z
   .partialRecord(
     z.enum(DESIGN_TOKEN_NAMES),
-    z.string().regex(HEX_COLOUR, "Colours have to be 6-digit hex, like #fffff2."),
+    z
+      .string()
+      .regex(HEX_COLOUR, "Colours have to be hex, like #fffff2, or #fffff280 with opacity."),
   )
   .default({});
 
@@ -24,10 +26,11 @@ const designModeSchema = z
  * the page this is posted from is painted in these colours too, so a bad
  * save could hide the form needed to undo it.
  */
-export const designTokensSchema = z
+const designShape = z
   .object({ light: designModeSchema, dark: designModeSchema })
-  .transform(parseDesignTokens)
-  .superRefine((tokens, ctx) => {
+  .transform(parseDesignTokens);
+
+export const designTokensSchema = designShape.superRefine((tokens, ctx) => {
     const problem = designContrastProblem(tokens);
     if (problem) ctx.addIssue({ code: "custom", message: problem });
   });
@@ -51,6 +54,9 @@ export const siteSettingsSchema = z.object({
     .int("Views have to be a whole number.")
     .min(1, "The threshold has to be at least one view."),
   design_tokens: designTokensSchema,
+  // Not contrast-checked: a default paints nothing until it is reset to and
+  // saved, and that save goes through the check above.
+  design_token_defaults: designShape,
 });
 
 export type SiteSettingsInput = z.infer<typeof siteSettingsSchema>;

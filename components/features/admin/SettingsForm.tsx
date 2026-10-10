@@ -1,22 +1,13 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 
 import type { SettingsFormState } from "@/app/(site)/admin/settings/actions";
+import { DesignTokenFields } from "@/components/features/admin/DesignTokenFields";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  DESIGN_MODES,
-  DESIGN_TOKENS,
-  DESIGN_TOKEN_NAMES,
-  STOCK,
-  designFieldName,
-  parseDesignTokens,
-  resolveDesignToken,
-  type DesignMode,
-  type DesignTokenName,
-} from "@/lib/design-tokens";
+import { parseDesignTokens } from "@/lib/design-tokens";
 import type { SiteSettings } from "@/lib/queries/settings";
 import { BADGE_MODES } from "@/lib/tool-badges";
 
@@ -48,51 +39,10 @@ const MODE_COPY: Record<(typeof BADGE_MODES)[number], { label: string; help: str
   },
 };
 
-const MODE_LABELS: Record<DesignMode, string> = { light: "Light", dark: "Dark" };
-
-/**
- * One token in one mode (VIB-246). The native colour input: a picker, an
- * eyedropper and keyboard support without a dependency.
- */
-function ColourField({
-  mode,
-  name,
-  initial,
-}: {
-  mode: DesignMode;
-  name: DesignTokenName;
-  initial: string;
-}) {
-  const [colour, setColour] = useState(initial);
-  const field = designFieldName(mode, name);
-  const stock = STOCK[mode][name];
-
-  return (
-    <div className="space-y-2">
-      <Label htmlFor={field}>{MODE_LABELS[mode]}</Label>
-      <div className="flex items-center gap-3">
-        <input
-          id={field}
-          name={field}
-          type="color"
-          value={colour}
-          onChange={(event) => setColour(event.target.value)}
-          className="border-input h-9 w-14 cursor-pointer rounded-md border bg-transparent p-1"
-        />
-        <code className="text-sm">{colour}</code>
-        {colour !== stock ? (
-          <Button type="button" variant="ghost" size="sm" onClick={() => setColour(stock)}>
-            Reset
-          </Button>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
 export function SettingsForm({ settings, action }: Props) {
   const [state, formAction, pending] = useActionState(action, {});
-  const designTokens = parseDesignTokens(settings.design_tokens);
+  const tokens = parseDesignTokens(settings.design_tokens);
+  const defaults = parseDesignTokens(settings.design_token_defaults);
 
   return (
     <form action={formAction} className="space-y-6">
@@ -155,32 +105,13 @@ export function SettingsForm({ settings, action }: Props) {
         </div>
       </div>
 
-      <section className="space-y-4 border-t pt-6">
-        <div>
-          <h2 className="font-heading text-xl font-bold tracking-[-0.02em]">Design</h2>
-          <p className="text-muted-foreground text-sm">
-            Colours that override the design system across the whole site.
-            Reset returns one to the default; a colour that would make text
-            hard to read is not saved.
-          </p>
-        </div>
-
-        {DESIGN_TOKEN_NAMES.map((name) => (
-          <fieldset key={name} className="space-y-3">
-            <legend className="text-sm font-semibold">{DESIGN_TOKENS[name].label}</legend>
-            <div className="grid gap-6 sm:grid-cols-2">
-              {DESIGN_MODES.map((mode) => (
-                <ColourField
-                  key={mode}
-                  mode={mode}
-                  name={name}
-                  initial={resolveDesignToken(designTokens, mode, name)}
-                />
-              ))}
-            </div>
-          </fieldset>
-        ))}
-      </section>
+      <DesignTokenFields
+        // Remount when the saved values change, so a restore from history
+        // shows in the pickers instead of the state they were opened with.
+        key={JSON.stringify([tokens, defaults])}
+        tokens={tokens}
+        defaults={defaults}
+      />
 
       {state.error ? (
         <p role="alert" className="text-destructive text-sm">

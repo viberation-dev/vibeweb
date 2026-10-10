@@ -58,7 +58,7 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
     date: "2026-10-10",
     kind: "improved",
     title: "Site colours can change without a release",
-    body: "The page background is now set from the staff settings screen, for light and dark mode separately, so the look of the site can be adjusted straight away.",
+    body: "The page background, card and primary colours are now set from the staff settings screen, for light and dark mode separately, so the look of the site can be adjusted straight away. Every change is kept in a history and can be restored.",
   },
   {
     date: "2026-10-10",

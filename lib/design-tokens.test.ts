@@ -53,7 +53,7 @@ test("linked tokens really do share the stock colour in globals.css", () => {
 test("parseDesignTokens keeps only registered tokens with hex colours", () => {
   assert.deepEqual(
     parseDesignTokens({
-      light: { "--background": "#FFEEDD", "--border": "#000000" },
+      light: { "--background": "#FFEEDD", "--destructive": "#000000" },
       dark: { "--background": "red;} body{display:none" },
       sepia: { "--background": "#112233" },
     }),
@@ -142,4 +142,27 @@ test("describeDesignChange names what moved, and is empty when nothing did", () 
     }),
     "Light Page background: #fffff2 to #ffeedd; Dark Card default: #101018 to #000000",
   );
+});
+
+test("changing Text is checked on the card too, through its linked token", () => {
+  // Reads on paper (4.6:1), but not on a card moved to mid grey.
+  assert.equal(designContrastProblem({ light: { "--foreground": "#6b6b6b" } }), null);
+  assert.match(
+    designContrastProblem({
+      light: { "--foreground": "#6b6b6b", "--card": "#d0d0d0" },
+    }) ?? "",
+    /Card text \(#6b6b6b\) on Card/,
+  );
+  assert.match(
+    designContrastProblem({ dark: { "--muted-foreground": "#444444" } }) ?? "",
+    /Dark mode: Muted text/,
+  );
+});
+
+test("a border override is carried to inputs and never contrast-checked", () => {
+  assert.equal(
+    designTokensCss({ dark: { "--border": "#ffffff" } }),
+    "html.dark{--border:#ffffff;--input:#ffffff;--sidebar-border:#ffffff}",
+  );
+  assert.equal(designContrastProblem({ dark: { "--border": "#07070c" } }), null);
 });

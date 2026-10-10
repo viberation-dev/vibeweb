@@ -1,9 +1,14 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
+import {
+  DESIGN_MODES,
+  DESIGN_TOKEN_NAMES,
+  designFieldName,
+} from "@/lib/design-tokens";
 import { createClient } from "@/lib/integrations/supabase/server";
-import { updateSiteSettings } from "@/lib/queries/settings";
+import { DESIGN_TOKENS_TAG, updateSiteSettings } from "@/lib/queries/settings";
 import { requireStaff } from "@/lib/staff";
 import { siteSettingsSchema } from "@/lib/validation/settings";
 
@@ -30,6 +35,17 @@ export async function saveSettingsAction(
     tool_badge_mode: formData.get("tool_badge_mode"),
     badge_new_days: formData.get("badge_new_days"),
     badge_popular_views: formData.get("badge_popular_views"),
+    design_tokens: Object.fromEntries(
+      DESIGN_MODES.map((mode) => [
+        mode,
+        Object.fromEntries(
+          DESIGN_TOKEN_NAMES.map((name) => [
+            name,
+            formData.get(designFieldName(mode, name)) ?? undefined,
+          ]),
+        ),
+      ]),
+    ),
   });
 
   if (!parsed.success) {
@@ -44,6 +60,10 @@ export async function saveSettingsAction(
   revalidatePath("/search");
   revalidatePath("/collections", "layout");
   revalidatePath("/");
+
+  // The root layout paints the design tokens, so every page is affected.
+  revalidateTag(DESIGN_TOKENS_TAG);
+  revalidatePath("/", "layout");
 
   return { saved: true };
 }

@@ -1,5 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { unstable_cache } from "next/cache";
 
+import { parseDesignTokens, type DesignTokens } from "@/lib/design-tokens";
+import { createAnonClient } from "@/lib/integrations/supabase/anon";
 import { DEFAULT_BADGE_SETTINGS } from "@/lib/tool-badges";
 import type { Database, Tables } from "@/types/supabase";
 
@@ -22,7 +25,12 @@ export async function getSiteSettings(client: Client): Promise<SiteSettings> {
   const { data, error } = await client.from("site_settings").select("*").maybeSingle();
 
   if (error || !data) {
-    return { id: true, updated_at: new Date(0).toISOString(), ...DEFAULT_BADGE_SETTINGS };
+    return {
+      id: true,
+      updated_at: new Date(0).toISOString(),
+      design_tokens: {},
+      ...DEFAULT_BADGE_SETTINGS,
+    };
   }
   return data;
 }
@@ -43,5 +51,41 @@ export async function updateSiteSettings(
 
   if (error) {
     throw new Error(`updateSiteSettings: ${error.message}`);
+  }
+}
+
+export const DESIGN_TOKENS_TAG = "design-tokens";
+
+/*
+ * Throws on a failed read instead of returning the fallback, because
+ * unstable_cache does not store a throw: caching "no overrides" would paint
+ * the stock colours for an hour after one bad request.
+ */
+const cachedDesignTokens = unstable_cache(
+  async (): Promise<DesignTokens> => {
+    const { data, error } = await createAnonClient()
+      .from("site_settings")
+      .select("design_tokens")
+      .maybeSingle();
+
+    if (error) throw new Error(`getDesignTokens: ${error.message}`);
+    return parseDesignTokens(data?.design_tokens);
+  },
+  [DESIGN_TOKENS_TAG],
+  { tags: [DESIGN_TOKENS_TAG], revalidate: 60 * 60 },
+);
+
+/**
+ * The design token overrides (VIB-246), for the root layout.
+ *
+ * Read on every page, identical for every visitor, so it is cached through
+ * the session-less client and dropped by tag when staff save. A failed read
+ * is the stock design, never a broken page.
+ */
+export async function getDesignTokens(): Promise<DesignTokens> {
+  try {
+    return await cachedDesignTokens();
+  } catch {
+    return {};
   }
 }

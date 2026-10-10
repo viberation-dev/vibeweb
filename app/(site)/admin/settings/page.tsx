@@ -10,7 +10,8 @@ import { saveSettingsAction } from "./actions";
 export const metadata: Metadata = { title: "Site settings" };
 
 /**
- * Site settings (VIB-187) — one screen, one row, badges only for now.
+ * Site settings (VIB-187) — one screen, one row: card badges and the design
+ * tokens (VIB-246).
  *
  * It exists because the badge rules are an editorial decision that changes
  * with the traffic, and a decision that changes should not need a deploy.
@@ -27,8 +28,8 @@ export default async function AdminSettingsPage() {
           Site settings
         </h1>
         <p className="text-muted-foreground text-sm">
-          Card badges. Staff picks are the default; switch to the numbers when
-          there is enough real traffic for them to mean something.
+          Card badges and site colours. Changes apply as soon as they are
+          saved.
         </p>
       </div>
 

@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 
 import { JsonLd } from "@/components/features/seo/JsonLd";
+import { designTokensCss } from "@/lib/design-tokens";
+import { getDesignTokens } from "@/lib/queries/settings";
 import { siteUrl } from "@/lib/site-url";
 import { siteLd } from "@/lib/structured-data";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
@@ -62,11 +64,13 @@ export const metadata: Metadata = {
  * how Next.js expresses "these routes have different chrome" without
  * changing a single URL.
  */
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const designCss = designTokensCss(await getDesignTokens());
+
   return (
     /*
       The font variables go on <html>, not <body>: globals.css applies
@@ -91,6 +95,12 @@ export default function RootLayout({
           is a white flash on every navigation for anyone in dark mode.
         */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        {/*
+          Staff overrides of globals.css tokens (VIB-246). Built only from
+          registered token names and 6-digit hex values, so there is nothing
+          in it to escape.
+        */}
+        {designCss ? <style dangerouslySetInnerHTML={{ __html: designCss }} /> : null}
       </head>
       <body
         className="flex min-h-screen flex-col antialiased"

@@ -56,6 +56,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-10-10",
+    kind: "improved",
+    title: "Site colours can change without a release",
+    body: "The page background is now set from the staff settings screen, for light and dark mode separately, so the look of the site can be adjusted straight away.",
+  },
+  {
+    date: "2026-10-10",
     kind: "added",
     title: "More app builders, design tools and coding agents",
     body: "A batch of new entries across the directory. App builders gain Softgen, Atoms, Hercules, Adalo, Aura and others; Tools gains UX Pilot, MagicPath, Unicorn Studio, CodeRabbit and Gemini Notebook, which is the new name for NotebookLM; and Kombai, Command Code and bb join the coding tools.",

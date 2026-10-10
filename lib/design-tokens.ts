@@ -35,6 +35,12 @@ type TokenSpec = {
 export const DESIGN_TOKENS = {
   "--background": { label: "Page background", linked: [] },
   "--card": { label: "Card", linked: ["--popover", "--sidebar"] },
+  "--border": { label: "Border", linked: ["--input", "--sidebar-border"] },
+  "--foreground": {
+    label: "Text",
+    linked: ["--card-foreground", "--popover-foreground", "--sidebar-foreground"],
+  },
+  "--muted-foreground": { label: "Muted text", linked: [] },
   "--primary": {
     label: "Primary",
     linked: ["--ring", "--sidebar-primary"],
@@ -66,6 +72,7 @@ export const STOCK: Record<DesignMode, Record<string, string>> = {
     "--foreground": "#1a1a18",
     "--card": "#ffffff",
     "--card-foreground": "#1a1a18",
+    "--border": "#e3e3d2",
     "--muted-foreground": "#5a5a54",
     "--primary": "#011aff",
     "--primary-foreground": "#ffffff",
@@ -76,6 +83,7 @@ export const STOCK: Record<DesignMode, Record<string, string>> = {
     "--foreground": "#f2f2f5",
     "--card": "#101018",
     "--card-foreground": "#f2f2f5",
+    "--border": "#23232e",
     "--muted-foreground": "#9c9caa",
     "--primary": "#6072ff",
     "--primary-foreground": "#07070c",
@@ -246,8 +254,6 @@ const CONTRAST_CHECKS: readonly (readonly [string, string])[] = [
 ];
 
 const CONTRAST_LABELS: Record<string, string> = {
-  "--foreground": "Body text",
-  "--muted-foreground": "Muted text",
   "--card-foreground": "Card text",
   "--primary-foreground": "Button label",
   "--secondary": "Muted surface",
@@ -271,13 +277,23 @@ function over(top: string, bottom: string): string {
  * The first text colour that drops under 4.5:1 on its ground, as a sentence
  * for the form. Null when everything still reads.
  *
+ * Border is not checked: the shipped one is a 1.3:1 hairline by design, so
+ * there is no bar to hold a replacement to.
+ *
  * Colours with opacity are flattened first, the way they are painted: the
  * page background over the browser canvas, everything else over the page
  * background, and text over its own ground.
  */
 export function designContrastProblem(tokens: DesignTokens): string | null {
   for (const mode of DESIGN_MODES) {
-    const colours: Record<string, string> = { ...STOCK[mode], ...tokens[mode] };
+    const colours: Record<string, string> = { ...STOCK[mode] };
+    // An override moves its linked tokens too, so they are checked as moved.
+    for (const [name, colour] of Object.entries(tokens[mode] ?? {})) {
+      colours[name] = colour;
+      for (const linked of DESIGN_TOKENS[name as DesignTokenName].linked) {
+        colours[linked] = colour;
+      }
+    }
     const page = over(colours["--background"], CANVAS[mode]);
     const flat = (name: string) =>
       name === "--background" ? page : over(colours[name], page);

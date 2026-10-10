@@ -40,6 +40,10 @@ export const DESIGN_TOKENS = {
     label: "Text",
     linked: ["--card-foreground", "--popover-foreground", "--sidebar-foreground"],
   },
+  "--secondary-foreground": {
+    label: "Strong text",
+    linked: ["--accent-foreground", "--sidebar-accent-foreground"],
+  },
   "--muted-foreground": { label: "Muted text", linked: [] },
   "--primary": {
     label: "Primary",
@@ -77,6 +81,7 @@ export const STOCK: Record<DesignMode, Record<string, string>> = {
     "--primary": "#011aff",
     "--primary-foreground": "#ffffff",
     "--secondary": "#f2f2e4",
+    "--secondary-foreground": "#050505",
   },
   dark: {
     "--background": "#07070c",
@@ -88,6 +93,7 @@ export const STOCK: Record<DesignMode, Record<string, string>> = {
     "--primary": "#6072ff",
     "--primary-foreground": "#07070c",
     "--secondary": "#16161f",
+    "--secondary-foreground": "#ffffff",
   },
 };
 
@@ -250,6 +256,9 @@ const CONTRAST_CHECKS: readonly (readonly [string, string])[] = [
   ["--muted-foreground", "--card"],
   ["--primary", "--card"],
   ["--primary", "--secondary"],
+  ["--secondary-foreground", "--background"],
+  ["--secondary-foreground", "--card"],
+  ["--secondary-foreground", "--secondary"],
   ["--primary-foreground", "--primary"],
 ];
 

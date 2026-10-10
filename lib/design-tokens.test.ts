@@ -166,3 +166,15 @@ test("a border override is carried to inputs and never contrast-checked", () => 
   );
   assert.equal(designContrastProblem({ dark: { "--border": "#07070c" } }), null);
 });
+
+test("strong text carries its linked tokens and is checked on every surface", () => {
+  assert.equal(
+    designTokensCss({ light: { "--secondary-foreground": "#222222" } }),
+    "html:root:not(.dark){--secondary-foreground:#222222;--accent-foreground:#222222;" +
+      "--sidebar-accent-foreground:#222222}",
+  );
+  assert.match(
+    designContrastProblem({ light: { "--secondary-foreground": "#bbbbbb" } }) ?? "",
+    /Light mode: Strong text/,
+  );
+});

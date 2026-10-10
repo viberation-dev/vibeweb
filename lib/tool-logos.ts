@@ -18,7 +18,7 @@
  *
  * The VIB-242 batch (Softgen to YouMind) are each brand’s own site icon. Two
  * were altered so they survive the white tile: Unicorn Studio’s white mark
- * was given a dark ground, and Neuform’s SVG lost the dark-mode rule that
+ * was given a dark ground (as was TasteCode’s, later), and Neuform’s SVG lost the dark-mode rule that
  * turned its strokes white.
  *
  * A slug missing here falls back to the generic icon. To add one, drop the
@@ -159,6 +159,7 @@ export const TOOL_LOGOS: Record<string, string> = {
   lovable: "lovable-color.svg",
   "macos-terminal": "macos.svg",
   magicpath: "magicpath.png",
+  manus: "manus.png",
   mastra: "mastra.svg",
   medo: "medo.png",
   mimo: "xiaomimimo.svg",
@@ -209,6 +210,7 @@ export const TOOL_LOGOS: Record<string, string> = {
   "shadcn-ui": "shadcnui.svg",
   shipany: "shipany.png",
   "shopify-liquid": "shopify.svg",
+  sixth: "sixth.png",
   skild: "skild.svg",
   skillkit: "skillkit.svg",
   "skills-cli": "vercel.svg",
@@ -225,6 +227,7 @@ export const TOOL_LOGOS: Record<string, string> = {
   "supply-chain-risk-auditor": "trailofbits.png",
   tabby: "tabby.png",
   "tailwind-intellisense": "tailwindcss.svg",
+  tastecode: "tastecode.png",
   "test-anti-patterns": "dotnet.svg",
   trae: "trae-color.svg",
   "turnstile-spin": "cloudflare.svg",

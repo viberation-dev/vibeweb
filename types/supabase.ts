@@ -533,6 +533,7 @@ export type Database = {
         Row: {
           badge_new_days: number
           badge_popular_views: number
+          design_tokens: Json
           id: boolean
           tool_badge_mode: string
           updated_at: string
@@ -540,6 +541,7 @@ export type Database = {
         Insert: {
           badge_new_days?: number
           badge_popular_views?: number
+          design_tokens?: Json
           id?: boolean
           tool_badge_mode?: string
           updated_at?: string
@@ -547,6 +549,7 @@ export type Database = {
         Update: {
           badge_new_days?: number
           badge_popular_views?: number
+          design_tokens?: Json
           id?: boolean
           tool_badge_mode?: string
           updated_at?: string

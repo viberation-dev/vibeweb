@@ -1,4 +1,6 @@
-import { createClient } from "@/lib/integrations/supabase/server";
+import { unstable_cache } from "next/cache";
+
+import { createAnonClient } from "@/lib/integrations/supabase/anon";
 import { contentHref, LEARN_TYPE_VALUES } from "@/lib/learn";
 import { listPublishedComparisons } from "@/lib/queries/comparisons";
 import { listAllContent } from "@/lib/queries/content";
@@ -12,13 +14,24 @@ import { siteUrl } from "@/lib/site-url";
  * sitemap, so a new tool or article appears in both without anyone editing
  * this file.
  */
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 const link = (title: string, path: string, note?: string | null) =>
   `- [${title}](${siteUrl}${path})${note ? `: ${note.replace(/\s+/g, " ")}` : ""}`;
 
 export async function GET() {
-  const supabase = await createClient();
+  return new Response(await cachedText(), {
+    headers: { "Content-Type": "text/plain; charset=utf-8" },
+  });
+}
+
+// Same arrangement as app/sitemap.ts: per-request route, hourly cached body.
+const cachedText = unstable_cache(buildText, ["llms-txt"], {
+  revalidate: 60 * 60,
+});
+
+async function buildText(): Promise<string> {
+  const supabase = createAnonClient();
   const [tools, content, walkthroughs, comparisons] = await Promise.all([
     listAllTools(supabase),
     listAllContent(supabase),
@@ -31,7 +44,7 @@ export async function GET() {
       .filter((c) => types.includes(c.type))
       .map((c) => link(c.title, contentHref(c.type, c.slug)));
 
-  const text = [
+  return [
     "# Viberation",
     "",
     "> A curated AI tool library, role-aware guides, and step-by-step walkthroughs for vibe coders: people building real software with AI tools.",
@@ -64,8 +77,4 @@ export async function GET() {
     ...ofType(["announcement"]),
     "",
   ].join("\n");
-
-  return new Response(text, {
-    headers: { "Content-Type": "text/plain; charset=utf-8" },
-  });
 }

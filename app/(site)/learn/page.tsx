@@ -19,12 +19,6 @@ import { getProfile } from "@/lib/queries/profiles";
 import { contentView } from "@/lib/resource-view";
 import { resolveRoleLevel, toLevelParam } from "@/lib/role-level";
 
-export const metadata: Metadata = {
-  title: "Learn",
-  description:
-    "Plain-English guides, articles and cheatsheets for building with AI, matched to the level you are actually at.",
-};
-
 type Props = {
   searchParams: Promise<{
     type?: string;
@@ -34,6 +28,20 @@ type Props = {
     page?: string;
   }>;
 };
+
+export async function generateMetadata({
+  searchParams,
+}: Props): Promise<Metadata> {
+  const { page } = await searchParams;
+  return {
+    title: "Learn",
+    description:
+      "Plain-English guides, articles and cheatsheets for building with AI, matched to the level you are actually at.",
+    // Later pages list articles page one does not, so each is its own
+    // canonical; the filters and sorts fold into it (VIB-245).
+    alternates: { canonical: learnHref({ page: toPageNumber(page) }) },
+  };
+}
 
 /** Learn hub (VIB-85, mockup screen 10). */
 export default async function LearnPage({ searchParams }: Props) {

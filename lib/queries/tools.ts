@@ -1,4 +1,8 @@
+import { unstable_cache } from "next/cache";
+
 import type { SupabaseClient } from "@supabase/supabase-js";
+
+import { createAnonClient } from "@/lib/integrations/supabase/anon";
 
 import type { RoleLevel } from "@/lib/role-level";
 import { tiersFor, type PricingFilter } from "@/lib/tool-facts";
@@ -322,6 +326,20 @@ export async function countAffiliateTools(client: Client): Promise<number> {
   }
   return count ?? 0;
 }
+
+/**
+ * The footer reads this on every page view, so it is cached for an hour
+ * instead of costing a query per request. The count is public and identical
+ * for everyone, hence the session-less client.
+ *
+ * ponytail: a newly flagged affiliate tool shows in the footer up to an hour
+ * late; add a revalidateTag on the tool editor's save if that matters.
+ */
+export const countAffiliateToolsCached = unstable_cache(
+  () => countAffiliateTools(createAnonClient()),
+  ["affiliate-tool-count"],
+  { revalidate: 60 * 60 },
+);
 
 /** One tool by id, for the editor. Null when it does not exist. */
 export async function getToolById(

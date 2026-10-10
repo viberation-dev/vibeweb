@@ -26,7 +26,7 @@ import {
 import { getCurrentProfile, getCurrentUser } from "@/lib/queries/profiles";
 import { avatarUrl } from "@/lib/queries/avatars";
 import { getOnboardingAnswers } from "@/lib/queries/onboarding-answers";
-import { countAffiliateTools } from "@/lib/queries/tools";
+import { countAffiliateToolsCached } from "@/lib/queries/tools";
 
 /**
  * Two nav structures, not one (VIB-76, handoff §2).
@@ -65,7 +65,7 @@ export default async function SiteLayout({
    * the site rather than typed into the markup — see countAffiliateTools.
    */
   const [affiliateCount, answers] = await Promise.all([
-    countAffiliateTools(supabase),
+    countAffiliateToolsCached(),
     // The private display name, for the avatar's initials (VIB-178).
     user ? getOnboardingAnswers(supabase, user.id) : null,
   ]);

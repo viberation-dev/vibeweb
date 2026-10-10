@@ -1,7 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { unstable_cache } from "next/cache";
 
-import { parseDesignTokens, type DesignTokens } from "@/lib/design-tokens";
+import {
+  parseDesignTokens,
+  type DesignState,
+  type DesignTokens,
+} from "@/lib/design-tokens";
 import { createAnonClient } from "@/lib/integrations/supabase/anon";
 import { DEFAULT_BADGE_SETTINGS } from "@/lib/tool-badges";
 import type { Database, Tables } from "@/types/supabase";
@@ -29,6 +33,7 @@ export async function getSiteSettings(client: Client): Promise<SiteSettings> {
       id: true,
       updated_at: new Date(0).toISOString(),
       design_tokens: {},
+      design_token_defaults: {},
       ...DEFAULT_BADGE_SETTINGS,
     };
   }
@@ -87,5 +92,52 @@ export async function getDesignTokens(): Promise<DesignTokens> {
     return await cachedDesignTokens();
   } catch {
     return {};
+  }
+}
+
+export type DesignHistoryEntry = Tables<"design_token_history">;
+
+/** The most recent design changes, newest first (VIB-247). Staff only, by RLS. */
+export async function listDesignHistory(
+  client: Client,
+  limit = 20,
+): Promise<DesignHistoryEntry[]> {
+  const { data, error } = await client
+    .from("design_token_history")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    throw new Error(`listDesignHistory: ${error.message}`);
+  }
+  return data;
+}
+
+/** One history row, for restoring. Null when it does not exist. */
+export async function getDesignHistoryEntry(
+  client: Client,
+  id: number,
+): Promise<DesignHistoryEntry | null> {
+  const { data, error } = await client
+    .from("design_token_history")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`getDesignHistoryEntry: ${error.message}`);
+  }
+  return data;
+}
+
+export async function insertDesignHistory(
+  client: Client,
+  entry: DesignState & { actor_name: string; summary: string },
+): Promise<void> {
+  const { error } = await client.from("design_token_history").insert(entry);
+
+  if (error) {
+    throw new Error(`insertDesignHistory: ${error.message}`);
   }
 }

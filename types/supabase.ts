@@ -352,6 +352,36 @@ export type Database = {
           },
         ]
       }
+      design_token_history: {
+        Row: {
+          actor_name: string
+          created_at: string
+          created_by: string | null
+          defaults: Json
+          id: number
+          summary: string
+          tokens: Json
+        }
+        Insert: {
+          actor_name: string
+          created_at?: string
+          created_by?: string | null
+          defaults: Json
+          id?: never
+          summary: string
+          tokens: Json
+        }
+        Update: {
+          actor_name?: string
+          created_at?: string
+          created_by?: string | null
+          defaults?: Json
+          id?: never
+          summary?: string
+          tokens?: Json
+        }
+        Relationships: []
+      }
       history_items: {
         Row: {
           id: string
@@ -533,6 +563,7 @@ export type Database = {
         Row: {
           badge_new_days: number
           badge_popular_views: number
+          design_token_defaults: Json
           design_tokens: Json
           id: boolean
           tool_badge_mode: string
@@ -541,6 +572,7 @@ export type Database = {
         Insert: {
           badge_new_days?: number
           badge_popular_views?: number
+          design_token_defaults?: Json
           design_tokens?: Json
           id?: boolean
           tool_badge_mode?: string
@@ -549,6 +581,7 @@ export type Database = {
         Update: {
           badge_new_days?: number
           badge_popular_views?: number
+          design_token_defaults?: Json
           design_tokens?: Json
           id?: boolean
           tool_badge_mode?: string

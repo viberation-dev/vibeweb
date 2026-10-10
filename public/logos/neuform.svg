@@ -1,0 +1,22 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .mark {
+      stroke: #000000;
+    }
+  </style>
+  <g clip-path="url(#clip0)">
+    <path class="mark" d="M30.4014 11.6235L21.9962 16.1159L30.6332 20.1446" stroke-width="2.13105" />
+    <path class="mark" d="M29.2783 23.0885L20.1584 20.3217L23.4169 29.2777" stroke-width="2.13105" />
+    <path class="mark" d="M20.377 30.401L15.8846 21.9959L11.8559 30.6328" stroke-width="2.13105" />
+    <path class="mark" d="M8.91211 29.2776L11.6789 20.1577L2.72292 23.4162" stroke-width="2.13105" />
+    <path class="mark" d="M1.59961 20.3763L10.0047 15.884L1.3678 11.8553" stroke-width="2.13105" />
+    <path class="mark" d="M2.72266 8.9115L11.8425 11.6783L8.58403 2.72231" stroke-width="2.13105" />
+    <path class="mark" d="M11.624 1.599L16.1163 10.0041L20.1451 1.36719" stroke-width="2.13105" />
+    <path class="mark" d="M23.0889 2.72229L20.3221 11.8422L29.2781 8.58366" stroke-width="2.13105" />
+  </g>
+  <defs>
+    <clipPath id="clip0">
+      <rect width="32" height="32" fill="white" />
+    </clipPath>
+  </defs>
+</svg>

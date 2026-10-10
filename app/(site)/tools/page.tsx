@@ -40,12 +40,6 @@ import { skillCardExtras } from "@/lib/skill-taxonomy";
 import { toToolSort } from "@/lib/tool-sorts";
 import { toolsHref } from "@/lib/tools-url";
 
-export const metadata: Metadata = {
-  title: "Tools",
-  description:
-    "Find the AI tool that fits what you are building. Models, agents, IDEs, CLIs and MCP servers, with honest tradeoffs and labelled affiliate links.",
-};
-
 /** Tools per category row: one line of the three-column grid. */
 const ROW_SIZE = 3;
 
@@ -59,6 +53,28 @@ type Props = {
     page?: string;
   }>;
 };
+
+export async function generateMetadata({
+  searchParams,
+}: Props): Promise<Metadata> {
+  const params = await searchParams;
+  return {
+    title: "Tools",
+    description:
+      "Find the AI tool that fits what you are building. Models, agents, IDEs, CLIs and MCP servers, with honest tradeoffs and labelled affiliate links.",
+    /*
+     * A category and its pages are the crawl path to most tool pages, so they
+     * stay their own canonical (VIB-245). Sort, search and the other filters
+     * reorder or narrow the same tools, and fold into it.
+     */
+    alternates: {
+      canonical: toolsHref({
+        category: toToolCategory(params.category),
+        page: toPageNumber(params.page),
+      }),
+    },
+  };
+}
 
 /** Tools directory (VIB-80, mockup screen 3). */
 export default async function ToolsPage({ searchParams }: Props) {

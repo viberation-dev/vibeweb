@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
+import { unstable_cache } from "next/cache";
 
-import { createClient } from "@/lib/integrations/supabase/server";
+import { createAnonClient } from "@/lib/integrations/supabase/anon";
 import { contentHref } from "@/lib/learn";
 import { listCollections } from "@/lib/queries/collections";
 import { listPublishedComparisons } from "@/lib/queries/comparisons";
@@ -10,11 +11,25 @@ import { listWalkthroughs } from "@/lib/queries/walkthroughs";
 import { siteUrl } from "@/lib/site-url";
 import { STATIC_PATHS } from "@/lib/static-routes";
 
-// Regenerated at most hourly rather than on every crawler hit.
-export const revalidate = 3600;
+/*
+ * Rendered per request so the build never queries the database, with the
+ * entries themselves cached for an hour (VIB-245). `revalidate` alone did
+ * nothing here: the cookie-backed client made the route dynamic, so every
+ * crawler hit re-ran all five queries.
+ */
+export const dynamic = "force-dynamic";
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const supabase = await createClient();
+export default function sitemap(): Promise<MetadataRoute.Sitemap> {
+  return cachedSitemap();
+}
+
+const cachedSitemap = unstable_cache(buildSitemap, ["sitemap"], {
+  revalidate: 60 * 60,
+});
+
+async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
+  // Session-less: the sitemap is public and the same for everyone.
+  const supabase = createAnonClient();
   const [tools, content, walkthroughs, collections, comparisons] = await Promise.all([
     listAllTools(supabase),
     listAllContent(supabase),

@@ -29,6 +29,13 @@ const inter = Inter({
 export const metadata: Metadata = {
   // Absolute base for canonical and social-card URLs (VIB-165).
   metadataBase: new URL(siteUrl),
+  /*
+   * Every page is its own canonical, minus the query string (VIB-245). "./"
+   * resolves against the route being rendered, so this one line covers them
+   * all; /tools and /learn override it to keep the params that change what
+   * they list.
+   */
+  alternates: { canonical: "./" },
   // The image itself comes from app/opengraph-image.tsx (VIB-166).
   openGraph: { siteName: "Viberation", type: "website" },
   twitter: { card: "summary_large_image" },

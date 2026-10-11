@@ -4284,7 +4284,7 @@ where w.slug = 'add-a-database-with-supabase'
 on conflict do nothing;
 
 -- Walkthrough: Build an agency website. Same content as
--- migration 20261011090000.
+-- migration 20261011171204.
 insert into wizards (title, slug, kind, reusable, role_level, status, steps) values
 (
   'Build an agency website',

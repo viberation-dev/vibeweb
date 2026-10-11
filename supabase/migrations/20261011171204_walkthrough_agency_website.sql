@@ -4,6 +4,8 @@
 -- for a client. Eight steps, each ending in a file saved to a spec folder
 -- that the next step's prompts read: brief, blueprint, copy, design system,
 -- behaviour, forms and content, build, launch and handover.
+--
+-- Applied to the live project on 2026-10-11 as version 20261011171204.
 insert into wizards (title, slug, kind, reusable, role_level, status, steps) values
 (
   'Build an agency website',

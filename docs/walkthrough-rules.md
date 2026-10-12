@@ -108,3 +108,68 @@ without its New label.
 
 **Why:** Ali, 2026-10-12. A walkthrough was published and nothing on the site
 said so.
+
+## 3. After the AI answers
+
+### 3.1 A prompt tells the AI when to stop
+
+Every prompt that produces something the reader keeps ends by telling the AI
+to stop: no next steps, no offers of more work. The walkthrough decides what
+comes next, not the AI.
+
+**Why:** Ali, 2026-10-12, running step 1 of the agency walkthrough. ChatGPT
+finished the brief, added a "recommended next step" nobody asked for, and
+following it turned one step into a long exchange about packages.
+
+### 3.2 A prompt does not open a loop it cannot close
+
+If a prompt asks the AI for weaknesses, questions or gaps, it asks for them in
+a form the reader can answer in one reply ("for each one, ask me a single
+question I can answer in a sentence"), and the step supplies the follow-up
+prompt that closes them.
+
+A prompt that ends "tell me what is weak" with nothing after it is a bug.
+
+### 3.3 Every step that ends in a saved file has an "After the AI answers" section
+
+Placed straight after the step's last prompt. It says:
+
+- **The one thing the reader needs from this step**, and the file it is saved
+  as.
+- **That the AI will offer more**, and that following every offer is how an
+  evening disappears.
+- **The three rules:** one round of fixes; a real decision is made once, in a
+  side prompt, and brought back; anything still unknown goes into the file as
+  `[NEEDED: what]`.
+- **When they are done.** A deliverable with honest gaps marked is finished.
+
+And it gives three follow-up prompts:
+
+1. **Fix the gaps once.** The reader's answers in, one rewrite out, no new
+   questions.
+2. **Decide one thing.** Three options, a recommendation, stop.
+3. **Wrap it up.** For a conversation that has already wandered: the final
+   file now, undecided things marked.
+
+`pg_temp.after_file()` in `20261012150000_walkthrough_after_the_answer.sql`
+holds the wording. Reuse it so every step says this the same way.
+
+**Why:** Ali, 2026-10-12. The walkthrough said nothing about what to do with
+the AI's extra advice, so the reader had to work out alone whether to follow
+it.
+
+### 3.4 Steps that are iterative say how to keep each round small
+
+Building pages and fixing audit findings are loops on purpose. Those steps do
+not get the three prompts; they get one short rule on how to bound a round
+(one page per conversation; fix critical and high, list the rest).
+
+### 3.5 Troubleshooting prompts are exempt
+
+A "Stuck?" prompt is a conversation by design: the reader pastes an error and
+goes back and forth until it is fixed. Do not add a stop line to it.
+
+### 3.6 Short planning steps get a note, not a section
+
+Where a step's output is a sentence or a decision and not a file, one short
+note is enough: the one thing to take away, and permission to ignore the rest.

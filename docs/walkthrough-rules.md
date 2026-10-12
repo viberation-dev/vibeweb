@@ -95,6 +95,28 @@ Some prompts tell the AI to write a bracketed marker in its answer, such as
 `[NEEDED]` or `[ASSUMED]`. Those are not blanks: give them no hint, so they
 render as plain text and nobody tries to fill them in.
 
+### 1.7 Guard against borrowed examples, twice
+
+An example good enough to learn from is good enough to copy. Two guards, both
+required:
+
+- **The example dialog warns against copying**, in a warning box and not a
+  caption: the answers describe a made-up business, and pasting one in makes
+  the AI treat it as a fact about the reader's.
+- **A prompt in which the reader describes their own business or project asks
+  the AI to check the answers first.** It lists any that read like a stock
+  example, or that do not fit the business described, under the heading
+  "Check these", before it writes anything, and marks what it builds on them
+  `[ASSUMED]`.
+
+Do not weaken the examples to make them harder to copy. Vague examples teach
+nothing, which is the problem rule 1.5 exists to prevent.
+
+**Why:** Ali, 2026-10-12. In his own test run, two answers in a brief for a
+flooring-trade web agency were this walkthrough's food-and-drink examples with
+the nouns swapped ("about to pitch a supermarket"). ChatGPT wrote both into
+the brief as facts.
+
 ## 2. Being found
 
 ### 2.1 A new walkthrough announces itself

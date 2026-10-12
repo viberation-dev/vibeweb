@@ -26,11 +26,22 @@
 -- Safe to run twice: a prompt that already has the stop line is left alone,
 -- and a step that already has the section is not given a second one.
 
+-- Also here, from the same test run: two of Ali's answers were this
+-- walkthrough's example answers with the nouns swapped, and ChatGPT wrote
+-- them into his brief as facts. The two prompts where the reader describes a
+-- business in their own words (the brief, and a case study) now ask the AI to
+-- call out any answer that reads like a stock example before it uses it.
 create function pg_temp.stop_text(t text) returns text language sql immutable as $$
   select case
     when r is null then null
     when position('I am following a set process' in r) > 0 then r
-    else r || E'\n\n' || 'Stop there. Do not suggest next steps or offer to do more. I am following a set process and the next step has its own prompt.'
+    else r
+      || case
+           when position('The agency: [' in r) > 0 or position('Client and what they do: [' in r) > 0
+             then E'\n\n' || 'Before you write anything, check my answers above. If one reads like a stock example, or does not fit the business I described, list it first under the heading Check these and say why in a few words. Then carry on, and mark anything you build on those answers [ASSUMED].'
+           else ''
+         end
+      || E'\n\n' || 'Stop there. Do not suggest next steps or offer to do more. I am following a set process and the next step has its own prompt.'
   end
   from (
     select replace(

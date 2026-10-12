@@ -5,6 +5,7 @@ import { listCollectionsSurfaced } from "@/lib/queries/collections";
 import { listContentSurfaced } from "@/lib/queries/content";
 import { getSiteSettings } from "@/lib/queries/settings";
 import { listToolsSurfaced } from "@/lib/queries/tools";
+import { listWalkthroughs } from "@/lib/queries/walkthroughs";
 import { contentView, toolView, type ResourceView } from "@/lib/resource-view";
 import {
   changelogInputs,
@@ -49,7 +50,8 @@ function sourceRows<T>(result: PromiseSettledResult<T[]>, source: string): T[] {
 
 /**
  * The What's new stream (VIB-230): additions and announced revisions across
- * tools, content, collections and shipped features, newest first.
+ * tools, content, collections, walkthroughs and shipped features, newest
+ * first.
  *
  * One source failing degrades to that source being absent rather than
  * blanking the whole stream — a reader is better served by three kinds of
@@ -70,14 +72,18 @@ export async function listWhatsNew(
       listToolsSurfaced(client, PER_SOURCE),
       listContentSurfaced(client, PER_SOURCE),
       listCollectionsSurfaced(client, PER_SOURCE),
+      // Not capped: there are a handful, and the query has no limit to pass.
+      listWalkthroughs(client),
     ]),
     getSiteSettings(client),
   ]);
 
-  const [toolsResult, contentResult, collectionsResult] = sources;
+  const [toolsResult, contentResult, collectionsResult, walkthroughsResult] =
+    sources;
   const tools = sourceRows(toolsResult, "tools");
   const content = sourceRows(contentResult, "content");
   const collections = sourceRows(collectionsResult, "collections");
+  const walkthroughs = sourceRows(walkthroughsResult, "walkthroughs");
 
   const views = new Map<string, ResourceView>();
   for (const tool of tools) views.set(tool.id, toolView(tool, settings));
@@ -108,6 +114,21 @@ export async function listWhatsNew(
       addedAt: collection.created_at,
       revisedAt: null,
       note: null,
+    })),
+    /*
+     * A walkthrough has no revised_at, so it only ever appears as Added. It
+     * was missing from the stream entirely until a new one shipped and nothing
+     * on the site said so.
+     */
+    ...walkthroughs.map((walkthrough) => ({
+      id: walkthrough.id,
+      kind: "walkthrough" as const,
+      title: walkthrough.title,
+      href: `/walkthroughs/${walkthrough.slug}`,
+      addedAt: walkthrough.created_at,
+      revisedAt: null,
+      note: null,
+      summary: walkthrough.steps.map((step) => step.title).join(" → "),
     })),
     ...changelogInputs(CHANGELOG, PER_SOURCE),
   ];

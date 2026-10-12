@@ -55,6 +55,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
  */
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    date: "2026-10-12",
+    kind: "improved",
+    title: "New walkthroughs are easier to notice",
+    body: "A walkthrough that has just been published now carries a New label in the sidebar and on the Walkthroughs page, and appears in What's new alongside new tools and guides.",
+  },
+  {
     date: "2026-10-10",
     kind: "improved",
     title: "Site colours can change without a release",

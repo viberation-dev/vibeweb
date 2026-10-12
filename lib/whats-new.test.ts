@@ -4,6 +4,7 @@ import { test } from "node:test";
 import {
   changelogInputs,
   groupByMonth,
+  isNewSince,
   mergeWhatsNew,
   toWhatsNewEvent,
   toWhatsNewKind,
@@ -299,4 +300,22 @@ test("two features sharing a title and date but not an event get different keys"
     whatsNewKey({ ...base, event: "added" }),
     whatsNewKey({ ...base, event: "updated" }),
   );
+});
+
+test("isNewSince agrees with the stream about what is new", () => {
+  assert.equal(isNewSince("2026-09-18T12:00:00Z", 14, NOW), true);
+  assert.equal(isNewSince("2026-09-18T11:59:59Z", 14, NOW), false);
+  // A future or unreadable date is not evidence of newness.
+  assert.equal(isNewSince("2026-10-03T00:00:00Z", 14, NOW), false);
+  assert.equal(isNewSince("not a date", 14, NOW), false);
+  assert.equal(isNewSince(null, 14, NOW), false);
+});
+
+test("a walkthrough is a kind, and carries its summary through the merge", () => {
+  assert.equal(toWhatsNewKind("walkthrough"), "walkthrough");
+  const [entry] = merge([
+    input({ kind: "walkthrough", href: "/walkthroughs/x", summary: "Idea → Ship" }),
+  ]);
+  assert.equal(entry.summary, "Idea → Ship");
+  assert.equal(entry.event, "added");
 });

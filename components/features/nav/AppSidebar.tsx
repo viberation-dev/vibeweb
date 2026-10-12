@@ -24,6 +24,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
 
 import { CATEGORY_ICONS } from "@/components/features/tools/CategoryIcon";
+import { Badge } from "@/components/ui/badge";
 import { learnHref } from "@/lib/learn";
 import {
   isActiveNavItem,
@@ -86,10 +87,13 @@ export function AppSidebar({
   showRoadmap,
   initialMode,
   initialClosed,
+  newHrefs,
 }: {
   showRoadmap: boolean;
   initialMode: SidebarMode;
   initialClosed: readonly string[];
+  /** Items with something recently added behind them, marked "New". */
+  newHrefs: readonly string[];
 }) {
   const [mode, setMode] = useState(initialMode);
   const [closed, setClosed] = useState(initialClosed);
@@ -140,6 +144,7 @@ export function AppSidebar({
           <div className="flex-1 overflow-x-hidden overflow-y-auto px-2 py-3 [scrollbar-width:none]">
             <NavGroups
               showRoadmap={showRoadmap}
+              newHrefs={newHrefs}
               closed={closed}
               onToggle={toggleGroup}
               wide={wide}
@@ -193,6 +198,7 @@ export function AppSidebar({
         <nav aria-label="Main" className="px-3 pb-4">
           <NavGroups
             showRoadmap={showRoadmap}
+            newHrefs={newHrefs}
             closed={closed}
             onToggle={toggleGroup}
             wide=""
@@ -207,6 +213,7 @@ export function AppSidebar({
 
 function NavGroups({
   showRoadmap,
+  newHrefs,
   closed,
   onToggle,
   wide,
@@ -214,6 +221,7 @@ function NavGroups({
   tooltips,
 }: {
   showRoadmap: boolean;
+  newHrefs: readonly string[];
   closed: readonly string[];
   onToggle: (id: string) => void;
   wide: string;
@@ -297,8 +305,25 @@ function NavGroups({
                             : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
                         )}
                       >
-                        <Icon aria-hidden className="size-4 shrink-0" />
+                        <span className="relative shrink-0">
+                          <Icon aria-hidden className="size-4" />
+                          {/* The rail hides labels and badges, so the icon carries a dot. */}
+                          {newHrefs.includes(item.href) ? (
+                            <span
+                              aria-hidden
+                              className={cn(
+                                "bg-highlight absolute -top-1 -right-1 size-2 rounded-full transition-opacity",
+                                narrow,
+                              )}
+                            />
+                          ) : null}
+                        </span>
                         <span className={cn("transition-opacity", wide)}>{item.label}</span>
+                        {newHrefs.includes(item.href) ? (
+                          <Badge variant="highlight" className={cn("ml-auto transition-opacity", wide)}>
+                            New
+                          </Badge>
+                        ) : null}
                       </Link>
                     )}
                   </li>

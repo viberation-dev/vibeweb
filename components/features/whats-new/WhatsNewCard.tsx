@@ -29,7 +29,9 @@ export function WhatsNewCard({ item }: { item: WhatsNewItem }) {
         href={item.href ?? "/changelog"}
         title={item.title}
         eyebrow={eyebrow}
-        description={item.note}
+        description={item.note ?? item.summary}
+        // Only a row can be New; a feature entry already reads "Added".
+        flag={item.id && item.event === "added" && item.isNew ? "New" : undefined}
         meta={meta}
       />
     );

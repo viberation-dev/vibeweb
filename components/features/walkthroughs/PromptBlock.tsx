@@ -1,11 +1,12 @@
 "use client";
 
-import { IconChevronDown, IconExternalLink } from "@tabler/icons-react";
+import { IconChevronDown, IconExternalLink, IconEye } from "@tabler/icons-react";
 import Link from "next/link";
 import { useState } from "react";
 
 import { CopyButton } from "@/components/features/walkthroughs/CopyButton";
-import { buttonVariants } from "@/components/ui/button";
+import { PromptExample } from "@/components/features/walkthroughs/PromptExample";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   AI_BUILDERS,
   AI_CHATS,
@@ -13,6 +14,7 @@ import {
   launcherHref,
   type AiLauncher,
 } from "@/lib/ai-launchers";
+import { segmentPrompt, type PlaceholderHint } from "@/lib/prompt-placeholders";
 import { toolsHref } from "@/lib/tools-url";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +22,7 @@ type Props = {
   label: string;
   prompt: string;
   prompts?: { title: string; prompt: string }[];
+  placeholders?: PlaceholderHint[];
 };
 
 /**
@@ -30,18 +33,34 @@ type Props = {
  *
  * Client-side only for the picker: which version is selected is throwaway UI
  * state, not something worth a URL or a saved row.
+ *
+ * A blank with a hint is a button: hovering or focusing it shows the tip, and
+ * clicking it opens the filled-in example at that blank. What gets copied is
+ * always the prompt as authored, blanks and all.
  */
-export function PromptBlock({ label, prompt, prompts }: Props) {
+export function PromptBlock({ label, prompt, prompts, placeholders }: Props) {
   const options = prompts ?? [{ title: "", prompt }];
   const [selected, setSelected] = useState(0);
   const current = options[selected];
   const [copiedTo, setCopiedTo] = useState<string | null>(null);
+  const segments = segmentPrompt(current.prompt, placeholders);
+  const hasBlanks = segments.some((segment) => segment.hint);
+  /** Null is closed; -1 is open with no particular blank in focus. */
+  const [example, setExample] = useState<number | null>(null);
 
   return (
     <div className="rounded-lg border">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2">
         <p className="text-sm font-medium">{label}</p>
-        <CopyButton text={current.prompt} label="Copy prompt" />
+        <div className="flex flex-wrap items-center gap-2">
+          {hasBlanks ? (
+            <Button type="button" size="sm" variant="ghost" onClick={() => setExample(-1)}>
+              <IconEye aria-hidden />
+              See an example
+            </Button>
+          ) : null}
+          <CopyButton text={current.prompt} label="Copy prompt" />
+        </div>
       </div>
 
       {options.length > 1 ? (
@@ -68,7 +87,36 @@ export function PromptBlock({ label, prompt, prompts }: Props) {
         pre-line would collapse, and a prompt that loses its shape is a
         different prompt.
       */}
-      <p className="px-4 py-3 font-mono text-sm whitespace-pre-wrap">{current.prompt}</p>
+      <p className="px-4 py-3 font-mono text-sm whitespace-pre-wrap">
+        {segments.map((segment, i) =>
+          segment.hint ? (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setExample(segment.hintIndex)}
+              className="group/blank decoration-primary relative cursor-help text-left font-mono underline decoration-dotted decoration-2 underline-offset-4"
+            >
+              {segment.text}
+              <span
+                role="tooltip"
+                className="bg-popover text-popover-foreground pointer-events-none absolute bottom-full left-0 z-10 mb-1 hidden w-64 max-w-[70vw] rounded-lg border px-3 py-2 font-sans text-xs font-normal whitespace-normal shadow-md group-hover/blank:block group-focus-visible/blank:block"
+              >
+                {segment.hint.tip} <span className="text-muted-foreground">Click for examples.</span>
+              </span>
+            </button>
+          ) : (
+            segment.text
+          ),
+        )}
+      </p>
+      {example !== null ? (
+        <PromptExample
+          title={current.title ? `${label}: ${current.title}` : label}
+          segments={segments}
+          focus={example < 0 ? null : example}
+          onClose={() => setExample(null)}
+        />
+      ) : null}
 
       <div className="flex flex-col gap-2 border-t px-4 py-3 text-sm">
         <p className="text-muted-foreground">

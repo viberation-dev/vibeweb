@@ -9,7 +9,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { createClient } from "@/lib/integrations/supabase/server";
+import { getSiteSettings } from "@/lib/queries/settings";
 import { listWalkthroughs } from "@/lib/queries/walkthroughs";
+import { isNewSince } from "@/lib/whats-new";
 
 export const metadata: Metadata = {
   title: "Walkthroughs",
@@ -24,7 +26,10 @@ export const metadata: Metadata = {
  */
 export default async function WalkthroughsPage() {
   const supabase = await createClient();
-  const walkthroughs = await listWalkthroughs(supabase);
+  const [walkthroughs, settings] = await Promise.all([
+    listWalkthroughs(supabase),
+    getSiteSettings(supabase),
+  ]);
 
   return (
     <main className="mx-auto w-full max-w-6xl p-6">
@@ -41,6 +46,9 @@ export default async function WalkthroughsPage() {
               <Card className="relative h-full transition-colors hover:bg-muted/40 focus-within:ring-2 focus-within:ring-ring">
                 <CardHeader>
                   <div className="flex flex-wrap items-center gap-2">
+                    {isNewSince(walkthrough.created_at, settings.badge_new_days) ? (
+                      <Badge variant="highlight">New</Badge>
+                    ) : null}
                     <Badge variant="secondary">
                       {walkthrough.steps.length} step
                       {walkthrough.steps.length === 1 ? "" : "s"}

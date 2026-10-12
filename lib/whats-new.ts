@@ -12,6 +12,7 @@ export const WHATS_NEW_KINDS = [
   "tool",
   "content",
   "collection",
+  "walkthrough",
   "feature",
 ] as const;
 export type WhatsNewKind = (typeof WHATS_NEW_KINDS)[number];
@@ -23,6 +24,7 @@ export const KIND_LABELS: Record<WhatsNewKind, string> = {
   tool: "Tool",
   content: "Guide",
   collection: "Collection",
+  walkthrough: "Walkthrough",
   feature: "Feature",
 };
 
@@ -43,6 +45,8 @@ export type WhatsNewInput = {
   revisedAt: string | null;
   /** What changed. Only meaningful alongside revisedAt. */
   note: string | null;
+  /** What it is, for a kind with no card view of its own (a walkthrough). */
+  summary?: string;
 };
 
 export type WhatsNewEntry = {
@@ -55,6 +59,7 @@ export type WhatsNewEntry = {
   at: string;
   /** The revision note, or a feature's body. Null for an addition. */
   note: string | null;
+  summary?: string;
   /** Within badge_new_days of now. */
   isNew: boolean;
 };
@@ -110,8 +115,24 @@ function toEntry(
     href: item.href,
     at: new Date(when).toISOString(),
     note: event === "updated" ? item.note : null,
+    summary: item.summary,
     isNew: now - when <= newDays * DAY_MS,
   };
+}
+
+/**
+ * Whether a date is within `days` of now: the site's one definition of "new",
+ * for surfaces that badge a single row rather than merging a stream.
+ */
+export function isNewSince(
+  iso: string | null,
+  days: number,
+  now: Date = new Date(),
+): boolean {
+  const when = at(iso);
+  if (when === null) return false;
+  const age = now.getTime() - when;
+  return age >= 0 && age <= days * DAY_MS;
 }
 
 export function mergeWhatsNew(

@@ -27,6 +27,7 @@ import { getCurrentProfile, getCurrentUser } from "@/lib/queries/profiles";
 import { avatarUrl } from "@/lib/queries/avatars";
 import { getOnboardingAnswers } from "@/lib/queries/onboarding-answers";
 import { countAffiliateToolsCached } from "@/lib/queries/tools";
+import { hasNewWalkthroughCached } from "@/lib/queries/walkthroughs";
 
 /**
  * Two nav structures, not one (VIB-76, handoff §2).
@@ -64,8 +65,10 @@ export default async function SiteLayout({
    * The footer's affiliate line is a claim about the site, so it is read from
    * the site rather than typed into the markup — see countAffiliateTools.
    */
-  const [affiliateCount, answers] = await Promise.all([
+  const [affiliateCount, newWalkthrough, answers] = await Promise.all([
     countAffiliateToolsCached(),
+    // Only the sidebar shows it, and only members have a sidebar.
+    user ? hasNewWalkthroughCached() : false,
     // The private display name, for the avatar's initials (VIB-178).
     user ? getOnboardingAnswers(supabase, user.id) : null,
   ]);
@@ -110,6 +113,7 @@ export default async function SiteLayout({
               showRoadmap={profile ? isSuperAdmin(profile.app_role) : false}
               initialMode={sidebarMode}
               initialClosed={sidebarClosed}
+              newHrefs={newWalkthrough ? ["/walkthroughs"] : []}
             />
           </Suspense>
           <div className="min-w-0 flex-1">{children}</div>

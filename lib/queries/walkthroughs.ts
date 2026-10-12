@@ -1,4 +1,9 @@
+import { unstable_cache } from "next/cache";
+
 import type { SupabaseClient } from "@supabase/supabase-js";
+
+import { createAnonClient } from "@/lib/integrations/supabase/anon";
+import { isNewSince } from "@/lib/whats-new";
 
 import type { Tool } from "@/lib/queries/tools";
 import {
@@ -58,6 +63,34 @@ export async function listWalkthroughs(client: Client): Promise<Walkthrough[]> {
   }
   return data.map(parseWalkthrough);
 }
+
+/**
+ * Whether any published walkthrough is new, for the sidebar's marker.
+ *
+ * The layout asks on every signed-in page view and the answer is the same for
+ * everyone, so it is cached for an hour through the session-less client, the
+ * way the footer's affiliate count is. False on a failed read: a missing
+ * marker is better than a broken page.
+ */
+export const hasNewWalkthroughCached = unstable_cache(
+  async (): Promise<boolean> => {
+    const client = createAnonClient();
+    const [newest, settings] = await Promise.all([
+      client
+        .from("wizards")
+        .select("created_at")
+        .eq("status", "published")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      client.from("site_settings").select("badge_new_days").maybeSingle(),
+    ]);
+    if (newest.error || !newest.data) return false;
+    return isNewSince(newest.data.created_at, settings.data?.badge_new_days ?? 14);
+  },
+  ["new-walkthrough"],
+  { revalidate: 60 * 60 },
+);
 
 /**
  * One walkthrough by slug. Null when it does not exist.

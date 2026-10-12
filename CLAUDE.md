@@ -67,6 +67,12 @@ Lucide was the shadcn default and shipped here first; it was removed on 2026-09-
 - Third-party *API* integration (not code execution) is in scope — that's what `lib/integrations/` is for.
 - Nothing from Phase 1.5 or v2.0 (see Bible §28) — MVP scope only, even if a feature looks easy to add now.
 
+## Walkthroughs
+
+**Read `docs/walkthrough-rules.md` before writing or editing a walkthrough.** It holds the rules Ali's review feedback has established: every blank in a prompt has a tip and example answers, every prompt can be opened as a filled-in example, and so on.
+
+When Ali gives feedback on one walkthrough, turn it into a general rule in that file and apply it to every published walkthrough in the same change. Fixing only the walkthrough he was looking at is the failure this section exists to prevent.
+
 ## Talking to Ali
 
 Keep answers short and plain. Report what changed and what it means in a few lines — no walkthroughs, no design notes, no reasoning tours unless Ali asks for them or a decision genuinely needs explaining (a real trade-off, a risk, or something that changes what he'd choose). Technical terms are fine where they're the actual name of a thing; explain them when they carry the point. When more depth would help, offer it in one line rather than delivering it unasked. This holds until Ali says otherwise.

@@ -56,6 +56,10 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-10-12",
+    kind: "added",
+    title: "See any walkthrough prompt filled in",
+    body: "Every blank in a walkthrough prompt now explains itself: hover it for a tip, or open the filled-in example to see the whole prompt completed, with a few different answers to choose between for each blank.",
+    feature: true,
     kind: "improved",
     title: "New walkthroughs are easier to notice",
     body: "A walkthrough that has just been published now carries a New label in the sidebar and on the Walkthroughs page, and appears in What's new alongside new tools and guides.",

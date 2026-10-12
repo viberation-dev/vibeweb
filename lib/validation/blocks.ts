@@ -54,6 +54,22 @@ export const promptOption = z.object({
   prompt: z.string().min(1),
 });
 
+/**
+ * What goes in one blank of a prompt.
+ *
+ * The reader sees the tip as a tooltip on the blank, and the options in the
+ * filled-in example. See docs/walkthrough-rules.md for what a good one says.
+ */
+export const promptPlaceholder = z.object({
+  /** The blank exactly as written in the prompt, brackets included. */
+  token: z.string().regex(/^\[[^\[\]\n]+\]$/, "A token is one [bracketed] span."),
+  /** The words before the blank on its line, without the colon. */
+  label: z.string().min(1).optional(),
+  tip: z.string().min(1),
+  /** Example answers; the first is the one the filled-in example opens on. */
+  options: z.array(z.string().min(1)).min(1),
+});
+
 export const promptBlock = z.object({
   kind: z.literal("prompt"),
   /** What to do with it — "Paste this into Claude Code", etc. */
@@ -66,6 +82,12 @@ export const promptBlock = z.object({
   prompt: z.string().min(1),
   /** Two or more versions to choose between (VIB-160). Wins over `prompt`. */
   prompts: z.array(promptOption).min(2).optional(),
+  /**
+   * Hints for the blanks, shared by every version of the prompt. Optional so
+   * content written before it still parses; a bracketed span with no hint
+   * renders as plain text.
+   */
+  placeholders: z.array(promptPlaceholder).optional(),
 });
 
 export const codeBlock = z.object({

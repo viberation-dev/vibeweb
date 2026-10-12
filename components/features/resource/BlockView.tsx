@@ -88,7 +88,14 @@ export function BlockView({
       );
 
     case "prompt":
-      return <PromptBlock label={block.label} prompt={block.prompt} prompts={block.prompts} />;
+      return (
+        <PromptBlock
+          label={block.label}
+          prompt={block.prompt}
+          prompts={block.prompts}
+          placeholders={block.placeholders}
+        />
+      );
 
     case "code":
       return (

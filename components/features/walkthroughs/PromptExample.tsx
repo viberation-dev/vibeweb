@@ -74,9 +74,21 @@ export function PromptExample({ title, segments, focus, onClose }: Props) {
         </div>
 
         <div className="flex flex-col gap-5 overflow-y-auto px-5 py-4">
+          {/*
+            A warning, not a caption. The first reader to test this copied two
+            example answers into a real brief with the nouns swapped, and the
+            AI built them in as facts about his business.
+          */}
+          <aside className="border-l-destructive bg-destructive/5 rounded-r-lg border-l-4 p-4">
+            <p className="text-xs font-medium tracking-wide uppercase">Do not copy these answers</p>
+            <p className="mt-1 text-sm leading-relaxed">
+              They describe a made-up business. If you paste one in, even with the names
+              changed, your AI tool will treat it as a fact about yours and build on it. Read
+              them for the shape of a good answer, then write your own from scratch.
+            </p>
+          </aside>
           <p className="text-muted-foreground text-sm">
-            This is a made-up project, to show the shape of a good answer. Yours will say
-            different things. Pick another option below to see it change.
+            Pick another option below to see the example change.
           </p>
 
           <p className="bg-muted/40 rounded-lg border px-4 py-3 font-mono text-sm whitespace-pre-wrap">

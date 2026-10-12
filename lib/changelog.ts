@@ -56,6 +56,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-10-12",
+    kind: "improved",
+    title: "Walkthroughs say what to do after the AI answers",
+    body: "Each step that ends in a saved file now explains what to keep from the AI's reply, how to handle the extra suggestions it makes, and when to move on, with three short follow-up prompts for closing gaps without getting pulled into a long conversation.",
+  },
+  {
+    date: "2026-10-12",
     kind: "added",
     title: "See any walkthrough prompt filled in",
     body: "Every blank in a walkthrough prompt now explains itself: hover it for a tip, or open the filled-in example to see the whole prompt completed, with a few different answers to choose between for each blank.",

@@ -12,6 +12,28 @@ type Props = {
   tabs: { key: string; title: string; content: React.ReactNode }[];
 };
 
+/*
+ * Remembered per question, so the key is the block's label. Storage can be
+ * blocked; then every block simply opens on its first tab, as before.
+ */
+const choiceKey = (label: string) => `viberation:choice:${label}`;
+
+function readChoice(label: string): string | null {
+  try {
+    return window.localStorage.getItem(choiceKey(label));
+  } catch {
+    return null;
+  }
+}
+
+function saveChoice(label: string, key: string) {
+  try {
+    window.localStorage.setItem(choiceKey(label), key);
+  } catch {
+    // Nothing to do: the tab still switched.
+  }
+}
+
 /**
  * Alternatives the reader picks one of (VIB-162), such as their operating
  * system or a host. Every panel is in the HTML and inactive ones are
@@ -22,13 +44,19 @@ export function TabsBlock({ label, detect, tabs }: Props) {
   const id = useId();
 
   useEffect(() => {
-    if (detect !== "os") return;
+    if (detect !== "os") {
+      // A choice made once holds for every block that asks the same question:
+      // answer "Whose site is it?" in step 1 and step 3 opens on that answer.
+      const index = tabs.findIndex((tab) => tab.key === readChoice(label));
+      if (index > 0) setActive(index);
+      return;
+    }
     const nav = navigator as Navigator & { userAgentData?: { platform?: string } };
     const os = osFromPlatform(nav.userAgentData?.platform || nav.platform || nav.userAgent);
     const index = tabs.findIndex((tab) => tab.key === os);
     // After hydration: the server cannot know the visitor's OS.
     if (index > 0) setActive(index);
-  }, [detect, tabs]);
+  }, [detect, label, tabs]);
 
   return (
     <div className="rounded-lg border">
@@ -43,7 +71,10 @@ export function TabsBlock({ label, detect, tabs }: Props) {
               role="tab"
               aria-selected={i === active}
               aria-controls={`${id}-panel-${tab.key}`}
-              onClick={() => setActive(i)}
+              onClick={() => {
+                setActive(i);
+                if (detect !== "os") saveChoice(label, tab.key);
+              }}
               className={cn(
                 "cursor-pointer rounded-full border px-3 py-1 text-sm transition-colors hover:bg-muted",
                 i === active && "border-transparent bg-primary text-primary-foreground hover:bg-primary",

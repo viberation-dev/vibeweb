@@ -366,8 +366,14 @@ A depth that asks for more than its row is a bug in that depth.
 ### 7.3 What Team adds
 
 Team adds to a walkthrough and never replaces anything in it. A team block is
-tagged `team` only, with no depth, so it shows at every depth and sits only in
-steps every depth has.
+tagged `team` only, with no depth, so it shows wherever its step shows.
+
+Every step gets its team extras when the step is written, not later. Research
+and Review went out without any, a day after Team shipped, and had to be
+caught up (Ali, 2026-10-14).
+
+If a depth adds a step in front of the one where roles are agreed, that new
+first step says to agree who has the final say before starting.
 
 - **Roles, once, in the first step:** one person with the final say, a name
   beside each kind of missing information, one shared folder.

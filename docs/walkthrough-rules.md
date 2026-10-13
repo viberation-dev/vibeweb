@@ -313,20 +313,25 @@ said where to put it. The four follow-ups raised the same question: why four?
 **Enforced by:** the content migration fails if any version has no
 description (`20261013150000_walkthrough_step_three_feedback.sql`).
 
-### 6.2 Advice for some readers lives inside the choice that picks them out
+### 6.2 Advice for some readers lives behind the choice that picks them out
 
 A note that applies only to readers in one situation (a client's site, a
 particular host, a particular tool) does not sit in the open as "A client's
-site? ...". It goes in a tab of the choice that asks about that situation,
-under the same label that choice has everywhere else in the walkthrough.
+site? ...". It goes behind the choice that asks about that situation.
 
-The page remembers the answer by label, so a reader who chose "My own agency"
-in step 1 sees that tab already open in step 3. Reuse the exact label and tab
-keys; a new wording is a new question.
+- **A choice that matters in one step** is a tabs block in that step.
+- **A choice that matters in more than one step** is a setting in the "How are
+  you doing this?" panel (section 7), asked once. "Whose site is it?" started
+  as tabs repeated in three steps and was moved for that reason.
 
-**Why:** Ali, 2026-10-13. Having said in step 1 that the site was his own
+Once a note is behind a setting it loses the tab title that used to introduce
+it. Read each one on its own: "Send them copy.md" has to become "Send the
+client copy.md".
+
+**Why:** Ali, 2026-10-13: having said in step 1 that the site was his own
 agency's, he met "A client's site? Send them copy.md and get it approved" in
-step 3 and could not tell whether it applied to him.
+step 3 and could not tell whether it applied to him. Then 2026-10-14: asked
+for the question to move into the panel, so it is answered once.
 
 ## 7. One walkthrough, several ways through it
 
@@ -337,8 +342,9 @@ with settings**, never several copies. The reader answers "How are you doing
 this?" at the top (how thorough; alone or with a team), and steps and blocks
 tagged for other answers drop out.
 
-- A step or a top-level block carries `when: { depth: [...], team: [...] }`.
-  No `when` means everyone.
+- A step or a top-level block carries
+  `when: { depth: [...], team: [...], owner: [...] }`. No `when` means
+  everyone; every key that is set must match.
 - Untagged content **is** Standard, for one person. Tag only what differs.
 - A depth or team option appears in the panel the day content tagged for it
   is published, and not before. Do not tag anything `full` or `team` until

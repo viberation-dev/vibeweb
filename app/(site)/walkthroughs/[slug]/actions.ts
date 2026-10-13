@@ -15,6 +15,7 @@ import {
   applySetup,
   clampSetup,
   DEPTHS,
+  OWNERS,
   serializeSetup,
   setupCookieName,
   setupOptions,
@@ -145,6 +146,7 @@ const setupSchema = z.object({
   step_key: z.string().min(1),
   depth: z.enum(DEPTHS),
   team: z.enum(TEAMS),
+  owner: z.enum(OWNERS),
 });
 
 /**
@@ -163,11 +165,12 @@ export async function setSetupAction(formData: FormData): Promise<void> {
     step_key: formData.get("step_key"),
     depth: formData.get("depth"),
     team: formData.get("team"),
+    owner: formData.get("owner"),
   });
   if (!parsed.success) {
     redirect("/walkthroughs");
   }
-  const { walkthrough_slug: slug, step_key: stepKey, depth, team } = parsed.data;
+  const { walkthrough_slug: slug, step_key: stepKey, depth, team, owner } = parsed.data;
 
   const supabase = await createClient();
   const walkthrough = await getWalkthroughBySlug(supabase, slug);
@@ -176,7 +179,7 @@ export async function setSetupAction(formData: FormData): Promise<void> {
   }
 
   // Only what this walkthrough offers; a hand-posted "full" must not hide half of it.
-  const setup = clampSetup({ depth, team }, setupOptions(walkthrough.steps));
+  const setup = clampSetup({ depth, team, owner }, setupOptions(walkthrough.steps));
 
   const jar = await cookies();
   jar.set(setupCookieName(slug), serializeSetup(setup), {

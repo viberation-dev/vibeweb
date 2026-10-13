@@ -67,6 +67,7 @@ const when = z
   .object({
     depth: z.array(z.enum(["basic", "standard", "full"])).min(1).optional(),
     team: z.array(z.enum(["solo", "team"])).min(1).optional(),
+    owner: z.array(z.enum(["mine", "client"])).min(1).optional(),
   })
   .optional();
 

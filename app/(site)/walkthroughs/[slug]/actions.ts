@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
@@ -10,7 +11,17 @@ import {
   getWalkthroughProgress,
   saveWalkthroughProgress,
 } from "@/lib/queries/walkthroughs";
-import { allTaskIds } from "@/lib/walkthroughs";
+import {
+  applySetup,
+  clampSetup,
+  DEPTHS,
+  serializeSetup,
+  setupCookieName,
+  setupOptions,
+  stepIndexAfterChange,
+  TEAMS,
+} from "@/lib/walkthrough-setup";
+import { allTaskIds, walkthroughHref } from "@/lib/walkthroughs";
 
 const toggleSchema = z.object({
   walkthrough_slug: z.string().min(1),
@@ -127,4 +138,57 @@ export async function saveStepAction(formData: FormData): Promise<void> {
   });
 
   revalidatePath(`/walkthroughs/${slug}`);
+}
+
+const setupSchema = z.object({
+  walkthrough_slug: z.string().min(1),
+  step_key: z.string().min(1),
+  depth: z.enum(DEPTHS),
+  team: z.enum(TEAMS),
+});
+
+/**
+ * Saves how the reader wants to do this walkthrough, and sends them back to
+ * the step they were on.
+ *
+ * A cookie rather than a column: it has to work signed out, and the server
+ * needs it before it renders, because it decides which steps exist.
+ *
+ * ponytail: per device. Move it onto wizard_progress when someone asks why
+ * their phone forgot.
+ */
+export async function setSetupAction(formData: FormData): Promise<void> {
+  const parsed = setupSchema.safeParse({
+    walkthrough_slug: formData.get("walkthrough_slug"),
+    step_key: formData.get("step_key"),
+    depth: formData.get("depth"),
+    team: formData.get("team"),
+  });
+  if (!parsed.success) {
+    redirect("/walkthroughs");
+  }
+  const { walkthrough_slug: slug, step_key: stepKey, depth, team } = parsed.data;
+
+  const supabase = await createClient();
+  const walkthrough = await getWalkthroughBySlug(supabase, slug);
+  if (!walkthrough) {
+    redirect("/walkthroughs");
+  }
+
+  // Only what this walkthrough offers; a hand-posted "full" must not hide half of it.
+  const setup = clampSetup({ depth, team }, setupOptions(walkthrough.steps));
+
+  const jar = await cookies();
+  jar.set(setupCookieName(slug), serializeSetup(setup), {
+    path: "/walkthroughs",
+    maxAge: 60 * 60 * 24 * 365,
+    sameSite: "lax",
+  });
+
+  const index = stepIndexAfterChange(
+    walkthrough.steps.map((step) => step.key),
+    applySetup(walkthrough.steps, setup).map((step) => step.key),
+    stepKey,
+  );
+  redirect(walkthroughHref(slug, index));
 }

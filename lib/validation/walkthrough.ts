@@ -56,14 +56,28 @@ const checklistBlock = z.object({
   tasks: z.array(checklistTask).min(1),
 });
 
+/**
+ * Who a step or block is for (lib/walkthrough-setup.ts). Absent means
+ * everyone, which is what every block written before settings existed is.
+ *
+ * Only steps and top-level blocks carry it. A block inside a tab is already
+ * behind a choice the reader made on the page.
+ */
+const when = z
+  .object({
+    depth: z.array(z.enum(["basic", "standard", "full"])).min(1).optional(),
+    team: z.array(z.enum(["solo", "team"])).min(1).optional(),
+  })
+  .optional();
+
 export const walkthroughBlockSchema = z.discriminatedUnion("kind", [
-  textBlock,
-  calloutBlock,
-  promptBlock,
-  codeBlock,
-  checklistBlock,
-  linksBlock,
-  tabsBlock,
+  textBlock.extend({ when }),
+  calloutBlock.extend({ when }),
+  promptBlock.extend({ when }),
+  codeBlock.extend({ when }),
+  checklistBlock.extend({ when }),
+  linksBlock.extend({ when }),
+  tabsBlock.extend({ when }),
 ]);
 
 export const walkthroughStepSchema = z.object({
@@ -71,6 +85,7 @@ export const walkthroughStepSchema = z.object({
   key: z.string().min(1).regex(/^[a-z0-9-]+$/),
   title: z.string().min(1),
   intro: z.string().optional(),
+  when,
   blocks: z.array(walkthroughBlockSchema).min(1),
 });
 

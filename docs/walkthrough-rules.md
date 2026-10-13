@@ -327,3 +327,38 @@ keys; a new wording is a new question.
 **Why:** Ali, 2026-10-13. Having said in step 1 that the site was his own
 agency's, he met "A client's site? Send them copy.md and get it approved" in
 step 3 and could not tell whether it applied to him.
+
+## 7. One walkthrough, several ways through it
+
+### 7.1 Settings, not copies
+
+A walkthrough that suits different readers differently is **one walkthrough
+with settings**, never several copies. The reader answers "How are you doing
+this?" at the top (how thorough; alone or with a team), and steps and blocks
+tagged for other answers drop out.
+
+- A step or a top-level block carries `when: { depth: [...], team: [...] }`.
+  No `when` means everyone.
+- Untagged content **is** Standard, for one person. Tag only what differs.
+- A depth or team option appears in the panel the day content tagged for it
+  is published, and not before. Do not tag anything `full` or `team` until
+  that content is written and tested.
+- Where two depths need different wording, write two blocks and tag each.
+  Checklist task ids must stay unique across the whole walkthrough, so a
+  Basic checklist uses its own ids.
+- Every prompt in every setting still follows every rule in this file.
+
+**Why:** Ali, 2026-10-13. Step 3 at full detail was more than one person
+could supply in a sitting, and he asked for Individual and Team modes at
+three depths. Six separate walkthroughs would mean every later fix made six
+times.
+
+### 7.2 What each depth promises
+
+| | Basic | Standard | Complete |
+|---|---|---|---|
+| Steps | The fewest that still end in a live site | Every step | Standard, plus research before and a review before launch |
+| Gaps | The AI fills in almost everything; at most three items block launch | At most eight block launch | Everything is asked for, sorted into the three lists |
+| Effort | An evening or two | A week of evenings | Several weeks |
+
+A depth that asks for more than its row is a bug in that depth.

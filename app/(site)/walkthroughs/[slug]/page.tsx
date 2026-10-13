@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -11,6 +12,7 @@ import {
   WalkthroughBlockView,
   WalkthroughNav,
 } from "@/components/features/walkthroughs/WalkthroughBlocks";
+import { WalkthroughSetup } from "@/components/features/walkthroughs/WalkthroughSetup";
 import { WalkthroughStepper } from "@/components/features/walkthroughs/WalkthroughStepper";
 import { Badge } from "@/components/ui/badge";
 import { TextSize } from "@/components/ui/text-size";
@@ -27,6 +29,13 @@ import {
 } from "@/lib/queries/walkthroughs";
 import { toolView } from "@/lib/resource-view";
 import { siteUrl } from "@/lib/site-url";
+import {
+  applySetup,
+  clampSetup,
+  parseSetup,
+  setupCookieName,
+  setupOptions,
+} from "@/lib/walkthrough-setup";
 import { resolveStepIndex, summariseProgress } from "@/lib/walkthroughs";
 
 type Props = {
@@ -94,17 +103,28 @@ export default async function WalkthroughRunnerPage({
     listComments(supabase, target, auth.user?.id),
   ]);
 
+  /*
+   * The reader's way through: how thorough, and alone or not. Everything
+   * below reads `steps`, the walkthrough as this reader sees it, so the step
+   * count, the progress and the last step all agree with what is on screen.
+   * A walkthrough with no tagged content is unchanged by this.
+   */
+  const options = setupOptions(walkthrough.steps);
+  const jar = await cookies();
+  const setup = clampSetup(parseSetup(jar.get(setupCookieName(slug))?.value), options);
+  const steps = applySetup(walkthrough.steps, setup);
+
   const stepIndex = resolveStepIndex(
     stepParam,
     progress?.stepIndex ?? null,
-    walkthrough.steps.length,
+    steps.length,
   );
-  const step = walkthrough.steps[stepIndex];
+  const step = steps[stepIndex];
 
   const checklistState = progress?.checklistState ?? {};
-  const summary = summariseProgress(walkthrough.steps, checklistState);
+  const summary = summariseProgress(steps, checklistState);
 
-  const isLastStep = stepIndex === walkthrough.steps.length - 1;
+  const isLastStep = stepIndex === steps.length - 1;
 
   return (
     <main className="mx-auto w-full max-w-3xl p-6">
@@ -114,7 +134,7 @@ export default async function WalkthroughRunnerPage({
             "@context": "https://schema.org",
             "@type": "HowTo",
             name: walkthrough.title,
-            step: walkthrough.steps.map((s, i) => ({
+            step: steps.map((s, i) => ({
               "@type": "HowToStep",
               position: i + 1,
               name: s.title,
@@ -166,9 +186,18 @@ export default async function WalkthroughRunnerPage({
       </div>
 
       <div className="mt-6">
+        <WalkthroughSetup
+          slug={walkthrough.slug}
+          stepKey={step.key}
+          setup={setup}
+          options={options}
+        />
+      </div>
+
+      <div className="mt-6">
         <WalkthroughStepper
           slug={walkthrough.slug}
-          steps={walkthrough.steps}
+          steps={steps}
           currentIndex={stepIndex}
           progress={summary}
         />
@@ -240,7 +269,7 @@ export default async function WalkthroughRunnerPage({
       <WalkthroughNav
         slug={walkthrough.slug}
         stepIndex={stepIndex}
-        stepCount={walkthrough.steps.length}
+        stepCount={steps.length}
       >
         {auth.user ? (
           /*

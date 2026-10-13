@@ -6,6 +6,7 @@ import { useState, useSyncExternalStore } from "react";
 
 import { CopyButton } from "@/components/features/walkthroughs/CopyButton";
 import { PromptExample } from "@/components/features/walkthroughs/PromptExample";
+import { useWalkthroughSetup } from "@/components/features/walkthroughs/SetupContext";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   AI_BUILDERS,
@@ -14,7 +15,12 @@ import {
   launcherHref,
   type AiLauncher,
 } from "@/lib/ai-launchers";
-import { segmentPrompt, type PlaceholderHint } from "@/lib/prompt-placeholders";
+import {
+  fillFromSetup,
+  promptText,
+  segmentPrompt,
+  type PlaceholderHint,
+} from "@/lib/prompt-placeholders";
 import { toolsHref } from "@/lib/tools-url";
 import { cn } from "@/lib/utils";
 
@@ -72,7 +78,8 @@ function rememberTool(name: string) {
  *
  * A blank with a hint is a button: hovering or focusing it shows the tip, and
  * clicking it opens the filled-in example at that blank. What gets copied is
- * always the prompt as authored, blanks and all.
+ * the prompt as authored, blanks and all, except for a blank the reader's
+ * setup already answers, which is filled in.
  *
  * A follow-up prompt gets no launch links. It answers something the AI just
  * said, and a link would open a new chat that has never seen it.
@@ -83,7 +90,14 @@ export function PromptBlock({ label, prompt, prompts, placeholders, followUp }: 
   const current = options[selected];
   const [copiedTo, setCopiedTo] = useState<string | null>(null);
   const lastTool = useSyncExternalStore(subscribeToTool, readTool, () => null);
-  const segments = segmentPrompt(current.prompt, placeholders);
+  /*
+   * A blank the reader already answered in the setup panel is filled in here,
+   * so what they see, what they copy and what the launch links carry are the
+   * same text.
+   */
+  const setup = useWalkthroughSetup();
+  const segments = fillFromSetup(segmentPrompt(current.prompt, placeholders), setup);
+  const text = promptText(segments);
   const hasBlanks = segments.some((segment) => segment.hint);
   /** Null is closed; -1 is open with no particular blank in focus. */
   const [example, setExample] = useState<number | null>(null);
@@ -99,7 +113,7 @@ export function PromptBlock({ label, prompt, prompts, placeholders, followUp }: 
               See an example
             </Button>
           ) : null}
-          <CopyButton text={current.prompt} label="Copy prompt" />
+          <CopyButton text={text} label="Copy prompt" />
         </div>
       </div>
 
@@ -147,6 +161,14 @@ export function PromptBlock({ label, prompt, prompts, placeholders, followUp }: 
                 {segment.hint.tip} <span className="text-muted-foreground">Click for examples.</span>
               </span>
             </button>
+          ) : segment.filled ? (
+            <span
+              key={i}
+              title="Filled in from your settings at the top of the page"
+              className="bg-muted rounded px-0.5"
+            >
+              {segment.text}
+            </span>
           ) : (
             segment.text
           ),
@@ -177,7 +199,7 @@ export function PromptBlock({ label, prompt, prompts, placeholders, followUp }: 
         </p>
         <LauncherList
           launchers={AI_CHATS}
-          prompt={current.prompt}
+          prompt={text}
           onCopy={setCopiedTo}
           lastTool={lastTool}
         />
@@ -196,7 +218,7 @@ export function PromptBlock({ label, prompt, prompts, placeholders, followUp }: 
               <p className="text-muted-foreground">App builders, in your browser:</p>
               <LauncherList
                 launchers={AI_BUILDERS}
-                prompt={current.prompt}
+                prompt={text}
                 onCopy={setCopiedTo}
                 lastTool={lastTool}
               />
@@ -212,7 +234,7 @@ export function PromptBlock({ label, prompt, prompts, placeholders, followUp }: 
                     <span className="w-32 font-medium">{editor.name}</span>
                     <a
                       href={editor.appUrl}
-                      onClick={() => copyPrompt(current.prompt, editor.name, setCopiedTo)}
+                      onClick={() => copyPrompt(text, editor.name, setCopiedTo)}
                       className={buttonVariants({ variant: "outline", size: "sm" })}
                     >
                       Open app

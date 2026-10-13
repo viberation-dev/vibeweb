@@ -74,6 +74,16 @@ export const promptPlaceholder = z.object({
   tip: z.string().min(1),
   /** Example answers; the first is the one the filled-in example opens on. */
   options: z.array(z.string().min(1)).min(1),
+  /**
+   * The answer for each value of a walkthrough setting, where the page
+   * already knows it. Both values are required: a blank filled in for one
+   * reader and left open for another is two different prompts.
+   */
+  setting: z
+    .object({
+      owner: z.object({ mine: z.string().min(1), client: z.string().min(1) }).optional(),
+    })
+    .optional(),
 });
 
 export const promptBlock = z.object({

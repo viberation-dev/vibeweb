@@ -12,6 +12,7 @@ import {
   WalkthroughBlockView,
   WalkthroughNav,
 } from "@/components/features/walkthroughs/WalkthroughBlocks";
+import { WalkthroughSetupProvider } from "@/components/features/walkthroughs/SetupContext";
 import { WalkthroughSetup } from "@/components/features/walkthroughs/WalkthroughSetup";
 import { WalkthroughStepper } from "@/components/features/walkthroughs/WalkthroughStepper";
 import { Badge } from "@/components/ui/badge";
@@ -210,6 +211,7 @@ export default async function WalkthroughRunnerPage({
         ) : null}
 
         <div className="reading-type mt-6 flex max-w-[68ch] flex-col gap-5">
+          <WalkthroughSetupProvider setup={setup}>
           {step.blocks.map((block, index) => (
             <WalkthroughBlockView
               // Blocks have no ids of their own — they are positional within
@@ -222,6 +224,7 @@ export default async function WalkthroughRunnerPage({
               canSave={Boolean(auth.user)}
             />
           ))}
+          </WalkthroughSetupProvider>
         </div>
       </section>
 

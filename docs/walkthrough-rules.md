@@ -120,6 +120,22 @@ flooring-trade web agency were this walkthrough's food-and-drink examples with
 the nouns swapped ("about to pitch a supermarket"). ChatGPT wrote both into
 the brief as facts.
 
+### 1.8 Never ask for what the reader has already told the page
+
+If a blank asks for something a setting already holds (whose site it is, how
+thorough, alone or a team), the hint carries the answer for each value of
+that setting in `setting`, and the page fills the blank in: in the prompt on
+screen, in what Copy prompt copies, and in the launch links.
+
+- Give an answer for every value of the setting, never for some.
+- Keep `tip` and `options` on the hint. They are what shows anywhere the
+  prompt appears without a setup.
+- Write the answer as the words that belong in the prompt ("A client's
+  agency"), not as the setting's label ("A client's").
+
+**Why:** Ali, 2026-10-15. Once "Whose site is it?" was a setting, the brief
+prompt still asked it again as a blank.
+
 ## 2. Being found
 
 ### 2.1 A new walkthrough announces itself

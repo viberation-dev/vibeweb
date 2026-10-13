@@ -362,3 +362,23 @@ times.
 | Effort | An evening or two | A week of evenings | Several weeks |
 
 A depth that asks for more than its row is a bug in that depth.
+
+### 7.3 What Team adds
+
+Team adds to a walkthrough and never replaces anything in it. A team block is
+tagged `team` only, with no depth, so it shows at every depth and sits only in
+steps every depth has.
+
+- **Roles, once, in the first step:** one person with the final say, a name
+  beside each kind of missing information, one shared folder.
+- **A way to ask.** Wherever a step leaves `[NEEDED]` items, the team gets the
+  "Ask for what is missing" prompt, which turns the list into one message per
+  person. For a team, a gap is somebody else's to fill; say so.
+- **A way to take comments.** "Combine the team's comments" turns a pile of
+  feedback into one list, with disagreements left for the decider. One round.
+- **Sign-off** before anything later steps are built on: the brief, the words,
+  the look, the preview link. Each has a checklist task that names the decider
+  and asks for a yes in writing.
+
+Do not put team advice in the open as "If you work with others...". That is
+rule 6.2 again: it belongs behind the setting.

@@ -55,6 +55,13 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
  */
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    date: "2026-10-13",
+    kind: "added",
+    title: "A shorter way through the agency walkthrough",
+    body: "Build an agency website now asks how thorough you want to be. Basic is six steps instead of eight and ends in a four-page site, with the AI filling in more for you; Standard is the full build as before. You can switch at any step.",
+    feature: true,
+  },
+  {
     date: "2026-10-12",
     kind: "improved",
     title: "Walkthroughs say what to do after the AI answers",

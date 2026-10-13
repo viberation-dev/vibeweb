@@ -2,9 +2,11 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  fillFromSetup,
   filledText,
   hintName,
   hintsUsed,
+  promptText,
   segmentPrompt,
   type PlaceholderHint,
 } from "./prompt-placeholders.ts";
@@ -74,4 +76,30 @@ test("hintsUsed lists each hint once, in order of appearance", () => {
 test("a blank is named by its label, or by its token without brackets", () => {
   assert.equal(hintName(tone), "Tone of voice");
   assert.equal(hintName({ token: "[paste it]", tip: "x", options: ["y"] }), "paste it");
+});
+
+test("a blank the setup answers is filled in, and stops being a blank", () => {
+  const whose: PlaceholderHint = {
+    token: "[my own agency, or a client's]",
+    label: "Whose site this is",
+    tip: "It changes who approves things.",
+    options: ["My own agency", "A client's"],
+    setting: { owner: { mine: "My own agency", client: "A client's agency" } },
+  };
+  const prompt = "Whose site this is: [my own agency, or a client's]\nTone of voice: [three words]";
+  const segments = segmentPrompt(prompt, [whose, tone]);
+
+  const filled = fillFromSetup(segments, { owner: "client" });
+  assert.equal(
+    promptText(filled),
+    "Whose site this is: A client's agency\nTone of voice: [three words]",
+  );
+  assert.deepEqual(
+    hintsUsed(filled).map(({ hint }) => hint.token),
+    ["[three words]"],
+  );
+
+  // No setup, or a value the hint has no answer for: the prompt is as authored.
+  assert.equal(promptText(fillFromSetup(segments, null)), prompt);
+  assert.equal(promptText(fillFromSetup(segments, { owner: "nobody" })), prompt);
 });

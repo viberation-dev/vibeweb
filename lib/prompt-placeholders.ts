@@ -20,10 +20,17 @@ export type PlaceholderHint = {
   tip: string;
   /** Example answers. The first one is what the filled-in example shows. */
   options: string[];
+  /**
+   * The answer for each value of a walkthrough setting, where the reader has
+   * already told the page. A blank with one is filled in for them, in the
+   * prompt they see and the prompt they copy, so they are not asked twice.
+   */
+  setting?: { owner?: Record<string, string> };
 };
 
 export type PromptSegment =
-  | { text: string; hint?: undefined }
+  /** Plain text. `filled` marks a blank the page answered from a setting. */
+  | { text: string; hint?: undefined; filled?: true }
   | { text: string; hint: PlaceholderHint; hintIndex: number };
 
 const BLANK = /\[[^\[\]\n]+\]/g;
@@ -99,4 +106,27 @@ export function filledText(
 /** The display name of a blank: its label, or the token without brackets. */
 export function hintName(hint: PlaceholderHint): string {
   return hint.label ?? hint.token.slice(1, -1);
+}
+
+/**
+ * Fills the blanks the reader's setup already answers.
+ *
+ * A filled blank stops being a blank: it has no tip and is not offered in the
+ * example, because there is nothing left for the reader to decide there. With
+ * no setup (a guide, or a walkthrough without that setting) nothing changes.
+ */
+export function fillFromSetup(
+  segments: readonly PromptSegment[],
+  setup: { owner?: string } | null | undefined,
+): PromptSegment[] {
+  if (!setup) return [...segments];
+  return segments.map((segment) => {
+    const answer = setup.owner ? segment.hint?.setting?.owner?.[setup.owner] : undefined;
+    return answer ? { text: answer, filled: true as const } : segment;
+  });
+}
+
+/** The prompt as the reader should copy it: remaining blanks as written, filled ones answered. */
+export function promptText(segments: readonly PromptSegment[]): string {
+  return segments.map((segment) => segment.text).join("");
 }

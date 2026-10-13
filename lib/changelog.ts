@@ -57,6 +57,12 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
   {
     date: "2026-10-14",
     kind: "added",
+    title: "A Complete depth for the agency walkthrough",
+    body: "Build an agency website has a third depth. Complete adds a Research step at the start, for comparing competitors and talking to past clients, and a Review step before launch, for legal pages, measurement, an accessibility pass and a final proofread.",
+  },
+  {
+    date: "2026-10-14",
+    kind: "added",
     title: "The agency walkthrough for teams",
     body: "Build an agency website now asks whether you are working alone or with a team. Choosing a team adds who decides and who supplies what, a prompt that turns missing information into a ready-to-send message for each person, another that merges everyone's comments into one list, and a sign-off before each stage is built on.",
   },

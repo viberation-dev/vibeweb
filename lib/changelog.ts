@@ -55,6 +55,12 @@ export const CHANGELOG_KIND_LABELS: Record<ChangelogKind, string> = {
  */
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    date: "2026-10-14",
+    kind: "added",
+    title: "The agency walkthrough for teams",
+    body: "Build an agency website now asks whether you are working alone or with a team. Choosing a team adds who decides and who supplies what, a prompt that turns missing information into a ready-to-send message for each person, another that merges everyone's comments into one list, and a sign-off before each stage is built on.",
+  },
+  {
     date: "2026-10-13",
     kind: "added",
     title: "A shorter way through the agency walkthrough",

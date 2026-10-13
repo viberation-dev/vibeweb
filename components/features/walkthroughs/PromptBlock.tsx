@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 type Props = {
   label: string;
   prompt: string;
-  prompts?: { title: string; prompt: string }[];
+  prompts?: { title: string; prompt: string; description?: string }[];
   placeholders?: PlaceholderHint[];
   followUp?: boolean;
 };
@@ -78,7 +78,7 @@ function rememberTool(name: string) {
  * said, and a link would open a new chat that has never seen it.
  */
 export function PromptBlock({ label, prompt, prompts, placeholders, followUp }: Props) {
-  const options = prompts ?? [{ title: "", prompt }];
+  const options: NonNullable<Props["prompts"]> = prompts ?? [{ title: "", prompt }];
   const [selected, setSelected] = useState(0);
   const current = options[selected];
   const [copiedTo, setCopiedTo] = useState<string | null>(null);
@@ -120,6 +120,9 @@ export function PromptBlock({ label, prompt, prompts, placeholders, followUp }: 
             </button>
           ))}
         </div>
+      ) : null}
+      {current.description ? (
+        <p className="text-muted-foreground border-b px-4 py-2 text-sm">{current.description}</p>
       ) : null}
 
       {/*

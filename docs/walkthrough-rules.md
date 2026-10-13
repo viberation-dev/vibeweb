@@ -72,6 +72,9 @@ more confidence that their own answer is the right kind.
 - Does not repeat the label.
 - Says why the answer matters when that changes how carefully they answer
   ("It decides which region to pick").
+- A blank that pastes a saved file says which version: the latest saved one,
+  in full. (Ali, 2026-10-13: "Tighten it" asked for copy.md without saying
+  whether that meant the first reply or the one with the case studies in it.)
 
 ### 1.5 What an example says
 
@@ -220,6 +223,26 @@ goes back and forth until it is fixed. Do not add a stop line to it.
 Where a step's output is a sentence or a decision and not a file, one short
 note is enough: the one thing to take away, and permission to ignore the rest.
 
+### 3.8 Gaps are sorted and capped, never dumped
+
+A prompt may leave gaps for the reader, but it must not hand over a wall of
+them.
+
+- `[NEEDED: what]` is only for a fact the AI must not invent: a name, a
+  number, a quote, a price, a legal detail, what a package includes. Related
+  details share one marker.
+- Everything else the AI would normally ask about (a form field, a response
+  time, a button label) gets a sensible default, written in and marked
+  `[ASSUMED]`, so the reader corrects instead of supplying.
+- What is left comes back in three lists: **Before launch**, **Soon after**,
+  **Nice to have**. Before launch holds at most eight items, most important
+  first, each with who could supply it.
+- The step's checklist asks only for the Before launch list.
+
+**Why:** Ali, 2026-10-13. "Write the copy" returned 36 `[NEEDED]` items. Every
+one was valid, and together they made the step feel impossible for one person:
+"it is not possible for an individual to provide it in one go."
+
 ## 4. Files and tools
 
 ### 4.1 A prompt whose answer is saved says what form to give it in
@@ -270,3 +293,37 @@ them").
 **Why:** Ali, 2026-10-13. He could not tell what "Every page has one job I can
 say in a sentence" was asking him to check, or whether "everything marked
 NEEDED" meant the four parts of the blueprint.
+
+## 6. Choices
+
+### 6.1 Every version of a prompt says when to use it
+
+When a prompt block offers more than one prompt, each carries a `description`:
+when to pick it (start here, optional, run last, once per project), and where
+its answer goes (save as a file, save over a file, paste into a named place in
+a file, or "advice, not a file").
+
+If two versions are alternatives, one says so ("run one of these two, not
+both"). If they run in sequence, each says its place in the order.
+
+**Why:** Ali, 2026-10-13. Step 3 offered Write the copy, Write a case study
+and Tighten it with no word on order. The case study came back and nothing
+said where to put it. The four follow-ups raised the same question: why four?
+
+**Enforced by:** the content migration fails if any version has no
+description (`20261013150000_walkthrough_step_three_feedback.sql`).
+
+### 6.2 Advice for some readers lives inside the choice that picks them out
+
+A note that applies only to readers in one situation (a client's site, a
+particular host, a particular tool) does not sit in the open as "A client's
+site? ...". It goes in a tab of the choice that asks about that situation,
+under the same label that choice has everywhere else in the walkthrough.
+
+The page remembers the answer by label, so a reader who chose "My own agency"
+in step 1 sees that tab already open in step 3. Reuse the exact label and tab
+keys; a new wording is a new question.
+
+**Why:** Ali, 2026-10-13. Having said in step 1 that the site was his own
+agency's, he met "A client's site? Send them copy.md and get it approved" in
+step 3 and could not tell whether it applied to him.

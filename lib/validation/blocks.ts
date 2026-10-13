@@ -52,6 +52,12 @@ export const promptOption = z.object({
   /** Short name on the picker, e.g. "Quick check". */
   title: z.string().min(1),
   prompt: z.string().min(1),
+  /**
+   * When to pick this version, what goes into it and where its answer goes.
+   * Shown under the picker. A block with versions and no descriptions leaves
+   * the reader guessing which one is theirs (docs/walkthrough-rules.md 6.1).
+   */
+  description: z.string().min(1).optional(),
 });
 
 /**

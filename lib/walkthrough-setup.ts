@@ -17,10 +17,18 @@ export type Depth = (typeof DEPTHS)[number];
 export const TEAMS = ["solo", "team"] as const;
 export type Team = (typeof TEAMS)[number];
 
-export type Setup = { depth: Depth; team: Team };
+/**
+ * Whose project it is. "mine" and "client" because those were the tab keys
+ * when this was a choice repeated inside three steps; it became a setting so
+ * it is answered once.
+ */
+export const OWNERS = ["mine", "client"] as const;
+export type Owner = (typeof OWNERS)[number];
+
+export type Setup = { depth: Depth; team: Team; owner: Owner };
 
 /** What an unmarked walkthrough has always been: one person, every step. */
-export const DEFAULT_SETUP: Setup = { depth: "standard", team: "solo" };
+export const DEFAULT_SETUP: Setup = { depth: "standard", team: "solo", owner: "mine" };
 
 export const DEPTH_LABELS: Record<Depth, string> = {
   basic: "Basic",
@@ -44,11 +52,27 @@ export const TEAM_HINTS: Record<Team, string> = {
   team: "Other people supply information and sign things off.",
 };
 
+export const OWNER_LABELS: Record<Owner, string> = {
+  mine: "My own",
+  client: "A client's",
+};
+
+export const OWNER_HINTS: Record<Owner, string> = {
+  mine: "You are building it for your own business, and you approve it.",
+  client: "You are building it for someone else, who approves it and takes it over.",
+};
+
 /**
- * Who a step or block is for. A missing key means "everyone"; with both keys
- * set, both must match.
+ * Who a step or block is for. A missing key means "everyone"; every key that
+ * is set must match.
  */
-export type When = { depth?: readonly Depth[]; team?: readonly Team[] };
+export type When = {
+  depth?: readonly Depth[];
+  team?: readonly Team[];
+  owner?: readonly Owner[];
+};
+
+export type SetupOptions = { depths: Depth[]; teams: Team[]; owners: Owner[] };
 
 type Conditional = { when?: When };
 type StepLike<B> = Conditional & { blocks: B[] };
@@ -57,6 +81,7 @@ export function matchesSetup(when: When | undefined, setup: Setup): boolean {
   if (!when) return true;
   if (when.depth && !when.depth.includes(setup.depth)) return false;
   if (when.team && !when.team.includes(setup.team)) return false;
+  if (when.owner && !when.owner.includes(setup.owner)) return false;
   return true;
 }
 
@@ -89,13 +114,15 @@ export function applySetup<B extends Conditional, S extends StepLike<B>>(
  */
 export function setupOptions<B extends Conditional>(
   steps: readonly StepLike<B>[],
-): { depths: Depth[]; teams: Team[] } {
+): SetupOptions {
   const depths = new Set<Depth>();
   const teams = new Set<Team>();
+  const owners = new Set<Owner>();
 
   const note = (when: When | undefined) => {
     when?.depth?.forEach((depth) => depths.add(depth));
     when?.team?.forEach((team) => teams.add(team));
+    when?.owner?.forEach((owner) => owners.add(owner));
   };
   for (const step of steps) {
     note(step.when);
@@ -104,10 +131,12 @@ export function setupOptions<B extends Conditional>(
 
   if (depths.size) depths.add(DEFAULT_SETUP.depth);
   if (teams.size) teams.add(DEFAULT_SETUP.team);
+  if (owners.size) owners.add(DEFAULT_SETUP.owner);
 
   return {
     depths: DEPTHS.filter((depth) => depths.has(depth)),
     teams: TEAMS.filter((team) => teams.has(team)),
+    owners: OWNERS.filter((owner) => owners.has(owner)),
   };
 }
 
@@ -117,15 +146,18 @@ export function setupCookieName(slug: string): string {
 }
 
 export function serializeSetup(setup: Setup): string {
-  return `${setup.depth}.${setup.team}`;
+  return `${setup.depth}.${setup.team}.${setup.owner}`;
 }
 
 /** Cookies are untrusted input: anything unrecognised falls back to the default. */
 export function parseSetup(value: string | undefined): Setup {
-  const [depth, team] = (value ?? "").split(".");
+  // Cookies set before the owner question existed have two parts; the third
+  // falls back like any other unrecognised value.
+  const [depth, team, owner] = (value ?? "").split(".");
   return {
     depth: DEPTHS.find((known) => known === depth) ?? DEFAULT_SETUP.depth,
     team: TEAMS.find((known) => known === team) ?? DEFAULT_SETUP.team,
+    owner: OWNERS.find((known) => known === owner) ?? DEFAULT_SETUP.owner,
   };
 }
 
@@ -134,10 +166,11 @@ export function parseSetup(value: string | undefined): Setup {
  * set for, and "full" on a walkthrough that offers no Full would hide every
  * depth-tagged block at once.
  */
-export function clampSetup(setup: Setup, options: { depths: Depth[]; teams: Team[] }): Setup {
+export function clampSetup(setup: Setup, options: SetupOptions): Setup {
   return {
     depth: options.depths.includes(setup.depth) ? setup.depth : DEFAULT_SETUP.depth,
     team: options.teams.includes(setup.team) ? setup.team : DEFAULT_SETUP.team,
+    owner: options.owners.includes(setup.owner) ? setup.owner : DEFAULT_SETUP.owner,
   };
 }
 

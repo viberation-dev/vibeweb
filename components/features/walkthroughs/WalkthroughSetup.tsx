@@ -3,18 +3,19 @@ import { Button } from "@/components/ui/button";
 import {
   DEPTH_HINTS,
   DEPTH_LABELS,
+  OWNER_HINTS,
+  OWNER_LABELS,
   TEAM_HINTS,
   TEAM_LABELS,
-  type Depth,
   type Setup,
-  type Team,
+  type SetupOptions,
 } from "@/lib/walkthrough-setup";
 
 type Props = {
   slug: string;
   stepKey: string;
   setup: Setup;
-  options: { depths: Depth[]; teams: Team[] };
+  options: SetupOptions;
 };
 
 /**
@@ -31,9 +32,14 @@ type Props = {
 export function WalkthroughSetup({ slug, stepKey, setup, options }: Props) {
   const askDepth = options.depths.length > 1;
   const askTeam = options.teams.length > 1;
-  if (!askDepth && !askTeam) return null;
+  const askOwner = options.owners.length > 1;
+  if (!askDepth && !askTeam && !askOwner) return null;
 
-  const current = [askTeam ? TEAM_LABELS[setup.team] : null, askDepth ? DEPTH_LABELS[setup.depth] : null]
+  const current = [
+    askOwner ? OWNER_LABELS[setup.owner] : null,
+    askTeam ? TEAM_LABELS[setup.team] : null,
+    askDepth ? DEPTH_LABELS[setup.depth] : null,
+  ]
     .filter(Boolean)
     .join(" · ");
 
@@ -50,6 +56,21 @@ export function WalkthroughSetup({ slug, stepKey, setup, options }: Props) {
       <form action={setSetupAction} className="flex flex-col gap-5 border-t px-4 py-4">
         <input type="hidden" name="walkthrough_slug" value={slug} />
         <input type="hidden" name="step_key" value={stepKey} />
+
+        {askOwner ? (
+          <Choice
+            legend="Whose site is it?"
+            name="owner"
+            selected={setup.owner}
+            options={options.owners.map((owner) => ({
+              value: owner,
+              label: OWNER_LABELS[owner],
+              hint: OWNER_HINTS[owner],
+            }))}
+          />
+        ) : (
+          <input type="hidden" name="owner" value={setup.owner} />
+        )}
 
         {askTeam ? (
           <Choice

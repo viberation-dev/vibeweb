@@ -2,7 +2,7 @@
 
 import { IconChevronDown, IconExternalLink, IconEye } from "@tabler/icons-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 
 import { CopyButton } from "@/components/features/walkthroughs/CopyButton";
 import { PromptExample } from "@/components/features/walkthroughs/PromptExample";
@@ -23,7 +23,43 @@ type Props = {
   prompt: string;
   prompts?: { title: string; prompt: string }[];
   placeholders?: PlaceholderHint[];
+  followUp?: boolean;
 };
+
+/*
+ * The AI tool the reader opened last, kept in localStorage so that step 2
+ * leads with the tool they used in step 1. A store rather than state because
+ * a step can hold several prompt blocks and they should all agree at once.
+ */
+const TOOL_KEY = "viberation:ai-tool";
+const toolListeners = new Set<() => void>();
+
+function subscribeToTool(onChange: () => void) {
+  toolListeners.add(onChange);
+  window.addEventListener("storage", onChange);
+  return () => {
+    toolListeners.delete(onChange);
+    window.removeEventListener("storage", onChange);
+  };
+}
+
+function readTool(): string | null {
+  try {
+    return window.localStorage.getItem(TOOL_KEY);
+  } catch {
+    // Storage can be blocked. The buttons still work; they just do not reorder.
+    return null;
+  }
+}
+
+function rememberTool(name: string) {
+  try {
+    window.localStorage.setItem(TOOL_KEY, name);
+  } catch {
+    return;
+  }
+  toolListeners.forEach((listener) => listener());
+}
 
 /**
  * A copyable prompt, optionally with a choice of versions, followed by
@@ -37,12 +73,16 @@ type Props = {
  * A blank with a hint is a button: hovering or focusing it shows the tip, and
  * clicking it opens the filled-in example at that blank. What gets copied is
  * always the prompt as authored, blanks and all.
+ *
+ * A follow-up prompt gets no launch links. It answers something the AI just
+ * said, and a link would open a new chat that has never seen it.
  */
-export function PromptBlock({ label, prompt, prompts, placeholders }: Props) {
+export function PromptBlock({ label, prompt, prompts, placeholders, followUp }: Props) {
   const options = prompts ?? [{ title: "", prompt }];
   const [selected, setSelected] = useState(0);
   const current = options[selected];
   const [copiedTo, setCopiedTo] = useState<string | null>(null);
+  const lastTool = useSyncExternalStore(subscribeToTool, readTool, () => null);
   const segments = segmentPrompt(current.prompt, placeholders);
   const hasBlanks = segments.some((segment) => segment.hint);
   /** Null is closed; -1 is open with no particular blank in focus. */
@@ -118,12 +158,26 @@ export function PromptBlock({ label, prompt, prompts, placeholders }: Props) {
         />
       ) : null}
 
+      {followUp ? (
+        <p className="text-muted-foreground border-t px-4 py-3 text-sm">
+          Copy this and paste it into the chat you already have open, under the AI&rsquo;s
+          last reply. Do not start a new chat for it: a new chat has not seen your answers.
+        </p>
+      ) : (
       <div className="flex flex-col gap-2 border-t px-4 py-3 text-sm">
         <p className="text-muted-foreground">
           Open it in your AI tool. Clicking copies the prompt, and ChatGPT and Grok open with it
-          already filled in.
+          already filled in.{" "}
+          {lastTool
+            ? `${lastTool} is first because it is the one you used last.`
+            : "Use the same tool for every step, and it will be offered first from then on."}
         </p>
-        <LauncherList launchers={AI_CHATS} prompt={current.prompt} onCopy={setCopiedTo} />
+        <LauncherList
+          launchers={AI_CHATS}
+          prompt={current.prompt}
+          onCopy={setCopiedTo}
+          lastTool={lastTool}
+        />
         {copiedTo ? (
           <p aria-live="polite" className="text-muted-foreground">
             Prompt copied. If {copiedTo} opens empty, paste it in with Ctrl+V (Cmd+V on a Mac).
@@ -137,7 +191,12 @@ export function PromptBlock({ label, prompt, prompts, placeholders }: Props) {
           <div className="mt-2 flex flex-col gap-3">
             <div className="flex flex-col gap-2">
               <p className="text-muted-foreground">App builders, in your browser:</p>
-              <LauncherList launchers={AI_BUILDERS} prompt={current.prompt} onCopy={setCopiedTo} />
+              <LauncherList
+                launchers={AI_BUILDERS}
+                prompt={current.prompt}
+                onCopy={setCopiedTo}
+                lastTool={lastTool}
+              />
             </div>
             <div className="flex flex-col gap-2">
               <p className="text-muted-foreground">
@@ -183,6 +242,7 @@ export function PromptBlock({ label, prompt, prompts, placeholders }: Props) {
           </div>
         </details>
       </div>
+      )}
     </div>
   );
 }
@@ -192,6 +252,7 @@ export function PromptBlock({ label, prompt, prompts, placeholders }: Props) {
  * wait on the clipboard, or the browser treats the new tab as a popup.
  */
 function copyPrompt(prompt: string, toolName: string, onCopy: (name: string) => void) {
+  rememberTool(toolName);
   navigator.clipboard?.writeText(prompt).then(
     () => onCopy(toolName),
     // Denied clipboard: the prompt is still on screen to select by hand.
@@ -203,21 +264,30 @@ function LauncherList({
   launchers,
   prompt,
   onCopy,
+  lastTool,
 }: {
   launchers: readonly AiLauncher[];
   prompt: string;
   onCopy: (name: string) => void;
+  lastTool: string | null;
 }) {
+  // The tool used last leads the row, as the filled button.
+  const ordered = [...launchers].sort(
+    (a, b) => Number(b.name === lastTool) - Number(a.name === lastTool),
+  );
   return (
     <ul className="flex flex-wrap gap-2">
-      {launchers.map((tool) => (
+      {ordered.map((tool) => (
         <li key={tool.name}>
           <a
             href={launcherHref(tool, prompt)}
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => copyPrompt(prompt, tool.name, onCopy)}
-            className={buttonVariants({ variant: "outline", size: "sm" })}
+            className={buttonVariants({
+              variant: tool.name === lastTool ? "default" : "outline",
+              size: "sm",
+            })}
           >
             {tool.name}
             <IconExternalLink aria-hidden />

@@ -154,44 +154,119 @@ A prompt that ends "tell me what is weak" with nothing after it is a bug.
 
 ### 3.3 Every step that ends in a saved file has an "After the AI answers" section
 
-Placed straight after the step's last prompt. It says:
+Placed straight after the step's last prompt, and **written for that step**.
+It says:
 
-- **The one thing the reader needs from this step**, and the file it is saved
-  as.
-- **That the AI will offer more**, and that following every offer is how an
-  evening disappears.
+- **What the reply should contain**, in that step's own terms: the brief's
+  eight headings and three questions; the blueprint's four parts and its
+  `[NEEDED]` markers. Never a generic line about what an AI "usually" does.
+- **What to make of it.** Whether there are questions to answer, what the
+  markers mean, what the AI may have invented.
+- **How to save it** (rule 4.2).
 - **The three rules:** one round of fixes; a real decision is made once, in a
-  side prompt, and brought back; anything still unknown goes into the file as
+  side prompt, and brought back; anything still unknown stays in the file as
   `[NEEDED: what]`.
-- **When they are done.** A deliverable with honest gaps marked is finished.
+- **When they are done**, and to start the next step in a new chat.
 
-And it gives three follow-up prompts:
+`pg_temp.after_file()` in `20261013090000_walkthrough_step_two_feedback.sql`
+holds the shared wording; the per-step parts are its `what` and `note`
+arguments.
 
-1. **Fix the gaps once.** The reader's answers in, one rewrite out, no new
-   questions.
-2. **Decide one thing.** Three options, a recommendation, stop.
-3. **Wrap it up.** For a conversation that has already wandered: the final
-   file now, undecided things marked.
+**Why:** Ali, 2026-10-12: the walkthrough said nothing about what to do with
+the AI's extra advice. Then Ali, 2026-10-13: the first version of this section
+was one text stamped on six steps. It promised "weak points, questions, a
+recommended next step" in step 2, where the prompt asks for none and the reply
+had none. A description of the reply that does not match the reply is worse
+than no description.
 
-`pg_temp.after_file()` in `20261012150000_walkthrough_after_the_answer.sql`
-holds the wording. Reuse it so every step says this the same way.
+**Check before publishing:** run the step's prompt yourself and compare the
+reply with what the section says it contains.
 
-**Why:** Ali, 2026-10-12. The walkthrough said nothing about what to do with
-the AI's extra advice, so the reader had to work out alone whether to follow
-it.
+### 3.4 Follow-up prompts
 
-### 3.4 Steps that are iterative say how to keep each round small
+The section gives four, in this order:
+
+1. **Fix the gaps once.** The reader's answers and corrections in, one rewrite
+   out, no new questions.
+2. **Change one thing.** A single correction, applied everywhere it matters.
+3. **Decide one thing.** Three options, a recommendation, stop.
+4. **Wrap it up.** For a conversation that has already wandered.
+
+Every one that returns the deliverable asks for **the complete file, every
+heading, not only the parts that changed**, in the format of rule 4.1.
+
+Every one is marked `followUp: true`, so the page shows "paste into the chat
+you already have open" in place of the links that open a new chat.
+
+**Why:** Ali, 2026-10-13. After he answered the brief's three questions,
+ChatGPT returned only the three changed sections. He asked for "the final
+copy", made one more correction, and got changed sections again. And the
+follow-up prompts carried "open in ChatGPT" links, which start a chat that has
+never seen the reply being answered.
+
+### 3.5 Steps that are iterative say how to keep each round small
 
 Building pages and fixing audit findings are loops on purpose. Those steps do
 not get the three prompts; they get one short rule on how to bound a round
 (one page per conversation; fix critical and high, list the rest).
 
-### 3.5 Troubleshooting prompts are exempt
+### 3.6 Troubleshooting prompts are exempt
 
 A "Stuck?" prompt is a conversation by design: the reader pastes an error and
 goes back and forth until it is fixed. Do not add a stop line to it.
 
-### 3.6 Short planning steps get a note, not a section
+### 3.7 Short planning steps get a note, not a section
 
 Where a step's output is a sentence or a decision and not a file, one short
 note is enough: the one thing to take away, and permission to ignore the rest.
+
+## 4. Files and tools
+
+### 4.1 A prompt whose answer is saved says what form to give it in
+
+"Put the whole answer in Markdown inside a single code block I can copy,
+fenced with four backticks so any code inside it survives. Do not create a
+file to download."
+
+Never ask the AI for "a .md file". A file to download is a paid or metered
+feature in some tools, and a rendered reply loses its Markdown when the reader
+selects and copies it.
+
+**Why:** Ali, 2026-10-13, on free ChatGPT. The replies were formatted pages,
+not Markdown. When he asked for .md, ChatGPT offered a download and then
+reported that he was out of data analysis for the day.
+
+### 4.2 The walkthrough says how to save a file
+
+The first time a reader is asked to save a file, and in every "After the AI
+answers" section: copy the code block, paste into a plain text file, save it
+under the given name. Name an editor for Windows and for Mac. Do not assume
+the reader knows what a .md file is.
+
+### 4.3 The reader's AI tool is remembered
+
+The prompt block leads with the tool the reader opened last, as the filled
+button. The first prompt of each step opens a new chat and carries the earlier
+files with it; follow-up prompts stay in the chat (rule 3.4). Do not write a
+step that depends on the AI remembering an earlier step.
+
+**Why:** Ali, 2026-10-13. Having used ChatGPT for step 1, step 2 offered him
+the same undifferentiated row of six tools.
+
+## 5. Checklists
+
+### 5.1 A task that states a judgement says how to check it
+
+A task is either an action ("Saved the brief as brief.md") or a judgement
+("Every page has one job I can say in a sentence"). Every judgement carries a
+`help` line under it that says where to look and what done looks like, with a
+small example where one helps. An action only needs help when a reader might
+not know how to do it.
+
+If a task could be mistaken for something else on the page, the help says what
+it is not ("This is not the four parts of the blueprint. It is the gaps inside
+them").
+
+**Why:** Ali, 2026-10-13. He could not tell what "Every page has one job I can
+say in a sentence" was asking him to check, or whether "everything marked
+NEEDED" meant the four parts of the blueprint.

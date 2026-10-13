@@ -88,6 +88,12 @@ export const promptBlock = z.object({
    * renders as plain text.
    */
   placeholders: z.array(promptPlaceholder).optional(),
+  /**
+   * A reply to the AI's last answer, not the start of a conversation. It only
+   * makes sense in the chat the reader already has open, so it is shown with
+   * a "same chat" note instead of links that would open a new, empty one.
+   */
+  followUp: z.boolean().optional(),
 });
 
 export const codeBlock = z.object({

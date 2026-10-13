@@ -78,12 +78,20 @@ export function WalkthroughBlockView({
                   >
                     {done ? "✓" : ""}
                   </span>
-                  <span
-                    className={cn(
-                      done && "text-muted-foreground line-through",
-                    )}
-                  >
-                    {task.label}
+                  <span>
+                    <span
+                      className={cn(
+                        "block",
+                        done && "text-muted-foreground line-through",
+                      )}
+                    >
+                      {task.label}
+                    </span>
+                    {task.help ? (
+                      <span className="text-muted-foreground mt-1 block text-sm">
+                        {task.help}
+                      </span>
+                    ) : null}
                   </span>
                 </button>
               </form>
@@ -93,7 +101,14 @@ export function WalkthroughBlockView({
                   aria-hidden
                   className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border text-xs"
                 />
-                <span>{task.label}</span>
+                <span>
+                  <span className="block">{task.label}</span>
+                  {task.help ? (
+                    <span className="text-muted-foreground mt-1 block text-sm">
+                      {task.help}
+                    </span>
+                  ) : null}
+                </span>
               </div>
             )}
           </li>

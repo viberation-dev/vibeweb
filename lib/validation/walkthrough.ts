@@ -43,6 +43,12 @@ const checklistTask = z.object({
     .min(1)
     .regex(/^[a-z0-9-]+$/, "Task ids are lowercase letters, numbers and hyphens."),
   label: z.string().min(1),
+  /**
+   * How to tell whether the task is done, shown under the label. For a task
+   * that states a judgement ("every page has one job") rather than an action
+   * ("saved the file"); see docs/walkthrough-rules.md.
+   */
+  help: z.string().min(1).optional(),
 });
 
 const checklistBlock = z.object({

@@ -94,6 +94,7 @@ export function BlockView({
           prompt={block.prompt}
           prompts={block.prompts}
           placeholders={block.placeholders}
+          followUp={block.followUp}
         />
       );
 

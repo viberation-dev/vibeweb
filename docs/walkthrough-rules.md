@@ -382,3 +382,27 @@ steps every depth has.
 
 Do not put team advice in the open as "If you work with others...". That is
 rule 6.2 again: it belongs behind the setting.
+
+### 7.4 Name a step, never number it
+
+With settings, "step 1" is Research at one depth and Brief at another. Refer
+to a step by its name ("the Brief step", "while you write the copy") or by
+position relative to this one ("the next step"). The page prints the right
+number for the reader on its own.
+
+### 7.5 A deeper depth is built from the shallower one
+
+Complete is Standard plus what it adds. Where a Complete prompt differs from
+the Standard one, derive it in the migration by replacing the sentences that
+change, and have the migration check the replacement happened. Do not retype
+the prompt: two hand-typed copies stop matching within a month.
+
+What Complete adds to the agency walkthrough: a Research step first
+(competitors from pasted text, calls with past clients, research.md), a brief
+written from that research with a success measure, a copy prompt that lists
+every gap, and a Review step before Launch (legal drafts, measurement, an
+accessibility pass by hand, a proofread of the built pages).
+
+An AI tool asked about another company's website answers from memory and is
+often wrong. Any prompt that compares the reader with someone else works only
+from text the reader pastes in, and says so.

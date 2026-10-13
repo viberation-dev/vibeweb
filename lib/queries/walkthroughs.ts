@@ -3,6 +3,7 @@ import { unstable_cache } from "next/cache";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { createAnonClient } from "@/lib/integrations/supabase/anon";
+import { applySetup, DEFAULT_SETUP } from "@/lib/walkthrough-setup";
 import { isNewSince } from "@/lib/whats-new";
 
 import type { Tool } from "@/lib/queries/tools";
@@ -61,7 +62,16 @@ export async function listWalkthroughs(client: Client): Promise<Walkthrough[]> {
   if (error) {
     throw new Error(`listWalkthroughs: ${error.message}`);
   }
-  return data.map(parseWalkthrough);
+  /*
+   * A list describes each walkthrough as a new reader meets it: the default
+   * setup. Without this, a walkthrough with a Complete depth advertises ten
+   * steps on its card and opens on eight. The runner reads the full set
+   * through getWalkthroughBySlug and applies the reader's own setup.
+   */
+  return data.map(parseWalkthrough).map((walkthrough) => ({
+    ...walkthrough,
+    steps: applySetup(walkthrough.steps, DEFAULT_SETUP),
+  }));
 }
 
 /**

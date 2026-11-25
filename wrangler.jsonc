@@ -1,7 +1,12 @@
 {
   "name": "vibeweb",
-  "main": ".open-next/worker.js",
+  // Wraps .open-next/worker.js to add the cron handler.
+  "main": "cloudflare-worker.mjs",
   "compatibility_date": "2026-11-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
-  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" }
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  // UTC, same as vercel.json. Keep in step with CRON_ROUTES in cloudflare-worker.mjs.
+  "triggers": { "crons": ["0 9 * * *", "30 9 * * *"] },
+  // Secrets (CRON_SECRET, Supabase, Resend) go in with `wrangler secret put`, not here.
+  "vars": { "DEPLOY_ENV": "production" }
 }

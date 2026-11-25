@@ -49,3 +49,5 @@ supabase/.temp/
 
 # claude code worktrees
 .claude/worktrees/
+.open-next
+.wrangler

@@ -1,12 +1,18 @@
+"use client";
+
 import { IconBookmark } from "@tabler/icons-react";
 
 import { toggleBookmarkAction } from "@/app/(site)/account/bookmarks/actions";
+import { useSaved } from "@/components/features/bookmarks/BookmarksProvider";
 import { Button } from "@/components/ui/button";
 import type { BookmarkTarget } from "@/lib/queries/bookmarks";
 
 type Props = BookmarkTarget & {
-  /** Whether it is bookmarked right now — decides which way the toggle flips. */
-  bookmarked: boolean;
+  /**
+   * Whether it is bookmarked right now — decides which way the toggle flips.
+   * Leave it out on a cached listing and a BookmarksProvider supplies it.
+   */
+  bookmarked?: boolean;
   /** Path to come back to after a signed-out visitor logs in. */
   returnTo: string;
   /**
@@ -20,19 +26,22 @@ type Props = BookmarkTarget & {
 /**
  * Save / unsave one item.
  *
- * A plain form posting to a Server Action, not a client component: it works
- * without JavaScript, ships no client bundle, and the pages it sits on stay
- * Server Components. Signed-out visitors get bounced to /login and land back
- * here — clicking it is how a lot of people discover accounts exist.
+ * A plain form posting to a Server Action, so it still works before
+ * JavaScript loads. It is a client component only so a cached listing can
+ * fill in the saved state from BookmarksProvider. Signed-out visitors get
+ * bounced to /login and land back here — clicking it is how a lot of people
+ * discover accounts exist.
  */
 export function BookmarkButton({
   targetType,
   targetId,
   modelId,
-  bookmarked,
+  bookmarked: given,
   returnTo,
   modelName,
 }: Props) {
+  const saved = useSaved();
+  const bookmarked = given ?? saved?.has(targetId) ?? false;
   const label = modelName
     ? bookmarked
       ? "Model saved"
@@ -42,7 +51,10 @@ export function BookmarkButton({
       : "Save";
 
   return (
-    <form action={toggleBookmarkAction}>
+    <form
+      action={toggleBookmarkAction}
+      onSubmit={given === undefined ? () => saved?.toggle(targetId) : undefined}
+    >
       <input type="hidden" name="target_type" value={targetType} />
       <input type="hidden" name="target_id" value={targetId} />
       {modelId ? <input type="hidden" name="model_id" value={modelId} /> : null}

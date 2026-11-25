@@ -1,9 +1,9 @@
 import { IconSearch, IconStar } from "@tabler/icons-react";
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import Link from "next/link";
 
 import { BookmarkButton } from "@/components/features/bookmarks/BookmarkButton";
+import { BookmarksProvider } from "@/components/features/bookmarks/BookmarksProvider";
 import { DirectoryPager } from "@/components/features/resource/DirectoryPager";
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import { CategoryGuide } from "@/components/features/tools/CategoryGuide";
@@ -12,20 +12,20 @@ import { ToolIcon } from "@/components/features/tools/ToolIcon";
 import { DirectoryFilters } from "@/components/features/tools/DirectoryFilters";
 import { buttonVariants } from "@/components/ui/button";
 import { getOpenRouterModels } from "@/lib/integrations/openrouter";
-import { createClient } from "@/lib/integrations/supabase/server";
-import {
-  CATEGORY_GUIDES,
-  GUIDES_HIDDEN_COOKIE,
-  hiddenGuides,
-} from "@/lib/category-guides";
+import { createAnonClient } from "@/lib/integrations/supabase/anon";
+import { CATEGORY_GUIDES } from "@/lib/category-guides";
 import { familyLine, familyMembers } from "@/lib/model-facts";
 import { toPageNumber } from "@/lib/pagination";
-import { listBookmarks } from "@/lib/queries/bookmarks";
 import { cardBadges } from "@/lib/card-badges";
-import { getSiteSettings } from "@/lib/queries/settings";
+import { getSiteSettingsCached } from "@/lib/queries/settings";
 import { toolBadgeLabel } from "@/lib/tool-badges";
-import { listCategoryTags } from "@/lib/queries/tags";
-import { getToolTagsByIds, listTools, type Tool } from "@/lib/queries/tools";
+import { listCategoryTagsCached } from "@/lib/queries/tags";
+import {
+  getToolTagsByIdsCached,
+  listTools,
+  listToolsCached,
+  type Tool,
+} from "@/lib/queries/tools";
 import { normaliseQuery } from "@/lib/search-query";
 import { toPricingFilter } from "@/lib/tool-facts";
 import {
@@ -90,8 +90,16 @@ export default async function ToolsPage({ searchParams }: Props) {
   const pricing = toPricingFilter(params.pricing);
   const page = toPageNumber(params.page);
 
-  const supabase = await createClient();
-  const { data: auth } = await supabase.auth.getUser();
+  /*
+   * Everything here is public and the same for every reader, so it is cached
+   * (see publicCached). Free-text search is the exception: every query is
+   * different, so caching it would only fill the cache. Saved state, the
+   * guide's hide control and the login check live in the browser.
+   */
+  const listing = q
+    ? (filters: Parameters<typeof listTools>[1]) =>
+        listTools(createAnonClient(), filters)
+    : listToolsCached;
 
   /*
    * Unfiltered, the directory is one row per category rather than one long
@@ -108,9 +116,8 @@ export default async function ToolsPage({ searchParams }: Props) {
    */
   const showPicks = !!category && !tag && !q && !pricing && page === 1;
 
-  const [result, tags, bookmarks, picks] = await Promise.all([
-    listTools(
-      supabase,
+  const [result, tags, picks] = await Promise.all([
+    listing(
       browsing
         ? // ponytail: fetches every tool to fill the rows and count each
           // category in one round trip. Fine at a few hundred rows; switch
@@ -118,12 +125,9 @@ export default async function ToolsPage({ searchParams }: Props) {
           { sort, pageSize: 1000 }
         : { category, tag, sort, q, pricing, page },
     ),
-    listCategoryTags(supabase, category),
-    // Signed-out visitors still see Save buttons; pressing one sends them to
-    // sign in. Only which ones read as saved needs a user.
-    auth.user ? listBookmarks(supabase, auth.user.id, "tool") : [],
+    listCategoryTagsCached(category),
     showPicks
-      ? listTools(supabase, {
+      ? listToolsCached({
           category,
           editorPick: true,
           sort,
@@ -155,10 +159,7 @@ export default async function ToolsPage({ searchParams }: Props) {
 
   const [toolTags, liveModels, skillLines, settings] = await Promise.all([
     // One round trip for the whole grid's tag pills rather than one per card.
-    getToolTagsByIds(
-      supabase,
-      onScreen.map((tool) => tool.id),
-    ),
+    getToolTagsByIdsCached(onScreen.map((tool) => tool.id)),
     // Only when this page shows a model with live specs; cached for an hour
     // and empty rather than throwing when OpenRouter is down (VIB-107).
     onScreen.some((tool) => tool.openrouter_family)
@@ -169,7 +170,7 @@ export default async function ToolsPage({ searchParams }: Props) {
     getSkillCardLines(onScreen),
     // Which badge source is in force, and the thresholds the derived one
     // uses (VIB-187). One read for the whole grid.
-    getSiteSettings(supabase),
+    getSiteSettingsCached(),
   ]);
 
   /** "15 models · from $0.25 per 1M" for a model family's card; undefined otherwise. */
@@ -179,15 +180,6 @@ export default async function ToolsPage({ searchParams }: Props) {
           familyMembers(liveModels.values(), family).map((m) => m.price.input),
         ) || undefined
       : undefined;
-
-  const bookmarkedIds = new Set(
-    bookmarks.map((bookmark) => bookmark.target_id),
-  );
-  const hiddenGuide =
-    !!category &&
-    hiddenGuides((await cookies()).get(GUIDES_HIDDEN_COOKIE)?.value).includes(
-      category,
-    );
 
   // Come back to this exact filtered page after a signed-out visitor logs in.
   const returnTo = toolsHref({ category, tag, sort, q, pricing, page });
@@ -219,7 +211,6 @@ export default async function ToolsPage({ searchParams }: Props) {
           <BookmarkButton
             targetType="tool"
             targetId={tool.id}
-            bookmarked={bookmarkedIds.has(tool.id)}
             returnTo={returnTo}
           />
           {/*
@@ -245,13 +236,16 @@ export default async function ToolsPage({ searchParams }: Props) {
   );
 
   return (
-    <main className="mx-auto w-full max-w-6xl p-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="font-heading text-2xl font-semibold">
-            {category ? toolCategoryLabel(category) : "Find the right AI tool"}
-          </h1>
-          {/*
+    <BookmarksProvider targetType="tool">
+      <main className="mx-auto w-full max-w-6xl p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="font-heading text-2xl font-semibold">
+              {category
+                ? toolCategoryLabel(category)
+                : "Find the right AI tool"}
+            </h1>
+            {/*
             Real counts, queried — not the mockup's "46 tools", which predates
             the seed. A hero stat that contradicts the grid underneath it is
             worse than no stat.
@@ -260,170 +254,172 @@ export default async function ToolsPage({ searchParams }: Props) {
             directory: with any filter applied the number describes a subset,
             and "1 tool across 13 categories" is a sentence that is not true.
           */}
-          <p className="text-muted-foreground mt-1 text-sm">
-            {total} {total === 1 ? "tool" : "tools"}
-            {category || tag || q || pricing
-              ? ""
-              : ` across ${TOOL_CATEGORIES.length} categories`}
-          </p>
-        </div>
+            <p className="text-muted-foreground mt-1 text-sm">
+              {total} {total === 1 ? "tool" : "tools"}
+              {category || tag || q || pricing
+                ? ""
+                : ` across ${TOOL_CATEGORIES.length} categories`}
+            </p>
+          </div>
 
-        {/*
+          {/*
           Scoped to this table, unlike the header's site-wide search. A GET
           form so it needs no JavaScript, and the hidden inputs carry the
           active filters through rather than silently clearing them.
         */}
-        <form
-          method="get"
-          action="/tools"
-          role="search"
-          className="w-full sm:w-72"
-        >
-          <label htmlFor="filter-tools" className="sr-only">
-            Filter within tools
-          </label>
-          <div className="focus-within:border-ring flex items-center gap-2 rounded-md border px-3 py-1.5">
-            <IconSearch
-              aria-hidden
-              className="text-muted-foreground size-4 shrink-0"
-            />
-            <input
-              id="filter-tools"
-              type="search"
-              name="q"
-              defaultValue={q}
-              placeholder="Filter within tools…"
-              className="placeholder:text-muted-foreground w-full bg-transparent text-sm outline-none"
-            />
-          </div>
-          {category ? (
-            <input type="hidden" name="category" value={category} />
-          ) : null}
-          {tag ? <input type="hidden" name="tag" value={tag} /> : null}
-          {sort ? <input type="hidden" name="sort" value={sort} /> : null}
-          {pricing ? (
-            <input type="hidden" name="pricing" value={pricing} />
-          ) : null}
-        </form>
-      </div>
-
-      {/* First page only: a reader paging through already has the answer. */}
-      {category && page === 1 ? (
-        <CategoryGuide
-          key={category}
-          guide={CATEGORY_GUIDES[category]}
-          category={category}
-          collapsible={!!auth.user}
-          initiallyHidden={hiddenGuide}
-        />
-      ) : null}
-
-      {category && picks.length ? (
-        <section aria-labelledby="editor-picks" className="mt-8">
-          <h2
-            id="editor-picks"
-            className="font-heading flex items-center gap-2 text-lg font-semibold"
+          <form
+            method="get"
+            action="/tools"
+            role="search"
+            className="w-full sm:w-72"
           >
-            <IconStar aria-hidden className="text-primary size-5" />
-            Editor&apos;s picks
-          </h2>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Where we would start in {toolCategoryLabel(category)}.
-          </p>
-          <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {picks.map((tool) => (
-              <li key={tool.id}>{card(tool)}</li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-
-      <div className="mt-6">
-        <DirectoryFilters
-          category={category}
-          tag={tag}
-          sort={sort}
-          q={q}
-          pricing={pricing}
-          tags={tags}
-        />
-      </div>
-
-      {browsing ? (
-        <div className="mt-8 space-y-12">
-          {rows.map((group) => (
-            <section key={group.label} aria-labelledby={`group-${group.label}`}>
-              <h2
-                id={`group-${group.label}`}
-                className="text-muted-foreground text-xs font-bold tracking-widest uppercase"
-              >
-                {group.label}
-              </h2>
-              <div className="mt-4 space-y-8">
-                {group.categories.map((row) => (
-                  <div key={row.value}>
-                    <div className="flex items-end justify-between gap-4">
-                      <div>
-                        <h3 className="font-heading flex items-center gap-2 text-lg font-semibold">
-                          <CategoryIcon
-                            category={row.value}
-                            className="text-primary size-5"
-                          />
-                          {toolCategoryLabel(row.value)}
-                        </h3>
-                        <p className="text-muted-foreground mt-1 text-sm">
-                          {CATEGORY_BLURBS[row.value]}
-                        </p>
-                      </div>
-                      <Link
-                        href={toolsHref({ category: row.value, sort })}
-                        className="text-primary shrink-0 text-sm font-semibold hover:underline"
-                      >
-                        See all {row.count}
-                        <span className="sr-only">
-                          {" "}
-                          {toolCategoryLabel(row.value)}
-                        </span>{" "}
-                        →
-                      </Link>
-                    </div>
-                    <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                      {row.tools.map((tool) => (
-                        <li key={tool.id}>{card(tool)}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            </section>
-          ))}
+            <label htmlFor="filter-tools" className="sr-only">
+              Filter within tools
+            </label>
+            <div className="focus-within:border-ring flex items-center gap-2 rounded-md border px-3 py-1.5">
+              <IconSearch
+                aria-hidden
+                className="text-muted-foreground size-4 shrink-0"
+              />
+              <input
+                id="filter-tools"
+                type="search"
+                name="q"
+                defaultValue={q}
+                placeholder="Filter within tools…"
+                className="placeholder:text-muted-foreground w-full bg-transparent text-sm outline-none"
+              />
+            </div>
+            {category ? (
+              <input type="hidden" name="category" value={category} />
+            ) : null}
+            {tag ? <input type="hidden" name="tag" value={tag} /> : null}
+            {sort ? <input type="hidden" name="sort" value={sort} /> : null}
+            {pricing ? (
+              <input type="hidden" name="pricing" value={pricing} />
+            ) : null}
+          </form>
         </div>
-      ) : tools.length ? (
-        <>
-          <ul className="mt-6 grid gap-4 sm:grid-cols-2">
-            {tools.map((tool) => (
-              <li key={tool.id}>{card(tool)}</li>
-            ))}
-          </ul>
-          <DirectoryPager
-            page={page}
-            pageCount={pageCount}
-            total={total}
-            itemLabel="tools"
-            href={(next) =>
-              toolsHref({ category, tag, sort, q, pricing, page: next })
-            }
+
+        {/* First page only: a reader paging through already has the answer. */}
+        {category && page === 1 ? (
+          <CategoryGuide
+            key={category}
+            guide={CATEGORY_GUIDES[category]}
+            category={category}
           />
-        </>
-      ) : (
-        <p className="text-muted-foreground mt-8">
-          {page > 1
-            ? "That page is past the end of the results. Try going back to the first page."
-            : q
-              ? `Nothing matches “${q}”. Try a different word, or clear the filter.`
-              : "Nothing matches that filter yet. Try clearing the tag or picking another category."}
-        </p>
-      )}
-    </main>
+        ) : null}
+
+        {category && picks.length ? (
+          <section aria-labelledby="editor-picks" className="mt-8">
+            <h2
+              id="editor-picks"
+              className="font-heading flex items-center gap-2 text-lg font-semibold"
+            >
+              <IconStar aria-hidden className="text-primary size-5" />
+              Editor&apos;s picks
+            </h2>
+            <p className="text-muted-foreground mt-1 text-sm">
+              Where we would start in {toolCategoryLabel(category)}.
+            </p>
+            <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {picks.map((tool) => (
+                <li key={tool.id}>{card(tool)}</li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        <div className="mt-6">
+          <DirectoryFilters
+            category={category}
+            tag={tag}
+            sort={sort}
+            q={q}
+            pricing={pricing}
+            tags={tags}
+          />
+        </div>
+
+        {browsing ? (
+          <div className="mt-8 space-y-12">
+            {rows.map((group) => (
+              <section
+                key={group.label}
+                aria-labelledby={`group-${group.label}`}
+              >
+                <h2
+                  id={`group-${group.label}`}
+                  className="text-muted-foreground text-xs font-bold tracking-widest uppercase"
+                >
+                  {group.label}
+                </h2>
+                <div className="mt-4 space-y-8">
+                  {group.categories.map((row) => (
+                    <div key={row.value}>
+                      <div className="flex items-end justify-between gap-4">
+                        <div>
+                          <h3 className="font-heading flex items-center gap-2 text-lg font-semibold">
+                            <CategoryIcon
+                              category={row.value}
+                              className="text-primary size-5"
+                            />
+                            {toolCategoryLabel(row.value)}
+                          </h3>
+                          <p className="text-muted-foreground mt-1 text-sm">
+                            {CATEGORY_BLURBS[row.value]}
+                          </p>
+                        </div>
+                        <Link
+                          href={toolsHref({ category: row.value, sort })}
+                          className="text-primary shrink-0 text-sm font-semibold hover:underline"
+                        >
+                          See all {row.count}
+                          <span className="sr-only">
+                            {" "}
+                            {toolCategoryLabel(row.value)}
+                          </span>{" "}
+                          →
+                        </Link>
+                      </div>
+                      <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {row.tools.map((tool) => (
+                          <li key={tool.id}>{card(tool)}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        ) : tools.length ? (
+          <>
+            <ul className="mt-6 grid gap-4 sm:grid-cols-2">
+              {tools.map((tool) => (
+                <li key={tool.id}>{card(tool)}</li>
+              ))}
+            </ul>
+            <DirectoryPager
+              page={page}
+              pageCount={pageCount}
+              total={total}
+              itemLabel="tools"
+              href={(next) =>
+                toolsHref({ category, tag, sort, q, pricing, page: next })
+              }
+            />
+          </>
+        ) : (
+          <p className="text-muted-foreground mt-8">
+            {page > 1
+              ? "That page is past the end of the results. Try going back to the first page."
+              : q
+                ? `Nothing matches “${q}”. Try a different word, or clear the filter.`
+                : "Nothing matches that filter yet. Try clearing the tag or picking another category."}
+          </p>
+        )}
+      </main>
+    </BookmarksProvider>
   );
 }

@@ -1,4 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+
+import { publicCached } from "@/lib/queries/public-cache";
 import { unstable_cache } from "next/cache";
 
 import {
@@ -141,3 +143,6 @@ export async function insertDesignHistory(
     throw new Error(`insertDesignHistory: ${error.message}`);
   }
 }
+
+/** getSiteSettings for public pages, cached; see publicCached. */
+export const getSiteSettingsCached = publicCached("getSiteSettings", getSiteSettings);

@@ -2,7 +2,7 @@
 
 import { IconChevronDown, IconX } from "@tabler/icons-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Panel } from "@/components/ui/panel";
 import {
@@ -14,14 +14,16 @@ import { toolsHref } from "@/lib/tools-url";
 
 const YEAR = 60 * 60 * 24 * 365;
 
+function readCookie(): string | undefined {
+  return document.cookie
+    .split("; ")
+    .find((part) => part.startsWith(`${GUIDES_HIDDEN_COOKIE}=`))
+    ?.split("=")[1];
+}
+
 /** Adds or removes this category in the hidden list, read fresh so two tabs cannot undo each other. */
 function remember(category: string, hide: boolean) {
-  const current = hiddenGuides(
-    document.cookie
-      .split("; ")
-      .find((part) => part.startsWith(`${GUIDES_HIDDEN_COOKIE}=`))
-      ?.split("=")[1],
-  ).filter((c) => c !== category);
+  const current = hiddenGuides(readCookie()).filter((c) => c !== category);
   const next = hide ? [...current, category] : current;
   document.cookie = `${GUIDES_HIDDEN_COOKIE}=${next.join(",")}; path=/; max-age=${YEAR}; samesite=lax`;
 }
@@ -37,16 +39,24 @@ function remember(category: string, hide: boolean) {
 export function CategoryGuide({
   guide,
   category,
-  collapsible,
-  initiallyHidden,
 }: {
   guide: Guide;
   category: string;
-  /** Signed in: show the hide control. */
-  collapsible: boolean;
-  initiallyHidden: boolean;
 }) {
-  const [hidden, setHidden] = useState(collapsible && initiallyHidden);
+  /*
+   * Read in the browser so /tools can be cached for everyone. The server
+   * renders the full guide, which is what visitors get anyway; a member who
+   * hid it sees it fold up right after load.
+   */
+  const [collapsible, setCollapsible] = useState(false);
+  const [hidden, setHidden] = useState(false);
+
+  useEffect(() => {
+    // An auth cookie is enough here: hiding a guide is a preference, not access.
+    const member = /(?:^|; )sb-[^=]+-auth-token/.test(document.cookie);
+    setCollapsible(member);
+    setHidden(member && hiddenGuides(readCookie()).includes(category));
+  }, [category]);
 
   function toggle(hide: boolean) {
     setHidden(hide);

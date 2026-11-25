@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { DirectoryPager } from "@/components/features/resource/DirectoryPager";
-import { createClient } from "@/lib/integrations/supabase/server";
 import { toPageNumber } from "@/lib/pagination";
-import { listContent } from "@/lib/queries/content";
+import { listContentCached } from "@/lib/queries/content";
 
 export const metadata: Metadata = {
   title: "Blog",
@@ -28,13 +27,12 @@ type Props = { searchParams: Promise<{ page?: string }> };
 export default async function BlogPage({ searchParams }: Props) {
   const { page } = await searchParams;
 
-  const supabase = await createClient();
   const {
     items,
     pageCount,
     total,
     page: current,
-  } = await listContent(supabase, {
+  } = await listContentCached({
     types: ["announcement"],
     sort: "latest",
     page: toPageNumber(page),

@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { createClient } from "@/lib/integrations/supabase/server";
+import { createAnonClient } from "@/lib/integrations/supabase/anon";
 import { getSiteSettings } from "@/lib/queries/settings";
 import { listWalkthroughs } from "@/lib/queries/walkthroughs";
 import { isNewSince } from "@/lib/whats-new";
@@ -24,8 +24,11 @@ export const metadata: Metadata = {
  * single-item list is still the right shape for the route that will hold
  * several).
  */
+// Public, published content only: cached and rebuilt every 5 minutes.
+export const revalidate = 300;
+
 export default async function WalkthroughsPage() {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
   const [walkthroughs, settings] = await Promise.all([
     listWalkthroughs(supabase),
     getSiteSettings(supabase),

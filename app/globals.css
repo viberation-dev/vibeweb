@@ -485,3 +485,8 @@ html[data-reading="l"] {
     margin-top: 0;
   }
 }
+
+/* Members get their shell from SiteChrome; hide the visitor chrome until it does. */
+html[data-member] [data-visitor-chrome] {
+  display: none;
+}

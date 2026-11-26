@@ -1,13 +1,10 @@
 import { IconArrowUpRight } from "@tabler/icons-react";
-import { cookies } from "next/headers";
 import Link from "next/link";
-import { Suspense } from "react";
 
-import { AppSidebar } from "@/components/features/nav/AppSidebar";
 import { HamburgerMenu } from "@/components/features/nav/HamburgerMenu";
 import { MenuDismiss } from "@/components/features/nav/MenuDismiss";
 import { Logo } from "@/components/features/nav/Logo";
-import { SiteHeader } from "@/components/features/nav/SiteHeader";
+import { SiteChrome } from "@/components/features/nav/SiteChrome";
 import { SocialRail } from "@/components/features/nav/SocialRail";
 import { ThemeRail } from "@/components/features/nav/ThemeRail";
 import { UtilityBar } from "@/components/features/nav/UtilityBar";
@@ -15,17 +12,7 @@ import { SearchInput } from "@/components/features/search/SearchInput";
 import { BackToTop } from "@/components/ui/back-to-top";
 import { TextSize } from "@/components/ui/text-size";
 import { ButtonIcon, buttonVariants } from "@/components/ui/button";
-import { isSuperAdmin } from "@/lib/app-role";
-import { createClient } from "@/lib/integrations/supabase/server";
-import {
-  SIDEBAR_CLOSED_COOKIE,
-  SIDEBAR_MODE_COOKIE,
-  TOP_NAV,
-  toSidebarMode,
-} from "@/lib/nav";
-import { getCurrentProfile, getCurrentUser } from "@/lib/queries/profiles";
-import { avatarUrl } from "@/lib/queries/avatars";
-import { getOnboardingAnswers } from "@/lib/queries/onboarding-answers";
+import { TOP_NAV } from "@/lib/nav";
 import { countAffiliateToolsCached } from "@/lib/queries/tools";
 import { hasNewWalkthroughCached } from "@/lib/queries/walkthroughs";
 
@@ -33,8 +20,8 @@ import { hasNewWalkthroughCached } from "@/lib/queries/walkthroughs";
  * Two nav structures, not one (VIB-76, handoff §2).
  *
  * Visitors get a flat marketing top nav. Signed-in users get the app shell:
- * the same header minus the marketing links, plus the sidebar. The session
- * is read once here and handed to AuthStatus rather than fetched twice.
+ * the same header minus the marketing links, plus the sidebar. Which one a
+ * reader gets is decided in the browser, by SiteChrome.
  *
  * The visitor chrome is v3 (VIB-98): a utility bar above the header, a
  * circular burger, the centre nav, a pill CTA, and the two fixed rails. It
@@ -50,96 +37,40 @@ export default async function SiteLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const supabase = await createClient();
-  const user = await getCurrentUser(supabase);
-  const profile = await getCurrentProfile(supabase);
-
   /*
-   * Signed-in chrome follows the auth user, not the profiles row (VIB-173).
-   * Pages gate on getUser(), so a login whose row is missing would otherwise
-   * see members-only content under a "Sign in" header.
-   */
-  const signedIn = user !== null;
-
-  /*
+   * No session read here: that made every page render per request. The
+   * member shell is chosen in the browser by SiteChrome. Only site-wide,
+   * cached values are read on the server.
+   *
    * The footer's affiliate line is a claim about the site, so it is read from
    * the site rather than typed into the markup — see countAffiliateTools.
    */
-  const [affiliateCount, newWalkthrough, answers] = await Promise.all([
+  const [affiliateCount, newWalkthrough] = await Promise.all([
     countAffiliateToolsCached(),
-    // Only the sidebar shows it, and only members have a sidebar.
-    user ? hasNewWalkthroughCached() : false,
-    // The private display name, for the avatar's initials (VIB-178).
-    user ? getOnboardingAnswers(supabase, user.id) : null,
+    hasNewWalkthroughCached(),
   ]);
-
-  // The member's sidebar choices (VIB-174), read here so the first paint is the right width.
-  const jar = await cookies();
-  const sidebarMode = toSidebarMode(jar.get(SIDEBAR_MODE_COOKIE)?.value);
-  const sidebarClosed =
-    jar.get(SIDEBAR_CLOSED_COOKIE)?.value.split(",").filter(Boolean) ?? [];
 
   return (
     <>
-      {signedIn ? (
-        <SiteHeader
-          name={
-            answers?.display_name ?? profile?.username ?? user?.email ?? "?"
-          }
-          avatarSrc={avatarUrl(supabase, profile?.avatar_path ?? null)}
-        />
-      ) : (
-        <>
-          <UtilityBar />
-          <VisitorHeader />
-        </>
-      )}
-
-      {signedIn ? (
-        <div className="flex min-h-0 flex-1 flex-col md:flex-row">
-          {/*
-            AppSidebar reads the query string to mark the active category,
-            and useSearchParams needs a Suspense boundary above it or the
-            whole tree opts out of static rendering.
-          */}
-          <Suspense
-            fallback={
-              <div
-                className={`hidden shrink-0 border-r md:block ${sidebarMode === "expanded" ? "w-56" : "w-14"}`}
-              />
-            }
-          >
-            <AppSidebar
-              showRoadmap={profile ? isSuperAdmin(profile.app_role) : false}
-              initialMode={sidebarMode}
-              initialClosed={sidebarClosed}
-              newHrefs={newWalkthrough ? ["/walkthroughs"] : []}
-            />
-          </Suspense>
-          <div className="min-w-0 flex-1">{children}</div>
-          {/*
-            The social rail belongs to both shells (VIB-202). It shipped as
-            visitor-only chrome, which meant "Follow us" quietly disappeared
-            the moment someone signed in — exactly the readers most likely
-            to follow. ThemeRail stays visitor-only: the signed-in header
-            carries its own theme control, and two of them on one screen is
-            a question about which one is authoritative.
-          */}
-          <SocialRail />
-        </div>
-      ) : (
-        <>
-          <ThemeRail />
-          <SocialRail />
-          <div className="flex-1">{children}</div>
-        </>
-      )}
-
-      {signedIn ? (
-        <AppFooter />
-      ) : (
-        <VisitorFooter hasAffiliateLinks={affiliateCount > 0} />
-      )}
+      <SiteChrome
+        visitorHeader={
+          <>
+            <UtilityBar />
+            <VisitorHeader />
+          </>
+        }
+        // ThemeRail stays visitor-only: the signed-in header has its own theme control.
+        visitorRails={<ThemeRail />}
+        // The social rail belongs to both shells (VIB-202).
+        socialRail={<SocialRail />}
+        visitorFooter={
+          <VisitorFooter hasAffiliateLinks={affiliateCount > 0} />
+        }
+        appFooter={<AppFooter />}
+        newWalkthrough={newWalkthrough}
+      >
+        {children}
+      </SiteChrome>
 
       {/*
         Site-wide rather than per-route (VIB-198): the directory and search

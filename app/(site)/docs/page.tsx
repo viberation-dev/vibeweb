@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { ResourceCard } from "@/components/features/resource/ResourceCard";
 import { Badge } from "@/components/ui/badge";
-import { createClient } from "@/lib/integrations/supabase/server";
+import { createAnonClient } from "@/lib/integrations/supabase/anon";
 import { listContent } from "@/lib/queries/content";
 import { contentView } from "@/lib/resource-view";
 
@@ -53,8 +53,11 @@ const AUDIENCE_SECTIONS = [
   },
 ] as const;
 
+// Public, published content only: cached and rebuilt every 5 minutes.
+export const revalidate = 300;
+
 export default async function DocsPage() {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
 
   /*
    * Only `help_article` here. `role_guide` rows exist in the schema for the

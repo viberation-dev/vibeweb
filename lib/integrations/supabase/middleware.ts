@@ -40,6 +40,19 @@ function isProtected(pathname: string): boolean {
  *     awaited in between risks racing the cookie write.
  */
 export async function updateSession(request: NextRequest): Promise<NextResponse> {
+  /*
+   * No auth cookie means no session to refresh, so a visitor costs nothing
+   * here. That was a Supabase round trip on every public page view.
+   */
+  const hasSession = request.cookies
+    .getAll()
+    .some(({ name }) => name.startsWith("sb-") && name.includes("-auth-token"));
+  if (!hasSession) {
+    return isProtected(request.nextUrl.pathname)
+      ? redirectToLogin(request)
+      : NextResponse.next({ request });
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(supabaseUrl(), supabasePublishableKey(), {
@@ -64,12 +77,16 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
   } = await supabase.auth.getUser();
 
   if (!user && isProtected(request.nextUrl.pathname)) {
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/login";
-    // Send them back where they were heading once they have signed in.
-    redirectUrl.searchParams.set("redirectTo", request.nextUrl.pathname);
-    return NextResponse.redirect(redirectUrl);
+    return redirectToLogin(request);
   }
 
   return supabaseResponse;
+}
+
+function redirectToLogin(request: NextRequest): NextResponse {
+  const redirectUrl = request.nextUrl.clone();
+  redirectUrl.pathname = "/login";
+  // Send them back where they were heading once they have signed in.
+  redirectUrl.searchParams.set("redirectTo", request.nextUrl.pathname);
+  return NextResponse.redirect(redirectUrl);
 }

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { CollectionCard } from "@/components/features/collections/CollectionCard";
-import { createClient } from "@/lib/integrations/supabase/server";
+import { createAnonClient } from "@/lib/integrations/supabase/anon";
 import {
   countCollectionItems,
   listCollections,
@@ -12,8 +12,11 @@ export const metadata: Metadata = {
     "Starter stacks, already picked for you. Each one gathers the tools and guides for a single job, so you start from something instead of a blank page.",
 };
 
+// Public, published content only: cached and rebuilt every 5 minutes.
+export const revalidate = 300;
+
 export default async function CollectionsPage() {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
   const collections = await listCollections(supabase);
   const counts = await countCollectionItems(
     supabase,

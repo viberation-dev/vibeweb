@@ -96,6 +96,17 @@ export default async function RootLayout({
         */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         {/*
+          The page is static and always ships the visitor chrome. A reader
+          with an auth cookie is probably a member, so hide that chrome before
+          paint; SiteChrome swaps in the member shell, or clears the flag if
+          the session turns out to be gone.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if(/(?:^|; )sb-[^=]+-auth-token/.test(document.cookie))document.documentElement.setAttribute("data-member","")`,
+          }}
+        />
+        {/*
           Staff overrides of globals.css tokens (VIB-246). Built only from
           registered token names and 6-digit hex values, so there is nothing
           in it to escape.

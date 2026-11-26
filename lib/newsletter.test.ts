@@ -17,6 +17,14 @@ test("previews show it, so the form can be reviewed before it goes live", () => 
   assert.equal(newsletterFormEnabled({ VERCEL_ENV: "preview" }), true);
 });
 
+test("DEPLOY_ENV works off Vercel and wins over VERCEL_ENV", () => {
+  assert.equal(newsletterFormEnabled({ DEPLOY_ENV: "preview" }), true);
+  assert.equal(
+    newsletterFormEnabled({ DEPLOY_ENV: "production", VERCEL_ENV: "preview" }),
+    false,
+  );
+});
+
 test("off wins everywhere, previews included", () => {
   assert.equal(
     newsletterFormEnabled({ VERCEL_ENV: "preview", NEWSLETTER_SIGNUP: "off" }),

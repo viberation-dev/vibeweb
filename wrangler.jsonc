@@ -1,0 +1,29 @@
+{
+  "name": "vibeweb",
+  // Wraps .open-next/worker.js to add the cron handler.
+  "main": "cloudflare-worker.mjs",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  // UTC, same as vercel.json. Keep in step with CRON_ROUTES in cloudflare-worker.mjs.
+  "triggers": { "crons": ["0 9 * * *", "30 9 * * *"] },
+  // Secrets (CRON_SECRET, Supabase, Resend) go in with `wrangler secret put`, not here.
+  "vars": { "DEPLOY_ENV": "production" },
+
+  // Page cache, see open-next.config.ts. Create once with:
+  //   npx wrangler r2 bucket create vibeweb-cache
+  "r2_buckets": [
+    { "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "vibeweb-cache" }
+  ],
+  // Revalidation tags. Create once with `npx wrangler d1 create vibeweb-tag-cache`
+  // and paste the id it prints over the placeholder.
+  "d1_databases": [
+    {
+      "binding": "NEXT_TAG_CACHE_D1",
+      "database_name": "vibeweb-tag-cache",
+      "database_id": "REPLACE_WITH_D1_ID"
+    }
+  ],
+  // The memory queue re-renders stale pages by calling this worker.
+  "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "vibeweb" }]
+}

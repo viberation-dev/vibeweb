@@ -6,18 +6,18 @@ import { getCurrentProfile } from "@/lib/queries/profiles";
 import { listTools } from "@/lib/queries/tools";
 import { listWalkthroughs } from "@/lib/queries/walkthroughs";
 import { claimWelcomeEmails, startWelcomeEmails } from "@/lib/queries/welcome-emails";
+import { siteUrl } from "@/lib/site-url";
 import type { Database } from "@/types/supabase";
 
 type Client = SupabaseClient<Database>;
 
 /**
- * Where email links point. The production domain when Vercel says there is
- * one, so a welcome triggered from a preview still links to the real site;
- * otherwise the request's own origin (local dev).
+ * Where email links point. The production domain in any production build, on
+ * any host, so a welcome triggered from a preview still links to the real
+ * site; otherwise the request's own origin (local dev).
  */
 export function emailOrigin(fallback: string): string {
-  const production = process.env.VERCEL_PROJECT_PRODUCTION_URL;
-  return production ? `https://${production}` : fallback;
+  return process.env.NODE_ENV === "production" ? siteUrl : fallback;
 }
 
 /**

@@ -21,5 +21,6 @@ export function newsletterFormEnabled(
 ): boolean {
   if (env.NEWSLETTER_SIGNUP === "on") return true;
   if (env.NEWSLETTER_SIGNUP === "off") return false;
-  return env.VERCEL_ENV === "preview";
+  // DEPLOY_ENV is the host-neutral flag; VERCEL_ENV covers Vercel until the move.
+  return (env.DEPLOY_ENV ?? env.VERCEL_ENV) === "preview";
 }

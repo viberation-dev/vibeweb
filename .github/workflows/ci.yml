@@ -30,7 +30,7 @@ jobs:
 
       - run: npm run build
         env:
-          # Build-time placeholders. Real values live in Vercel env vars —
-          # CI only needs the build to resolve, never to reach Supabase.
-          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
-          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_placeholder
+          # Real public values (repo variables): static pages read public
+          # data from Supabase at build. Both are public by design.
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}

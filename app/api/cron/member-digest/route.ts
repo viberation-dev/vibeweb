@@ -7,9 +7,9 @@ import { sendMemberDigest } from "@/lib/member-digest";
 import { emailOrigin } from "@/lib/welcome-emails";
 
 /**
- * Daily new-member digest (VIB-236), scheduled in vercel.json.
+ * Daily new-member digest (VIB-236), scheduled by netlify/functions/cron-member-digest.mts.
  *
- * Vercel sends `Authorization: Bearer $CRON_SECRET`. The same secret is what
+ * The function sends `Authorization: Bearer $CRON_SECRET`. The same secret is what
  * new_members_for_digest checks in the database, so this route holds no power
  * of its own: without the secret it can neither pass here nor there. Same
  * arrangement as /api/cron/welcome-emails, which this deliberately mirrors

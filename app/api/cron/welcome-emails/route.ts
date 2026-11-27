@@ -6,9 +6,9 @@ import { createClient } from "@/lib/integrations/supabase/server";
 import { emailOrigin, sendDueWelcomeEmails } from "@/lib/welcome-emails";
 
 /**
- * Daily welcome-sequence run (VIB-155), scheduled in vercel.json.
+ * Daily welcome-sequence run (VIB-155), scheduled by netlify/functions/cron-welcome-emails.mts.
  *
- * Vercel sends `Authorization: Bearer $CRON_SECRET`. The same secret is what
+ * The function sends `Authorization: Bearer $CRON_SECRET`. The same secret is what
  * claim_welcome_emails checks in the database, so this route holds no power
  * of its own: without the secret it can neither pass here nor there.
  */

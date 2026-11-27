@@ -6,7 +6,7 @@ import { parseRepo, type RepoFacts } from "@/lib/skill-facts";
  * The one module that knows stars, last push and licence come from GitHub's
  * REST API. Works with no key at 60 requests an hour per server IP; set
  * `GITHUB_TOKEN` (a fine-grained token with no permissions — public data
- * only) in Vercel to raise that to 5,000. Server-only: the token never
+ * only) in Netlify to raise that to 5,000. Server-only: the token never
  * reaches the browser.
  *
  * Every failure, rate limiting included, resolves to null — the same
@@ -35,7 +35,7 @@ export async function getRepoFacts(owner: string, repo: string): Promise<RepoFac
     const response = await fetch(`${API}/repos/${owner}/${repo}`, {
       headers,
       next: { revalidate: REVALIDATE_SECONDS },
-      // A hung request would hold the whole page until Vercel's 300s kill (VIB-175).
+      // A hung request would hold the whole page until the host's function timeout (VIB-175).
       signal: AbortSignal.timeout(5000),
     });
     if (!response.ok) {

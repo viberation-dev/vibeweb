@@ -20,7 +20,12 @@ import {
  * deployment already has (600 requests a minute per project). The audit
  * endpoint is public.
  *
- * Every failure — no token (local dev without `vercel env pull`), network,
+ * ponytail: on Netlify there is no Vercel OIDC token, so the leaderboard,
+ * search and detail calls return "nothing known" and skill pages show no
+ * install counts. Audits still work. If skills.sh offers an API key for
+ * non-Vercel hosts, read it from an env var in oidcToken() below.
+ *
+ * Every failure — no token (local dev or Netlify), network,
  * non-200, a changed shape — resolves to "nothing known", never a throw, the
  * same contract as lib/integrations/openrouter.ts. A skill page without an
  * install count is still a useful page.
@@ -38,7 +43,7 @@ async function oidcToken(): Promise<string | null> {
   try {
     return await getVercelOidcToken();
   } catch {
-    // Outside Vercel with no pulled token. Expected locally; not an error.
+    // Off Vercel (Netlify, local dev). Expected; not an error.
     return null;
   }
 }
@@ -63,7 +68,7 @@ async function getJson(path: string, authenticated: boolean, cached = true): Pro
     const response = await fetch(`${API}${path}`, {
       headers,
       ...(cached ? { next: { revalidate: REVALIDATE_SECONDS } } : { cache: "no-store" as const }),
-      // A hung request would hold the whole page until Vercel's 300s kill (VIB-175).
+      // A hung request would hold the whole page until the host's function timeout (VIB-175).
       signal: AbortSignal.timeout(cached ? 5000 : 15000),
     });
     // 404 is an answer — no audits yet, or not listed — not a fault to log.

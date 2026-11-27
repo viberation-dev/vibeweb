@@ -12,8 +12,8 @@ import type { FeedbackInput } from "@/lib/validation/feedback";
  * true for a second public form.
  *
  * ponytail: no rate limit, because the app has none anywhere. A flood costs
- * Resend quota and an annoying inbox day, not data. The upgrade is a Vercel
- * Firewall rate-limit rule on /feedback — configuration rather than code —
+ * Resend quota and an annoying inbox day, not data. The upgrade is a Netlify
+ * rate-limit rule on /feedback — configuration rather than code —
  * or Turnstile if it ever gets worse than that.
  */
 

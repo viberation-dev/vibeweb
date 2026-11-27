@@ -45,13 +45,22 @@ Lucide was the shadcn default and shipped here first; it was removed on 2026-09-
 - **A new table reaches the app only if the migration grants it.** Since migration 20 (VIB-60) `public` no longer hands `anon` and `authenticated` privileges on newly created tables automatically, so a `create table` alone produces a table the Data API cannot see. Grant what the table's RLS policies assume — `select` to `anon, authenticated` for public-read, writes to `authenticated` only, nothing to `anon` for owner-scoped data — in the same migration. The symptom of forgetting is `42501 permission denied`, not a security hole.
 - Never expose the Supabase service-role key client-side.
 - Validate all form/API input with `zod` — server-side validation is the security control; client-side is UX only.
-- Secrets live in Vercel env vars. Never commit `.env` or hardcode a key.
+- Secrets live in Netlify env vars (Project configuration → Environment variables). Never commit `.env` or hardcode a key.
+
+## Hosting
+
+The site runs on **Netlify** (free plan), moved from Vercel on 2026-11-27 after Vercel suspended the project for going over the Hobby CPU limit. `www.viberation.dev` is the primary domain and `viberation.dev` redirects to it. DNS stays at Porkbun.
+
+- Netlify detects Next.js on its own; there is no `netlify.toml`.
+- The two daily crons are Netlify scheduled functions in `netlify/functions/` (09:00 and 09:30 UTC). They call the `/api/cron/*` routes with the `CRON_SECRET` bearer header.
+- `DEPLOY_ENV` is `production` on the live site and `preview` everywhere else. It decides indexing (`app/robots.ts`) and newsletter behaviour, so keep it set per deploy context.
+- `hosting-backup/` holds the old Vercel and Cloudflare configs. Nothing in it runs. Its README says how to switch back.
 
 ## GitHub workflow
 
 - Trunk-based: `main` is protected, one short-lived branch per Linear issue.
 - PR and commit titles reference the Linear issue ID (e.g. `feat(tools): add category filter [VIB-23]`).
-- Every PR gets a Vercel preview URL automatically — always open a PR, even for a small change, since that preview link is how Ali reviews your work.
+- Every PR gets a Netlify deploy preview automatically at `deploy-preview-<PR number>--viberation.netlify.app` — always open a PR, even for a small change, since that preview link is how Ali reviews your work. Previews are private to the Netlify team, so you need to be signed in to Netlify to open one. Supabase allows them as login redirect URLs, so signing in on a preview works.
 - Lint + typecheck + build run in CI on every PR.
 - **Squash is the only merge method.** Merge commits and rebase merges are switched off on the repository (2026-09-25), so a branch lands as one commit whose message is the PR title — which is why the Linear ID belongs in that title. Head branches delete themselves on merge, and auto-merge is available: arm it and the PR lands by itself once CI is green. Arm it only when Ali asks.
 

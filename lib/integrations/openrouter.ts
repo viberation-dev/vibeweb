@@ -168,7 +168,7 @@ async function getJson(path: string): Promise<unknown> {
   try {
     const response = await fetch(`${API}${path}`, {
       next: { revalidate: REVALIDATE_SECONDS },
-      // A hung request would hold the whole page until Vercel's 300s kill (VIB-175).
+      // A hung request would hold the whole page until the host's function timeout (VIB-175).
       signal: AbortSignal.timeout(5000),
     });
     if (!response.ok) {

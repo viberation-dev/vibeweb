@@ -23,14 +23,13 @@ export const metadata: Metadata = {
  *   - anonymous clicks → migration 13; tool_clicks is (tool_id, clicked_at),
  *                        no user_id and no request metadata
  *   - history cap      → migration 05's prune trigger
- *   - analytics        → @vercel/analytics in app/layout.tsx, cookieless
- *                        (VIB-171); no error-reporting or advertising
- *                        dependency at all
+ *   - analytics        → none since the move to Netlify (2026-11-27);
+ *                        Vercel Analytics (VIB-171) went with it. No
+ *                        error-reporting or advertising dependency at all
  *   - sign-in options  → lib/integrations/supabase/auth.ts
  *
- * If any of those change, this page changes with them. Adding Vercel
- * Analytics (VIB-171) is exactly that: the old "no third-party analytics"
- * claim went the same day. Sentry would be the next one.
+ * If any of those change, this page changes with them. Adding analytics
+ * back, or Sentry, means rewriting section 3 the same day.
  */
 
 function Section({
@@ -129,15 +128,8 @@ export default function PrivacyPage() {
           <strong className="text-foreground">
             There is no advertising technology on this site.
           </strong>{" "}
-          No advertising or retargeting pixels, no session recording, no
-          cross-site tracking.
-        </p>
-        <p className="text-muted-foreground">
-          We count page views with Vercel Web Analytics. It sets no cookies and
-          does not identify you or follow you between sites: it records the page
-          visited and coarse details such as country, browser and whether the
-          visit came from another site. That is why you are not asked to consent
-          to it.
+          No advertising or retargeting pixels, no analytics scripts, no
+          session recording, no cross-site tracking.
         </p>
         <p className="text-muted-foreground">
           The only cookies we set are the ones our authentication provider needs
@@ -159,9 +151,8 @@ export default function PrivacyPage() {
             database and handles sign-in and account security.
           </li>
           <li>
-            <strong className="text-foreground">Vercel</strong> — hosts and
-            serves the site, and provides the page-view counts described
-            above. Like any web host, Vercel processes request logs,
+            <strong className="text-foreground">Netlify</strong> — hosts and
+            serves the site. Like any web host, Netlify processes request logs,
             including IP addresses, in order to deliver pages and protect the
             service against abuse. We do not store IP addresses in our own
             database.

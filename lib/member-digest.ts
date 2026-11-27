@@ -42,7 +42,7 @@ export type DigestOutcome =
  * state, so tomorrow's run is not corrupted by today's bounce.
  *
  * A database refusal is left to throw, which the route turns into a 500 and
- * Vercel shows as a failed run. That is the wanted behaviour: the only way
+ * the Netlify function log shows as an error. That is the wanted behaviour: the only way
  * the RPC refuses is a secret that no longer matches `private.app_secrets`,
  * and swallowing that would turn a misconfiguration into a digest that
  * silently never arrives again.

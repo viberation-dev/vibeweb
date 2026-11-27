@@ -15,7 +15,7 @@ The go-to platform for **beginner/intermediate "vibe coders"** — a curated AI-
 - **Backend:** Supabase (Postgres + Auth + RLS + Storage)
 - **Search:** Supabase full-text (`tsvector`) → Typesense later
 - **Email:** Resend
-- **Hosting:** Vercel
+- **Hosting:** Netlify (free plan) since 2026-11-27; old Vercel and Cloudflare configs in `hosting-backup/`
 - **pgvector:** added later (Phase 1.5, only when AI generation lands)
 - Affiliate links = tracked Next.js **route handlers** (`/go/[slug]`)
 

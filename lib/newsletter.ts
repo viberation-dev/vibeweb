@@ -5,12 +5,12 @@
  * list is actually ready to send to. Collecting addresses you cannot yet
  * email is a promise you are not keeping.
  *
- * So: **off in production unless switched on, on in Vercel previews.** The
+ * So: **off in production unless switched on, on in deploy previews.** The
  * preview is where the form gets reviewed, and a subscribe from there fails
  * loudly rather than quietly (preview has no Resend key, so the action says
  * so) — no stray addresses land in the real audience.
  *
- * To go live: set NEWSLETTER_SIGNUP=on in Vercel's production environment.
+ * To go live: set NEWSLETTER_SIGNUP=on in Netlify's production context.
  * NEWSLETTER_SIGNUP=off hides it everywhere, previews included.
  *
  * Pure and alias-free so it runs under plain `node --test`; the env is a

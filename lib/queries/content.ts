@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { publicCached } from "@/lib/queries/public-cache";
+
 import {
   DEFAULT_LEARN_SORT,
   LEARN_TYPE_VALUES,
@@ -452,4 +454,18 @@ export async function listContentSurfaced(client: Client, limit: number): Promis
 
   if (error) throw new Error(`listContentSurfaced: ${error.message}`, { cause: error });
   return data ?? [];
+}
+
+/** listContent for public listings, cached; see publicCached. */
+export const listContentCached = publicCached("listContent", listContent);
+
+const pillarCountEntries = publicCached("contentByPillar", async (client, types: ContentType[]) => [
+  ...(await countContentByPillar(client, types)),
+]);
+
+/** countContentByPillar for public listings, cached; see publicCached. */
+export async function countContentByPillarCached(
+  types: ContentType[],
+): Promise<Map<ContentPillar, number>> {
+  return new Map(await pillarCountEntries(types));
 }

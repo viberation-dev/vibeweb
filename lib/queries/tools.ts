@@ -2,6 +2,8 @@ import { unstable_cache } from "next/cache";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { publicCached } from "@/lib/queries/public-cache";
+
 import { createAnonClient } from "@/lib/integrations/supabase/anon";
 
 import type { RoleLevel } from "@/lib/role-level";
@@ -444,4 +446,16 @@ export async function listToolsSurfaced(client: Client, limit: number): Promise<
 
   if (error) throw new Error(`listToolsSurfaced: ${error.message}`, { cause: error });
   return data ?? [];
+}
+
+/** listTools for the public directory, cached; see publicCached. */
+export const listToolsCached = publicCached("listTools", listTools);
+
+const toolTagEntries = publicCached("toolTagsByIds", async (client, toolIds: string[]) => [
+  ...(await getToolTagsByIds(client, toolIds)),
+]);
+
+/** getToolTagsByIds for the public directory, cached; see publicCached. */
+export async function getToolTagsByIdsCached(toolIds: string[]): Promise<Map<string, Tag[]>> {
+  return new Map(await toolTagEntries(toolIds));
 }

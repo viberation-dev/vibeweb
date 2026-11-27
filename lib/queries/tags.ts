@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { publicCached } from "@/lib/queries/public-cache";
+
 import type { Database, Enums, Tables } from "@/types/supabase";
 
 export type Tag = Tables<"tags">;
@@ -138,3 +140,6 @@ export async function listPopularTags(
       .slice(0, limit)
   );
 }
+
+/** listCategoryTags for the public directory, cached; see publicCached. */
+export const listCategoryTagsCached = publicCached("listCategoryTags", listCategoryTags);

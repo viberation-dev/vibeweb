@@ -34,7 +34,8 @@ insert into private.app_secrets (name, value)
 values ('welcome_unsubscribe', encode(gen_random_bytes(32), 'hex'))
 on conflict (name) do nothing;
 
--- The cron secret must match CRON_SECRET in Vercel, so it is set by hand:
+-- The cron secret must match CRON_SECRET in the Netlify env vars (Production), so it is set by hand.
+-- If they differ, both crons return 500 "not authorised". Use the upsert, not an UPDATE without WHERE:
 --   insert into private.app_secrets (name, value) values ('welcome_cron', '<CRON_SECRET>')
 --   on conflict (name) do update set value = excluded.value;
 

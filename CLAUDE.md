@@ -52,7 +52,7 @@ Lucide was the shadcn default and shipped here first; it was removed on 2026-09-
 The site runs on **Netlify** (free plan), moved from Vercel on 2026-11-27 after Vercel suspended the project for going over the Hobby CPU limit. `www.viberation.dev` is the primary domain and `viberation.dev` redirects to it. DNS stays at Porkbun.
 
 - Netlify detects Next.js on its own; there is no `netlify.toml`.
-- The two daily crons are Netlify scheduled functions in `netlify/functions/` (09:00 and 09:30 UTC). They call the `/api/cron/*` routes with the `CRON_SECRET` bearer header.
+- The two daily crons are Netlify scheduled functions in `netlify/functions/` (09:00 and 09:30 UTC). They call the `/api/cron/*` routes with the `CRON_SECRET` bearer header. `CRON_SECRET` in Netlify must match the `welcome_cron` row in `private.app_secrets`; if you rotate one, upsert the other (see the welcome_emails migration), or both crons return 500.
 - `DEPLOY_ENV` is `production` on the live site and `preview` everywhere else. It decides indexing (`app/robots.ts`) and newsletter behaviour, so keep it set per deploy context.
 - `hosting-backup/` holds the old Vercel and Cloudflare configs. Nothing in it runs. Its README says how to switch back.
 
